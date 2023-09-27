@@ -1,0 +1,198 @@
+---
+title: "Making, Updating, and Querying Causal Models using `CausalQueries`"
+format:
+    jss-pdf:
+        keep-tex: true
+    jss-html: default
+author:
+  - name: Till Tietz
+    affiliations:
+      - name: WZB
+        department: IPI
+        address: Reichpietschufer 50
+        city: Berlin
+        country: Germany
+        postal-code: 10785
+    email: ttietz2014@gmail.com
+  - name: Lily Medina
+    affiliations:
+      - UC Berkeley
+  - name: Macartan Humphreys
+    affiliations:
+      - WZB
+    orcid: 0000-0001-7029-2326
+    email: macartan.humphreys@wzb.eu
+    url: https://macartan.github.io/
+abstract: |
+  A guide to the [R]{.proglang} package `CausalQueries`  for making, updating, and querying causal models
+
+keywords: [causal models, stan, bayes]
+keywords-formatted: [causal models, stan, bayes]
+
+bibliography: bibliography.bib  
+---
+
+```{r, include = FALSE}
+library(CausalQueries)
+library(knitr)
+```
+
+## Introduction: Causal models {#sec-intro}
+
+* Embed the  *methods* and the *software* into the respective relevant literature. 
+* For the latter both competing and complementary software should be discussed (within the same software environment and beyond), bringing out relative (dis)advantages. All software mentioned should be properly `@cited`'d. (See also [Using BibTeX] for more details on {{< bibtex >}}.)
+
+
+
+Leadning about causal models...
+
+
+In [R]{.proglang}, ...
+
+The strength of `CausalQueries` 
+The limitation of `CausalQueries` 
+
+## Models and software {#sec-models}
+
+
+Nodes and nodal types
+
+
+
+## Making models
+
+Simple illustration
+
+```{R}
+#| prompt: true
+model <- make_model("Z -> X -> Y <-> X")
+```
+
+
+### Graphing
+
+Once defined the model can be plotted:
+
+::: {#fig-dag}
+
+```{r, fig.cap = "A simple DAG"}
+model |> plot()
+```
+
+
+:::
+
+
+### Drawing data
+
+```{r, eval = TRUE}
+model |> make_data(n = 5) |> kable()
+
+```
+## Updating models
+
+### The stan model
+
+As `update_model()` calls `rstan::sampling` one can pass along all arguments in `...` to `rstan::sampling`.
+
+
+
+### stan data
+
+### censored data
+
+### Output
+
+The primary output from `update_model()` is a posterior distribution over model parameters, stored as a dataframe in `model$posterior_distribution`. However another of other objects are also optionally stored:
+
+
+## Querying models 
+
+### Querying distributions
+### Case level queries
+
+
+## Illustrations
+
+
+### Identification with CausalQueries
+
+
+
+## Computational details {.unnumbered}
+
+* information about certain computational details such as version numbers, operating systems, or compilers could be included
+in an unnumbered section. Also, auxiliary packages (say, for visualizations,
+maps, tables, …) that are not cited in the main text can be credited here.
+
+:::
+
+The results in this paper were obtained using [R]{.proglang}~3.4.1 with the
+[MASS]{.pkg}~7.3.47 package. [R]{.proglang} itself and all packages used are available from the Comprehensive [R]{.proglang} Archive Network (CRAN) at
+[https://CRAN.R-project.org/].
+
+
+## Acknowledgments {.unnumbered}
+
+:::{.callout}
+
+All acknowledgments (note the AE spelling) should be collected in this
+unnumbered section before the references. It may contain the usual information
+about funding and feedback from colleagues/reviewers/etc. Furthermore,
+information such as relative contributions of the authors may be added here
+(if any).
+
+:::
+
+## References {.unnumbered}
+
+:::{#refs}
+
+:::
+
+{{< pagebreak >}}
+
+## More technical details {#sec-techdetails .unnumbered}
+
+:::{.callout}
+
+Appendices can be included after the bibliography (with a page break). Each
+section within the appendix should have a proper section title (rather than
+just _Appendix_).
+
+For more technical style details, please check out JSS's style FAQ at
+[https://www.jstatsoft.org/pages/view/style#frequently-asked-questions]
+which includes the following topics:
+
+- Title vs. sentence case.
+- Graphics formatting.
+- Naming conventions.
+- Turning JSS manuscripts into [R]{.proglang} package vignettes.
+- Trouble shooting.
+- Many other potentially helpful details…
+
+:::
+
+## Using BibTeX {#sec-bibtex .unnumbered}
+
+:::{.callout}
+
+References need to be provided in a {{< bibtex >}} file (`.bib`). All
+references should be made with `@cite` syntax. This commands yield different
+formats of author-year citations and allow to include additional details (e.g.,pages, chapters, \dots) in brackets. In case you are not familiar with these
+commands see the JSS style FAQ for details.
+
+Cleaning up {{< bibtex >}} files is a somewhat tedious task -- especially
+when acquiring the entries automatically from mixed online sources. However,
+it is important that informations are complete and presented in a consistent
+style to avoid confusions. JSS requires the following format.
+
+- item JSS-specific markup (`\proglang`, `\pkg`, `\code`) should be used in the references.
+- item Titles should be in title case.
+- item Journal titles should not be abbreviated and in title case.
+- item DOIs should be included where available.
+- item Software should be properly cited as well. For [R]{.proglang} packages `citation("pkgname")` typically provides a good starting point.
+
+:::
+
+
