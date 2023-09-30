@@ -29,7 +29,7 @@ abstract: |
 keywords: [causal models, stan, bayes]
 keywords-formatted: [causal models, stan, bayes]
 
-bibliography: bibliography.bib  
+bibliography: bib.bib  
 ---
 
 ```{r, include = FALSE}
@@ -44,6 +44,8 @@ run <- FALSE
 
 ## Introduction: Causal models {#sec-intro}
 
+The core conceptual framework is described Pearl's *Causality* [@pearl2009causality]. 
+
 * Embed the  *methods* and the *software* into the respective relevant literature. 
 * For the latter both competing and complementary software should be discussed (within the same software environment and beyond), bringing out relative (dis)advantages. All software mentioned should be properly `@cited`'d. (See also [Using BibTeX] for more details on {{< bibtex >}}.)
 
@@ -54,8 +56,17 @@ Learning about causal models...
 
 In [R]{.proglang}, ...
 
-The strength of `CausalQueries` 
-The limitation of `CausalQueries` 
+```{r, eval = FALSE, include = FALSE}
+make_model("A -> B -> C -> D -> E")$parameters_df |> nrow()
+
+make_model("A -> E <- B; C->E<-D")$parameters_df |> nrow()
+```
+The strength of `CausalQueries` is to allow users to specify arbitrary DAGs, arbitrary queries over nodes in those DAGs, and use the same canonical procedure to learn about those queries whether or not the queries are identified. Thus is principle if researchers are interest in learning about a quantitiy like the local average treatment effect and their model in fact satisfies the conditions in @angrist1996identification, then updating will recover valid estimates even if reearchers are unaware that hte local average treatment effect is identified and are ignorant of  the estimation proedure proposed by @angrist1996identification.    
+
+There are two broad limitation on the sets of models handled natively by  `CausalQueries`. First `CausalQUeries` is designed for  models with a relatively small number  over binary nodes. Because there is no compromise made on the space of possible causal relations implied by a given model, the parameter space grows very rapidly with the complexity of the causal model.  The complexity also depends on the causal structure and grows rapidly with the number of parents affecting a given child. A chain model of the form $A \rightarrow B \rightarrow C \rightarrow D \rightarrow E$ has just 40 parameters. A model in which $A, B, C, D$  are all direct of $E$ has 65544 parameters. Moving from binary to non binary nodes has similar effects. The restriction to binary nodes is for computational and not conceptual reasons. In fact there are ways to employ `CausalQueries`  to answer queries from models with nonbinary nodes but in general the computational costs make analysis of these model prohibitive. 
+
+Second the package is geared for learning about populations from samples of units that are independent of each other and are independently  randomly sampled  from populations. This the basic set up does not address problems of sampling, clustering,  hierarchical structures, or purposive sampling, for example. In section X we provide pointers to how all of these can be addressed.     
+
 
 ## Models and software {#sec-models}
 
@@ -670,11 +681,9 @@ The results in this paper were obtained using [R]{.proglang}~3.4.1 with the
 
 :::{.callout}
 
-All acknowledgments (note the AE spelling) should be collected in this
-unnumbered section before the references. It may contain the usual information
-about funding and feedback from colleagues/reviewers/etc. Furthermore,
-information such as relative contributions of the authors may be added here
-(if any).
+The approach to generating a generic stan function that can take data from arbitrary models was developed in key contributions by [Jasper Cooper](http://jasper-cooper.com/) and [Georgiy Syunyaev](http://gsyunyaev.com/). [Lily Medina](https://lilymedina.github.io/) did magical work pulling it all together and developing approaches to characterizing confounding and defining estimands. Clara Bicalho helped figure out the syntax for causal statements. Julio Solis made many key contributions figuring out how to simplify the specification of priors. Merlin Heidemanns figure out the `rstantools` integration and made myriad code improvements. Till Tietz revamped the entire package and improved every part of it.
+
+
 
 :::
 

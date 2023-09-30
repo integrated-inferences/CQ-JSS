@@ -213,6 +213,9 @@ URL: \url{https://macartan.github.io/}\\
 \hypertarget{sec-intro}{%
 \section{Introduction: Causal models}\label{sec-intro}}
 
+The core conceptual framework is described Pearl's \emph{Causality}
+\citep{pearl2009causality}.
+
 \begin{itemize}
 \tightlist
 \item
@@ -231,8 +234,40 @@ Learning about causal models\ldots{}
 
 In \proglang{R}, \ldots{}
 
-The strength of \texttt{CausalQueries} The limitation of
-\texttt{CausalQueries}
+The strength of \texttt{CausalQueries} is to allow users to specify
+arbitrary DAGs, arbitrary queries over nodes in those DAGs, and use the
+same canonical procedure to learn about those queries whether or not the
+queries are identified. Thus is principle if researchers are interest in
+learning about a quantitiy like the local average treatment effect and
+their model in fact satisfies the conditions in
+\citet{angrist1996identification}, then updating will recover valid
+estimates even if reearchers are unaware that hte local average
+treatment effect is identified and are ignorant of the estimation
+proedure proposed by \citet{angrist1996identification}.
+
+There are two broad limitation on the sets of models handled natively by
+\texttt{CausalQueries}. First \texttt{CausalQUeries} is designed for
+models with a relatively small number over binary nodes. Because there
+is no compromise made on the space of possible causal relations implied
+by a given model, the parameter space grows very rapidly with the
+complexity of the causal model. The complexity also depends on the
+causal structure and grows rapidly with the number of parents affecting
+a given child. A chain model of the form
+\(A \rightarrow B \rightarrow C \rightarrow D \rightarrow E\) has just
+40 parameters. A model in which \(A, B, C, D\) are all direct of \(E\)
+has 65544 parameters. Moving from binary to non binary nodes has similar
+effects. The restriction to binary nodes is for computational and not
+conceptual reasons. In fact there are ways to employ
+\texttt{CausalQueries} to answer queries from models with nonbinary
+nodes but in general the computational costs make analysis of these
+model prohibitive.
+
+Second the package is geared for learning about populations from samples
+of units that are independent of each other and are independently
+randomly sampled from populations. This the basic set up does not
+address problems of sampling, clustering, hierarchical structures, or
+purposive sampling, for example. In section X we provide pointers to how
+all of these can be addressed.
 
 \hypertarget{sec-models}{%
 \section{Models and software}\label{sec-models}}
@@ -889,7 +924,7 @@ make_model("A <- X -> B; A <-> X; B <-> X") %>% plot()
 
 \begin{figure}[H]
 
-{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-14-1.pdf}
+{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-15-1.pdf}
 
 }
 
@@ -921,7 +956,7 @@ make_model("X->Y") %>% set_priors(distribution = "jeffreys") %>% get_priors
 \end{verbatim}
 
 \begin{verbatim}
-no specific parameters to alter values for specified. Altering all parameters.
+No specific parameters to alter values for specified. Altering all parameters.
 \end{verbatim}
 
 \begin{verbatim}
@@ -1207,7 +1242,7 @@ X & Y \\
 \endlastfoot
 0 & 0 \\
 0 & 1 \\
-0 & 1 \\
+1 & 0 \\
 1 & 1 \\
 1 & 1 \\
 \end{longtable}
@@ -1650,7 +1685,7 @@ model$posterior_distribution %>%
   geom_point()
 \end{verbatim}
 
-\includegraphics{paper_files/figure-pdf/unnamed-chunk-29-1.pdf}
+\includegraphics{paper_files/figure-pdf/unnamed-chunk-30-1.pdf}
 
 We see that beliefs about the size of the overall effect are related to
 beliefs that \(X\) is assigned differently when there is a positive
@@ -1677,7 +1712,7 @@ make_model("X -> Y") %>%
 
 \begin{figure}[H]
 
-{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-30-1.pdf}
+{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-31-1.pdf}
 
 }
 
@@ -1817,13 +1852,20 @@ Network (CRAN) at {[}https://CRAN.R-project.org/{]}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, breakable, toprule=.15mm, bottomrule=.15mm, leftrule=.75mm, colback=white, arc=.35mm, opacityback=0, rightrule=.15mm, left=2mm]
+\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, rightrule=.15mm, left=2mm, colback=white, leftrule=.75mm, arc=.35mm, toprule=.15mm, opacityback=0, breakable]
 
-All acknowledgments (note the AE spelling) should be collected in this
-unnumbered section before the references. It may contain the usual
-information about funding and feedback from colleagues/reviewers/etc.
-Furthermore, information such as relative contributions of the authors
-may be added here (if any).
+The approach to generating a generic stan function that can take data
+from arbitrary models was developed in key contributions by
+\href{http://jasper-cooper.com/}{Jasper Cooper} and
+\href{http://gsyunyaev.com/}{Georgiy Syunyaev}.
+\href{https://lilymedina.github.io/}{Lily Medina} did magical work
+pulling it all together and developing approaches to characterizing
+confounding and defining estimands. Clara Bicalho helped figure out the
+syntax for causal statements. Julio Solis made many key contributions
+figuring out how to simplify the specification of priors. Merlin
+Heidemanns figure out the \texttt{rstantools} integration and made
+myriad code improvements. Till Tietz revamped the entire package and
+improved every part of it.
 
 \end{tcolorbox}
 
@@ -1832,7 +1874,7 @@ may be added here (if any).
 \addcontentsline{toc}{section}{References}
 
 \renewcommand{\bibsection}{}
-\bibliography{bibliography.bib}
+\bibliography{bib.bib}
 
 \newpage{}
 
@@ -1840,7 +1882,7 @@ may be added here (if any).
 \section*{More technical details}\label{sec-techdetails}}
 \addcontentsline{toc}{section}{More technical details}
 
-\begin{tcolorbox}[enhanced jigsaw, breakable, toprule=.15mm, bottomrule=.15mm, leftrule=.75mm, colback=white, arc=.35mm, opacityback=0, rightrule=.15mm, left=2mm]
+\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, rightrule=.15mm, left=2mm, colback=white, leftrule=.75mm, arc=.35mm, toprule=.15mm, opacityback=0, breakable]
 
 Appendices can be included after the bibliography (with a page break).
 Each section within the appendix should have a proper section title
@@ -1872,7 +1914,7 @@ which includes the following topics:
 \section*{Using BibTeX}\label{sec-bibtex}}
 \addcontentsline{toc}{section}{Using BibTeX}
 
-\begin{tcolorbox}[enhanced jigsaw, breakable, toprule=.15mm, bottomrule=.15mm, leftrule=.75mm, colback=white, arc=.35mm, opacityback=0, rightrule=.15mm, left=2mm]
+\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, rightrule=.15mm, left=2mm, colback=white, leftrule=.75mm, arc=.35mm, toprule=.15mm, opacityback=0, breakable]
 
 References need to be provided in a \textsc{Bib}{\TeX} file
 (\texttt{.bib}). All references should be made with \texttt{@cite}
