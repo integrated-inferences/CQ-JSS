@@ -14,6 +14,8 @@ author:
         country: Germany
         postal-code: 10785
     email: ttietz2014@gmail.com
+    orcid: 0000-0002-2916-9059
+    url: https://github.com/till-tietz
   - name: Lily Medina
     affiliations:
       - UC Berkeley
