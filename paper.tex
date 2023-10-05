@@ -333,7 +333,7 @@ cred.high.97.5\%
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-Y{[}X=1{]} - Y{[}X=0{]} & - & 0.55 & 0.10 & 0.37 & 0.73 \\
+Y{[}X=1{]} - Y{[}X=0{]} & - & 0.56 & 0.10 & 0.37 & 0.73 \\
 Y{[}X=1{]} - Y{[}X=0{]} & X==0 \& Y==0 & 0.64 & 0.15 & 0.37 & 0.89 \\
 Y{[}X=1{]} - Y{[}X=0{]} & X{[}Z=1{]} \textgreater{} X{[}Z=0{]} & 0.70 &
 0.05 & 0.59 & 0.80 \\
@@ -498,7 +498,7 @@ treatment effect is identified and are ignorant of the estimation
 procedure proposed by \citet{angrist1996identification}.
 
 There are two broad limitation on the sets of models handled natively by
-\texttt{CausalQueries}. First \texttt{CausalQUeries} is designed for
+\texttt{CausalQueries}. First \texttt{CausalQueries} is designed for
 models with a relatively small number over binary nodes. Because there
 is no compromise made on the space of possible causal relations implied
 by a given model, the parameter space grows very rapidly with the
@@ -601,7 +601,7 @@ Once defined, a model can be graphed (we use the \texttt{dagitty}
 package for this):
 
 \begin{verbatim}
-make_model("X -> Y <- W -> X") |>
+make_model("X -> M -> Y <- X; Z -> Y") |>
   plot()
 \end{verbatim}
 
@@ -611,8 +611,7 @@ make_model("X -> Y <- W -> X") |>
 
 }
 
-\caption{A plotted model. Curved double headed arrows indicate
-unobserved confounding}
+\caption{A plotted model.}
 
 \end{figure}
 
@@ -932,11 +931,24 @@ Note:
   be dropped (default) or retained.
 \item
   Restrictions can be set using nodal type labels.
-  \texttt{make\_model("S\ -\textgreater{}\ C\ -\textgreater{}\ Y\ \textless{}-\ R\ \textless{}-\ X;\ X\ -\textgreater{}\ C\ -\textgreater{}\ R")\ \%\textgreater{}\%\ set\_restrictions(labels\ =\ list(C\ =\ "C1000",\ R\ =\ "R0001",\ Y\ =\ "Y0001"),\ keep\ =\ TRUE)}
+\end{itemize}
+
+\begin{verbatim}
+make_model("S -> C -> Y <- R <- X; X -> C -> R") %>%
+  set_restrictions(labels = list(C = "1000", R = "0001", Y = "0001"), 
+                   keep = TRUE)
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
 \item
   Wild cards can be used in nodal type labels:
-  \texttt{make\_model("X-\textgreater{}Y")\ \%\textgreater{}\%\ set\_restrictions(labels\ =\ list(Y\ =\ "Y?0"))}
 \end{itemize}
+
+\begin{verbatim}
+make_model("X->Y") |>
+  set_restrictions(labels = list(Y = "Y?0"))
+\end{verbatim}
 
 \hypertarget{confounding}{%
 \subsection{Allowing confounding}\label{confounding}}
@@ -1134,7 +1146,7 @@ make_model("A <- X -> B; A <-> X; B <-> X") %>% plot()
 
 \begin{figure}[H]
 
-{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-17-1.pdf}
+{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-19-1.pdf}
 
 }
 
@@ -1446,9 +1458,9 @@ X & Y \\
 \bottomrule\noalign{}
 \endlastfoot
 0 & 0 \\
-0 & 0 \\
 0 & 1 \\
 0 & 1 \\
+1 & 1 \\
 1 & 1 \\
 \end{longtable}
 
@@ -1758,9 +1770,6 @@ distribution over model parameters, stored as a dataframe in
 \texttt{model\$posterior\_distribution}. However another of other
 objects are also optionally stored:
 
-\hypertarget{querying-models}{%
-\section{Querying models}\label{querying-models}}
-
 Models can be queried using the \texttt{query\_distribution} and
 \texttt{query\_model} functions. The difference between these functions
 is that \texttt{query\_distribution} examines a single query and returns
@@ -1768,143 +1777,42 @@ a full distribution of draws from the distribution of the estimand
 (prior or posterior); \texttt{query\_model} takes a collection of
 queries and returns a dataframe with summary statistics on the queries.
 
-The simplest queries ask about causal estimands given particular
-parameter values and case level data. Here is one surprising result of
-this form:
+\hypertarget{queries}{%
+\section{Queries}\label{queries}}
 
-\hypertarget{case-level-queries}{%
-\subsection{Case level queries}\label{case-level-queries}}
+\hypertarget{query-implementation}{%
+\subsection{Query implementation}\label{query-implementation}}
 
-The \texttt{query\_model} function takes causal queries and conditions
-(\texttt{given}) and specifies the parameters to be used. The result is
-a dataframe which can be displayed as a table.
+\hypertarget{queries-by-hand}{%
+\subsection{Queries by hand}\label{queries-by-hand}}
 
-For a case level query we can make the query \emph{given} a particular
-parameter vector, as below:
-
-\begin{verbatim}
-make_model("X-> M -> Y <- X") %>% 
-  
-  set_restrictions(c(decreasing("X", "M"), 
-                     decreasing("M", "Y"), 
-                     decreasing("X", "Y"))) %>%
-  
-  query_model(queries = "Y[X=1]> Y[X=0]",
-              given = c("X==1 & Y==1", 
-                        "X==1 & Y==1 & M==1", 
-                        "X==1 & Y==1 & M==0"),
-              using = c("parameters")) %>%
-  
-  kable(
-    caption = "In a monotonic model with flat priors, knowledge
-    that $M=1$ *reduces* confidence that $X=1$ caused $Y=1$")
-\end{verbatim}
-
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0748}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1402}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1776}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1028}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1028}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0935}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0280}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1308}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1495}}@{}}
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-model
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-query
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-given
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-using
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-case\_level
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-mean
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-sd
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-cred.low.2.5\%
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-cred.high.97.5\%
-\end{minipage} \\
-\midrule\noalign{}
-\endfirsthead
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-model
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-query
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-given
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-using
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-case\_level
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-mean
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-sd
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-cred.low.2.5\%
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-cred.high.97.5\%
-\end{minipage} \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-model\_1 & Y{[}X=1{]}\textgreater{} Y{[}X=0{]} & X==1 \& Y==1 &
-parameters & FALSE & 0.6153846 & NA & 0.6153846 & 0.6153846 \\
-model\_1 & Y{[}X=1{]}\textgreater{} Y{[}X=0{]} & X==1 \& Y==1 \& M==1 &
-parameters & FALSE & 0.6000000 & NA & 0.6000000 & 0.6000000 \\
-model\_1 & Y{[}X=1{]}\textgreater{} Y{[}X=0{]} & X==1 \& Y==1 \& M==0 &
-parameters & FALSE & 0.6666667 & NA & 0.6666667 & 0.6666667 \\
-\caption{In a monotonic model with flat priors, knowledge that \(M=1\)
-\emph{reduces} confidence that \(X=1\) caused \(Y=1\)}\tabularnewline
-\end{longtable}
-
-This example shows how inferences change given additional data on \(M\)
-in a monotonic \(X \rightarrow M \rightarrow Y \leftarrow X\) model.
-Surprisingly observing \(M=1\) \emph{reduces} beliefs that \(X\) caused
-\(Y\), the reason being that perhaps \(M\) and not \(X\) was responsible
-for \(Y=1\).
-
-\hypertarget{posterior-queries}{%
-\subsection{Posterior queries}\label{posterior-queries}}
-
-Queries can also draw directly from the posterior distribution provided
-by \texttt{stan}. In this next example we illustrate the joint
-distribution of the posterior over causal effects, drawing directly from
-the posterior dataframe generated by \texttt{update\_model}:
+Queries can draw directly from the prior distribution of the posterior
+distribution provided by \texttt{stan}.
 
 \begin{verbatim}
 library(DeclareDesign)
 
-data  <- fabricate(N = 100, X = complete_ra(N), Y = X)
+data  <- fabricate(N = 10, X = complete_ra(N), Y = X)
 
-model <- make_model("X -> Y; X <-> Y") %>%
+model <- make_model("X -> Y") %>%
   update_model(data, iter  = 4000)
 
 model$posterior_distribution %>% 
-  data.frame() %>%
-  ggplot(aes(X.1 - X.0, Y.01_X.1 - Y.10_X.0)) + 
-  geom_point()
+  ggplot(aes(Y.01 - Y.10)) + 
+           geom_histogram()
 \end{verbatim}
 
-\includegraphics{paper_files/figure-pdf/unnamed-chunk-32-1.pdf}
+\begin{verbatim}
+`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+\end{verbatim}
 
-We see that beliefs about the size of the overall effect are related to
-beliefs that \(X\) is assigned differently when there is a positive
-effect.
+\includegraphics{paper_files/figure-pdf/unnamed-chunk-33-1.pdf}
 
 \hypertarget{query-distribution}{%
 \subsection{Query distribution}\label{query-distribution}}
 
-\texttt{query\_distribution} works similarly except that the query is
-over an estimand. For instance:
+\texttt{query\_distribution} works similarly except that distributions
+over queries are returned:
 
 \begin{verbatim}
 make_model("X -> Y") %>% 
@@ -1921,7 +1829,7 @@ make_model("X -> Y") %>%
 
 \begin{figure}[H]
 
-{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-33-1.pdf}
+{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-34-1.pdf}
 
 }
 
@@ -1929,104 +1837,119 @@ make_model("X -> Y") %>%
 
 \end{figure}
 
-\hypertarget{token-and-general-causation}{%
-\subsection{Token and general
-causation}\label{token-and-general-causation}}
+\hypertarget{case-level-queries}{%
+\subsection{Case level queries}\label{case-level-queries}}
 
-Note that in all these cases we use the same technology to make case
-level and population inferences. Indeed the case level query is just a
-conditional population query. As an illustration of this imagine we have
-a model of the form \(X \rightarrow M \rightarrow Y\) and are interested
-in whether \(X\) caused \(Y\) in a case in which \(M=1\). We answer the
-question by asking ``what would be the probability that \(X\) caused
-\(Y\) in a case in which \(X=M=Y=1\)?'' (line 3 below). This speculative
-answer is the same answer as we would get were we to ask the same
-question having updated our model with knowledge that in a particular
-case, indeed, \(X=M=Y=1\). See below:
+Case level queries provide the inference for a `new case', which is a
+scalar The case level query \emph{updates} on the given information
+observed in the new case. The resulting inference is different to the
+inference that would be made from the posterior \emph{given} the
+features of the case.
+
+To illustrate, consider a model for which we are quite sure that \(X\)
+causes \(Y\) but we do not know whether it works through two positive
+effects or two negative effects. Thus we do not know if M=0 would
+suggest an effect or no effect. If asked what we would infer for a case
+that had \(M=0\) we would not know whether \(M=0\) information is
+consistent with a positive effect or not. However if provided with a
+randomly case and learn that it has \(M=0\), then we update about the
+causal model and infer that there is an effect in this case (but that
+there wouldn't be were \(M=1\)).
 
 \begin{verbatim}
-model <- make_model("X->M->Y") %>% 
-  set_restrictions(c(decreasing("X", "M"), decreasing("M", "Y"))) %>%
-  update_model(data = data.frame(X = 1, M = 1, Y = 1), iter = 8000)
+# DO ALL THIS IN ONE TABLE
 
-query_model(
-            model, 
-            query = "Y[X=1]> Y[X=0]",
-            given = c("X==1 & Y==1", "X==1 & Y==1 & M==1"),
-            using = c("priors", "posteriors"),
-            expand_grid = TRUE)
+set.seed(1)
+ model <-
+   make_model("X -> M -> Y") |>
+   update_model(data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)), iter = 10000)
+
+ Q <- "Y[X=1] > Y[X=0]"
+ G <- "X==1 & Y==1 & M==1"
+ QG <- "(Y[X=1] > Y[X=0]) & (X==1 & Y==1 & M==1)"
+
+ # In this case these are very different:
+ query_distribution(model, Q, given = G, using = "posteriors")[[1]] |> mean()
+ query_distribution(model, Q, given = G, using = "posteriors",
+   case_level = TRUE)
+
+ # These are equivalent:
+ # 1. Case level query via function
+ query_distribution(model, Q, given = G,
+    using = "posteriors", case_level = TRUE)
+
+ # 2. Case level query by hand using Bayes
+ distribution <- query_distribution(
+    model, list(QG = QG, G = G), using = "posteriors")
+
+ mean(distribution$QG)/mean(distribution$G)
 \end{verbatim}
 
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0769}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1442}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1827}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1058}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1058}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0481}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0481}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1346}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1538}}@{}}
+\hypertarget{batch-queries}{%
+\subsection{Batch queries}\label{batch-queries}}
+
+The \texttt{query\_model} function takes causal queries and conditions
+(\texttt{given}) and specifies the parameters to be used. The result is
+a dataframe which can be displayed as a table.
+
+\begin{verbatim}
+models <- list(
+ `1` = make_model("X -> Y"),
+ `2` = make_model("X -> Y") |> set_restrictions("Y[X=1] < Y[X=0]")
+ )
+
+query_model(
+  models,
+  query = list(ATE = "Y[X=1] - Y[X=0]", POS = "Y[X=1] > Y[X=0]"),
+  given = c(TRUE,  "Y==1 & X==1"),
+  case_level = c(FALSE, TRUE),
+  using = c("parameters", "priors"),
+  expand_grid = TRUE) |>
+  select(-starts_with("cred")) |>
+  
+  kable(digits = 2)
+\end{verbatim}
+
+\begin{longtable}[]{@{}lllllrr@{}}
 \toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-model
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-query
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-given
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-using
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-case\_level
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-mean
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-sd
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-cred.low.2.5\%
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-cred.high.97.5\%
-\end{minipage} \\
-\midrule\noalign{}
-\endfirsthead
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-model
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-query
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-given
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-using
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-case\_level
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-mean
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-sd
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-cred.low.2.5\%
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-cred.high.97.5\%
-\end{minipage} \\
+model & query & given & using & case\_level & mean & sd \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-model\_1 & Y{[}X=1{]}\textgreater{} Y{[}X=0{]} & X==1 \& Y==1 & priors &
-FALSE & 0.21 & 0.21 & 0 & 0.75 \\
-model\_1 & Y{[}X=1{]}\textgreater{} Y{[}X=0{]} & X==1 \& Y==1 &
-posteriors & FALSE & 0.22 & 0.21 & 0 & 0.76 \\
-model\_1 & Y{[}X=1{]}\textgreater{} Y{[}X=0{]} & X==1 \& Y==1 \& M==1 &
-priors & FALSE & 0.25 & 0.22 & 0 & 0.78 \\
-model\_1 & Y{[}X=1{]}\textgreater{} Y{[}X=0{]} & X==1 \& Y==1 \& M==1 &
-posteriors & FALSE & 0.25 & 0.22 & 0 & 0.78 \\
-\caption{Posteriors equal priors for a query that conditions on data
-used to form the posterior}\tabularnewline
+1 & ATE & - & parameters & FALSE & 0.00 & NA \\
+2 & ATE & - & parameters & FALSE & 0.33 & NA \\
+1 & ATE & - & priors & FALSE & 0.00 & 0.31 \\
+2 & ATE & - & priors & FALSE & 0.34 & 0.24 \\
+1 & ATE & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA \\
+2 & ATE & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA \\
+1 & ATE & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29 \\
+2 & ATE & Y==1 \& X==1 & priors & FALSE & 0.51 & 0.29 \\
+1 & POS & - & parameters & FALSE & 0.25 & NA \\
+2 & POS & - & parameters & FALSE & 0.33 & NA \\
+1 & POS & - & priors & FALSE & 0.25 & 0.19 \\
+2 & POS & - & priors & FALSE & 0.34 & 0.24 \\
+1 & POS & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA \\
+2 & POS & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA \\
+1 & POS & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29 \\
+2 & POS & Y==1 \& X==1 & priors & FALSE & 0.51 & 0.29 \\
+1 & ATE & - & parameters & TRUE & 0.00 & NA \\
+2 & ATE & - & parameters & TRUE & 0.33 & NA \\
+1 & ATE & - & priors & TRUE & 0.00 & NA \\
+2 & ATE & - & priors & TRUE & 0.34 & NA \\
+1 & ATE & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA \\
+2 & ATE & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA \\
+1 & ATE & Y==1 \& X==1 & priors & TRUE & 0.50 & NA \\
+2 & ATE & Y==1 \& X==1 & priors & TRUE & 0.51 & NA \\
+1 & POS & - & parameters & TRUE & 0.25 & NA \\
+2 & POS & - & parameters & TRUE & 0.33 & NA \\
+1 & POS & - & priors & TRUE & 0.25 & NA \\
+2 & POS & - & priors & TRUE & 0.34 & NA \\
+1 & POS & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA \\
+2 & POS & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA \\
+1 & POS & Y==1 \& X==1 & priors & TRUE & 0.50 & NA \\
+2 & POS & Y==1 \& X==1 & priors & TRUE & 0.51 & NA \\
 \end{longtable}
-
-We see the conditional inference is the same using the prior and the
-posterior distributions.
 
 \hypertarget{computational-details}{%
 \section*{Computational details}\label{computational-details}}
@@ -2054,7 +1977,7 @@ Network (CRAN) at {[}https://CRAN.R-project.org/{]}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, breakable, arc=.35mm, left=2mm, rightrule=.15mm, opacityback=0, toprule=.15mm, leftrule=.75mm, colback=white]
+\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, breakable, toprule=.15mm, left=2mm, opacityback=0, colback=white, arc=.35mm, bottomrule=.15mm, rightrule=.15mm]
 
 The approach to generating a generic stan function that can take data
 from arbitrary models was developed in key contributions by
@@ -2084,7 +2007,7 @@ improved every part of it.
 \section*{More technical details}\label{sec-techdetails}}
 \addcontentsline{toc}{section}{More technical details}
 
-\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, breakable, arc=.35mm, left=2mm, rightrule=.15mm, opacityback=0, toprule=.15mm, leftrule=.75mm, colback=white]
+\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, breakable, toprule=.15mm, left=2mm, opacityback=0, colback=white, arc=.35mm, bottomrule=.15mm, rightrule=.15mm]
 
 Appendices can be included after the bibliography (with a page break).
 Each section within the appendix should have a proper section title
@@ -2116,7 +2039,7 @@ which includes the following topics:
 \section*{Using BibTeX}\label{sec-bibtex}}
 \addcontentsline{toc}{section}{Using BibTeX}
 
-\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, breakable, arc=.35mm, left=2mm, rightrule=.15mm, opacityback=0, toprule=.15mm, leftrule=.75mm, colback=white]
+\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, breakable, toprule=.15mm, left=2mm, opacityback=0, colback=white, arc=.35mm, bottomrule=.15mm, rightrule=.15mm]
 
 References need to be provided in a \textsc{Bib}{\TeX} file
 (\texttt{.bib}). All references should be made with \texttt{@cite}

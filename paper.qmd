@@ -146,7 +146,7 @@ make_model("A -> E <- B; C->E<-D")$parameters_df |> nrow()
 
 The strength of `CausalQueries` is to allow users to specify arbitrary DAGs, arbitrary queries over nodes in those DAGs, and use the same canonical procedure to learn about those queries whether or not the queries are identified. Thus is principle if researchers are interest in learning about a quantitiy like the local average treatment effect and their model in fact satisfies the conditions in @angrist1996identification, then updating will recover valid estimates even if researchers are unaware that the local average treatment effect is identified and are ignorant of  the estimation procedure proposed by @angrist1996identification.    
 
-There are two broad limitation on the sets of models handled natively by  `CausalQueries`. First `CausalQUeries` is designed for  models with a relatively small number  over binary nodes. Because there is no compromise made on the space of possible causal relations implied by a given model, the parameter space grows very rapidly with the complexity of the causal model.  The complexity also depends on the causal structure and grows rapidly with the number of parents affecting a given child. A chain model of the form $A \rightarrow B \rightarrow C \rightarrow D \rightarrow E$ has just 40 parameters. A model in which $A, B, C, D$  are all direct of $E$ has 65544 parameters. Moving from binary to non binary nodes has similar effects. The restriction to binary nodes is for computational and not conceptual reasons. In fact there are ways to employ `CausalQueries`  to answer queries from models with nonbinary nodes but in general the computational costs make analysis of these model prohibitive. 
+There are two broad limitation on the sets of models handled natively by  `CausalQueries`. First `CausalQueries` is designed for  models with a relatively small number  over binary nodes. Because there is no compromise made on the space of possible causal relations implied by a given model, the parameter space grows very rapidly with the complexity of the causal model.  The complexity also depends on the causal structure and grows rapidly with the number of parents affecting a given child. A chain model of the form $A \rightarrow B \rightarrow C \rightarrow D \rightarrow E$ has just 40 parameters. A model in which $A, B, C, D$  are all direct of $E$ has 65544 parameters. Moving from binary to non binary nodes has similar effects. The restriction to binary nodes is for computational and not conceptual reasons. In fact there are ways to employ `CausalQueries`  to answer queries from models with nonbinary nodes but in general the computational costs make analysis of these model prohibitive. 
 
 Second the package is geared for learning about populations from samples of units that are independent of each other and are independently  randomly sampled  from populations. This the basic set up does not address problems of sampling, clustering,  hierarchical structures, or purposive sampling, for example. In section X we provide pointers to how all of these can be addressed.     
 
@@ -590,56 +590,28 @@ Note the parameters estimated by `stan` include the gamma parameters plus transf
 
 The primary output from `update_model()` is a posterior distribution over model parameters, stored as a dataframe in `model$posterior_distribution`. However another of other objects are also optionally stored:
 
-
-## Querying models 
-
 Models can be queried using the `query_distribution` and `query_model` functions. The difference between these functions is that `query_distribution` examines a single query and returns a full distribution of draws from the distribution of the estimand (prior or posterior); `query_model` takes a collection of queries and returns a dataframe with summary statistics on the queries. 
 
-The simplest queries ask about causal estimands given particular parameter values and case level data. Here is one surprising result of this form:
 
-### Case level queries
+## Queries
 
-The `query_model` function takes causal queries and conditions (`given`) and specifies the parameters to be used. The result is a dataframe which can be displayed as a table.
+### Query implementation
 
-For a case level query we can make the query *given* a particular parameter vector, as below: 
+### Queries by hand
 
-```{r}
-make_model("X-> M -> Y <- X") %>% 
-  
-  set_restrictions(c(decreasing("X", "M"), 
-                     decreasing("M", "Y"), 
-                     decreasing("X", "Y"))) %>%
-  
-  query_model(queries = "Y[X=1]> Y[X=0]",
-              given = c("X==1 & Y==1", 
-                        "X==1 & Y==1 & M==1", 
-                        "X==1 & Y==1 & M==0"),
-              using = c("parameters")) %>%
-  
-  kable(
-    caption = "In a monotonic model with flat priors, knowledge
-    that $M=1$ *reduces* confidence that $X=1$ caused $Y=1$")
-
-```
-
-This example shows how inferences change given additional data on $M$ in a monotonic $X \rightarrow M \rightarrow  Y \leftarrow  X$ model. Surprisingly observing $M=1$ *reduces* beliefs that $X$ caused $Y$, the reason being that perhaps $M$ and not $X$ was responsible for $Y=1$.
-
-### Posterior queries
-
-Queries can also draw directly from the posterior distribution provided by `stan`. In this next example we illustrate the joint distribution of the posterior over causal effects, drawing directly from the posterior dataframe generated by `update_model`:
+Queries can  draw directly from the prior distribution of the posterior distribution provided by `stan`. 
 
 ```{r, warning = FALSE, eval = FALSE}
 library(DeclareDesign)
 
-data  <- fabricate(N = 100, X = complete_ra(N), Y = X)
+data  <- fabricate(N = 10, X = complete_ra(N), Y = X)
 
-model <- make_model("X -> Y; X <-> Y") %>%
+model <- make_model("X -> Y") %>%
   update_model(data, iter  = 4000)
 
 model$posterior_distribution %>% 
-  data.frame() %>%
-  ggplot(aes(X.1 - X.0, Y.01_X.1 - Y.10_X.0)) + 
-  geom_point()
+  ggplot(aes(Y.01 - Y.10)) + 
+           geom_histogram()
 
 ```
 
@@ -649,26 +621,25 @@ model$posterior_distribution %>%
 if(run){
 data  <- fabricate(N = 100, X = complete_ra(N), Y = X)
 
-model <- make_model("X->Y; X<->Y") %>% 
-  update_model(data, iter  = 4000)
 
-write_rds(model, "saved/app_2_illus.rds")
+make_model("X -> Y") %>%
+  update_model(data, iter  = 4000) |>
+
+  write_rds("saved/app_2_illus.rds")
 }
 
 model <- read_rds("saved/app_2_illus.rds")
 
 model$posterior_distribution %>% 
-  data.frame() %>%
-  ggplot(aes(X.1 - X.0, Y.01_X.1 - Y.01_X.0)) + 
-  geom_point()
+  ggplot(aes(Y.01 - Y.10)) + 
+           geom_histogram()
 
 ```
 
-We see that beliefs about the size of the overall effect are related to beliefs that $X$ is assigned differently when there is a positive effect.
 
 ### Query distribution
 
-`query_distribution` works similarly except that the query is over an estimand. For instance:
+`query_distribution` works similarly except that distributions over queries are returned:
 
 ```{r, fig.cap = "Prior on 'Probability $Y$ is increasing in $X$'"}
 make_model("X -> Y") %>% 
@@ -682,54 +653,70 @@ make_model("X -> Y") %>%
 
 ```
 
-### Token and general causation
+### Case level queries
 
-Note that in all these cases we use the same technology to make case level and population inferences. Indeed the case level query is just a conditional population query. As an illustration of this imagine we have a model of the form $X \rightarrow M \rightarrow Y$ and are interested in whether $X$ caused $Y$ in a case in which $M=1$. We answer the question by asking "what would be the probability that $X$ caused $Y$ in a case in which $X=M=Y=1$?" (line 3 below). This speculative answer is the same answer as we would get were we to ask the same question having updated our model with knowledge that in a particular case, indeed, $X=M=Y=1$. See below: 
 
+ Case level queries provide the inference for a 'new case', which is a scalar
+ The case level query *updates* on the given information observed in the new case. The resulting inference is different to the inference that would be made from the posterior *given* the features of the case.
+ 
+ To illustrate, consider a   model for which we are quite sure that $X$ causes $Y$ but we do not
+  know whether it works through two positive effects or two negative effects.
+  Thus we do not know if M=0 would suggest an effect or no effect. If asked what we would infer for a case that had $M=0$ we would not know whether $M=0$ information is consistent with a positive effect or not. However if provided with a randomly case and learn that it has $M=0$, then we update about the causal model and infer that there is an effect in this case (but that there wouldn't be were $M=1$).
 
 ```{r, eval = FALSE}
 
-model <- make_model("X->M->Y") %>% 
-  set_restrictions(c(decreasing("X", "M"), decreasing("M", "Y"))) %>%
-  update_model(data = data.frame(X = 1, M = 1, Y = 1), iter = 8000)
+# DO ALL THIS IN ONE TABLE
+
+set.seed(1)
+ model <-
+   make_model("X -> M -> Y") |>
+   update_model(data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)), iter = 10000)
+
+ Q <- "Y[X=1] > Y[X=0]"
+ G <- "X==1 & Y==1 & M==1"
+ QG <- "(Y[X=1] > Y[X=0]) & (X==1 & Y==1 & M==1)"
+
+ # In this case these are very different:
+ query_distribution(model, Q, given = G, using = "posteriors")[[1]] |> mean()
+ query_distribution(model, Q, given = G, using = "posteriors",
+   case_level = TRUE)
+
+ # These are equivalent:
+ # 1. Case level query via function
+ query_distribution(model, Q, given = G,
+    using = "posteriors", case_level = TRUE)
+
+ # 2. Case level query by hand using Bayes
+ distribution <- query_distribution(
+    model, list(QG = QG, G = G), using = "posteriors")
+
+ mean(distribution$QG)/mean(distribution$G)
+```
+
+
+
+### Batch queries
+
+The `query_model` function takes causal queries and conditions (`given`) and specifies the parameters to be used. The result is a dataframe which can be displayed as a table.
+
+```{r}
+models <- list(
+ `1` = make_model("X -> Y"),
+ `2` = make_model("X -> Y") |> set_restrictions("Y[X=1] < Y[X=0]")
+ )
 
 query_model(
-            model, 
-            query = "Y[X=1]> Y[X=0]",
-            given = c("X==1 & Y==1", "X==1 & Y==1 & M==1"),
-            using = c("priors", "posteriors"),
-            expand_grid = TRUE)
-
-
-```
-
-
-```{r, echo = FALSE}
-
-if(run){
-model <- make_model("X->M->Y") %>% 
-  set_restrictions(c(decreasing("X", "M"), decreasing("M", "Y"))) %>%
-  update_model(data = data.frame(X = 1, M = 1, Y = 1), iter = 12000, chains = 8)
-
-query <- query_model(
-            model, 
-            query = "Y[X=1]> Y[X=0]",
-            given = c("X==1 & Y==1", "X==1 & Y==1 & M==1"),
-            using = c("priors", "posteriors"),
-            expand_grid = TRUE)
-
-write_rds(query, "saved/app_ch2_demonsx.rds")
-}
-
-query <- read_rds("saved/app_ch2_demonsx.rds")
-
-kable(query, caption = "Posteriors equal priors for a query that conditions on data used to form the posterior ", digits = 2)
+  models,
+  query = list(ATE = "Y[X=1] - Y[X=0]", POS = "Y[X=1] > Y[X=0]"),
+  given = c(TRUE,  "Y==1 & X==1"),
+  case_level = c(FALSE, TRUE),
+  using = c("parameters", "priors"),
+  expand_grid = TRUE) |>
+  select(-starts_with("cred")) |>
+  
+  kable(digits = 2)
 
 ```
-
-We see the conditional inference is the same using the prior and the posterior distributions. 
-
-
 
 
 ## Computational details {.unnumbered}
