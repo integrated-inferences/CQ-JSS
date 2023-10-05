@@ -187,9 +187,9 @@ In addition, as we did in the @chickering1996clinician example, it is also possi
 
 Once defined, a model can be graphed (we use the `dagitty` package for this):
 
-```{r, fig.cap="A plotted model. Curved double headed arrows indicate unobserved confounding"}
+```{r, fig.cap="A plotted model."}
 
-model <- make_model("X -> Y <- W -> X; X <-> Y") |>
+make_model("X -> M -> Y <- X; Z -> Y") |>
   plot()
 ```
 
@@ -306,10 +306,19 @@ Note:
 * Restrictions implicitly assume fixed values for *all* parents of a node. For instance: `make_model("A -> B <- C") %>% set_restrictions("(B[C=1]==1)")` is interpreted as shorthand for the restriction  `"B[C = 1, A = 0]==1 | B[C = 1, A = 1]==1"`.
 * To place restrictions on multiple nodes at the same time, provide these as a vector of restrictions. This is not permitted: `set_restrictions("Y[X=1]==1 & X==1")`, since it requests correlated restrictions. This however is allowed: `set_restrictions(c("Y[X=1]==1", "X==1"))`.  
 * Use the `keep` argument to indicate whether nodal types should be dropped (default) or retained.
-* Restrictions can be set using nodal type labels. `make_model("S -> C -> Y <- R <- X; X -> C -> R") %>%
-set_restrictions(labels = list(C = "C1000", R = "R0001", Y = "Y0001"), keep = TRUE)`
-* Wild cards can be used in nodal type labels: `make_model("X->Y") %>%
-set_restrictions(labels = list(Y = "Y?0"))`
+* Restrictions can be set using nodal type labels. 
+
+```{r, eval = FALSE}
+make_model("S -> C -> Y <- R <- X; X -> C -> R") %>%
+  set_restrictions(labels = list(C = "1000", R = "0001", Y = "0001"), 
+                   keep = TRUE)
+```
+* Wild cards can be used in nodal type labels: 
+
+```{r, eval = FALSE}
+make_model("X->Y") |>
+  set_restrictions(labels = list(Y = "Y?0"))
+```
 
 ### Allowing confounding {#confounding}
 
@@ -515,6 +524,9 @@ CausalQueries:::prep_stan_data(model, compact_data)
 
 ### stan code
 
+MOVE TO APPENDIX? 
+ADD DISCUSSION OF PARMAP
+
 Below we show the  `stan` code. This starts off with a block saying what input data is to be expected. Then there is a characterization of parameters and the transformed parameters. Then the likelihoods and priors are provided. `stan` takes it from there and generates a posterior distribution.
 
 ```{r, echo = FALSE, comment = ""}
@@ -529,6 +541,7 @@ cat(rstan::get_stancode(read_rds("saved/fit.rds")))
 
 ```
 
+THIS DISCUSSION IS OUT OF ATE:
 
 The `stan` model works as follows:
 
@@ -646,7 +659,7 @@ model <- read_rds("saved/app_2_illus.rds")
 
 model$posterior_distribution %>% 
   data.frame() %>%
-  ggplot(aes(X.1 - X.0, Y.01_X.1 - Y.10_X.0)) + 
+  ggplot(aes(X.1 - X.0, Y.01_X.1 - Y.01_X.0)) + 
   geom_point()
 
 ```

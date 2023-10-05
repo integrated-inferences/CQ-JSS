@@ -333,8 +333,8 @@ cred.high.97.5\%
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-Y{[}X=1{]} - Y{[}X=0{]} & - & 0.56 & 0.10 & 0.37 & 0.73 \\
-Y{[}X=1{]} - Y{[}X=0{]} & X==0 \& Y==0 & 0.64 & 0.15 & 0.38 & 0.90 \\
+Y{[}X=1{]} - Y{[}X=0{]} & - & 0.55 & 0.10 & 0.37 & 0.73 \\
+Y{[}X=1{]} - Y{[}X=0{]} & X==0 \& Y==0 & 0.64 & 0.15 & 0.37 & 0.89 \\
 Y{[}X=1{]} - Y{[}X=0{]} & X{[}Z=1{]} \textgreater{} X{[}Z=0{]} & 0.70 &
 0.05 & 0.59 & 0.80 \\
 \caption{Rows 1 and 2 replicate results in Chickering and Pearl (1997);
@@ -601,9 +601,20 @@ Once defined, a model can be graphed (we use the \texttt{dagitty}
 package for this):
 
 \begin{verbatim}
-model <- make_model("X -> Y <- W -> X; X <-> Y") |>
+make_model("X -> Y <- W -> X") |>
   plot()
 \end{verbatim}
+
+\begin{figure}[H]
+
+{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-7-1.pdf}
+
+}
+
+\caption{A plotted model. Curved double headed arrows indicate
+unobserved confounding}
+
+\end{figure}
 
 This is useful to check that you have written the structure down
 correctly.
@@ -1436,9 +1447,9 @@ X & Y \\
 \endlastfoot
 0 & 0 \\
 0 & 0 \\
-0 & 0 \\
-0 & 0 \\
-1 & 0 \\
+0 & 1 \\
+0 & 1 \\
+1 & 1 \\
 \end{longtable}
 
 \hypertarget{updating-models}{%
@@ -1524,6 +1535,8 @@ matrices described above.
 
 \hypertarget{stan-code}{%
 \subsection{stan code}\label{stan-code}}
+
+MOVE TO APPENDIX? ADD DISCUSSION OF PARMAP
 
 Below we show the \texttt{stan} code. This starts off with a block
 saying what input data is to be expected. Then there is a
@@ -1629,6 +1642,8 @@ for (i in 1:n_types) {
  }
 }
 \end{verbatim}
+
+THIS DISCUSSION IS OUT OF ATE:
 
 The \texttt{stan} model works as follows:
 
@@ -2039,7 +2054,7 @@ Network (CRAN) at {[}https://CRAN.R-project.org/{]}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, left=2mm, opacityback=0, rightrule=.15mm, toprule=.15mm, breakable, colback=white, arc=.35mm, bottomrule=.15mm]
+\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, breakable, arc=.35mm, left=2mm, rightrule=.15mm, opacityback=0, toprule=.15mm, leftrule=.75mm, colback=white]
 
 The approach to generating a generic stan function that can take data
 from arbitrary models was developed in key contributions by
@@ -2069,7 +2084,7 @@ improved every part of it.
 \section*{More technical details}\label{sec-techdetails}}
 \addcontentsline{toc}{section}{More technical details}
 
-\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, left=2mm, opacityback=0, rightrule=.15mm, toprule=.15mm, breakable, colback=white, arc=.35mm, bottomrule=.15mm]
+\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, breakable, arc=.35mm, left=2mm, rightrule=.15mm, opacityback=0, toprule=.15mm, leftrule=.75mm, colback=white]
 
 Appendices can be included after the bibliography (with a page break).
 Each section within the appendix should have a proper section title
@@ -2101,7 +2116,7 @@ which includes the following topics:
 \section*{Using BibTeX}\label{sec-bibtex}}
 \addcontentsline{toc}{section}{Using BibTeX}
 
-\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, left=2mm, opacityback=0, rightrule=.15mm, toprule=.15mm, breakable, colback=white, arc=.35mm, bottomrule=.15mm]
+\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, breakable, arc=.35mm, left=2mm, rightrule=.15mm, opacityback=0, toprule=.15mm, leftrule=.75mm, colback=white]
 
 References need to be provided in a \textsc{Bib}{\TeX} file
 (\texttt{.bib}). All references should be made with \texttt{@cite}
