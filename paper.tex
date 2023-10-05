@@ -213,8 +213,134 @@ URL: \url{https://macartan.github.io/}\\
 \hypertarget{sec-intro}{%
 \section{Introduction: Causal models}\label{sec-intro}}
 
-The core conceptual framework is described Pearl's \emph{Causality}
-\citep{pearl2009causality}.
+\texttt{CausalQueries} is an \proglang{R} package that lets users make,
+update, and query causal models. The base specification asks users do
+provide a statement that reports a set of binary variables and the
+relations of causal ancestry between them: which variables are direct
+causes of other variables, given the other variables in the model. Once
+provided to \texttt{make\_model()}, \texttt{CausalQueries} generates a
+set of parameters that fully describe all possible types of causal
+relations between variables (``causal types''), given the causal
+structure. Given a prior over distributions over causal types and data
+over some or all nodes, \texttt{update\_model()} deploys a \texttt{stan}
+model in order to generate a posterior distribution over parameters. The
+function \texttt{query\_model()} can then be used to ask any causal
+query of the model, using either the prior distribution, the posterior
+distribution, or a user specified candidate vector of parameters.
+
+The core conceptual framework is described in Pearl's \emph{Causality}
+\citep{pearl2009causality} but can be summarized as follows (using the
+notation used in \citet{ii2023}).
+
+\textbf{Definition} A ``\textbf{causal model}'' is:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  an ordered collection of ``endogenous nodes''
+  \(Y = \{Y_1, Y_2, \dots, Y_n\}\)
+\item
+  an ordered collection of ``exogenous nodes''
+  \(\Theta = \{\theta^{Y_1}, \theta^{Y_1}, \dots, \theta^{Y_n}\}\)
+\item
+  a collection of functions \(F = \{f_{Y_1}, f_{Y_2}, \dots, f_{Y_n}\}\)
+  specifying, for each node \(j\), how outcome \(y_j\) depends on
+  \(\theta_j\) and realizations of endogenous nodes prior to \(j\).
+\item
+  A probability distribution over \(\Theta\), \(\lambda\)
+\end{enumerate}
+
+In the usual case we take the endogenous nodes to be binary.\footnote{\texttt{CausalQueries}
+  can be used also to analyse non binary data though with a cost of
+  greatly increased complexity. See section 9.4.1 of \citet{ii2023} for
+  an approach that codes non binary data in a profile of outcomes on
+  multiple binary nodes.} When we specify a causal structure we specify
+which endogenous nodes are (possibly) direct causes of a node, \(Y_j\),
+given other nodes in the model. These nodes are called the parents of
+\(Y_j\), \(PA_j\) (we use upper case \(PA_j\) to indicate the collection
+of nodes and lower case \(pa_j\) to indicate a particular set of values
+that these nodes might take on). In this case, with discrete valued
+nodes, it is possible to identify all possible ways that a node might
+relate to its parents. We call these ``nodal types,'' and they
+correspond to principal strata familiar, for instance, in the study of
+instrumental variables \citep{frangakis2002principal}. If node \(Y_i\)
+can take on \(k_i\) possible values then the set of possible values that
+can be taken on by parents of \(j\) is \(m :=\prod_{i\in PA_j}k_i\),
+then there are \(k_j^{m}\) nodal types --- distinct ways that \(k\)
+might respond to its parents---with each types corresponding to a
+distinct way that \(j\) takes for a given constellation of values of its
+parents. In the case of binary nodes this becomes
+\(2^{\left(2^{|PA_j|}\right)}\). Thus for an endogenous node with no
+parents there are 2 nodal types, for a binary node with one binary
+parent there are four types, for a binary node with 2 parents there are
+16, and so on.
+
+The set of all possible causal reactions of a given unit to all possible
+values of parents is then given by its collection of nodal types at each
+node. We call this collection a unit's ``causal type'', \(\theta\).
+
+The approach used by \texttt{CausalQueries} is to let the domain of
+\(\theta^{Y_j}\) be coextensive with the number of nodal types for
+\(Y_j\). Function \(f^j\) then determines the value of \(y\) by simply
+reporting the value of \(Y_j\) implied by the nodal type and the values
+of the parents of \(Y_j\). Thus if \(\theta^j_{pa_j}\) is the value for
+\(j\) when parents have values \(pa_j\), then we have simply that
+\(f_{y_j}(\theta^{j}, pa_j) = \theta^j_{pa_j}\). The practical
+implication is that, given the causal structure, learning about the
+model reduces to learning about the distribution \(\lambda\) over the
+nodal types.
+
+In cases in which there is no unobserved confounding, we take the
+probability distributions over the nodal types for different nodes to be
+independent: \(\theta^i \perp\!\!\! \perp \theta^j, i\neq j\). In this
+case we use a categorical distribution to specify the
+\({\lambda^j}' := \Pr(\theta^j = {\theta^j}')\). From independence then
+we have that the probability of a given causal type \(\theta'\) is
+simply \(\prod_{i=1}^n {\lambda^i}'\).
+
+In cases in which there is confounding, the essential logic is the same
+except that we need to specify enough parameters to capture the joint
+distribution over nodal types for different nodes.
+
+For concreteness: table illustrating all these values fo
+\(X\rightarrow Y\) model
+
+Representing beliefs over causal models thus requires specifying a
+probability distribution over \(\lambda\). This might be a degenerate
+distribution if users want to specify a particular model.
+\texttt{CausalQueries} allows users to specify parameters, \(\alpha\) of
+a Dirichlet distribution over \(\lambda\). If all entries of \(\alpha\)
+are 0.5 this corresponds to Jeffrey's priors. The default behavior is
+for \texttt{CausalQueries} to assume a uniform distribution -- that is,
+that all nodal types are equally likely -- which corresponds to
+\(\alpha\) being a vector of 1s.
+
+Updating is then done with respect to beliefs over \(\lambda\). In the
+Bayesian approach we have simply:
+
+\[p(\lambda'|D) = \frac{p(D|\lambda')p(\lambda)}{\int_{\lambda^{''}} p(D|\lambda'')p(\lambda'')}\]
+\(p(D|\lambda')\) is calculated under the assumption that units are
+exchangeable and independently drawn, and of course, under the model. In
+practice this means that the probability that two units have causal
+types \(\theta_i\) and \(\theta_j\) is simply \(\lambda'_i\lambda'_j\).
+Since a causal type fully determines an outcome vector
+\(d = \{y_1, y_2,\dots,y_n\}\), the probability of a given outcome
+(``event''), \(w_d\), is given simply by the probability that the causal
+type is among those that yield outcome \(d\). Thus from \(\lambda'\) we
+can calculate a vector of event probabilities, \(w(\lambda)\), for each
+vector of outcomes, and under indpendence we have:
+
+\[D \sim \text{Mulitimonial}(w(\lambda), N)\]
+
+Thus for instance in the case of a \(X \rightarrow Y\) model, and
+letting \(w_{xy}\) denote the probability of a data type \(X=x, Y=y\),
+the event probabilities are:
+
+\[w(\lambda) = \left\{\begin{array}{ccc} w_{00} & = & \lambda^X_0(\lambda^Y_{00} + \lambda^Y_{01})\\ 
+w_{01} & = & \lambda^X_0(\lambda^Y_{11} + \lambda^Y_{10})\\
+w_{10} & = & \lambda^X_1(\lambda^Y_{00} + \lambda^Y_{10})\\
+w_{11} & = & \lambda^X_1(\lambda^Y_{11} + \lambda^Y_{01})\end{array} \right.\]
 
 \begin{itemize}
 \tightlist
@@ -230,6 +356,12 @@ The core conceptual framework is described Pearl's \emph{Causality}
   \textsc{Bib}{\TeX}.)
 \end{itemize}
 
+\hypertarget{connections-to-existing-packages}{%
+\subsection{Connections to existing
+packages}\label{connections-to-existing-packages}}
+
+-compare with bareinboim package - knox bounds package
+
 Learning about causal models\ldots{}
 
 In \proglang{R}, \ldots{}
@@ -241,9 +373,9 @@ queries are identified. Thus is principle if researchers are interest in
 learning about a quantitiy like the local average treatment effect and
 their model in fact satisfies the conditions in
 \citet{angrist1996identification}, then updating will recover valid
-estimates even if reearchers are unaware that hte local average
+estimates even if researchers are unaware that the local average
 treatment effect is identified and are ignorant of the estimation
-proedure proposed by \citet{angrist1996identification}.
+procedure proposed by \citet{angrist1996identification}.
 
 There are two broad limitation on the sets of models handled natively by
 \texttt{CausalQueries}. First \texttt{CausalQUeries} is designed for
@@ -270,12 +402,7 @@ purposive sampling, for example. In section X we provide pointers to how
 all of these can be addressed.
 
 \hypertarget{sec-models}{%
-\section{Models and software}\label{sec-models}}
-
-Nodes and nodal types
-
-\hypertarget{making-models}{%
-\section{Making models}\label{making-models}}
+\section{Making models}\label{sec-models}}
 
 A model is defined in one step using a \texttt{dagitty} syntax in which
 the structure of the model is provided as a statement.
@@ -956,7 +1083,7 @@ make_model("X->Y") %>% set_priors(distribution = "jeffreys") %>% get_priors
 \end{verbatim}
 
 \begin{verbatim}
-No specific parameters to alter values for specified. Altering all parameters.
+no specific parameters to alter values for specified. Altering all parameters.
 \end{verbatim}
 
 \begin{verbatim}
@@ -1024,19 +1151,19 @@ priors is \(1/3\). This can be seen by querying the model:
 make_model("X -> Y") %>%
   set_restrictions(decreasing("X", "Y")) %>%
   query_model("Y[X=1] - Y[X=0]", n_draws = 10000) %>%
-  kable
+  kable(digits = 2)
 \end{verbatim}
 
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0842}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1684}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0632}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1158}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1158}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1053}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0316}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1474}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1684}}@{}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0889}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1778}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0667}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1222}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1222}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0556}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0333}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1556}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1778}}@{}}
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 model
@@ -1061,8 +1188,8 @@ cred.high.97.5\%
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-model\_1 & Y{[}X=1{]} - Y{[}X=0{]} & - & parameters & FALSE & 0.3333333
-& NA & 0.3333333 & 0.3333333 \\
+model\_1 & Y{[}X=1{]} - Y{[}X=0{]} & - & parameters & FALSE & 0.33 & NA
+& 0.33 & 0.33 \\
 \end{longtable}
 
 More subtly the \emph{structure} of a model, coupled with flat priors,
@@ -1241,8 +1368,8 @@ X & Y \\
 \bottomrule\noalign{}
 \endlastfoot
 0 & 0 \\
-0 & 1 \\
-1 & 0 \\
+0 & 0 \\
+0 & 0 \\
 1 & 1 \\
 1 & 1 \\
 \end{longtable}
@@ -1822,9 +1949,169 @@ posterior distributions.
 \hypertarget{illustrations}{%
 \section{Illustrations}\label{illustrations}}
 
-\hypertarget{identification-with-causalqueries}{%
-\subsection{Identification with
-CausalQueries}\label{identification-with-causalqueries}}
+We illustrate by implementing a replication from \citet{ii2023} of the
+analysis in \citet{chickering1996clinician} using
+\texttt{CausalQueries}. \citet{chickering1996clinician} seek to draw
+inference in the presence of imperfect compliance. Their data on \(Z\),
+\(X\), and \(Y\) is complete for all units and looks, in compact form,
+as follows:
+
+\begin{verbatim}
+data <- data.frame(
+  event = c("Z0X0Y0", "Z1X0Y0", "Z0X1Y0", "Z1X1Y0",
+            "Z0X0Y1", "Z1X0Y1", "Z0X1Y1",  "Z1X1Y1"),
+  strategy = "ZXY",
+  count = c(158, 52, 0, 23, 14, 12, 0, 78)
+)
+\end{verbatim}
+
+Using \texttt{CausalQueries} we can define the model, update it with
+data, and query it.
+
+We make three queries: first for the average causal effect of \(X\) on
+\(Y\). Second for the effect for units for which \(X=0\) and \(Y=0\).
+Last we also assess the average treatment effect \emph{for}
+``compliers'': units for which \(X\) responds positively to \(Y\).
+
+\begin{verbatim}
+results <- 
+  
+  make_model("Z -> X -> Y; X <-> Y") |>
+  
+  update_model(data, data_type = "compact") |>
+  
+  query_model(query = "Y[X=1] - Y[X=0]",
+              given = c("All",  "X==0 & Y==0", "X[Z=1] > X[Z=0]"),
+              using = "posteriors") 
+\end{verbatim}
+
+\begin{verbatim}
+
+SAMPLING FOR MODEL 'simplexes' NOW (CHAIN 1).
+Chain 1: 
+Chain 1: Gradient evaluation took 6.6e-05 seconds
+Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.66 seconds.
+Chain 1: Adjust your expectations accordingly!
+Chain 1: 
+Chain 1: 
+Chain 1: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 1: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 1: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 1: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 1: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 1: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 1: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 1: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 1: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 1: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 1: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 1: 
+Chain 1:  Elapsed Time: 0.992 seconds (Warm-up)
+Chain 1:                0.898 seconds (Sampling)
+Chain 1:                1.89 seconds (Total)
+Chain 1: 
+
+SAMPLING FOR MODEL 'simplexes' NOW (CHAIN 2).
+Chain 2: 
+Chain 2: Gradient evaluation took 3.6e-05 seconds
+Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.36 seconds.
+Chain 2: Adjust your expectations accordingly!
+Chain 2: 
+Chain 2: 
+Chain 2: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 2: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 2: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 2: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 2: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 2: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 2: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 2: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 2: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 2: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 2: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 2: 
+Chain 2:  Elapsed Time: 0.991 seconds (Warm-up)
+Chain 2:                0.79 seconds (Sampling)
+Chain 2:                1.781 seconds (Total)
+Chain 2: 
+
+SAMPLING FOR MODEL 'simplexes' NOW (CHAIN 3).
+Chain 3: 
+Chain 3: Gradient evaluation took 3.6e-05 seconds
+Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 0.36 seconds.
+Chain 3: Adjust your expectations accordingly!
+Chain 3: 
+Chain 3: 
+Chain 3: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 3: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 3: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 3: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 3: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 3: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 3: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 3: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 3: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 3: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 3: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 3: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 3: 
+Chain 3:  Elapsed Time: 0.868 seconds (Warm-up)
+Chain 3:                0.802 seconds (Sampling)
+Chain 3:                1.67 seconds (Total)
+Chain 3: 
+
+SAMPLING FOR MODEL 'simplexes' NOW (CHAIN 4).
+Chain 4: 
+Chain 4: Gradient evaluation took 4.7e-05 seconds
+Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.47 seconds.
+Chain 4: Adjust your expectations accordingly!
+Chain 4: 
+Chain 4: 
+Chain 4: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 4: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 4: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 4: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 4: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 4: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 4: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 4: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 4: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 4: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 4: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 4: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 4: 
+Chain 4:  Elapsed Time: 0.927 seconds (Warm-up)
+Chain 4:                0.881 seconds (Sampling)
+Chain 4:                1.808 seconds (Total)
+Chain 4: 
+\end{verbatim}
+
+\begin{verbatim}
+results |>
+  select(query, given, mean, sd) |>
+  kable(digits = 2, caption = "Rows 1 and 2 replicate results in Chickering and Pearl (1997); row 3 returns inferences for complier average effects.")
+\end{verbatim}
+
+\begin{longtable}[]{@{}llrr@{}}
+\toprule\noalign{}
+query & given & mean & sd \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+query & given & mean & sd \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Y{[}X=1{]} - Y{[}X=0{]} & - & 0.56 & 0.10 \\
+Y{[}X=1{]} - Y{[}X=0{]} & X==0 \& Y==0 & 0.64 & 0.15 \\
+Y{[}X=1{]} - Y{[}X=0{]} & X{[}Z=1{]} \textgreater{} X{[}Z=0{]} & 0.70 &
+0.05 \\
+\caption{Rows 1 and 2 replicate results in Chickering and Pearl (1997);
+row 3 returns inferences for complier average effects.}\tabularnewline
+\end{longtable}
 
 \hypertarget{computational-details}{%
 \section*{Computational details}\label{computational-details}}
@@ -1852,7 +2139,7 @@ Network (CRAN) at {[}https://CRAN.R-project.org/{]}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, rightrule=.15mm, left=2mm, colback=white, leftrule=.75mm, arc=.35mm, toprule=.15mm, opacityback=0, breakable]
+\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, rightrule=.15mm, colback=white, leftrule=.75mm, arc=.35mm, bottomrule=.15mm, left=2mm, breakable, opacityback=0]
 
 The approach to generating a generic stan function that can take data
 from arbitrary models was developed in key contributions by
@@ -1882,7 +2169,7 @@ improved every part of it.
 \section*{More technical details}\label{sec-techdetails}}
 \addcontentsline{toc}{section}{More technical details}
 
-\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, rightrule=.15mm, left=2mm, colback=white, leftrule=.75mm, arc=.35mm, toprule=.15mm, opacityback=0, breakable]
+\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, rightrule=.15mm, colback=white, leftrule=.75mm, arc=.35mm, bottomrule=.15mm, left=2mm, breakable, opacityback=0]
 
 Appendices can be included after the bibliography (with a page break).
 Each section within the appendix should have a proper section title
@@ -1914,7 +2201,7 @@ which includes the following topics:
 \section*{Using BibTeX}\label{sec-bibtex}}
 \addcontentsline{toc}{section}{Using BibTeX}
 
-\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, rightrule=.15mm, left=2mm, colback=white, leftrule=.75mm, arc=.35mm, toprule=.15mm, opacityback=0, breakable]
+\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, rightrule=.15mm, colback=white, leftrule=.75mm, arc=.35mm, bottomrule=.15mm, left=2mm, breakable, opacityback=0]
 
 References need to be provided in a \textsc{Bib}{\TeX} file
 (\texttt{.bib}). All references should be made with \texttt{@cite}
