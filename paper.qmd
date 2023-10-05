@@ -46,7 +46,50 @@ run <- FALSE
 
 ## Introduction: Causal models {#sec-intro}
 
+### What CausalQueries does
+
 `CausalQueries` is an [R]{.proglang} package that lets users make, update, and query causal models. The base specification asks users do provide a statement that reports a set of binary variables and the relations of causal ancestry between them: which variables are direct causes of other variables, given the other variables in the model. Once provided to `make_model()`, `CausalQueries` generates a set of parameters that fully describe all possible types of causal relations between variables ("causal types"), given the causal structure. Given a prior over distributions over causal types and data over some or all nodes, `update_model()` deploys a `stan` model in order to generate a posterior distribution over parameters. The function `query_model()` can then be used to ask any causal query of the model, using either the prior distribution, the posterior distribution, or a user specified candidate vector of parameters.   
+
+We illustrate these three core functions by showing how to use `CuasalQueries` to replicate the analysis in @chickering1996clinician (see also @ii2023).   
+
+@chickering1996clinician seek to draw inference on causal effects in the presence of imperfect compliance. We have access to an instrument $Z$ (a randomly assigned prescription for cholesterol medication), which is a cause of $X$ (treatment uptake) but otherwise unrelated to $Y$ (cholesterol). We imagine we are interested in three specific queries. The first is the average causal effect of $X$ on $Y$. The second is the average effect for units for which $X=0$ and $Y=0$. The last is the average treatment effect *for* "compliers": units for which $X$ responds positively to $Y$. Thus two of these are conditional queries, with one conditional on a counterfactual quantity.
+
+Our data on $Z$, $X$, and $Y$ is complete for all units and looks, in compact form, as follows:
+
+```{r}
+data("chickering_pearl")
+
+chickering_pearl |> kable()
+```
+
+Using `CausalQueries` we can define the model, update it with data, and query it, thus. 
+
+```{r}  
+results <- 
+  
+  make_model("Z -> X -> Y; X <-> Y") |>
+  
+  update_model(chickering_pearl, refresh = 0) |>
+  
+  query_model(query = "Y[X=1] - Y[X=0]",
+              given = c("All",  "X==0 & Y==0", "X[Z=1] > X[Z=0]"),
+              using = "posteriors") 
+```
+
+The output is a dataframe with estimates, posterior standard deviations, and credibility intervals. 
+
+```{r, echo = FALSE}
+results |>
+  select(query, given, mean, sd, starts_with("cred")) |>
+  kable(digits = 2, 
+        caption = "Rows 1 and 2 replicate results in Chickering and Pearl (1997); row 3 returns inferences for complier average effects.")
+```
+
+As we describe below the same basic procedure of making, updating, and querying models, can be used (up to computational constraints) for arbitrary causal models, for different types of data structures, and for all causal queries that can be posed of the causal model.
+
+### Software requirements
+
+## Statistical model
 
 The core conceptual framework is described in Pearl's *Causality* [@pearl2009causality] but can be summarized as follows (using the notation used in @ii2023). 
 
@@ -698,42 +741,6 @@ kable(query, caption = "Posteriors equal priors for a query that conditions on d
 We see the conditional inference is the same using the prior and the posterior distributions. 
 
 
-## Illustrations
-
-We illustrate by implementing a replication from @ii2023 of the analysis in @chickering1996clinician using `CausalQueries`. @chickering1996clinician seek to draw inference in the presence of imperfect compliance. Their data on $Z$, $X$, and $Y$ is complete for all units and looks, in compact form, as follows:
-
-
-```{r}
-data <- data.frame(
-  event = c("Z0X0Y0", "Z1X0Y0", "Z0X1Y0", "Z1X1Y0",
-            "Z0X0Y1", "Z1X0Y1", "Z0X1Y1",  "Z1X1Y1"),
-  strategy = "ZXY",
-  count = c(158, 52, 0, 23, 14, 12, 0, 78)
-)
-```
-
-Using `CausalQueries` we can define the model, update it with data, and query it. 
-
-We make three queries: first for the average causal effect of $X$ on $Y$. Second for the effect for units for which $X=0$ and $Y=0$. Last we also assess the average treatment effect *for* "compliers": units for which $X$ responds positively to $Y$.
-
-
-```{r}  
-results <- 
-  
-  make_model("Z -> X -> Y; X <-> Y") |>
-  
-  update_model(data, data_type = "compact") |>
-  
-  query_model(query = "Y[X=1] - Y[X=0]",
-              given = c("All",  "X==0 & Y==0", "X[Z=1] > X[Z=0]"),
-              using = "posteriors") 
-
-
-results |>
-  select(query, given, mean, sd) |>
-  kable(digits = 2, caption = "Rows 1 and 2 replicate results in Chickering and Pearl (1997); row 3 returns inferences for complier average effects.")
-
-```
 
 
 ## Computational details {.unnumbered}

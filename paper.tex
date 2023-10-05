@@ -213,6 +213,9 @@ URL: \url{https://macartan.github.io/}\\
 \hypertarget{sec-intro}{%
 \section{Introduction: Causal models}\label{sec-intro}}
 
+\hypertarget{what-causalqueries-does}{%
+\subsection{What CausalQueries does}\label{what-causalqueries-does}}
+
 \texttt{CausalQueries} is an \proglang{R} package that lets users make,
 update, and query causal models. The base specification asks users do
 provide a statement that reports a set of binary variables and the
@@ -227,6 +230,122 @@ model in order to generate a posterior distribution over parameters. The
 function \texttt{query\_model()} can then be used to ask any causal
 query of the model, using either the prior distribution, the posterior
 distribution, or a user specified candidate vector of parameters.
+
+We illustrate these three core functions by showing how to use
+\texttt{CuasalQueries} to replicate the analysis in
+\citet{chickering1996clinician} (see also \citet{ii2023}).
+
+\citet{chickering1996clinician} seek to draw inference on causal effects
+in the presence of imperfect compliance. We have access to an instrument
+\(Z\) (a randomly assigned prescription for cholesterol medication),
+which is a cause of \(X\) (treatment uptake) but otherwise unrelated to
+\(Y\) (cholesterol). We imagine we are interested in three specific
+queries. The first is the average causal effect of \(X\) on \(Y\). The
+second is the average effect for units for which \(X=0\) and \(Y=0\).
+The last is the average treatment effect \emph{for} ``compliers'': units
+for which \(X\) responds positively to \(Y\). Thus two of these are
+conditional queries, with one conditional on a counterfactual quantity.
+
+Our data on \(Z\), \(X\), and \(Y\) is complete for all units and looks,
+in compact form, as follows:
+
+\begin{verbatim}
+data("chickering_pearl")
+
+chickering_pearl |> kable()
+\end{verbatim}
+
+\begin{longtable}[]{@{}llr@{}}
+\toprule\noalign{}
+event & strategy & count \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Z0X0Y0 & ZXY & 158 \\
+Z1X0Y0 & ZXY & 52 \\
+Z0X1Y0 & ZXY & 0 \\
+Z1X1Y0 & ZXY & 23 \\
+Z0X0Y1 & ZXY & 14 \\
+Z1X0Y1 & ZXY & 12 \\
+Z0X1Y1 & ZXY & 0 \\
+Z1X1Y1 & ZXY & 78 \\
+\end{longtable}
+
+Using \texttt{CausalQueries} we can define the model, update it with
+data, and query it, thus.
+
+\begin{verbatim}
+results <- 
+  
+  make_model("Z -> X -> Y; X <-> Y") |>
+  
+  update_model(chickering_pearl, refresh = 0) |>
+  
+  query_model(query = "Y[X=1] - Y[X=0]",
+              given = c("All",  "X==0 & Y==0", "X[Z=1] > X[Z=0]"),
+              using = "posteriors") 
+\end{verbatim}
+
+The output is a dataframe with estimates, posterior standard deviations,
+and credibility intervals.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.2222}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.2222}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.0694}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.0694}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1944}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.2222}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+query
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+given
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+mean
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+sd
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+cred.low.2.5\%
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+cred.high.97.5\%
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+query
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+given
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+mean
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+sd
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+cred.low.2.5\%
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+cred.high.97.5\%
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Y{[}X=1{]} - Y{[}X=0{]} & - & 0.56 & 0.10 & 0.38 & 0.73 \\
+Y{[}X=1{]} - Y{[}X=0{]} & X==0 \& Y==0 & 0.64 & 0.15 & 0.38 & 0.89 \\
+Y{[}X=1{]} - Y{[}X=0{]} & X{[}Z=1{]} \textgreater{} X{[}Z=0{]} & 0.70 &
+0.05 & 0.60 & 0.80 \\
+\caption{Rows 1 and 2 replicate results in Chickering and Pearl (1997);
+row 3 returns inferences for complier average effects.}\tabularnewline
+\end{longtable}
+
+As we describe below the same basic procedure of making, updating, and
+querying models, can be used (up to computational constraints) for
+arbitrary causal models, for different types of data structures, and for
+all causal queries that can be posed of the causal model.
+
+\hypertarget{software-requirements}{%
+\subsection{Software requirements}\label{software-requirements}}
 
 The core conceptual framework is described in Pearl's \emph{Causality}
 \citep{pearl2009causality} but can be summarized as follows (using the
@@ -1051,7 +1170,7 @@ make_model("A <- X -> B; A <-> X; B <-> X") %>% plot()
 
 \begin{figure}[H]
 
-{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-15-1.pdf}
+{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-18-1.pdf}
 
 }
 
@@ -1083,7 +1202,7 @@ make_model("X->Y") %>% set_priors(distribution = "jeffreys") %>% get_priors
 \end{verbatim}
 
 \begin{verbatim}
-no specific parameters to alter values for specified. Altering all parameters.
+No specific parameters to alter values for specified. Altering all parameters.
 \end{verbatim}
 
 \begin{verbatim}
@@ -1369,7 +1488,7 @@ X & Y \\
 \endlastfoot
 0 & 0 \\
 0 & 0 \\
-0 & 0 \\
+0 & 1 \\
 1 & 1 \\
 1 & 1 \\
 \end{longtable}
@@ -1812,7 +1931,7 @@ model$posterior_distribution %>%
   geom_point()
 \end{verbatim}
 
-\includegraphics{paper_files/figure-pdf/unnamed-chunk-30-1.pdf}
+\includegraphics{paper_files/figure-pdf/unnamed-chunk-33-1.pdf}
 
 We see that beliefs about the size of the overall effect are related to
 beliefs that \(X\) is assigned differently when there is a positive
@@ -1839,7 +1958,7 @@ make_model("X -> Y") %>%
 
 \begin{figure}[H]
 
-{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-31-1.pdf}
+{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-34-1.pdf}
 
 }
 
@@ -1946,173 +2065,6 @@ used to form the posterior}\tabularnewline
 We see the conditional inference is the same using the prior and the
 posterior distributions.
 
-\hypertarget{illustrations}{%
-\section{Illustrations}\label{illustrations}}
-
-We illustrate by implementing a replication from \citet{ii2023} of the
-analysis in \citet{chickering1996clinician} using
-\texttt{CausalQueries}. \citet{chickering1996clinician} seek to draw
-inference in the presence of imperfect compliance. Their data on \(Z\),
-\(X\), and \(Y\) is complete for all units and looks, in compact form,
-as follows:
-
-\begin{verbatim}
-data <- data.frame(
-  event = c("Z0X0Y0", "Z1X0Y0", "Z0X1Y0", "Z1X1Y0",
-            "Z0X0Y1", "Z1X0Y1", "Z0X1Y1",  "Z1X1Y1"),
-  strategy = "ZXY",
-  count = c(158, 52, 0, 23, 14, 12, 0, 78)
-)
-\end{verbatim}
-
-Using \texttt{CausalQueries} we can define the model, update it with
-data, and query it.
-
-We make three queries: first for the average causal effect of \(X\) on
-\(Y\). Second for the effect for units for which \(X=0\) and \(Y=0\).
-Last we also assess the average treatment effect \emph{for}
-``compliers'': units for which \(X\) responds positively to \(Y\).
-
-\begin{verbatim}
-results <- 
-  
-  make_model("Z -> X -> Y; X <-> Y") |>
-  
-  update_model(data, data_type = "compact") |>
-  
-  query_model(query = "Y[X=1] - Y[X=0]",
-              given = c("All",  "X==0 & Y==0", "X[Z=1] > X[Z=0]"),
-              using = "posteriors") 
-\end{verbatim}
-
-\begin{verbatim}
-
-SAMPLING FOR MODEL 'simplexes' NOW (CHAIN 1).
-Chain 1: 
-Chain 1: Gradient evaluation took 6.6e-05 seconds
-Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.66 seconds.
-Chain 1: Adjust your expectations accordingly!
-Chain 1: 
-Chain 1: 
-Chain 1: Iteration:    1 / 2000 [  0%]  (Warmup)
-Chain 1: Iteration:  200 / 2000 [ 10%]  (Warmup)
-Chain 1: Iteration:  400 / 2000 [ 20%]  (Warmup)
-Chain 1: Iteration:  600 / 2000 [ 30%]  (Warmup)
-Chain 1: Iteration:  800 / 2000 [ 40%]  (Warmup)
-Chain 1: Iteration: 1000 / 2000 [ 50%]  (Warmup)
-Chain 1: Iteration: 1001 / 2000 [ 50%]  (Sampling)
-Chain 1: Iteration: 1200 / 2000 [ 60%]  (Sampling)
-Chain 1: Iteration: 1400 / 2000 [ 70%]  (Sampling)
-Chain 1: Iteration: 1600 / 2000 [ 80%]  (Sampling)
-Chain 1: Iteration: 1800 / 2000 [ 90%]  (Sampling)
-Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
-Chain 1: 
-Chain 1:  Elapsed Time: 0.992 seconds (Warm-up)
-Chain 1:                0.898 seconds (Sampling)
-Chain 1:                1.89 seconds (Total)
-Chain 1: 
-
-SAMPLING FOR MODEL 'simplexes' NOW (CHAIN 2).
-Chain 2: 
-Chain 2: Gradient evaluation took 3.6e-05 seconds
-Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.36 seconds.
-Chain 2: Adjust your expectations accordingly!
-Chain 2: 
-Chain 2: 
-Chain 2: Iteration:    1 / 2000 [  0%]  (Warmup)
-Chain 2: Iteration:  200 / 2000 [ 10%]  (Warmup)
-Chain 2: Iteration:  400 / 2000 [ 20%]  (Warmup)
-Chain 2: Iteration:  600 / 2000 [ 30%]  (Warmup)
-Chain 2: Iteration:  800 / 2000 [ 40%]  (Warmup)
-Chain 2: Iteration: 1000 / 2000 [ 50%]  (Warmup)
-Chain 2: Iteration: 1001 / 2000 [ 50%]  (Sampling)
-Chain 2: Iteration: 1200 / 2000 [ 60%]  (Sampling)
-Chain 2: Iteration: 1400 / 2000 [ 70%]  (Sampling)
-Chain 2: Iteration: 1600 / 2000 [ 80%]  (Sampling)
-Chain 2: Iteration: 1800 / 2000 [ 90%]  (Sampling)
-Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)
-Chain 2: 
-Chain 2:  Elapsed Time: 0.991 seconds (Warm-up)
-Chain 2:                0.79 seconds (Sampling)
-Chain 2:                1.781 seconds (Total)
-Chain 2: 
-
-SAMPLING FOR MODEL 'simplexes' NOW (CHAIN 3).
-Chain 3: 
-Chain 3: Gradient evaluation took 3.6e-05 seconds
-Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 0.36 seconds.
-Chain 3: Adjust your expectations accordingly!
-Chain 3: 
-Chain 3: 
-Chain 3: Iteration:    1 / 2000 [  0%]  (Warmup)
-Chain 3: Iteration:  200 / 2000 [ 10%]  (Warmup)
-Chain 3: Iteration:  400 / 2000 [ 20%]  (Warmup)
-Chain 3: Iteration:  600 / 2000 [ 30%]  (Warmup)
-Chain 3: Iteration:  800 / 2000 [ 40%]  (Warmup)
-Chain 3: Iteration: 1000 / 2000 [ 50%]  (Warmup)
-Chain 3: Iteration: 1001 / 2000 [ 50%]  (Sampling)
-Chain 3: Iteration: 1200 / 2000 [ 60%]  (Sampling)
-Chain 3: Iteration: 1400 / 2000 [ 70%]  (Sampling)
-Chain 3: Iteration: 1600 / 2000 [ 80%]  (Sampling)
-Chain 3: Iteration: 1800 / 2000 [ 90%]  (Sampling)
-Chain 3: Iteration: 2000 / 2000 [100%]  (Sampling)
-Chain 3: 
-Chain 3:  Elapsed Time: 0.868 seconds (Warm-up)
-Chain 3:                0.802 seconds (Sampling)
-Chain 3:                1.67 seconds (Total)
-Chain 3: 
-
-SAMPLING FOR MODEL 'simplexes' NOW (CHAIN 4).
-Chain 4: 
-Chain 4: Gradient evaluation took 4.7e-05 seconds
-Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.47 seconds.
-Chain 4: Adjust your expectations accordingly!
-Chain 4: 
-Chain 4: 
-Chain 4: Iteration:    1 / 2000 [  0%]  (Warmup)
-Chain 4: Iteration:  200 / 2000 [ 10%]  (Warmup)
-Chain 4: Iteration:  400 / 2000 [ 20%]  (Warmup)
-Chain 4: Iteration:  600 / 2000 [ 30%]  (Warmup)
-Chain 4: Iteration:  800 / 2000 [ 40%]  (Warmup)
-Chain 4: Iteration: 1000 / 2000 [ 50%]  (Warmup)
-Chain 4: Iteration: 1001 / 2000 [ 50%]  (Sampling)
-Chain 4: Iteration: 1200 / 2000 [ 60%]  (Sampling)
-Chain 4: Iteration: 1400 / 2000 [ 70%]  (Sampling)
-Chain 4: Iteration: 1600 / 2000 [ 80%]  (Sampling)
-Chain 4: Iteration: 1800 / 2000 [ 90%]  (Sampling)
-Chain 4: Iteration: 2000 / 2000 [100%]  (Sampling)
-Chain 4: 
-Chain 4:  Elapsed Time: 0.927 seconds (Warm-up)
-Chain 4:                0.881 seconds (Sampling)
-Chain 4:                1.808 seconds (Total)
-Chain 4: 
-\end{verbatim}
-
-\begin{verbatim}
-results |>
-  select(query, given, mean, sd) |>
-  kable(digits = 2, caption = "Rows 1 and 2 replicate results in Chickering and Pearl (1997); row 3 returns inferences for complier average effects.")
-\end{verbatim}
-
-\begin{longtable}[]{@{}llrr@{}}
-\toprule\noalign{}
-query & given & mean & sd \\
-\midrule\noalign{}
-\endfirsthead
-\toprule\noalign{}
-query & given & mean & sd \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-Y{[}X=1{]} - Y{[}X=0{]} & - & 0.56 & 0.10 \\
-Y{[}X=1{]} - Y{[}X=0{]} & X==0 \& Y==0 & 0.64 & 0.15 \\
-Y{[}X=1{]} - Y{[}X=0{]} & X{[}Z=1{]} \textgreater{} X{[}Z=0{]} & 0.70 &
-0.05 \\
-\caption{Rows 1 and 2 replicate results in Chickering and Pearl (1997);
-row 3 returns inferences for complier average effects.}\tabularnewline
-\end{longtable}
-
 \hypertarget{computational-details}{%
 \section*{Computational details}\label{computational-details}}
 \addcontentsline{toc}{section}{Computational details}
@@ -2139,7 +2091,7 @@ Network (CRAN) at {[}https://CRAN.R-project.org/{]}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, rightrule=.15mm, colback=white, leftrule=.75mm, arc=.35mm, bottomrule=.15mm, left=2mm, breakable, opacityback=0]
+\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, colback=white, breakable, left=2mm, rightrule=.15mm, arc=.35mm, toprule=.15mm, opacityback=0, bottomrule=.15mm]
 
 The approach to generating a generic stan function that can take data
 from arbitrary models was developed in key contributions by
@@ -2169,7 +2121,7 @@ improved every part of it.
 \section*{More technical details}\label{sec-techdetails}}
 \addcontentsline{toc}{section}{More technical details}
 
-\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, rightrule=.15mm, colback=white, leftrule=.75mm, arc=.35mm, bottomrule=.15mm, left=2mm, breakable, opacityback=0]
+\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, colback=white, breakable, left=2mm, rightrule=.15mm, arc=.35mm, toprule=.15mm, opacityback=0, bottomrule=.15mm]
 
 Appendices can be included after the bibliography (with a page break).
 Each section within the appendix should have a proper section title
@@ -2201,7 +2153,7 @@ which includes the following topics:
 \section*{Using BibTeX}\label{sec-bibtex}}
 \addcontentsline{toc}{section}{Using BibTeX}
 
-\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, rightrule=.15mm, colback=white, leftrule=.75mm, arc=.35mm, bottomrule=.15mm, left=2mm, breakable, opacityback=0]
+\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, colback=white, breakable, left=2mm, rightrule=.15mm, arc=.35mm, toprule=.15mm, opacityback=0, bottomrule=.15mm]
 
 References need to be provided in a \textsc{Bib}{\TeX} file
 (\texttt{.bib}). All references should be made with \texttt{@cite}
