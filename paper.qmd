@@ -110,7 +110,7 @@ In cases in which there is no unobserved confounding, we take the probability di
 
 In cases in which there is confounding, the essential logic is the same except that we need to specify enough parameters to capture the joint distribution over nodal types for different nodes. 
 
-For concreteness: table illustrating all these values fo $X\rightarrow Y$ model
+For concreteness: table illustrating all these values for a $X\rightarrow Y$ model
 
 Representing beliefs over causal models thus requires specifying a probability distribution over $\lambda$. This might be  a degenerate distribution if users want to specify a particular model. `CausalQueries` allows users to specify parameters, $\alpha$ of a Dirichlet distribution over $\lambda$. If all entries of $\alpha$ are 0.5 this corresponds to Jeffrey's priors.  The default behavior is for  `CausalQueries`  to assume a uniform distribution -- that is, that all nodal types are equally likely -- which corresponds to $\alpha$ being a vector of 1s.
 
@@ -138,18 +138,12 @@ w_{11} & = & \lambda^X_1(\lambda^Y_{11} + \lambda^Y_{01})\end{array} \right.$$
 - knox bounds package
 
 
-
-
-Learning about causal models...
-
-
-In [R]{.proglang}, ...
-
 ```{r, eval = FALSE, include = FALSE}
 make_model("A -> B -> C -> D -> E")$parameters_df |> nrow()
 
 make_model("A -> E <- B; C->E<-D")$parameters_df |> nrow()
 ```
+
 The strength of `CausalQueries` is to allow users to specify arbitrary DAGs, arbitrary queries over nodes in those DAGs, and use the same canonical procedure to learn about those queries whether or not the queries are identified. Thus is principle if researchers are interest in learning about a quantitiy like the local average treatment effect and their model in fact satisfies the conditions in @angrist1996identification, then updating will recover valid estimates even if researchers are unaware that the local average treatment effect is identified and are ignorant of  the estimation procedure proposed by @angrist1996identification.    
 
 There are two broad limitation on the sets of models handled natively by  `CausalQueries`. First `CausalQUeries` is designed for  models with a relatively small number  over binary nodes. Because there is no compromise made on the space of possible causal relations implied by a given model, the parameter space grows very rapidly with the complexity of the causal model.  The complexity also depends on the causal structure and grows rapidly with the number of parents affecting a given child. A chain model of the form $A \rightarrow B \rightarrow C \rightarrow D \rightarrow E$ has just 40 parameters. A model in which $A, B, C, D$  are all direct of $E$ has 65544 parameters. Moving from binary to non binary nodes has similar effects. The restriction to binary nodes is for computational and not conceptual reasons. In fact there are ways to employ `CausalQueries`  to answer queries from models with nonbinary nodes but in general the computational costs make analysis of these model prohibitive. 
@@ -178,27 +172,23 @@ Formally a statement like this is interpreted as:
   * $M = f(X, \theta^M)$
   * $X = \theta^X$
   
-2. Distributions on shocks:
+2. Distributions on $\Theta$:
   * $\Pr(\theta^i = \theta^i_k) = \lambda^i_k$
 
 3. Independence assumptions:   
 * $\theta_i \perp\!\!\! \perp \theta_j, i\neq j$
 
-where function $f$ maps from the set of possible values of the parents of $i$ to values of node $i$ given $\theta^i$. Units with the same value on $\theta^i$ react in the same way to the parents of $i$. Indeed in this discrete world we think of $\theta^i$ as fully dictating the  functional form of $f$, indicating what outcome is observed on $i$ for any value of $i$'s parents.  
+where function $f$ maps from the set of possible values of the parents of $i$ to values of node $i$ given $\theta^i$ as described above.  
 
-In addition, it is also possible to indicate "unobserved confounding", that is, the presence of an unobserved variable that might influence observed variables. In this case condition 3 above is relaxed. We describe how this is done in greater detail in section \@ref(confounding).
+In addition, as we did in the @chickering1996clinician example, it is also possible to indicate "unobserved confounding", that is, the presence of an unobserved variable that might influence observed variables. In this case condition 3 above is relaxed. We describe how this is done in greater detail in section \@ref(confounding).
 
-For instance:
-
-```{r}
-model <- make_model("X -> Y <- W -> X; X <-> Y")
-```
 
 ### Graphing
 
 Once defined, a model can be graphed (we use the `dagitty` package for this):
 
 ```{r, fig.cap="A plotted model. Curved double headed arrows indicate unobserved confounding"}
+
 model <- make_model("X -> Y <- W -> X; X <-> Y") |>
   plot()
 ```
@@ -207,13 +197,10 @@ This is useful to check that you have written the structure down correctly.
 
 ### Model characterization
 
-
 When a model is defined, a set of objects are generated. These are the key quantities that are used for all inference. 
 
 
-
-
-### Nodal types
+#### Nodal types
 
 Two units have the same *nodal type* at node $Y$, $\theta^Y$, if their outcome at $Y$ responds in the same ways to parents of $Y$. 
 
@@ -228,7 +215,7 @@ make_model("X -> Y")$nodal_types
 
 Note that we use $\theta^j$ to indicate nodal types because for qualitative analysis the nodal types are often the parameters of interest.
 
-### Causal types
+#### Causal types
 
 Causal types are collections of nodal types. Two units are of the same *causal type* if they have the same nodal type at every node. For example in a $X \rightarrow M \rightarrow Y$ model, $\theta = (\theta^X_0, \theta^M_{01}, \theta^Y_{10})$ is a type that has $X=0$, $M$ responds positively to $X$, and $Y$ responds positively to $M$.
 
@@ -242,7 +229,7 @@ A model with $n_j$ nodal types at node $j$ has $\prod_jn_j$ causal types. Thus t
 
 Knowledge of a causal type tells you what values a unit would take, on all nodes, absent an intervention. For example for a model $X \rightarrow  M \rightarrow  Y$ a type $\theta = (\theta^X_0, \theta^M_{01}, \theta^Y_{10})$ would imply data $(X=0, M=0, Y=1)$. (The converse of this, of course, is the key to updating: observation of data $(X=0, M=0, Y=1)$ result in more weight placed on $\theta^X_0$, $\theta^M_{01}$, and $\theta^Y_{10})$.)
 
-### Parameters dataframe
+#### Parameters dataframe
 
 When a model is created, `CausalQueries` attaches a "parameters dataframe" which keeps track of model parameters, which belong together in a family, and how they relate to causal types. This becomes especially important for more complex models with confounding that might involve more complicated mappings between parameters and nodal types. In the case with no confounding the nodal types *are* the parameters; in cases with confounding you generally have more parameters than nodal types.
 
@@ -267,7 +254,7 @@ The columns of the parameters data frame are understood as follows:
 
 Below we will see examples where the parameter dataframe helps keep track of parameters that are created when confounding is added to a model. 
 
-### Parameter matrix
+#### Parameter matrix
 
 The parameters dataframe keeps track of parameter values and priors for parameters but it does not provide a mapping between parameters and the probability of causal types.
 
@@ -282,7 +269,9 @@ The probability of a causal type is given by the product of the parameters value
 
 Below we will see examples where the $P$ matrix helps keep track of parameters that are created when confounding is added to a model. 
 
-### Setting restrictions {#restrictions}
+### Tailoring models
+
+#### Setting restrictions {#restrictions}
 
 When a model is defined, the complete set of possible causal relations are worked out. This set can be very large. 
 
@@ -339,13 +328,9 @@ In the $X \rightarrow Y$ graph, for instance, there are 2 nodal types for $X$ an
 
 This table has 8 interior elements and so an unconstrained joint distribution would have 7 degrees of freedom. A no confounding assumption means that $\Pr(\theta^X | \theta^Y) = \Pr(\theta^X)$, or $\Pr(\theta^X, \theta^Y) = \Pr(\theta^X)\Pr(\theta^Y)$. In this case we just put a distribution on the marginals and there would be 3 degrees of freedom for $Y$ and 1 for $X$, totaling $4$ rather than 7.
 
-`set_confounds` lets you relax this assumption by increasing the number of parameters characterizing the joint distribution. Using the fact that $\Pr(A,B) = \Pr(A)\Pr(B|A)$ new parameters are introduced to capture $\Pr(B|A=a)$ rather than simply $\Pr(B)$.
-
-The simplest way to allow for confounding is by adding a bidirected edge, such as via: `set_confound(model, list("X <-> Y"))`. In this case the descendant node has a distribution conditional on the value of the ancestor node. To wit:
 
 ```{r, comment  = ""}
-confounded <- make_model("X->Y") %>% 
-  set_confound("X <-> Y")
+confounded <- make_model("X->Y ; X <-> Y")
 
 confounded$parameters_df %>% kable
 
@@ -356,18 +341,12 @@ We see here that there are now two parameter families for parameters associated 
 To see exactly how the parameters map to causal types we can view the parameter matrix:
 
 ```{r, comment = ""}
-get_parameter_matrix(confounded) %>% kable
+get_parameter_matrix(confounded) %>% kable()
 ```
 
 Importantly, the $P$ matrix works as before, despite confounding. We can assess the probability of causal types by multiplying the probabilities of the constituent parameters.
 
-Note:
 
-* Ordering of conditioning can also be controlled however via `set_confound(model, list(X = "Y"))` in which case X is given a distribution conditional on nodal types of Y.
-
-* More specific confounding statements are also possible using causal syntax. 
-  * A statement of the form `list(X = "Y[X=1]==1")` can be interpreted as: "Allow X to have a distinct conditional distribution when $Y$ has types that involve $Y(do(X=1))=1$." In this case, nodal types for $Y$ would continue to have 3 degrees of freedom. But there would be parameters assigning the probability of $X$ when $\theta^Y = \theta^Y_{01}$ or $\theta^Y = \theta^Y_{11}$ and other parameters for residual cases. Thus 6 degrees of freedom in all.
-  * Similarly a statement of the form `list(Y = "X==1")` can be interpreted as: "Allow Y to have a distinct conditional distribution when X=1." In this case there would be two distributions over nodal types for Y, producing 2*3 = 6 degrees of freedom. Nodal types for X would continue to have 1 degree of freedom. Thus 7 degrees of freedom in all, corresponding to a fully unconstrained joint distribution.
 * Unlike nodal restrictions, a confounding relation can involve multiple nodal types simultaneously. For instance `make_model("X -> M -> Y") %>% set_confound(list(X = "Y[X=1] > Y[X=0]"))` allows for a parameter that renders $X$ more or less likely depending on whether $X$ has a positive effect on $Y$ whether it runs through a positive or a negative effect on $M$.
 * The parameters needed to capture confounding relations depend on the direction of causal arrows. For example compare:
   * `make_model("A -> W <- B ; A <-> W; B <-> W")$parameters_df %>% dim`   In this case we can decompose shocks on $A, B, W$ via: $\Pr(\theta^A, \theta^B,  \theta^W) = \Pr(\theta^W | \theta^A, \theta^A)\Pr(\theta^A)\Pr(\theta^B)$, and we have 68 parameters. 
@@ -379,7 +358,7 @@ When confounding is added to a model, a dataframe, `confounds_df` is created and
 make_model("A <- X -> B; A <-> X; B <-> X") %>% plot()
 ```
 
-### Setting Priors {#priors}
+#### Setting Priors {#priors}
 
 Priors on model parameters can be added to the parameters dataframe. The priors are interpreted as alpha arguments for a Dirichlet distribution. They can be seen using `get_priors`.
 
@@ -398,8 +377,6 @@ Alternatively you could set jeffreys priors like this:
 make_model("X->Y") %>% set_priors(distribution = "jeffreys") %>% get_priors
 
 ```
-
-#### Custom priors
 
 Custom priors are most simply specified by being added as a vector of numbers using `set_priors`. For instance:
 
@@ -424,9 +401,8 @@ make_model("X->Y") %>%
 
 See `?set_priors` and `?make_priors` for many examples.
 
-#### Prior warnings
 
-"Flat" priors over parameters in a parameter family put equal weight on each nodal type, but this in turn can translate into strong assumptions on causal quantities of interest. 
+We note that flat priors over nodal types does not necessarily translate into flat priors over queres. "Flat" priors over parameters in a parameter family put equal weight on each nodal type, but this in turn can translate into strong assumptions on causal quantities of interest. 
 
 For instance in an $X \rightarrow Y$ model model in which negative effects are ruled out, the average causal effect implied by "flat" priors is $1/3$. This can be seen by querying the model:
 
@@ -461,7 +437,7 @@ Caution regarding priors is particularly important when models are not identifie
 The key point here is to make sure you do not fall into a trap of thinking that "uninformative" priors make no commitments regarding the values of causal quantities of interest. They do, and the implications of flat priors for causal quantities can depend on the structure of the model. Moreover for some inferences from causal models the priors can matter a lot even if you have a lot of data. In such cases it can be helpful to know what priors on parameters imply for priors on causal quantities of interest  (by using `query_model`) and to assess how much conclusions depend on priors (by comparing results across models that vary in their priors).
 
 
-### Setting Parameters {#parameters}
+#### Setting Parameters {#parameters}
 
 By default, models have a vector of parameter values included in the `parameters_df` dataframe. These are useful for generating data, or for situations, such as process tracing, when one wants to make inferences about causal types ($\theta$), given case level data, under the assumption that the model is known. 
 
