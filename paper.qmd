@@ -116,7 +116,7 @@ Representing beliefs over causal models thus requires specifying a probability d
 
 Updating is then done with respect to beliefs over $\lambda$. In the Bayesian approach we have simply:
 
-$$p(\lambda'|D) = \frac{p(D|\lambda')p(\lambda)}{\int_{\lambda^{''}} p(D|\lambda'')p(\lambda'')}$$
+$$p(\lambda'|D) = \frac{p(D|\lambda')p(\lambda')}{\int_{\lambda^{''}} p(D|\lambda'')p(\lambda'')}$$
 $p(D|\lambda')$ is calculated  under the assumption that units are exchangeable and independently drawn, and of course, under the model.  In practice this means that the probability that two units have causal types  $\theta_i$ and $\theta_j$ is simply $\lambda'_i\lambda'_j$. Since a causal type fully determines an outcome vector $d = \{y_1, y_2,\dots,y_n\}$, the probability of a given outcome ("event"), $w_d$, is given simply by  the probability that the causal type is among those that yield  outcome $d$. Thus from $\lambda'$ we can calculate a vector of event probabilities, $w(\lambda)$, for each vector of outcomes, and under indpendence we have:
 
 $$D \sim \text{Mulitimonial}(w(\lambda), N)$$
@@ -214,7 +214,7 @@ make_model("X -> M -> Y <- X; Z -> Y") |>
 
 ### Model characterization
 
-When a model is defined, a set of objects are generated. These are the key quantities that are used for all inference. 
+When a model is defined, a set of objects is generated. These are the key quantities that are used for all inference. 
 
 
 #### Nodal types
