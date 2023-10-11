@@ -58,9 +58,9 @@ We illustrate these three core functions by showing how to use `CuasalQueries` t
 Our data on $Z$, $X$, and $Y$ is complete for all units and looks, in compact form, as follows:
 
 ```{r}
-data("chickering_pearl")
+data("lipids_data")
 
-chickering_pearl |> kable()
+lipids_data |> kable()
 ```
 
 Using `CausalQueries` we can define the model, update it with data, and query it, thus. 
