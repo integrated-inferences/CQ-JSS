@@ -50,6 +50,7 @@ run <- FALSE
 
 `CausalQueries` is an [R]{.proglang} package that lets users make, update, and query causal models. The base specification asks users do provide a statement that reports a set of binary variables and the relations of causal ancestry between them: which variables are direct causes of other variables, given the other variables in the model. Once provided to `make_model()`, `CausalQueries` generates a set of parameters that fully describe all possible types of causal relations between variables ("causal types"), given the causal structure. Given a prior over distributions over causal types and data over some or all nodes, `update_model()` deploys a `stan` model in order to generate a posterior distribution over parameters. The function `query_model()` can then be used to ask any causal query of the model, using either the prior distribution, the posterior distribution, or a user specified candidate vector of parameters.   
 
+
 We illustrate these three core functions by showing how to use `CuasalQueries` to replicate the analysis in @chickering1996clinician (see also @ii2023).   
 
 @chickering1996clinician seek to draw inference on causal effects in the presence of imperfect compliance. We have access to an instrument $Z$ (a randomly assigned prescription for cholesterol medication), which is a cause of $X$ (treatment uptake) but otherwise unrelated to $Y$ (cholesterol). We imagine we are interested in three specific queries. The first is the average causal effect of $X$ on $Y$. The second is the average effect for units for which $X=0$ and $Y=0$. The last is the average treatment effect *for* "compliers": units for which $X$ responds positively to $Z$. Thus two of these queries are conditional queries, with one conditional on a counterfactual quantity.
@@ -147,10 +148,9 @@ make_model("A -> E <- B; C->E<-D")$parameters_df |> nrow()
 The strength of `CausalQueries` is to allow users to specify arbitrary DAGs, arbitrary queries over nodes in those DAGs, and use the same canonical procedure to learn about those queries whether or not the queries are identified. Thus is principle if researchers are interest in learning about a quantitiy like the local average treatment effect and their model in fact satisfies the conditions in @angrist1996identification, then updating will recover valid estimates even if researchers are unaware that the local average treatment effect is identified and are ignorant of  the estimation procedure proposed by @angrist1996identification.    
 
 There are two broad limitation on the sets of models handled natively by  `CausalQueries`. First `CausalQueries` is designed for  models with a relatively small number  over binary nodes. Because there is no compromise made on the space of possible causal relations implied by a given model, the parameter space grows very rapidly with the complexity of the causal model.  The complexity also depends on the causal structure and grows rapidly with the number of parents affecting a given child. A chain model of the form $A \rightarrow B \rightarrow C \rightarrow D \rightarrow E$ has just 40 parameters. A model in which $A, B, C, D$  are all direct of $E$ has 65544 parameters. Moving from binary to non binary nodes has similar effects. The restriction to binary nodes is for computational and not conceptual reasons. In fact there are ways to employ `CausalQueries`  to answer queries from models with nonbinary nodes but in general the computational costs make analysis of these model prohibitive. 
+<!--# should we mention computational constraints more explicitly here? >> i.e. constraints on memory as calculated in the CausalQueriesTools documentation. Could also be a place to mention the package + frankensteining methods though that might better be placed in the updating models section -->
 
 Second the package is geared for learning about populations from samples of units that are independent of each other and are independently  randomly sampled  from populations. This the basic set up does not address problems of sampling, clustering,  hierarchical structures, or purposive sampling, for example. In section X we provide pointers to how all of these can be addressed.     
-
-
 
 
 ## Making models {#sec-models}
@@ -244,7 +244,9 @@ make_model("A -> B")$causal_types
 
 A model with $n_j$ nodal types at node $j$ has $\prod_jn_j$ causal types. Thus the set of causal types can be large. In the model $(X\rightarrow M \rightarrow Y \leftarrow X)$ there are $2\times 4\times 16 = 128$ causal types.
 
-Knowledge of a causal type tells you what values a unit would take, on all nodes, absent an intervention. For example for a model $X \rightarrow  M \rightarrow  Y$ a type $\theta = (\theta^X_0, \theta^M_{01}, \theta^Y_{10})$ would imply data $(X=0, M=0, Y=1)$. (The converse of this, of course, is the key to updating: observation of data $(X=0, M=0, Y=1)$ result in more weight placed on $\theta^X_0$, $\theta^M_{01}$, and $\theta^Y_{10})$.)
+Knowledge of a causal type tells you what values a unit would take, on all nodes, absent an intervention. For example for a model $X \rightarrow  M \rightarrow  Y$ a type $\theta = (\theta^X_0, \theta^M_{01}, \theta^Y_{10})$ would imply data $(X=0, M=0, Y=1)$. (The converse of this, of course, is the key to updating: observation of data $(X=0, M=0, Y=1)$ result in more weight placed on $\theta^X_0$, $\theta^M_{01}$, and $\theta^Y_{10})$.) 
+
+<!--# should we include how interventions are handled here via realise_outcomes() ... the logic of how we do this in c++ is quite neat and might be illustrative in reading off realisations from complex nodal types >> not sure if this is too detailed and will just be confusing for a first time users/reader though-->
 
 #### Parameters dataframe
 
@@ -286,6 +288,8 @@ make_model("X->Y") |>
 The probability of a causal type is given by the product of the parameters values for parameters whose row in the $P$ matrix contains a 1.  
 
 Below we will see examples where the $P$ matrix helps keep track of parameters that are created when confounding is added to a model. 
+
+<!--# perhaps we should explicitly mention where this data structure us used >> i.e. causal type probabilities are the key data structure in querying models, making these probabilities requires the P matrix -->
 
 ### Tailoring models
 
@@ -337,6 +341,11 @@ make_model("S -> C -> Y <- R <- X; X -> C -> R") |>
 make_model("X->Y") |>
   set_restrictions(labels = list(Y = "Y?0"))
 ```
+
+<!--# you can also specify a given when setting restrictions e.g. 
+model <- make_model("X -> Y -> Z; X <-> Z") %>%
+  set_restrictions(list(decreasing('X','Y'), decreasing('Y','Z')), given = c(NA,'X.0'))
+-->
 
 #### Allowing confounding {#confounding}
 
@@ -433,7 +442,7 @@ make_model("X->Y") |>
 See `?set_priors` and `?make_priors` for many examples.
 
 
-We note that flat priors over nodal types does not necessarily translate into flat priors over queres. "Flat" priors over parameters in a parameter family put equal weight on each nodal type, but this in turn can translate into strong assumptions on causal quantities of interest. 
+We note that flat priors over nodal types does not necessarily translate into flat priors over queries. "Flat" priors over parameters in a parameter family put equal weight on each nodal type, but this in turn can translate into strong assumptions on causal quantities of interest. 
 
 For instance in an $X \rightarrow Y$ model model in which negative effects are ruled out, the average causal effect implied by "flat" priors is $1/3$. This can be seen by querying the model:
 
@@ -468,6 +477,7 @@ Caution regarding priors is particularly important when models are not identifie
 The key point here is to make sure you do not fall into a trap of thinking that "uninformative" priors make no commitments regarding the values of causal quantities of interest. They do, and the implications of flat priors for causal quantities can depend on the structure of the model. Moreover for some inferences from causal models the priors can matter a lot even if you have a lot of data. In such cases it can be helpful to know what priors on parameters imply for priors on causal quantities of interest  (by using `query_model`) and to assess how much conclusions depend on priors (by comparing results across models that vary in their priors).
 
 
+
 #### Setting Parameters {#parameters}
 
 By default, models have a vector of parameter values included in the `parameters_df` dataframe. These are useful for generating data, or for situations, such as process tracing, when one wants to make inferences about causal types ($\theta$), given case level data, under the assumption that the model is known. 
@@ -490,7 +500,10 @@ make_model("X->Y") |>
 ```
 
 
+<!--# both setting priors and parameters offers a lot of options beyond causal statements now >> might be useful to show an example of a subset of those options at work for users to whom using causal statements is alien >> i.e. showcase the idea that under the hood a lot of this just comes down to filtering the parameters dataframe in various ways 
 
+i.e. we have options: alter_at, node, nodal_type, param_set, given, statement, param_names
+-->
 
 
 ###  Using models
@@ -543,6 +556,7 @@ CausalQueries:::prep_stan_data(model, compact_data)
 
 ```
 
+<!--# is it useful to touch on the possibility to update submodels when there is no confounding and no missing data here?-->
 
 ### stan code
 
@@ -598,7 +612,7 @@ options(mc.cores = parallel::detectCores())
 ```
 
 
-
+<!--# should we show syntax for additionally parallelizing across model >> i.e. nested parallelization? -->
 
 Note the parameters estimated by `stan` include the gamma parameters plus transformed parameters, $\lambda$, which are our parameters of interest and which `CausalQueries` then interprets as possible row probabilities for the $P$ matrix. 
 
@@ -743,6 +757,38 @@ query_model(
 
 ## Computational details {.unnumbered}
 
+<!--
+operating systems: Linux, MacOS, Windows 
+Version: current 0.1.1 >> by time of publications 1.0.0 >> stable on CRAN, development from GitHub
+testing environments OS: 
+        - Ubuntu 22.04.2 
+        - Debian 12.2
+        - MacOS
+        - Windows 
+testing environments R:
+        - R 4.3.1
+        - R 4.3.0
+        - R 4.2.3
+        - r-devel
+requirements:
+        - R Version: R(>= 3.4.0)
+        - Packages: >> part of CausalQueries install 
+              - Rcpp 
+              - RcppEigen 
+              - RcppArmadillo 
+              - BH
+              - inline 
+              - StanHeaders 
+              - rstan
+         - Compilers: C++ compiler like g++ or clang++ 
+         
+         
+ CausalQueries is being actively developed, issues can be flagged at https://github.com/integrated-inferences/CausalQueries/issues
+ 
+ >> we should really add a contributing / code of conduct doc (outlining handling of contributions via PRs + issuing) to github on the off chance that people want contribute 
+
+-->
+
 * information about certain computational details such as version numbers, operating systems, or compilers could be included
 in an unnumbered section. Also, auxiliary packages (say, for visualizations,
 maps, tables, …) that are not cited in the main text can be credited here.
@@ -758,7 +804,7 @@ The results in this paper were obtained using [R]{.proglang}~3.4.1 with the
 
 :::{.callout}
 
-The approach to generating a generic stan function that can take data from arbitrary models was developed in key contributions by [Jasper Cooper](http://jasper-cooper.com/) and [Georgiy Syunyaev](http://gsyunyaev.com/). [Lily Medina](https://lilymedina.github.io/) did magical work pulling it all together and developing approaches to characterizing confounding and defining estimands. Clara Bicalho helped figure out the syntax for causal statements. Julio Solis made many key contributions figuring out how to simplify the specification of priors. Merlin Heidemanns figure out the `rstantools` integration and made myriad code improvements. Till Tietz revamped the entire package and improved every part of it.
+The approach to generating a generic stan function that can take data from arbitrary models was developed in key contributions by [Jasper Cooper](http://jasper-cooper.com/) and [Georgiy Syunyaev](http://gsyunyaev.com/). [Lily Medina](https://lilymedina.github.io/) did magical work pulling it all together and developing approaches to characterizing confounding and defining estimands. Clara Bicalho helped figure out the syntax for causal statements. Julio Solis made many key contributions figuring out how to simplify the specification of priors. Merlin Heidemanns figured out the `rstantools` integration and made myriad code improvements. Till Tietz revamped the entire package and improved every part of it.
 
 
 
