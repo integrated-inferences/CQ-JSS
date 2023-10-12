@@ -18,7 +18,9 @@ author:
     url: https://github.com/till-tietz
   - name: Lily Medina
     affiliations:
-      - UC Berkeley
+      - name: UC Berkeley
+    email: lily.medina@berkeley.edu
+    url: https:/lilymedina.github.io/
   - name: Macartan Humphreys
     affiliations:
       - WZB
