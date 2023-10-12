@@ -219,7 +219,7 @@ URL: \url{https://macartan.github.io/}\\
 \subsection{What CausalQueries does}\label{what-causalqueries-does}}
 
 \texttt{CausalQueries} is an \proglang{R} package that lets users make,
-update, and query causal models. The base specification asks users do
+update, and query causal models. The base specification asks users to
 provide a statement that reports a set of binary variables and the
 relations of causal ancestry between them: which variables are direct
 causes of other variables, given the other variables in the model. Once
@@ -253,9 +253,9 @@ Our data on \(Z\), \(X\), and \(Y\) is complete for all units and looks,
 in compact form, as follows:
 
 \begin{verbatim}
-data("chickering_pearl")
+data("lipids_data")
 
-chickering_pearl |> kable()
+lipids_data |> kable()
 \end{verbatim}
 
 \begin{longtable}[]{@{}llr@{}}
@@ -283,7 +283,7 @@ results <-
   
   make_model("Z -> X -> Y; X <-> Y") |>
   
-  update_model(chickering_pearl, refresh = 0) |>
+  update_model(lipids_data, refresh = 0) |>
   
   query_model(query = "Y[X=1] - Y[X=0]",
               given = c("All",  "X==0 & Y==0", "X[Z=1] > X[Z=0]"),
@@ -335,9 +335,9 @@ cred.high.97.5\%
 \bottomrule\noalign{}
 \endlastfoot
 Y{[}X=1{]} - Y{[}X=0{]} & - & 0.55 & 0.10 & 0.37 & 0.73 \\
-Y{[}X=1{]} - Y{[}X=0{]} & X==0 \& Y==0 & 0.63 & 0.15 & 0.37 & 0.89 \\
+Y{[}X=1{]} - Y{[}X=0{]} & X==0 \& Y==0 & 0.64 & 0.15 & 0.37 & 0.89 \\
 Y{[}X=1{]} - Y{[}X=0{]} & X{[}Z=1{]} \textgreater{} X{[}Z=0{]} & 0.70 &
-0.05 & 0.59 & 0.80 \\
+0.05 & 0.60 & 0.80 \\
 \caption{Rows 1 and 2 replicate results in Chickering and Pearl (1997);
 row 3 returns inferences for complier average effects.}\tabularnewline
 \end{longtable}
@@ -392,7 +392,7 @@ correspond to principal strata familiar, for instance, in the study of
 instrumental variables \citep{frangakis2002principal}. If node \(Y_i\)
 can take on \(k_i\) possible values then the set of possible values that
 can be taken on by parents of \(j\) is \(m :=\prod_{i\in PA_j}k_i\),
-then there are \(k_j^{m}\) nodal types --- distinct ways that \(k\)
+then there are \(k_j^{m}\) nodal types --- distinct ways that \(j\)
 might respond to its parents---with each types corresponding to a
 distinct way that \(j\) takes for a given constellation of values of its
 parents. In the case of binary nodes this becomes
@@ -444,7 +444,7 @@ that all nodal types are equally likely -- which corresponds to
 Updating is then done with respect to beliefs over \(\lambda\). In the
 Bayesian approach we have simply:
 
-\[p(\lambda'|D) = \frac{p(D|\lambda')p(\lambda)}{\int_{\lambda^{''}} p(D|\lambda'')p(\lambda'')}\]
+\[p(\lambda'|D) = \frac{p(D|\lambda')p(\lambda')}{\int_{\lambda^{''}} p(D|\lambda'')p(\lambda'')}\]
 \(p(D|\lambda')\) is calculated under the assumption that units are
 exchangeable and independently drawn, and of course, under the model. In
 practice this means that the probability that two units have causal
@@ -454,7 +454,7 @@ Since a causal type fully determines an outcome vector
 (``event''), \(w_d\), is given simply by the probability that the causal
 type is among those that yield outcome \(d\). Thus from \(\lambda'\) we
 can calculate a vector of event probabilities, \(w(\lambda)\), for each
-vector of outcomes, and under indpendence we have:
+vector of outcomes, and under independence we have:
 
 \[D \sim \text{Mulitimonial}(w(\lambda), N)\]
 
@@ -652,7 +652,7 @@ make_model("X -> M -> Y <- X; Z -> Y") |>
 \hypertarget{model-characterization}{%
 \subsection{Model characterization}\label{model-characterization}}
 
-When a model is defined, a set of objects are generated. These are the
+When a model is defined, a set of objects is generated. These are the
 key quantities that are used for all inference.
 
 \hypertarget{nodal-types}{%
@@ -698,6 +698,36 @@ attr(,"interpret")$Y
 Note that we use \(\theta^j\) to indicate nodal types because for
 qualitative analysis the nodal types are often the parameters of
 interest.
+
+Another way to develop a clearer understanding of how to interpret nodal
+types subscripts is to consider the conditions they may fulfill. We
+refer to these conditions as `causal queries'. Causal queries are useful
+because they allow us to target and alter specific nodal types, and they
+come in handy for functions that we will introduce below. For instance,
+in a model such as \(X \rightarrow Y \leftarrow M\), you may want to
+identify the nodal types that correspond to cases where increasing both
+\(X\) and \(M\) from 0 to 1 results in an increase in \(Y\). You can do
+this using the \texttt{get\_query\_types} function as shown below:
+
+\begin{verbatim}
+model <- make_model('X -> M -> Y <- X')
+query <- 'Y[X=1, M=1] > Y[X=0, M=0]'
+get_query_types(model, query, map= "nodal_type")
+\end{verbatim}
+
+\begin{verbatim}
+
+Nodal types adding weight to query
+
+ query :  Y[X=1,M=1]>Y[X=0,M=0] 
+
+ 0001   0101
+ 0011   0111
+
+
+ Number of nodal types that add weight to query = 4
+ Total number of nodal types related to Y = 16
+\end{verbatim}
 
 \hypertarget{causal-types}{%
 \subsubsection{Causal types}\label{causal-types}}
@@ -1178,7 +1208,7 @@ make_model("A <- X -> B; A <-> X; B <-> X") |> plot()
 
 \begin{figure}[H]
 
-{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-20-1.pdf}
+{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-21-1.pdf}
 
 }
 
@@ -1265,7 +1295,7 @@ make_model("X->Y") |>
 See \texttt{?set\_priors} and \texttt{?make\_priors} for many examples.
 
 We note that flat priors over nodal types does not necessarily translate
-into flat priors over queres. ``Flat'' priors over parameters in a
+into flat priors over queries. ``Flat'' priors over parameters in a
 parameter family put equal weight on each nodal type, but this in turn
 can translate into strong assumptions on causal quantities of interest.
 
@@ -1494,8 +1524,8 @@ X & Y \\
 \bottomrule\noalign{}
 \endlastfoot
 0 & 0 \\
-1 & 0 \\
-1 & 0 \\
+0 & 1 \\
+1 & 1 \\
 1 & 1 \\
 1 & 1 \\
 \end{longtable}
@@ -1691,7 +1721,7 @@ for (i in 1:n_types) {
 }
 \end{verbatim}
 
-THIS DISCUSSION IS OUT OF ATE:
+THIS DISCUSSION IS OUT OF DATE:
 
 The \texttt{stan} model works as follows:
 
@@ -1842,7 +1872,7 @@ model$posterior_distribution |>
 `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 \end{verbatim}
 
-\includegraphics{paper_files/figure-pdf/unnamed-chunk-34-1.pdf}
+\includegraphics{paper_files/figure-pdf/unnamed-chunk-35-1.pdf}
 
 \hypertarget{query-distribution}{%
 \subsection{Query distribution}\label{query-distribution}}
@@ -1865,7 +1895,7 @@ make_model("X -> Y") |>
 
 \begin{figure}[H]
 
-{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-35-1.pdf}
+{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-36-1.pdf}
 
 }
 
@@ -1955,8 +1985,8 @@ model & query & given & using & case\_level & mean & sd \\
 \endlastfoot
 1 & ATE & - & parameters & FALSE & 0.00 & NA \\
 2 & ATE & - & parameters & FALSE & 0.33 & NA \\
-1 & ATE & - & priors & FALSE & 0.00 & 0.31 \\
-2 & ATE & - & priors & FALSE & 0.34 & 0.24 \\
+1 & ATE & - & priors & FALSE & 0.00 & 0.32 \\
+2 & ATE & - & priors & FALSE & 0.33 & 0.23 \\
 1 & ATE & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA \\
 2 & ATE & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA \\
 1 & ATE & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29 \\
@@ -1964,7 +1994,7 @@ model & query & given & using & case\_level & mean & sd \\
 1 & POS & - & parameters & FALSE & 0.25 & NA \\
 2 & POS & - & parameters & FALSE & 0.33 & NA \\
 1 & POS & - & priors & FALSE & 0.25 & 0.19 \\
-2 & POS & - & priors & FALSE & 0.34 & 0.24 \\
+2 & POS & - & priors & FALSE & 0.33 & 0.23 \\
 1 & POS & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA \\
 2 & POS & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA \\
 1 & POS & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29 \\
@@ -1972,19 +2002,19 @@ model & query & given & using & case\_level & mean & sd \\
 1 & ATE & - & parameters & TRUE & 0.00 & NA \\
 2 & ATE & - & parameters & TRUE & 0.33 & NA \\
 1 & ATE & - & priors & TRUE & 0.00 & NA \\
-2 & ATE & - & priors & TRUE & 0.34 & NA \\
+2 & ATE & - & priors & TRUE & 0.33 & NA \\
 1 & ATE & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA \\
 2 & ATE & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA \\
-1 & ATE & Y==1 \& X==1 & priors & TRUE & 0.49 & NA \\
-2 & ATE & Y==1 \& X==1 & priors & TRUE & 0.51 & NA \\
+1 & ATE & Y==1 \& X==1 & priors & TRUE & 0.50 & NA \\
+2 & ATE & Y==1 \& X==1 & priors & TRUE & 0.50 & NA \\
 1 & POS & - & parameters & TRUE & 0.25 & NA \\
 2 & POS & - & parameters & TRUE & 0.33 & NA \\
 1 & POS & - & priors & TRUE & 0.25 & NA \\
-2 & POS & - & priors & TRUE & 0.34 & NA \\
+2 & POS & - & priors & TRUE & 0.33 & NA \\
 1 & POS & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA \\
 2 & POS & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA \\
-1 & POS & Y==1 \& X==1 & priors & TRUE & 0.49 & NA \\
-2 & POS & Y==1 \& X==1 & priors & TRUE & 0.51 & NA \\
+1 & POS & Y==1 \& X==1 & priors & TRUE & 0.50 & NA \\
+2 & POS & Y==1 \& X==1 & priors & TRUE & 0.50 & NA \\
 \end{longtable}
 
 \hypertarget{computational-details}{%
@@ -2013,7 +2043,7 @@ Network (CRAN) at {[}https://CRAN.R-project.org/{]}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, opacityback=0, left=2mm, colback=white, breakable, toprule=.15mm, bottomrule=.15mm, rightrule=.15mm, leftrule=.75mm]
+\begin{tcolorbox}[enhanced jigsaw, opacityback=0, rightrule=.15mm, arc=.35mm, colback=white, breakable, bottomrule=.15mm, leftrule=.75mm, left=2mm, toprule=.15mm]
 
 The approach to generating a generic stan function that can take data
 from arbitrary models was developed in key contributions by
@@ -2024,7 +2054,7 @@ pulling it all together and developing approaches to characterizing
 confounding and defining estimands. Clara Bicalho helped figure out the
 syntax for causal statements. Julio Solis made many key contributions
 figuring out how to simplify the specification of priors. Merlin
-Heidemanns figure out the \texttt{rstantools} integration and made
+Heidemanns figured out the \texttt{rstantools} integration and made
 myriad code improvements. Till Tietz revamped the entire package and
 improved every part of it.
 
@@ -2043,7 +2073,7 @@ improved every part of it.
 \section*{More technical details}\label{sec-techdetails}}
 \addcontentsline{toc}{section}{More technical details}
 
-\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, opacityback=0, left=2mm, colback=white, breakable, toprule=.15mm, bottomrule=.15mm, rightrule=.15mm, leftrule=.75mm]
+\begin{tcolorbox}[enhanced jigsaw, opacityback=0, rightrule=.15mm, arc=.35mm, colback=white, breakable, bottomrule=.15mm, leftrule=.75mm, left=2mm, toprule=.15mm]
 
 Appendices can be included after the bibliography (with a page break).
 Each section within the appendix should have a proper section title
@@ -2075,7 +2105,7 @@ which includes the following topics:
 \section*{Using BibTeX}\label{sec-bibtex}}
 \addcontentsline{toc}{section}{Using BibTeX}
 
-\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, opacityback=0, left=2mm, colback=white, breakable, toprule=.15mm, bottomrule=.15mm, rightrule=.15mm, leftrule=.75mm]
+\begin{tcolorbox}[enhanced jigsaw, opacityback=0, rightrule=.15mm, arc=.35mm, colback=white, breakable, bottomrule=.15mm, leftrule=.75mm, left=2mm, toprule=.15mm]
 
 References need to be provided in a \textsc{Bib}{\TeX} file
 (\texttt{.bib}). All references should be made with \texttt{@cite}

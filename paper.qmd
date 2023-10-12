@@ -70,7 +70,7 @@ results <-
   
   make_model("Z -> X -> Y; X <-> Y") |>
   
-  update_model(chickering_pearl, refresh = 0) |>
+  update_model(lipids_data, refresh = 0) |>
   
   query_model(query = "Y[X=1] - Y[X=0]",
               given = c("All",  "X==0 & Y==0", "X[Z=1] > X[Z=0]"),
@@ -237,7 +237,7 @@ Note that we use $\theta^j$ to indicate nodal types because for qualitative anal
 Another way to develop a clearer understanding of how to interpret nodal types subscripts is to consider the  conditions they may fulfill. We refer to these conditions as 'causal queries'. Causal queries are useful because they allow us to target and alter specific nodal types, and they come in handy for functions that we will introduce below. For instance, in a model such as $X \rightarrow Y \leftarrow M$, you may want to identify the nodal types that correspond to cases where increasing both $X$ and $M$ from 0 to 1 results in an increase in $Y$. You can do this using the `get_query_types` function as shown below:
 
 ```{r, comment = ""}
-model <- make_model('X -> M -> Y')
+model <- make_model('X -> M -> Y <- X')
 query <- 'Y[X=1, M=1] > Y[X=0, M=0]'
 get_query_types(model, query, map= "nodal_type")
 ```
@@ -589,7 +589,7 @@ cat(rstan::get_stancode(read_rds("saved/fit.rds")))
 
 ```
 
-THIS DISCUSSION IS OUT OF ATE:
+THIS DISCUSSION IS OUT OF DATE:
 
 The `stan` model works as follows:
 
@@ -642,6 +642,9 @@ Models can be queried using the `query_distribution` and `query_model` functions
 
 
 ## Queries
+
+WRITE SECTION DESCRIBING FACTUAL AND COUNTERFACTULA QUERIES AND THE SYNTAX INCLUDING Role of [] AND OF GIVEN
+
 
 ### Query implementation
 
