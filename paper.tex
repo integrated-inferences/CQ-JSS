@@ -202,6 +202,8 @@ E-mail: \email{ttietz2014@gmail.com}\\
 URL: \url{https://github.com/till-tietz}\\
 \\~
 Lily Medina\\
+E-mail: \email{lily.medina@berkeley.edu}\\
+URL: \url{https:/lilymedina.github.io/}\\
 \\~
 Macartan Humphreys\\
 E-mail: \email{macartan.humphreys@wzb.eu}\\
@@ -334,10 +336,10 @@ cred.high.97.5\%
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-Y{[}X=1{]} - Y{[}X=0{]} & - & 0.55 & 0.10 & 0.37 & 0.73 \\
+Y{[}X=1{]} - Y{[}X=0{]} & - & 0.56 & 0.10 & 0.37 & 0.73 \\
 Y{[}X=1{]} - Y{[}X=0{]} & X==0 \& Y==0 & 0.64 & 0.15 & 0.37 & 0.89 \\
-Y{[}X=1{]} - Y{[}X=0{]} & X{[}Z=1{]} \textgreater{} X{[}Z=0{]} & 0.70 &
-0.05 & 0.60 & 0.80 \\
+Y{[}X=1{]} - Y{[}X=0{]} & X{[}Z=1{]} \textgreater{} X{[}Z=0{]} & 0.71 &
+0.06 & 0.59 & 0.81 \\
 \caption{Rows 1 and 2 replicate results in Chickering and Pearl (1997);
 row 3 returns inferences for complier average effects.}\tabularnewline
 \end{longtable}
@@ -347,11 +349,23 @@ querying models, can be used (up to computational constraints) for
 arbitrary causal models, for different types of data structures, and for
 all causal queries that can be posed of the causal model.
 
-\hypertarget{software-requirements}{%
-\subsection{Software requirements}\label{software-requirements}}
+\hypertarget{connections-to-existing-packages}{%
+\subsection{Connections to existing
+packages}\label{connections-to-existing-packages}}
+
+\begin{itemize}
+\tightlist
+\item
+  Embed the \emph{software} into the respective relevant literature.
+\end{itemize}
+
+-compare with bareinboim package - knox bounds package
 
 \hypertarget{statistical-model}{%
 \section{Statistical model}\label{statistical-model}}
+
+\textbf{MH: simplify ; clarify how we can get away with simpler
+structure; Embed the \emph{methods}}
 
 The core conceptual framework is described in Pearl's \emph{Causality}
 \citep{pearl2009causality} but can be summarized as follows (using the
@@ -470,8 +484,7 @@ w_{11} & = & \lambda^X_1(\lambda^Y_{11} + \lambda^Y_{01})\end{array} \right.\]
 \begin{itemize}
 \tightlist
 \item
-  Embed the \emph{methods} and the \emph{software} into the respective
-  relevant literature.
+  Embed the \emph{software} into the respective relevant literature.
 \item
   For the latter both competing and complementary software should be
   discussed (within the same software environment and beyond), bringing
@@ -481,11 +494,7 @@ w_{11} & = & \lambda^X_1(\lambda^Y_{11} + \lambda^Y_{01})\end{array} \right.\]
   \textsc{Bib}{\TeX}.)
 \end{itemize}
 
-\hypertarget{connections-to-existing-packages}{%
-\subsection{Connections to existing
-packages}\label{connections-to-existing-packages}}
-
--compare with bareinboim package - knox bounds package
+MH: LINE ABOUT WHAT CQ DOES IN THIS FRAMEWORK\ldots{}
 
 The strength of \texttt{CausalQueries} is to allow users to specify
 arbitrary DAGs, arbitrary queries over nodes in those DAGs, and use the
@@ -604,6 +613,19 @@ detail in section \citet{confounding}.
 Once defined, a model can be graphed. Graphing draws on functionality
 from \texttt{dagitty}, \texttt{ggplot}, and \texttt{ggdag}.
 
+Plotting is useful to check that you have written the structure down
+correctly.
+
+Options for plotting are accepted by \texttt{CausalQueries:::plot\_dag}.
+The plot that is produced is a ggplot object and so accepts additional
+modification in the usual way.
+
+\begin{itemize}
+\tightlist
+\item
+  GS Put side by side with labels
+\end{itemize}
+
 \begin{verbatim}
 make_model("X -> M -> Y <- X; Z -> Y") |>
   plot()
@@ -618,13 +640,6 @@ make_model("X -> M -> Y <- X; Z -> Y") |>
 \caption{A plotted model.}
 
 \end{figure}
-
-Plotting is useful to check that you have written the structure down
-correctly.
-
-Options for plotting are accepted by \texttt{CausalQueries:::plot\_dag}.
-The plot that is produced is a ggplot object and so accepts additional
-modification in the usual way.
 
 \begin{verbatim}
 make_model("X -> M -> Y <- X; Z -> Y") |>
@@ -653,123 +668,64 @@ make_model("X -> M -> Y <- X; Z -> Y") |>
 \subsection{Model characterization}\label{model-characterization}}
 
 When a model is defined, a set of objects is generated. These are the
-key quantities that are used for all inference.
+key quantities that are used for all inference. The table below
+summarizes the core components of a model, providing a brief explanation
+for each one.
 
-\hypertarget{nodal-types}{%
-\subsubsection{Nodal types}\label{nodal-types}}
+The first element is a \texttt{statement} which defines how the nodes in
+the model are related, specified by the user using dagitty syntax. The
+second element, \texttt{dag}, is a data frame that outlines the
+parent-child relationships within the model. \texttt{Nodes} is simply a
+list of the node names in the model. Lastly, \texttt{parents\_df,} is a
+table listing the nodes, indicating if they are root nodes, and showing
+how many parents each node has.
 
-Two units have the same \emph{nodal type} at node \(Y\), \(\theta^Y\),
-if their outcome at \(Y\) responds in the same ways to parents of \(Y\).
+The model includes additional elements, \texttt{nodal\_types,}
+\texttt{parameters\_df,} and \texttt{causal\_types,} which we explain
+later.
 
-A node with \(k\) parents has \(2^{2^k}\) nodal types. The reason is
-that with \(k\) parents, there are \(2^k\) possible values of the
-parents and so \(2^{2^k}\) ways to respond to these possible parental
-values. As a convention we say that a node with no parents has two nodal
-types (0 or 1).
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.1462}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.8538}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Element
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Description
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Element
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Description
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+statement & A character string that describes directed causal relations
+between variables in a causal model, where arrows denote that one node
+is a potential cause of another. \\
+dag & A data frame with columns `parent' and `children' indicating how
+nodes relate to each other. \\
+nodes & A list containing the nodes in the model. \\
+parents\_df & A table listing nodes, whether they are root nodes or not,
+and the number of parents they have. \\
+nodal\_types & A list with the nodal types in the model. (See Nodal
+Types Section) \\
+parameters\_df & A data frame linking the model's parameters with the
+nodal types of the model, as well as the family to which they belong.
+(See Parameters dataframe Section) \\
+causal\_types & A data frame listing causal types and the nodal types
+that produce them. (See Causal Types Section) \\
+P: parameter matrix & Should I include it? \\
+\caption{Core Elements of a Causal Model}\tabularnewline
+\end{longtable}
 
-When a model is created the full set of ``nodal types'' is identified.
-These are stored in the model. The subscripts become very long and hard
-to parse for more complex models so the model object also includes a
-guide to interpreting nodal type values. You can see them like this.
-
-\begin{verbatim}
-make_model("X -> Y")$nodal_types
-\end{verbatim}
-
-\begin{verbatim}
-$X
-[1] "0" "1"
-
-$Y
-[1] "00" "10" "01" "11"
-
-attr(,"interpret")
-attr(,"interpret")$X
-  node position display interpretation
-1    X       NA      X0          X = 0
-2    X       NA      X1          X = 1
-
-attr(,"interpret")$Y
-  node position display interpretation
-1    Y        1   Y[*]*      Y | X = 0
-2    Y        2   Y*[*]      Y | X = 1
-\end{verbatim}
-
-Note that we use \(\theta^j\) to indicate nodal types because for
-qualitative analysis the nodal types are often the parameters of
-interest.
-
-Another way to develop a clearer understanding of how to interpret nodal
-types subscripts is to consider the conditions they may fulfill. We
-refer to these conditions as `causal queries'. Causal queries are useful
-because they allow us to target and alter specific nodal types, and they
-come in handy for functions that we will introduce below. For instance,
-in a model such as \(X \rightarrow Y \leftarrow M\), you may want to
-identify the nodal types that correspond to cases where increasing both
-\(X\) and \(M\) from 0 to 1 results in an increase in \(Y\). You can do
-this using the \texttt{get\_query\_types} function as shown below:
-
-\begin{verbatim}
-model <- make_model('X -> M -> Y <- X')
-query <- 'Y[X=1, M=1] > Y[X=0, M=0]'
-get_query_types(model, query, map= "nodal_type")
-\end{verbatim}
-
-\begin{verbatim}
-
-Nodal types adding weight to query
-
- query :  Y[X=1,M=1]>Y[X=0,M=0] 
-
- 0001   0101
- 0011   0111
-
-
- Number of nodal types that add weight to query = 4
- Total number of nodal types related to Y = 16
-\end{verbatim}
-
-\hypertarget{causal-types}{%
-\subsubsection{Causal types}\label{causal-types}}
-
-Causal types are collections of nodal types. Two units are of the same
-\emph{causal type} if they have the same nodal type at every node. For
-example in a \(X \rightarrow M \rightarrow Y\) model,
-\(\theta = (\theta^X_0, \theta^M_{01}, \theta^Y_{10})\) is a type that
-has \(X=0\), \(M\) responds positively to \(X\), and \(Y\) responds
-positively to \(M\).
-
-When a model is created, the full set of causal types is identified.
-These are stored in the model object:
-
-\begin{verbatim}
-make_model("A -> B")$causal_types
-\end{verbatim}
-
-\begin{verbatim}
-       A  B
-A0.B00 0 00
-A1.B00 1 00
-A0.B10 0 10
-A1.B10 1 10
-A0.B01 0 01
-A1.B01 1 01
-A0.B11 0 11
-A1.B11 1 11
-\end{verbatim}
-
-A model with \(n_j\) nodal types at node \(j\) has \(\prod_jn_j\) causal
-types. Thus the set of causal types can be large. In the model
-\((X\rightarrow M \rightarrow Y \leftarrow X)\) there are
-\(2\times 4\times 16 = 128\) causal types.
-
-Knowledge of a causal type tells you what values a unit would take, on
-all nodes, absent an intervention. For example for a model
-\(X \rightarrow M \rightarrow Y\) a type
-\(\theta = (\theta^X_0, \theta^M_{01}, \theta^Y_{10})\) would imply data
-\((X=0, M=0, Y=1)\). (The converse of this, of course, is the key to
-updating: observation of data \((X=0, M=0, Y=1)\) result in more weight
-placed on \(\theta^X_0\), \(\theta^M_{01}\), and \(\theta^Y_{10})\).)
+3 After updating the model contains further objects: small table: *
+elemts after updating: stan\_obje
 
 \hypertarget{parameters-dataframe}{%
 \subsubsection{Parameters dataframe}\label{parameters-dataframe}}
@@ -866,6 +822,99 @@ Below we will see examples where the parameter dataframe helps keep
 track of parameters that are created when confounding is added to a
 model.
 
+\hypertarget{nodal-types}{%
+\subsubsection{Nodal types}\label{nodal-types}}
+
+Two units have the same \emph{nodal type} at node \(Y\), \(\theta^Y\),
+if their outcome at \(Y\) responds in the same ways to parents of \(Y\).
+
+A node with \(k\) parents has \(2^{2^k}\) nodal types. The reason is
+that with \(k\) parents, there are \(2^k\) possible values of the
+parents and so \(2^{2^k}\) ways to respond to these possible parental
+values. As a convention we say that a node with no parents has two nodal
+types (0 or 1).
+
+When a model is created the full set of ``nodal types'' is identified.
+These are stored in the model. The subscripts become very long and hard
+to parse for more complex models so the model object also includes a
+guide to interpreting nodal type values. You can see them like this.
+
+\begin{verbatim}
+make_model("X -> Y")$nodal_types
+\end{verbatim}
+
+\begin{verbatim}
+$X
+[1] "0" "1"
+
+$Y
+[1] "00" "10" "01" "11"
+
+attr(,"interpret")
+attr(,"interpret")$X
+  node position display interpretation
+1    X       NA      X0          X = 0
+2    X       NA      X1          X = 1
+
+attr(,"interpret")$Y
+  node position display interpretation
+1    Y        1   Y[*]*      Y | X = 0
+2    Y        2   Y*[*]      Y | X = 1
+\end{verbatim}
+
+Note that we use \(\theta^j\) to indicate nodal types because for
+qualitative analysis the nodal types are often the parameters of
+interest.
+
+LM: section on lookup types; \texttt{interpret\_type} EXAMPLE with maybe
+2 parents
+
+\hypertarget{causal-types}{%
+\subsubsection{Causal types}\label{causal-types}}
+
+Causal types are collections of nodal types. Two units are of the same
+\emph{causal type} if they have the same nodal type at every node. For
+example in a \(X \rightarrow M \rightarrow Y\) model,
+\(\theta = (\theta^X_0, \theta^M_{01}, \theta^Y_{10})\) is a type that
+has \(X=0\), \(M\) responds positively to \(X\), and \(Y\) responds
+positively to \(M\).
+
+When a model is created, the full set of causal types is identified.
+These are stored in the model object:
+
+\begin{verbatim}
+make_model("A -> B")$causal_types
+\end{verbatim}
+
+\begin{verbatim}
+       A  B
+A0.B00 0 00
+A1.B00 1 00
+A0.B10 0 10
+A1.B10 1 10
+A0.B01 0 01
+A1.B01 1 01
+A0.B11 0 11
+A1.B11 1 11
+\end{verbatim}
+
+A model with \(n_j\) nodal types at node \(j\) has \(\prod_jn_j\) causal
+types. Thus the set of causal types can be large. In the model
+\((X\rightarrow M \rightarrow Y \leftarrow X)\) there are
+\(2\times 4\times 16 = 128\) causal types.
+
+Knowledge of a causal type tells you what values a unit would take, on
+all nodes, absent an intervention. For example for a model
+\(X \rightarrow M \rightarrow Y\) a type
+\(\theta = (\theta^X_0, \theta^M_{01}, \theta^Y_{10})\) would imply data
+\((X=0, M=0, Y=1)\). (The converse of this, of course, is the key to
+updating: observation of data \((X=0, M=0, Y=1)\) result in more weight
+placed on \(\theta^X_0\), \(\theta^M_{01}\), and \(\theta^Y_{10})\).)
+
+Till: Show how realise\_outcomes connects causal types with data types:
+Show for something with a do operation and without a do operation; point
+out causal types on left
+
 \hypertarget{parameter-matrix}{%
 \subsubsection{Parameter matrix}\label{parameter-matrix}}
 
@@ -904,13 +953,25 @@ parameters values for parameters whose row in the \(P\) matrix contains
 a 1.
 
 Below we will see examples where the \(P\) matrix helps keep track of
-parameters that are created when confounding is added to a model.
+parameters that are created when confounding is added to a model. CROSS
+REFERENCE
+
+To speed up different operations it is sometuimes useful to have P added
+to the model:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{set\_parameter\_matrix}\ldots{}
+\end{itemize}
 
 \hypertarget{tailoring-models}{%
 \subsection{Tailoring models}\label{tailoring-models}}
 
 \hypertarget{restrictions}{%
 \subsubsection{Setting restrictions}\label{restrictions}}
+
+TILL: READ THROUGH
 
 When a model is defined, the complete set of possible causal relations
 are worked out. This set can be very large.
@@ -1012,6 +1073,12 @@ make_model("X->Y") |>
   set_restrictions(labels = list(Y = "Y?0"))
 \end{verbatim}
 
+\begin{itemize}
+\tightlist
+\item
+  adding ``given'' for restrictions with models with confounding
+\end{itemize}
+
 \hypertarget{confounding}{%
 \subsubsection{Allowing confounding}\label{confounding}}
 
@@ -1112,7 +1179,7 @@ We see here that there are now two parameter families for parameters
 associated with the node \(Y\). Each family captures the conditional
 distribution of \(Y\)'s nodal types, given \(X\). For instance the
 parameter \texttt{Y01\_X.1} can be interpreted as
-\(\Pr(\theta^Y = \theta^Y _{01} | X=1)\).
+\(\Pr(\theta^Y = \theta^Y_{01} | X=1)\).
 
 To see exactly how the parameters map to causal types we can view the
 parameter matrix:
@@ -1198,17 +1265,14 @@ probabilities of the constituent parameters.
   \end{itemize}
 \end{itemize}
 
-When confounding is added to a model, a dataframe,
-\texttt{confounds\_df} is created and added to the model, recording
-which variables involve confounding. This is then used for plotting:
-
 \begin{verbatim}
-make_model("A <- X -> B; A <-> X; B <-> X") |> plot()
+make_model("A <- X -> B; A <-> X; B <-> X") |> 
+  plot()
 \end{verbatim}
 
 \begin{figure}[H]
 
-{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-21-1.pdf}
+{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-20-1.pdf}
 
 }
 
@@ -1220,6 +1284,8 @@ make_model("A <- X -> B; A <-> X; B <-> X") |> plot()
 Priors on model parameters can be added to the parameters dataframe. The
 priors are interpreted as alpha arguments for a Dirichlet distribution.
 They can be seen using \texttt{get\_priors}.
+
+MH: TEXT ON DIRICHLET
 
 \begin{verbatim}
 make_model("X->Y") |> get_priors()
@@ -1292,6 +1358,79 @@ make_model("X->Y") |>
    1    1    1    1    3    1 
 \end{verbatim}
 
+As setting priors simply requires mapping alpha values to parameters;
+the process boils down to selecting rows of the \texttt{parmeters\_df}
+dataframe, at which to alter values. When specifying a causal statement
+as above, CausalQueries internally identifies nodal types that are
+consistent with the statement, which in turn identify parameters to
+alter priors for. Note that there is nothing particularly unique about
+setting priors via causal syntax, as it is simply an abstract way of
+specifying how to subset the \texttt{parameters\_df} dataframe. To wit;
+we can achieve the same result as above by specifying:
+
+\begin{verbatim}
+make_model("X->Y") |>
+  set_priors(nodal_type = "01", alphas = 3) |>
+  get_priors()
+\end{verbatim}
+
+\begin{verbatim}
+ X.0  X.1 Y.00 Y.10 Y.01 Y.11 
+   1    1    1    1    3    1 
+\end{verbatim}
+
+or even:
+
+\begin{verbatim}
+make_model("X->Y") |>
+  set_priors(param_names = "Y.01", alphas = 3) |>
+  get_priors()
+\end{verbatim}
+
+\begin{verbatim}
+ X.0  X.1 Y.00 Y.10 Y.01 Y.11 
+   1    1    1    1    3    1 
+\end{verbatim}
+
+\texttt{set\_priors} allows for the specification of any non-redundant
+combination of arguments on the \texttt{param\_names}, \texttt{node},
+\texttt{nodal\_type}, \texttt{param\_set} and \texttt{given} columns of
+\texttt{parameters\_df} to uniquely identify parameters to set priors
+on. Alternatively a fully formed subsetting statement may be supplied to
+\texttt{alter\_at}. As all these arguments get mapped to the parameters
+the identify internally they may be used interchangeably.
+
+\begin{verbatim}
+make_model("X-> M -> Y; X <-> Y") |>
+  set_priors(node = "Y", nodal_type = c("01","11"), given = "X.1", alphas = c(3,2)) |>
+  get_priors()
+\end{verbatim}
+
+\begin{verbatim}
+     X.0      X.1     M.00     M.10     M.01     M.11 Y.00_X.0 Y.10_X.0 
+       1        1        1        1        1        1        1        1 
+Y.01_X.0 Y.11_X.0 Y.00_X.1 Y.10_X.1 Y.01_X.1 Y.11_X.1 
+       1        1        1        1        3        2 
+\end{verbatim}
+
+\begin{verbatim}
+make_model("X-> M -> Y; X <-> Y") |>
+  set_priors(alter_at = "node == 'Y' & nodal_type %in% c('01','11') & given == 'X.1'", alphas = c(3,2)) |>
+  get_priors()
+\end{verbatim}
+
+\begin{verbatim}
+     X.0      X.1     M.00     M.10     M.01     M.11 Y.00_X.0 Y.10_X.0 
+       1        1        1        1        1        1        1        1 
+Y.01_X.0 Y.11_X.0 Y.00_X.1 Y.10_X.1 Y.01_X.1 Y.11_X.1 
+       1        1        1        1        3        2 
+\end{verbatim}
+
+It should be noted that while highly targeted prior setting is
+convenient and flexible; it should be done with caution. Setting priors
+on specific parameters in complex models; especially models involving
+confounding, may strongly affect inferences in intractable ways.
+
 See \texttt{?set\_priors} and \texttt{?make\_priors} for many examples.
 
 We note that flat priors over nodal types does not necessarily translate
@@ -1311,19 +1450,16 @@ make_model("X -> Y") |>
 \end{verbatim}
 
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0889}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1778}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0667}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1222}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1222}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0556}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0333}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1556}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1778}}@{}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1951}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0732}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1341}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1341}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0610}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0366}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1707}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1951}}@{}}
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
-model
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 query
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 given
@@ -1344,8 +1480,8 @@ cred.high.97.5\%
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-model\_1 & Y{[}X=1{]} - Y{[}X=0{]} & - & parameters & FALSE & 0.33 & NA
-& 0.33 & 0.33 \\
+Y{[}X=1{]} - Y{[}X=0{]} & - & parameters & FALSE & 0.33 & NA & 0.33 &
+0.33 \\
 \end{longtable}
 
 More subtly the \emph{structure} of a model, coupled with flat priors,
@@ -1365,19 +1501,16 @@ make_model("X -> Y") |>
 \end{verbatim}
 
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0889}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1778}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0667}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1222}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1222}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0556}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0333}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1556}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1778}}@{}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1951}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0732}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1341}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1341}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0610}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0366}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1707}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1951}}@{}}
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
-model
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 query
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 given
@@ -1398,8 +1531,8 @@ cred.high.97.5\%
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-model\_1 & Y{[}X=1{]} \textgreater{} Y{[}X=0{]} & - & parameters & FALSE
-& 0.25 & NA & 0.25 & 0.25 \\
+Y{[}X=1{]} \textgreater{} Y{[}X=0{]} & - & parameters & FALSE & 0.25 &
+NA & 0.25 & 0.25 \\
 \end{longtable}
 
 \begin{verbatim}
@@ -1409,19 +1542,16 @@ make_model("X -> M -> Y") |>
 \end{verbatim}
 
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0879}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1758}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0659}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1209}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1209}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0659}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.0330}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1538}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1758}}@{}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1928}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0723}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1325}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1325}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0723}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0361}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1687}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1928}}@{}}
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
-model
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 query
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 given
@@ -1442,8 +1572,8 @@ cred.high.97.5\%
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-model\_1 & Y{[}X=1{]} \textgreater{} Y{[}X=0{]} & - & parameters & FALSE
-& 0.125 & NA & 0.125 & 0.125 \\
+Y{[}X=1{]} \textgreater{} Y{[}X=0{]} & - & parameters & FALSE & 0.125 &
+NA & 0.125 & 0.125 \\
 \end{longtable}
 
 Caution regarding priors is particularly important when models are not
@@ -1465,6 +1595,9 @@ models that vary in their priors).
 
 \hypertarget{parameters}{%
 \subsubsection{Setting Parameters}\label{parameters}}
+
+MH: POINT OUT FOLLOWING SAME LOGIC AS LASTS SECTION parameters rather
+than alphas as arguments
 
 By default, models have a vector of parameter values included in the
 \texttt{parameters\_df} dataframe. These are useful for generating data,
@@ -1506,11 +1639,11 @@ make_model("X->Y") |>
 0.5000000 0.5000000 0.1666667 0.1666667 0.5000000 0.1666667 
 \end{verbatim}
 
-\hypertarget{using-models}{%
-\subsection{Using models}\label{using-models}}
+\hypertarget{drawing-and-manipulating-data}{%
+\subsection{Drawing and manipulating
+data}\label{drawing-and-manipulating-data}}
 
-\hypertarget{drawing-data}{%
-\subsubsection{Drawing data}\label{drawing-data}}
+MH MAKE SENSE OF THIS HERE
 
 \begin{verbatim}
 model |> make_data(n = 5) |> kable()
@@ -1524,11 +1657,13 @@ X & Y \\
 \bottomrule\noalign{}
 \endlastfoot
 0 & 0 \\
+0 & 0 \\
+0 & 0 \\
 0 & 1 \\
-1 & 1 \\
-1 & 1 \\
-1 & 1 \\
+1 & 0 \\
 \end{longtable}
+
+LONG AND COMPACT FORMS
 
 \hypertarget{updating-models}{%
 \section{Updating models}\label{updating-models}}
@@ -1554,6 +1689,8 @@ We provide further details below.
 \hypertarget{data-for-stan}{%
 \subsection{Data for stan}\label{data-for-stan}}
 
+GS: general edit to this section
+
 We use a generic \texttt{stan} model that works for all binary causal
 models. Rather than writing a new \texttt{stan} model for each causal
 model we send \texttt{stan} details of each particular causal model as
@@ -1571,38 +1708,514 @@ The internal function \texttt{prep\_stan\_data} prepares data for
 \texttt{stan}. You generally don't need to use this manually, but we
 show here a sample of what it produces as input for \texttt{stan}.
 
-We provide \texttt{prep\_stan\_data} with data in compact form (listing
-``data events'').
-
-\begin{verbatim}
-model <- make_model("X->Y")
-
-data  <- data.frame(X = c(0, 1, 1, NA), Y = c(0, 1, 0, 1)) 
-
-compact_data <-  collapse_data(data, model) 
-
-kable(compact_data)
-\end{verbatim}
-
-\begin{longtable}[]{@{}llr@{}}
-\toprule\noalign{}
-event & strategy & count \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-X0Y0 & XY & 1 \\
-X1Y0 & XY & 1 \\
-X0Y1 & XY & 0 \\
-X1Y1 & XY & 1 \\
-Y0 & Y & 0 \\
-Y1 & Y & 1 \\
-\end{longtable}
-
 Note that NAs are interpreted as data not having been sought. So in this
 case the interpretation is that there are two data strategies: data on
 \(Y\) and \(X\) was sought in three cases; data on \(Y\) only was sought
 in just one case.
+
+\hypertarget{how-the-stan-model-works}{%
+\subsection{How the stan model works}\label{how-the-stan-model-works}}
+
+THIS DISCUSSION IS OUT OF DATE:
+
+The \texttt{stan} model works as follows:
+
+MH: ADD DISCUSSION OF parmap;
+
+\begin{itemize}
+\item
+  We are interested in ``sets'' of parameters. For example in the
+  \(X \rightarrow Y\) model we have two parameter sets
+  (\texttt{param\_sets}). The first is
+  \(\lambda^X \in \{\lambda^X_0, \lambda^X_1\}\) whose elements give the
+  probability that \(X\) is 0 or 1. These two probabilities sum to one.
+  The second parameter set is
+  \(\lambda^Y \in \{\lambda^Y_{00}, \lambda^Y_{10}, \lambda^Y_{01} \lambda^Y_{11}\}\).
+  These are also probabilities and their values sum to one. Note in all
+  that we have 6 parameters but just 1 + 3 = 4 degrees of freedom.
+\item
+  We would like to express priors over these parameters using multiple
+  Dirichlet distributions (two in this case). In practice because we are
+  dealing with multiple simplices of varying length, it is easier to
+  express priors over gamma distributions with a unit scale parameter
+  and shape parameter corresponding to the Dirichlet priors, \(\alpha\).
+  We make use of the fact that \(\lambda^X_0 \sim Gamma(\alpha^X_0,1)\)
+  and \(\lambda^X_1 \sim Gamma(\alpha^X_1,1)\) then
+  \(\frac{1}{\lambda^X_0 +\lambda^X_1}(\lambda^X_0, \lambda^X_1) \sim Dirichlet(\alpha^X_0, \alpha^X_1)\).
+  For a discussion of implementation of this approach in \texttt{stan}
+  see https://discourse.mc-stan.org/t/ragged-array-of-simplexes/1382.
+\item
+  For any candidate parameter vector \(\lambda\) we calculate the
+  probability of \emph{causal} types (\texttt{prob\_of\_types}) by
+  taking, for each type \(i\), the product of the probabilities of all
+  parameters (\(\lambda_j\)) that appear in column \(i\) of the
+  parameter matrix \(P\). Thus the probability of a \((X_0,Y_{00})\)
+  case is just \(\lambda^X_0 \times \lambda^Y_{00}\). The
+  implementations in \texttt{stan} uses
+  \texttt{prob\_of\_types\_{[}i{]}}
+  \(= \prod_j \left(P_{j,i} \lambda_j + (1-P_{j,i})\right)\): this
+  multiplies the probability of all parameters involved in the causal
+  type (and substitutes 1s for parameters that are not). (\texttt{P} and
+  \texttt{not\_P} (1-\(P\)) are provided as data to \texttt{stan}).
+\item
+  The probability of data types, \texttt{w}, is given by summing up the
+  probabilities of all causal types that produce a given data type. For
+  example, the probability of a \(X=0,Y=0\) case, \(w_{00}\) is
+  \(\lambda^X_0\times \lambda^Y_{00} + \lambda^X_0\times \lambda^Y_{01}\).
+  The ambiguity matrix \(A\) is provided to \texttt{stan} to indicate
+  which probabilities need to be summed.
+\item
+  In the case of incomplete data we first identify the set of ``data
+  strategies'', where a collection of a data strategy might be of the
+  form ``gather data on \(X\) and \(M\), but not \(Y\), for \(n_1\)
+  cases and gather data on \(X\) and \(Y\), but not \(M\), for \(n_2\)
+  cases. The probability of an observed event, within a data strategy,
+  is given by summing the probabilities of the types that could give
+  rise to the incomplete data. For example \(X\) is observed, but \(Y\)
+  is not, then the probability of \(X=0, Y = \text{NA}\) is
+  \(w_{00} +w_{01}\). The matrix \(E\) is passed to \texttt{stan} to
+  figure out which event probabilities need to be combined for events
+  with missing data.
+\item
+  The probability of a dataset is then given by a multinomial
+  distribution with these event probabilities (or, in the case of
+  incomplete data, the product of multinomials, one for each data
+  strategy).
+\end{itemize}
+
+GS: TO CHECK THE PATHS FUNCTIONALITY
+
+\hypertarget{implementation}{%
+\subsection{Implementation}\label{implementation}}
+
+To update a CausalQueries model with data use:
+
+\begin{verbatim}
+update_model(model, data)
+\end{verbatim}
+
+where the data argument is a dataset containing some or all of the nodes
+in the model.
+
+As \texttt{update\_model()} calls \texttt{rstan::sampling} one can pass
+along all arguments in \texttt{...} to \texttt{rstan::sampling}. For
+instance:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{iter} sets the number of iterations and ultimately the number
+  of draws in the posterior
+\item
+  \texttt{chains} sets the number of chains; doing multiple chains in
+  parallel speeds things up
+\end{itemize}
+
+If you have multiple cores you can do parallel processing by including
+this line before running \texttt{CausalQueries}:
+
+\begin{verbatim}
+options(mc.cores = parallel::detectCores())
+\end{verbatim}
+
+Additionally parallelizing across models or data while running MCMC
+chains in parallel can be achieved by setting up a nested parallel
+process. With 8 cores one can run 2 updating processes with 3 parallel
+chains each simultaneously. More generally the number of parallel
+processes at the upper level of the nested parallel structure are given
+by \texttt{floor(cores/(chains\ +\ 1))}.
+
+\begin{verbatim}
+chains <- 3
+cores <- 8
+
+future::plan(list(
+      future::tweak(future::multisession, workers = floor(cores/(chains + 1))),
+      future::tweak(future::multisession, workers = chains)
+    ))
+
+model <- make_model("X -> Y")
+data <- list(data_1, data_2)
+
+future.apply::future_lapply(data, function(d) {
+  update_model(
+    model = model,
+    data = d,
+    chains = chains,
+    refresh = 0
+  )
+})
+\end{verbatim}
+
+\hypertarget{incomplete-and-censored-data}{%
+\subsection{Incomplete and censored
+data}\label{incomplete-and-censored-data}}
+
+MH
+
+\hypertarget{output}{%
+\subsection{Output}\label{output}}
+
+The primary output from \texttt{update\_model()} is a posterior
+distribution over model parameters, stored as a dataframe in
+\texttt{model\$posterior\_distribution}. However another of other
+objects are also optionally stored:
+
+Models can be queried using the \texttt{query\_distribution} and
+\texttt{query\_model} functions. The difference between these functions
+is that \texttt{query\_distribution} examines a single query and returns
+a full distribution of draws from the distribution of the estimand
+(prior or posterior); \texttt{query\_model} takes a collection of
+queries and returns a dataframe with summary statistics on the queries.
+
+\hypertarget{queries}{%
+\section{Queries}\label{queries}}
+
+LM: REVIEW AND FIX SECTION
+
+WRITE SECTION DESCRIBING FACTUAL AND COUNTERFACTULA QUERIES AND THE
+SYNTAX INCLUDING Role of {[}{]} AND OF GIVEN
+
+get\_query\_types
+
+return sets; discuss how all querties related to these sets
+
+Another way to develop a clearer understanding of how to interpret nodal
+types subscripts is to consider the conditions they may fulfill. We
+refer to these conditions as `causal queries'. Causal queries are useful
+because they allow us to target and alter specific nodal types, and they
+come in handy for functions that we will introduce below. For instance,
+in a model such as \(X \rightarrow Y \leftarrow M\), you may want to
+identify the nodal types that correspond to cases where increasing both
+\(X\) and \(M\) from 0 to 1 results in an increase in \(Y\). You can do
+this using the \texttt{get\_query\_types} function as shown below:
+
+start off with querty Y==1 then Y{[}X=1{]} ==1 then Y{[}X=1{]}
+\textgreater= Y{[}X=0{]} then show linear functions possible Y{[}X=1{]}
+- Y{[}X=0{]}
+
+\begin{verbatim}
+model <- make_model('X -> M -> Y <- X')
+query <- 'Y[X=1, M=1] > Y[X=0, M=0]'
+get_query_types(model, query, map= "nodal_type")
+\end{verbatim}
+
+\begin{verbatim}
+
+Nodal types adding weight to query
+
+ query :  Y[X=1,M=1]>Y[X=0,M=0] 
+
+ 0001   0101
+ 0011   0111
+
+
+ Number of nodal types that add weight to query = 4
+ Total number of nodal types related to Y = 16
+\end{verbatim}
+
+\hypertarget{query-implementation}{%
+\subsection{Query implementation}\label{query-implementation}}
+
+\hypertarget{queries-by-hand}{%
+\subsection{Queries by hand}\label{queries-by-hand}}
+
+Queries can draw directly from the prior distribution of the posterior
+distribution provided by \texttt{stan}.
+
+\begin{verbatim}
+library(DeclareDesign)
+
+data  <- fabricate(N = 10, X = complete_ra(N), Y = X)
+
+model <- make_model("X -> Y") |>
+  update_model(data, iter  = 4000)
+
+model$posterior_distribution |> 
+  ggplot(aes(Y.01 - Y.10)) + 
+           geom_histogram()
+\end{verbatim}
+
+\begin{verbatim}
+`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+\end{verbatim}
+
+\includegraphics{paper_files/figure-pdf/unnamed-chunk-38-1.pdf}
+
+\hypertarget{query-distribution}{%
+\subsection{Query distribution}\label{query-distribution}}
+
+\texttt{query\_distribution} works similarly except that distributions
+over queries are returned:
+
+\begin{verbatim}
+make_model("X -> Y") |> 
+  query_distribution(
+    query = list(increasing = "(Y[X=1] > Y[X=0])"), 
+    using = "priors") |>
+  ggplot(aes(increasing)) +
+  geom_histogram()
+\end{verbatim}
+
+\begin{verbatim}
+`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+\end{verbatim}
+
+\begin{figure}[H]
+
+{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-39-1.pdf}
+
+}
+
+\caption{Prior on 'Probability \(Y\) is increasing in \(X\)'}
+
+\end{figure}
+
+\hypertarget{case-level-queries}{%
+\subsection{Case level queries}\label{case-level-queries}}
+
+MH
+
+Case level queries provide the inference for a `new case', which is a
+scalar The case level query \emph{updates} on the given information
+observed in the new case. The resulting inference is different to the
+inference that would be made from the posterior \emph{given} the
+features of the case.
+
+To illustrate, consider a model for which we are quite sure that \(X\)
+causes \(Y\) but we do not know whether it works through two positive
+effects or two negative effects. Thus we do not know if M=0 would
+suggest an effect or no effect. If asked what we would infer for a case
+that had \(M=0\) we would not know whether \(M=0\) information is
+consistent with a positive effect or not. However if provided with a
+randomly case and learn that it has \(M=0\), then we update about the
+causal model and infer that there is an effect in this case (but that
+there wouldn't be were \(M=1\)).
+
+\begin{verbatim}
+# DO ALL THIS IN ONE TABLE
+
+set.seed(1)
+ model <-
+   make_model("X -> M -> Y") |>
+   update_model(data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)), iter = 10000)
+
+ Q <- "Y[X=1] > Y[X=0]"
+ G <- "X==1 & Y==1 & M==1"
+ QG <- "(Y[X=1] > Y[X=0]) & (X==1 & Y==1 & M==1)"
+
+ # In this case these are very different:
+ query_distribution(model, Q, given = G, using = "posteriors")[[1]] |> mean()
+ query_distribution(model, Q, given = G, using = "posteriors",
+   case_level = TRUE)
+
+ # These are equivalent:
+ # 1. Case level query via function
+ query_distribution(model, Q, given = G,
+    using = "posteriors", case_level = TRUE)
+
+ # 2. Case level query by hand using Bayes
+ distribution <- query_distribution(
+    model, list(QG = QG, G = G), using = "posteriors")
+
+ mean(distribution$QG)/mean(distribution$G)
+\end{verbatim}
+
+\hypertarget{batch-queries}{%
+\subsection{Batch queries}\label{batch-queries}}
+
+The \texttt{query\_model} function takes causal queries and conditions
+(\texttt{given}) and specifies the parameters to be used. The result is
+a dataframe which can be displayed as a table.
+
+\begin{verbatim}
+models <- list(
+ `1` = make_model("X -> Y"),
+ `2` = make_model("X -> Y") |> set_restrictions("Y[X=1] < Y[X=0]")
+ )
+
+query_model(
+  models,
+  query = list(ATE = "Y[X=1] - Y[X=0]", POS = "Y[X=1] > Y[X=0]"),
+  given = c(TRUE,  "Y==1 & X==1"),
+  case_level = c(FALSE, TRUE),
+  using = c("parameters", "priors"),
+  expand_grid = TRUE) |>
+  select(-starts_with("cred")) |>
+  
+  kable(digits = 2)
+\end{verbatim}
+
+\begin{longtable}[]{@{}lllllrr@{}}
+\toprule\noalign{}
+model & query & given & using & case\_level & mean & sd \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 & ATE & - & parameters & FALSE & 0.00 & NA \\
+2 & ATE & - & parameters & FALSE & 0.33 & NA \\
+1 & ATE & - & priors & FALSE & 0.00 & 0.32 \\
+2 & ATE & - & priors & FALSE & 0.33 & 0.23 \\
+1 & ATE & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA \\
+2 & ATE & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA \\
+1 & ATE & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29 \\
+2 & ATE & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29 \\
+1 & POS & - & parameters & FALSE & 0.25 & NA \\
+2 & POS & - & parameters & FALSE & 0.33 & NA \\
+1 & POS & - & priors & FALSE & 0.25 & 0.20 \\
+2 & POS & - & priors & FALSE & 0.33 & 0.23 \\
+1 & POS & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA \\
+2 & POS & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA \\
+1 & POS & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29 \\
+2 & POS & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29 \\
+1 & ATE & - & parameters & TRUE & 0.00 & NA \\
+2 & ATE & - & parameters & TRUE & 0.33 & NA \\
+1 & ATE & - & priors & TRUE & 0.00 & NA \\
+2 & ATE & - & priors & TRUE & 0.33 & NA \\
+1 & ATE & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA \\
+2 & ATE & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA \\
+1 & ATE & Y==1 \& X==1 & priors & TRUE & 0.50 & NA \\
+2 & ATE & Y==1 \& X==1 & priors & TRUE & 0.50 & NA \\
+1 & POS & - & parameters & TRUE & 0.25 & NA \\
+2 & POS & - & parameters & TRUE & 0.33 & NA \\
+1 & POS & - & priors & TRUE & 0.25 & NA \\
+2 & POS & - & priors & TRUE & 0.33 & NA \\
+1 & POS & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA \\
+2 & POS & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA \\
+1 & POS & Y==1 \& X==1 & priors & TRUE & 0.50 & NA \\
+2 & POS & Y==1 \& X==1 & priors & TRUE & 0.50 & NA \\
+\end{longtable}
+
+\hypertarget{computational-details-and-software-requirements}{%
+\section*{Computational details and software
+requirements}\label{computational-details-and-software-requirements}}
+\addcontentsline{toc}{section}{Computational details and software
+requirements}
+
+TILL TEXT
+
+\begin{itemize}
+\tightlist
+\item
+  information about certain computational details such as version
+  numbers, operating systems, or compilers could be included in an
+  unnumbered section. Also, auxiliary packages (say, for visualizations,
+  maps, tables, \ldots) that are not cited in the main text can be
+  credited here.
+\end{itemize}
+
+:::
+
+The results in this paper were obtained using
+\proglang{R}\textasciitilde3.4.1 with the
+\pkg{MASS}\textasciitilde7.3.47 package. \proglang{R} itself and all
+packages used are available from the Comprehensive \proglang{R} Archive
+Network (CRAN) at {[}https://CRAN.R-project.org/{]}.
+
+\hypertarget{acknowledgments}{%
+\section*{Acknowledgments}\label{acknowledgments}}
+\addcontentsline{toc}{section}{Acknowledgments}
+
+\begin{tcolorbox}[enhanced jigsaw, colback=white, breakable, arc=.35mm, leftrule=.75mm, rightrule=.15mm, opacityback=0, bottomrule=.15mm, toprule=.15mm, left=2mm]
+
+The approach to generating a generic stan function that can take data
+from arbitrary models was developed in key contributions by
+\href{http://jasper-cooper.com/}{Jasper Cooper} and
+\href{http://gsyunyaev.com/}{Georgiy Syunyaev}.
+\href{https://lilymedina.github.io/}{Lily Medina} did magical work
+pulling it all together and developing approaches to characterizing
+confounding and defining estimands. Clara Bicalho helped figure out the
+syntax for causal statements. Julio Solis made many key contributions
+figuring out how to simplify the specification of priors. Merlin
+Heidemanns figured out the \texttt{rstantools} integration and made
+myriad code improvements. Till Tietz revamped the entire package and
+improved every part of it.
+
+\end{tcolorbox}
+
+\hypertarget{references}{%
+\section*{References}\label{references}}
+\addcontentsline{toc}{section}{References}
+
+\renewcommand{\bibsection}{}
+\bibliography{bib.bib}
+
+\newpage{}
+
+\hypertarget{sec-techdetails}{%
+\section*{More technical details}\label{sec-techdetails}}
+\addcontentsline{toc}{section}{More technical details}
+
+\begin{tcolorbox}[enhanced jigsaw, colback=white, breakable, arc=.35mm, leftrule=.75mm, rightrule=.15mm, opacityback=0, bottomrule=.15mm, toprule=.15mm, left=2mm]
+
+Appendices can be included after the bibliography (with a page break).
+Each section within the appendix should have a proper section title
+(rather than just \emph{Appendix}).
+
+For more technical style details, please check out JSS's style FAQ at
+{[}https://www.jstatsoft.org/pages/view/style\#frequently-asked-questions{]}
+which includes the following topics:
+
+\begin{itemize}
+\tightlist
+\item
+  Title vs.~sentence case.
+\item
+  Graphics formatting.
+\item
+  Naming conventions.
+\item
+  Turning JSS manuscripts into \proglang{R} package vignettes.
+\item
+  Trouble shooting.
+\item
+  Many other potentially helpful details\ldots{}
+\end{itemize}
+
+\end{tcolorbox}
+
+\hypertarget{sec-bibtex}{%
+\section*{Using BibTeX}\label{sec-bibtex}}
+\addcontentsline{toc}{section}{Using BibTeX}
+
+\begin{tcolorbox}[enhanced jigsaw, colback=white, breakable, arc=.35mm, leftrule=.75mm, rightrule=.15mm, opacityback=0, bottomrule=.15mm, toprule=.15mm, left=2mm]
+
+References need to be provided in a \textsc{Bib}{\TeX} file
+(\texttt{.bib}). All references should be made with \texttt{@cite}
+syntax. This commands yield different formats of author-year citations
+and allow to include additional details (e.g.,pages, chapters, \dots) in
+brackets. In case you are not familiar with these commands see the JSS
+style FAQ for details.
+
+Cleaning up \textsc{Bib}{\TeX} files is a somewhat tedious task --
+especially when acquiring the entries automatically from mixed online
+sources. However, it is important that informations are complete and
+presented in a consistent style to avoid confusions. JSS requires the
+following format.
+
+\begin{itemize}
+\tightlist
+\item
+  item JSS-specific markup (\texttt{\textbackslash{}proglang},
+  \texttt{\textbackslash{}pkg}, \texttt{\textbackslash{}code}) should be
+  used in the references.
+\item
+  item Titles should be in title case.
+\item
+  item Journal titles should not be abbreviated and in title case.
+\item
+  item DOIs should be included where available.
+\item
+  item Software should be properly cited as well. For \proglang{R}
+  packages \texttt{citation("pkgname")} typically provides a good
+  starting point.
+\end{itemize}
+
+\end{tcolorbox}
+
+\hypertarget{appendix-stan-code}{%
+\section{Appendix: stan code}\label{appendix-stan-code}}
 
 \texttt{prep\_stan\_data} then returns a list of objects that
 \texttt{stan} expects to receive. These include indicators to figure out
@@ -1610,9 +2223,6 @@ where a parameter set starts (\texttt{l\_starts}, \texttt{l\_ends}) and
 ends and where a data strategy starts and ends
 (\texttt{strategy\_starts}, \texttt{strategy\_ends}), as well as the
 matrices described above.
-
-\hypertarget{stan-code}{%
-\subsection{stan code}\label{stan-code}}
 
 MOVE TO APPENDIX? ADD DISCUSSION OF PARMAP
 
@@ -1720,425 +2330,6 @@ for (i in 1:n_types) {
  }
 }
 \end{verbatim}
-
-THIS DISCUSSION IS OUT OF DATE:
-
-The \texttt{stan} model works as follows:
-
-\begin{itemize}
-\item
-  We are interested in ``sets'' of parameters. For example in the
-  \(X \rightarrow Y\) model we have two parameter sets
-  (\texttt{param\_sets}). The first is
-  \(\lambda^X \in \{\lambda^X_0, \lambda^X_1\}\) whose elements give the
-  probability that \(X\) is 0 or 1. These two probabilities sum to one.
-  The second parameter set is
-  \(\lambda^Y \in \{\lambda^Y_{00}, \lambda^Y_{10}, \lambda^Y_{01} \lambda^Y_{11}\}\).
-  These are also probabilities and their values sum to one. Note in all
-  that we have 6 parameters but just 1 + 3 = 4 degrees of freedom.
-\item
-  We would like to express priors over these parameters using multiple
-  Dirichlet distributions (two in this case). In practice because we are
-  dealing with multiple simplices of varying length, it is easier to
-  express priors over gamma distributions with a unit scale parameter
-  and shape parameter corresponding to the Dirichlet priors, \(\alpha\).
-  We make use of the fact that \(\lambda^X_0 \sim Gamma(\alpha^X_0,1)\)
-  and \(\lambda^X_1 \sim Gamma(\alpha^X_1,1)\) then
-  \(\frac{1}{\lambda^X_0 +\lambda^X_1}(\lambda^X_0, \lambda^X_1) \sim Dirichlet(\alpha^X_0, \alpha^X_1)\).
-  For a discussion of implementation of this approach in \texttt{stan}
-  see https://discourse.mc-stan.org/t/ragged-array-of-simplexes/1382.
-\item
-  For any candidate parameter vector \(\lambda\) we calculate the
-  probability of \emph{causal} types (\texttt{prob\_of\_types}) by
-  taking, for each type \(i\), the product of the probabilities of all
-  parameters (\(\lambda_j\)) that appear in column \(i\) of the
-  parameter matrix \(P\). Thus the probability of a \((X_0,Y_{00})\)
-  case is just \(\lambda^X_0 \times \lambda^Y_{00}\). The
-  implementations in \texttt{stan} uses
-  \texttt{prob\_of\_types\_{[}i{]}}
-  \(= \prod_j \left(P_{j,i} \lambda_j + (1-P_{j,i})\right)\): this
-  multiplies the probability of all parameters involved in the causal
-  type (and substitutes 1s for parameters that are not). (\texttt{P} and
-  \texttt{not\_P} (1-\(P\)) are provided as data to \texttt{stan}).
-\item
-  The probability of data types, \texttt{w}, is given by summing up the
-  probabilities of all causal types that produce a given data type. For
-  example, the probability of a \(X=0,Y=0\) case, \(w_{00}\) is
-  \(\lambda^X_0\times \lambda^Y_{00} + \lambda^X_0\times \lambda^Y_{01}\).
-  The ambiguity matrix \(A\) is provided to \texttt{stan} to indicate
-  which probabilities need to be summed.
-\item
-  In the case of incomplete data we first identify the set of ``data
-  strategies'', where a collection of a data strategy might be of the
-  form ``gather data on \(X\) and \(M\), but not \(Y\), for \(n_1\)
-  cases and gather data on \(X\) and \(Y\), but not \(M\), for \(n_2\)
-  cases. The probability of an observed event, within a data strategy,
-  is given by summing the probabilities of the types that could give
-  rise to the incomplete data. For example \(X\) is observed, but \(Y\)
-  is not, then the probability of \(X=0, Y = \text{NA}\) is
-  \(w_{00} +w_{01}\). The matrix \(E\) is passed to \texttt{stan} to
-  figure out which event probabilities need to be combined for events
-  with missing data.
-\item
-  The probability of a dataset is then given by a multinomial
-  distribution with these event probabilities (or, in the case of
-  incomplete data, the product of multinomials, one for each data
-  strategy). Justification for this approach relies on the likelihood
-  principle and is discussed in Chapter 6.
-\end{itemize}
-
-\hypertarget{implementation}{%
-\subsection{Implementation}\label{implementation}}
-
-To update a CausalQueries model with data use:
-
-\begin{verbatim}
-update_model(model, data)
-\end{verbatim}
-
-where the data argument is a dataset containing some or all of the nodes
-in the model.
-
-As \texttt{update\_model()} calls \texttt{rstan::sampling} one can pass
-along all arguments in \texttt{...} to \texttt{rstan::sampling}. For
-instance:
-
-\begin{itemize}
-\tightlist
-\item
-  \texttt{iter} sets the number of iterations and ultimately the number
-  of draws in the posterior
-\item
-  \texttt{chains} sets the number of chains; doing multiple chains in
-  parallel speeds things up
-\end{itemize}
-
-If you have multiple cores you can do parallel processing by including
-this line before running \texttt{CausalQueries}:
-
-\begin{verbatim}
-options(mc.cores = parallel::detectCores())
-\end{verbatim}
-
-Note the parameters estimated by \texttt{stan} include the gamma
-parameters plus transformed parameters, \(\lambda\), which are our
-parameters of interest and which \texttt{CausalQueries} then interprets
-as possible row probabilities for the \(P\) matrix.
-
-\hypertarget{censored-data}{%
-\subsection{censored data}\label{censored-data}}
-
-\hypertarget{output}{%
-\subsection{Output}\label{output}}
-
-The primary output from \texttt{update\_model()} is a posterior
-distribution over model parameters, stored as a dataframe in
-\texttt{model\$posterior\_distribution}. However another of other
-objects are also optionally stored:
-
-Models can be queried using the \texttt{query\_distribution} and
-\texttt{query\_model} functions. The difference between these functions
-is that \texttt{query\_distribution} examines a single query and returns
-a full distribution of draws from the distribution of the estimand
-(prior or posterior); \texttt{query\_model} takes a collection of
-queries and returns a dataframe with summary statistics on the queries.
-
-\hypertarget{queries}{%
-\section{Queries}\label{queries}}
-
-\hypertarget{query-implementation}{%
-\subsection{Query implementation}\label{query-implementation}}
-
-\hypertarget{queries-by-hand}{%
-\subsection{Queries by hand}\label{queries-by-hand}}
-
-Queries can draw directly from the prior distribution of the posterior
-distribution provided by \texttt{stan}.
-
-\begin{verbatim}
-library(DeclareDesign)
-
-data  <- fabricate(N = 10, X = complete_ra(N), Y = X)
-
-model <- make_model("X -> Y") |>
-  update_model(data, iter  = 4000)
-
-model$posterior_distribution |> 
-  ggplot(aes(Y.01 - Y.10)) + 
-           geom_histogram()
-\end{verbatim}
-
-\begin{verbatim}
-`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-\end{verbatim}
-
-\includegraphics{paper_files/figure-pdf/unnamed-chunk-35-1.pdf}
-
-\hypertarget{query-distribution}{%
-\subsection{Query distribution}\label{query-distribution}}
-
-\texttt{query\_distribution} works similarly except that distributions
-over queries are returned:
-
-\begin{verbatim}
-make_model("X -> Y") |> 
-  query_distribution(
-    query = list(increasing = "(Y[X=1] > Y[X=0])"), 
-    using = "priors") |>
-  ggplot(aes(increasing)) +
-  geom_histogram()
-\end{verbatim}
-
-\begin{verbatim}
-`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-\end{verbatim}
-
-\begin{figure}[H]
-
-{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-36-1.pdf}
-
-}
-
-\caption{Prior on 'Probability \(Y\) is increasing in \(X\)'}
-
-\end{figure}
-
-\hypertarget{case-level-queries}{%
-\subsection{Case level queries}\label{case-level-queries}}
-
-Case level queries provide the inference for a `new case', which is a
-scalar The case level query \emph{updates} on the given information
-observed in the new case. The resulting inference is different to the
-inference that would be made from the posterior \emph{given} the
-features of the case.
-
-To illustrate, consider a model for which we are quite sure that \(X\)
-causes \(Y\) but we do not know whether it works through two positive
-effects or two negative effects. Thus we do not know if M=0 would
-suggest an effect or no effect. If asked what we would infer for a case
-that had \(M=0\) we would not know whether \(M=0\) information is
-consistent with a positive effect or not. However if provided with a
-randomly case and learn that it has \(M=0\), then we update about the
-causal model and infer that there is an effect in this case (but that
-there wouldn't be were \(M=1\)).
-
-\begin{verbatim}
-# DO ALL THIS IN ONE TABLE
-
-set.seed(1)
- model <-
-   make_model("X -> M -> Y") |>
-   update_model(data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)), iter = 10000)
-
- Q <- "Y[X=1] > Y[X=0]"
- G <- "X==1 & Y==1 & M==1"
- QG <- "(Y[X=1] > Y[X=0]) & (X==1 & Y==1 & M==1)"
-
- # In this case these are very different:
- query_distribution(model, Q, given = G, using = "posteriors")[[1]] |> mean()
- query_distribution(model, Q, given = G, using = "posteriors",
-   case_level = TRUE)
-
- # These are equivalent:
- # 1. Case level query via function
- query_distribution(model, Q, given = G,
-    using = "posteriors", case_level = TRUE)
-
- # 2. Case level query by hand using Bayes
- distribution <- query_distribution(
-    model, list(QG = QG, G = G), using = "posteriors")
-
- mean(distribution$QG)/mean(distribution$G)
-\end{verbatim}
-
-\hypertarget{batch-queries}{%
-\subsection{Batch queries}\label{batch-queries}}
-
-The \texttt{query\_model} function takes causal queries and conditions
-(\texttt{given}) and specifies the parameters to be used. The result is
-a dataframe which can be displayed as a table.
-
-\begin{verbatim}
-models <- list(
- `1` = make_model("X -> Y"),
- `2` = make_model("X -> Y") |> set_restrictions("Y[X=1] < Y[X=0]")
- )
-
-query_model(
-  models,
-  query = list(ATE = "Y[X=1] - Y[X=0]", POS = "Y[X=1] > Y[X=0]"),
-  given = c(TRUE,  "Y==1 & X==1"),
-  case_level = c(FALSE, TRUE),
-  using = c("parameters", "priors"),
-  expand_grid = TRUE) |>
-  select(-starts_with("cred")) |>
-  
-  kable(digits = 2)
-\end{verbatim}
-
-\begin{longtable}[]{@{}lllllrr@{}}
-\toprule\noalign{}
-model & query & given & using & case\_level & mean & sd \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-1 & ATE & - & parameters & FALSE & 0.00 & NA \\
-2 & ATE & - & parameters & FALSE & 0.33 & NA \\
-1 & ATE & - & priors & FALSE & 0.00 & 0.32 \\
-2 & ATE & - & priors & FALSE & 0.33 & 0.23 \\
-1 & ATE & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA \\
-2 & ATE & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA \\
-1 & ATE & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29 \\
-2 & ATE & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29 \\
-1 & POS & - & parameters & FALSE & 0.25 & NA \\
-2 & POS & - & parameters & FALSE & 0.33 & NA \\
-1 & POS & - & priors & FALSE & 0.25 & 0.19 \\
-2 & POS & - & priors & FALSE & 0.33 & 0.23 \\
-1 & POS & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA \\
-2 & POS & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA \\
-1 & POS & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29 \\
-2 & POS & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29 \\
-1 & ATE & - & parameters & TRUE & 0.00 & NA \\
-2 & ATE & - & parameters & TRUE & 0.33 & NA \\
-1 & ATE & - & priors & TRUE & 0.00 & NA \\
-2 & ATE & - & priors & TRUE & 0.33 & NA \\
-1 & ATE & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA \\
-2 & ATE & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA \\
-1 & ATE & Y==1 \& X==1 & priors & TRUE & 0.50 & NA \\
-2 & ATE & Y==1 \& X==1 & priors & TRUE & 0.50 & NA \\
-1 & POS & - & parameters & TRUE & 0.25 & NA \\
-2 & POS & - & parameters & TRUE & 0.33 & NA \\
-1 & POS & - & priors & TRUE & 0.25 & NA \\
-2 & POS & - & priors & TRUE & 0.33 & NA \\
-1 & POS & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA \\
-2 & POS & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA \\
-1 & POS & Y==1 \& X==1 & priors & TRUE & 0.50 & NA \\
-2 & POS & Y==1 \& X==1 & priors & TRUE & 0.50 & NA \\
-\end{longtable}
-
-\hypertarget{computational-details}{%
-\section*{Computational details}\label{computational-details}}
-\addcontentsline{toc}{section}{Computational details}
-
-\begin{itemize}
-\tightlist
-\item
-  information about certain computational details such as version
-  numbers, operating systems, or compilers could be included in an
-  unnumbered section. Also, auxiliary packages (say, for visualizations,
-  maps, tables, \ldots) that are not cited in the main text can be
-  credited here.
-\end{itemize}
-
-:::
-
-The results in this paper were obtained using
-\proglang{R}\textasciitilde3.4.1 with the
-\pkg{MASS}\textasciitilde7.3.47 package. \proglang{R} itself and all
-packages used are available from the Comprehensive \proglang{R} Archive
-Network (CRAN) at {[}https://CRAN.R-project.org/{]}.
-
-\hypertarget{acknowledgments}{%
-\section*{Acknowledgments}\label{acknowledgments}}
-\addcontentsline{toc}{section}{Acknowledgments}
-
-\begin{tcolorbox}[enhanced jigsaw, opacityback=0, rightrule=.15mm, arc=.35mm, colback=white, breakable, bottomrule=.15mm, leftrule=.75mm, left=2mm, toprule=.15mm]
-
-The approach to generating a generic stan function that can take data
-from arbitrary models was developed in key contributions by
-\href{http://jasper-cooper.com/}{Jasper Cooper} and
-\href{http://gsyunyaev.com/}{Georgiy Syunyaev}.
-\href{https://lilymedina.github.io/}{Lily Medina} did magical work
-pulling it all together and developing approaches to characterizing
-confounding and defining estimands. Clara Bicalho helped figure out the
-syntax for causal statements. Julio Solis made many key contributions
-figuring out how to simplify the specification of priors. Merlin
-Heidemanns figured out the \texttt{rstantools} integration and made
-myriad code improvements. Till Tietz revamped the entire package and
-improved every part of it.
-
-\end{tcolorbox}
-
-\hypertarget{references}{%
-\section*{References}\label{references}}
-\addcontentsline{toc}{section}{References}
-
-\renewcommand{\bibsection}{}
-\bibliography{bib.bib}
-
-\newpage{}
-
-\hypertarget{sec-techdetails}{%
-\section*{More technical details}\label{sec-techdetails}}
-\addcontentsline{toc}{section}{More technical details}
-
-\begin{tcolorbox}[enhanced jigsaw, opacityback=0, rightrule=.15mm, arc=.35mm, colback=white, breakable, bottomrule=.15mm, leftrule=.75mm, left=2mm, toprule=.15mm]
-
-Appendices can be included after the bibliography (with a page break).
-Each section within the appendix should have a proper section title
-(rather than just \emph{Appendix}).
-
-For more technical style details, please check out JSS's style FAQ at
-{[}https://www.jstatsoft.org/pages/view/style\#frequently-asked-questions{]}
-which includes the following topics:
-
-\begin{itemize}
-\tightlist
-\item
-  Title vs.~sentence case.
-\item
-  Graphics formatting.
-\item
-  Naming conventions.
-\item
-  Turning JSS manuscripts into \proglang{R} package vignettes.
-\item
-  Trouble shooting.
-\item
-  Many other potentially helpful details\ldots{}
-\end{itemize}
-
-\end{tcolorbox}
-
-\hypertarget{sec-bibtex}{%
-\section*{Using BibTeX}\label{sec-bibtex}}
-\addcontentsline{toc}{section}{Using BibTeX}
-
-\begin{tcolorbox}[enhanced jigsaw, opacityback=0, rightrule=.15mm, arc=.35mm, colback=white, breakable, bottomrule=.15mm, leftrule=.75mm, left=2mm, toprule=.15mm]
-
-References need to be provided in a \textsc{Bib}{\TeX} file
-(\texttt{.bib}). All references should be made with \texttt{@cite}
-syntax. This commands yield different formats of author-year citations
-and allow to include additional details (e.g.,pages, chapters, \dots) in
-brackets. In case you are not familiar with these commands see the JSS
-style FAQ for details.
-
-Cleaning up \textsc{Bib}{\TeX} files is a somewhat tedious task --
-especially when acquiring the entries automatically from mixed online
-sources. However, it is important that informations are complete and
-presented in a consistent style to avoid confusions. JSS requires the
-following format.
-
-\begin{itemize}
-\tightlist
-\item
-  item JSS-specific markup (\texttt{\textbackslash{}proglang},
-  \texttt{\textbackslash{}pkg}, \texttt{\textbackslash{}code}) should be
-  used in the references.
-\item
-  item Titles should be in title case.
-\item
-  item Journal titles should not be abbreviated and in title case.
-\item
-  item DOIs should be included where available.
-\item
-  item Software should be properly cited as well. For \proglang{R}
-  packages \texttt{citation("pkgname")} typically provides a good
-  starting point.
-\end{itemize}
-
-\end{tcolorbox}
 
 
 

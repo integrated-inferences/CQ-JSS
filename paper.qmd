@@ -227,15 +227,28 @@ make_model("X -> M -> Y <- X; Z -> Y") |>
 
 ### Model characterization
 
-When a model is defined, a set of objects is generated. These are the key quantities that are used for all inference. 
+When a model is defined, a set of objects is generated. These are the key quantities that are used for all inference. The table below summarizes the core components of a model, providing a brief explanation for each one.
 
-@LM:
 
-1 MAKE A TABLE WITH Core ELEMENTS OF MODEL, and column saying briefly what they are
-* Statement
-* Parents data frame
+The first element is a `statement` which defines how the nodes in the model are related, specified by the user using dagitty syntax. The second element, `dag`, is a data frame that outlines the parent-child relationships within the model. `Nodes` is simply a list of the node names in the model. Lastly,  `parents_df,` is a table listing the nodes, indicating if they are root nodes, and showing how many parents each node has.
 
-...
+The model includes additional elements, `nodal_types,` `parameters_df,` and `causal_types,` which we explain later.
+
+
+
+
+| Element       | Description                                                                                                                                      |
+|-------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
+| statement       | A character string that describes directed causal relations between variables in a causal model, where arrows denote that one node is a potential cause of another. |
+| dag             | A data frame with columns 'parent' and 'children' indicating how nodes relate to each other.                                                 |
+| nodes           | A list containing the nodes in the model.                                                                                                       |
+| parents_df      | A table listing nodes, whether they are root nodes or not, and the number of parents they have.                                                  |
+| nodal_types     | A list with the nodal types in the model. (See Nodal Types Section)                                                                                 |
+| parameters_df   | A data frame linking the model's parameters with the nodal types of the model, as well as the family to which they belong. (See Parameters dataframe Section)                                                                                 |
+| causal_types  | A data frame listing causal types and the nodal types that produce them. (See Causal Types Section)                                                                                 |
+| P: parameter matrix | Should I include it?                                                                                  |
+
+Table: Core Elements of a Causal Model
 
 3 After updating the model contains further objects:
 small table:
