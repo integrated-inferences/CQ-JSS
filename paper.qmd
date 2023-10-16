@@ -439,8 +439,6 @@ make_model("A <- X -> B; A <-> X; B <-> X") |>
 
 #### Setting Priors {#priors}
 
-TILL: INTRODUCE IDEA THAT SETTING PRIORS IS JUST ABOUT CHANGING COLUMNS IN parameters_df
-
 Priors on model parameters can be added to the parameters dataframe. The priors are interpreted as alpha arguments for a Dirichlet distribution. They can be seen using `get_priors`.
 
 MH: TEXT ON DIRICHLET
@@ -486,12 +484,37 @@ make_model("X->Y") |>
   get_priors()
 ```
 
-TILL: ADD EXAMPLE SAME THING WITH EXISTING ARGUMENTS
+As setting priors simply requires mapping alpha values to parameters; the process boils down to selecting rows of the `parmeters_df` dataframe, at which to alter values. When specifying a causal statement as above, CausalQueries internally identifies nodal types that are consistent with the statement, which in turn identify parameters to alter priors for. Note that there is nothing particularly unique about setting priors via causal syntax, as it is simply an abstract way of specifying how to subset the `parameters_df` dataframe. To wit; we can achieve the same result as above by specifying: 
 
-TILL: alter_at and its risks
+```{r, comment = ""}
+make_model("X->Y") |>
+  set_priors(nodal_type = "01", alphas = 3) |>
+  get_priors()
+```
+
+or even: 
+
+```{r, comment = ""}
+make_model("X->Y") |>
+  set_priors(param_names = "Y.01", alphas = 3) |>
+  get_priors()
+```
+
+`set_priors` allows for the specification of any non-redundant combination of arguments on the `param_names`, `node`, `nodal_type`, `param_set` and `given` columns of `parameters_df` to uniquely identify parameters to set priors on. Alternatively a fully formed subsetting statement may be supplied to `alter_at`. As all these arguments get mapped to the parameters the identify internally they may be used interchangeably. 
+
+```{r, comment = "", warning=FALSE}
+make_model("X-> M -> Y; X <-> Y") |>
+  set_priors(node = "Y", nodal_type = c("01","11"), given = "X.1", alphas = c(3,2)) |>
+  get_priors()
+
+make_model("X-> M -> Y; X <-> Y") |>
+  set_priors(alter_at = "node == 'Y' & nodal_type %in% c('01','11') & given == 'X.1'", alphas = c(3,2)) |>
+  get_priors()
+```
+
+It should be noted that while highly targeted prior setting is convenient and flexible; it should be done with caution. Setting priors on specific parameters in complex models; especially models involving confounding, may strongly affect inferences in intractable ways. 
 
 See `?set_priors` and `?make_priors` for many examples.
-
 
 We note that flat priors over nodal types does not necessarily translate into flat priors over queries. "Flat" priors over parameters in a parameter family put equal weight on each nodal type, but this in turn can translate into strong assumptions on causal quantities of interest. 
 
@@ -635,9 +658,31 @@ If you have multiple cores you can do parallel processing by including this line
 options(mc.cores = parallel::detectCores())
 ```
 
+Additionally parallelizing across models or data while running MCMC chains in parallel can be achieved by setting up a nested parallel process. With 8 cores one can run 2 updating processes with 3 parallel chains each simultaneously. More generally the number of parallel processes at the upper level of the nested parallel structure are given by `floor(cores/(chains + 1))`. 
 
-TILL: point to
-<!--# should we show syntax for additionally parallelizing across model >> i.e. nested parallelization? -->
+```{r, eval = FALSE}
+chains <- 3
+cores <- 8
+
+future::plan(list(
+      future::tweak(future::multisession, workers = floor(cores/(chains + 1))),
+      future::tweak(future::multisession, workers = chains)
+    ))
+
+model <- make_model("X -> Y")
+data <- list(data_1, data_2)
+
+future.apply::future_lapply(data, function(d) {
+  update_model(
+    model = model,
+    data = d,
+    chains = chains,
+    refresh = 0
+  )
+})
+
+
+```
 
 ### Incomplete and censored data
 
@@ -838,7 +883,7 @@ requirements:
          
  CausalQueries is being actively developed, issues can be flagged at https://github.com/integrated-inferences/CausalQueries/issues
  
- >> we should really add a contributing / code of conduct doc (outlining handling of contributions via PRs + issuing) to github on the off chance that people want contribute 
+
 
 -->
 
