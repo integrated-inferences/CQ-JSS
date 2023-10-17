@@ -7,6 +7,7 @@
   article]{jss}
 
 \usepackage{amsmath,amssymb}
+\usepackage{lmodern}
 \usepackage{iftex}
 \ifPDFTeX
   \usepackage[T1]{fontenc}
@@ -16,10 +17,6 @@
   \usepackage{unicode-math}
   \defaultfontfeatures{Scale=MatchLowercase}
   \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
-\fi
-\usepackage{lmodern}
-\ifPDFTeX\else  
-    % xetex/luatex font selection
 \fi
 % Use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
@@ -75,13 +72,36 @@
 \makeatletter
 \def\fps@figure{htbp}
 \makeatother
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newlength{\cslentryspacingunit} % times entry-spacing
+\setlength{\cslentryspacingunit}{\parskip}
+\newenvironment{CSLReferences}[2] % #1 hanging-ident, #2 entry spacing
+ {% don't indent paragraphs
+  \setlength{\parindent}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+  \let\oldpar\par
+  \def\par{\hangindent=\cslhangindent\oldpar}
+  \fi
+  % set entry spacing
+  \setlength{\parskip}{#2\cslentryspacingunit}
+ }%
+ {}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{#1\hfill\break}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{#1}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{#1}\break}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
 
 \usepackage{orcidlink,thumbpdf,lmodern}
 
 \newcommand{\class}[1]{`\code{#1}'}
 \newcommand{\fct}[1]{\code{#1()}}
 \makeatletter
-\@ifpackageloaded{tcolorbox}{}{\usepackage[skins,breakable]{tcolorbox}}
+\@ifpackageloaded{tcolorbox}{}{\usepackage[many]{tcolorbox}}
 \@ifpackageloaded{fontawesome5}{}{\usepackage{fontawesome5}}
 \definecolor{quarto-callout-color}{HTML}{909090}
 \definecolor{quarto-callout-note-color}{HTML}{0758E5}
@@ -138,6 +158,12 @@
 \makeatletter
 \@ifpackageloaded{caption}{}{\usepackage{caption}}
 \@ifpackageloaded{subcaption}{}{\usepackage{subcaption}}
+\makeatother
+\makeatletter
+\@ifpackageloaded{tcolorbox}{}{\usepackage[many]{tcolorbox}}
+\makeatother
+\makeatletter
+\@ifundefined{shadecolor}{\definecolor{shadecolor}{rgb}{.97, .97, .97}}
 \makeatother
 \makeatletter
 \makeatother
@@ -214,6 +240,8 @@ URL: \url{https://macartan.github.io/}\\
 
 \begin{document}
 \maketitle
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[frame hidden, sharp corners, borderline west={3pt}{0pt}{shadecolor}, enhanced, interior hidden, breakable, boxrule=0pt]}{\end{tcolorbox}}\fi
+
 \hypertarget{sec-intro}{%
 \section{Introduction: Causal models}\label{sec-intro}}
 
@@ -261,12 +289,10 @@ lipids_data |> kable()
 \end{verbatim}
 
 \begin{longtable}[]{@{}llr@{}}
-\toprule\noalign{}
+\toprule()
 event & strategy & count \\
-\midrule\noalign{}
+\midrule()
 \endhead
-\bottomrule\noalign{}
-\endlastfoot
 Z0X0Y0 & ZXY & 158 \\
 Z1X0Y0 & ZXY & 52 \\
 Z0X1Y0 & ZXY & 0 \\
@@ -275,6 +301,7 @@ Z0X0Y1 & ZXY & 14 \\
 Z1X0Y1 & ZXY & 12 \\
 Z0X1Y1 & ZXY & 0 \\
 Z1X1Y1 & ZXY & 78 \\
+\bottomrule()
 \end{longtable}
 
 Using \texttt{CausalQueries} we can define the model, update it with
@@ -302,7 +329,7 @@ and credibility intervals.
   >{\raggedleft\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.0694}}
   >{\raggedleft\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1944}}
   >{\raggedleft\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.2222}}@{}}
-\toprule\noalign{}
+\toprule()
 \begin{minipage}[b]{\linewidth}\raggedright
 query
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
@@ -316,9 +343,9 @@ cred.low.2.5\%
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 cred.high.97.5\%
 \end{minipage} \\
-\midrule\noalign{}
+\midrule()
 \endfirsthead
-\toprule\noalign{}
+\toprule()
 \begin{minipage}[b]{\linewidth}\raggedright
 query
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
@@ -332,14 +359,13 @@ cred.low.2.5\%
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 cred.high.97.5\%
 \end{minipage} \\
-\midrule\noalign{}
+\midrule()
 \endhead
-\bottomrule\noalign{}
-\endlastfoot
-Y{[}X=1{]} - Y{[}X=0{]} & - & 0.56 & 0.10 & 0.37 & 0.73 \\
+Y{[}X=1{]} - Y{[}X=0{]} & - & 0.55 & 0.10 & 0.37 & 0.72 \\
 Y{[}X=1{]} - Y{[}X=0{]} & X==0 \& Y==0 & 0.64 & 0.15 & 0.38 & 0.89 \\
 Y{[}X=1{]} - Y{[}X=0{]} & X{[}Z=1{]} \textgreater{} X{[}Z=0{]} & 0.70 &
-0.05 & 0.59 & 0.80 \\
+0.06 & 0.59 & 0.80 \\
+\bottomrule()
 \caption{Rows 1 and 2 replicate results in Chickering and Pearl (1997);
 row 3 returns inferences for complier average effects.}\tabularnewline
 \end{longtable}
@@ -633,7 +659,7 @@ make_model("X -> M -> Y <- X; Z -> Y") |>
 
 \begin{figure}[H]
 
-{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-7-1.pdf}
+{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-14-1.pdf}
 
 }
 
@@ -656,7 +682,7 @@ make_model("X -> M -> Y <- X; Z -> Y") |>
 
 \begin{figure}[H]
 
-{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-8-1.pdf}
+{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-16-1.pdf}
 
 }
 
@@ -687,24 +713,22 @@ later in detail.
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.1462}}
   >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.8538}}@{}}
-\toprule\noalign{}
+\toprule()
 \begin{minipage}[b]{\linewidth}\raggedright
 Element
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 Description
 \end{minipage} \\
-\midrule\noalign{}
+\midrule()
 \endfirsthead
-\toprule\noalign{}
+\toprule()
 \begin{minipage}[b]{\linewidth}\raggedright
 Element
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 Description
 \end{minipage} \\
-\midrule\noalign{}
+\midrule()
 \endhead
-\bottomrule\noalign{}
-\endlastfoot
 statement & A character string that describes directed causal relations
 between variables in a causal model, where arrows denote that one node
 is a potential cause of another. \\
@@ -721,6 +745,7 @@ nodal types of the model, as well as the family to which they belong.
 causal\_types & A data frame listing causal types and the nodal types
 that produce them. (See Causal Types Section) \\
 P: parameter matrix & Should I include it? \\
+\bottomrule()
 \caption{Core Elements of a Causal Model}\tabularnewline
 \end{longtable}
 
@@ -748,16 +773,14 @@ updating.
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.2312}}
   >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.7688}}@{}}
-\toprule\noalign{}
+\toprule()
 \begin{minipage}[b]{\linewidth}\raggedright
 Element
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 Description
 \end{minipage} \\
-\midrule\noalign{}
+\midrule()
 \endhead
-\bottomrule\noalign{}
-\endlastfoot
 posterior\_distribution & The posterir distribution of the updated
 parameters generated by stan. \\
 stan\_objects & A list of objects, including, at a minimum,
@@ -770,6 +793,7 @@ w & A mapping from parameters to event probabilities, optionally
 appended to \texttt{stan\_objects.} \\
 stan\_fit & The \texttt{stanfit} object generated by stan. This is
 optionally appended to \texttt{stan\_objects.} \\
+\bottomrule()
 \end{longtable}
 
 \hypertarget{parameters-dataframe}{%
@@ -800,7 +824,7 @@ make_model("X->Y")$parameters_df |>
   >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0896}}
   >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1791}}
   >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1045}}@{}}
-\toprule\noalign{}
+\toprule()
 \begin{minipage}[b]{\linewidth}\raggedright
 param\_names
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
@@ -818,16 +842,15 @@ param\_value
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 priors
 \end{minipage} \\
-\midrule\noalign{}
+\midrule()
 \endhead
-\bottomrule\noalign{}
-\endlastfoot
 X.0 & X & 1 & X & 0 & & 0.50 & 1 \\
 X.1 & X & 1 & X & 1 & & 0.50 & 1 \\
 Y.00 & Y & 2 & Y & 00 & & 0.25 & 1 \\
 Y.10 & Y & 2 & Y & 10 & & 0.25 & 1 \\
 Y.01 & Y & 2 & Y & 01 & & 0.25 & 1 \\
 Y.11 & Y & 2 & Y & 11 & & 0.25 & 1 \\
+\bottomrule()
 \end{longtable}
 
 Each row in the dataframe corresponds to a single parameter.
@@ -1039,19 +1062,18 @@ make_model("X->Y") |>
 \end{verbatim}
 
 \begin{longtable}[]{@{}lrrrrrrrr@{}}
-\toprule\noalign{}
+\toprule()
 & X0.Y00 & X1.Y00 & X0.Y10 & X1.Y10 & X0.Y01 & X1.Y01 & X0.Y11 &
 X1.Y11 \\
-\midrule\noalign{}
+\midrule()
 \endhead
-\bottomrule\noalign{}
-\endlastfoot
 X.0 & 1 & 0 & 1 & 0 & 1 & 0 & 1 & 0 \\
 X.1 & 0 & 1 & 0 & 1 & 0 & 1 & 0 & 1 \\
 Y.00 & 1 & 1 & 0 & 0 & 0 & 0 & 0 & 0 \\
 Y.10 & 0 & 0 & 1 & 1 & 0 & 0 & 0 & 0 \\
 Y.01 & 0 & 0 & 0 & 0 & 1 & 1 & 0 & 0 \\
 Y.11 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 1 \\
+\bottomrule()
 \end{longtable}
 
 The probability of a causal type is given by the product of the
@@ -1201,7 +1223,7 @@ types):
   >{\centering\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.3448}}
   >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.3448}}
   >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1897}}@{}}
-\toprule\noalign{}
+\toprule()
 \begin{minipage}[b]{\linewidth}\centering
 \end{minipage} & \begin{minipage}[b]{\linewidth}\centering
 \end{minipage} & \begin{minipage}[b]{\linewidth}\centering
@@ -1209,10 +1231,8 @@ types):
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 \end{minipage} \\
-\midrule\noalign{}
+\midrule()
 \endhead
-\bottomrule\noalign{}
-\endlastfoot
 & & 0 & 1 & Sum \\
 \(\theta^Y\) & 00 & \(\Pr(\theta^X_0, \theta^Y_{00})\) &
 \(\Pr(\theta^X_1, \theta^Y_{00})\) & \(\Pr(\theta^Y_{00})\) \\
@@ -1223,6 +1243,7 @@ types):
 & 11 & \(\Pr(\theta^X_0, \theta^Y_{11})\) &
 \(\Pr(\theta^X_1, \theta^Y_{11})\) & \(\Pr(\theta^Y_{11})\) \\
 & Sum & \(\Pr(\theta^X_0)\) & \(\Pr(\theta^X_1)\) & 1 \\
+\bottomrule()
 \end{longtable}
 
 This table has 8 interior elements and so an unconstrained joint
@@ -1247,7 +1268,7 @@ confounded$parameters_df |> kable()
   >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0896}}
   >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1791}}
   >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1045}}@{}}
-\toprule\noalign{}
+\toprule()
 \begin{minipage}[b]{\linewidth}\raggedright
 param\_names
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
@@ -1265,10 +1286,8 @@ param\_value
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 priors
 \end{minipage} \\
-\midrule\noalign{}
+\midrule()
 \endhead
-\bottomrule\noalign{}
-\endlastfoot
 X.0 & X & 1 & X & 0 & & 0.50 & 1 \\
 X.1 & X & 1 & X & 1 & & 0.50 & 1 \\
 Y.00\_X.0 & Y & 2 & Y.X.0 & 00 & X.0 & 0.25 & 1 \\
@@ -1279,6 +1298,7 @@ Y.00\_X.1 & Y & 2 & Y.X.1 & 00 & X.1 & 0.25 & 1 \\
 Y.10\_X.1 & Y & 2 & Y.X.1 & 10 & X.1 & 0.25 & 1 \\
 Y.01\_X.1 & Y & 2 & Y.X.1 & 01 & X.1 & 0.25 & 1 \\
 Y.11\_X.1 & Y & 2 & Y.X.1 & 11 & X.1 & 0.25 & 1 \\
+\bottomrule()
 \end{longtable}
 
 We see here that there are now two parameter families for parameters
@@ -1304,7 +1324,7 @@ get_parameter_matrix(confounded) |> kable()
   >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1077}}
   >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1077}}
   >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1077}}@{}}
-\toprule\noalign{}
+\toprule()
 \begin{minipage}[b]{\linewidth}\raggedright
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 X0.Y00
@@ -1323,10 +1343,8 @@ X0.Y11
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 X1.Y11
 \end{minipage} \\
-\midrule\noalign{}
+\midrule()
 \endhead
-\bottomrule\noalign{}
-\endlastfoot
 X.0 & 1 & 0 & 1 & 0 & 1 & 0 & 1 & 0 \\
 X.1 & 0 & 1 & 0 & 1 & 0 & 1 & 0 & 1 \\
 Y.00\_X.0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
@@ -1337,6 +1355,7 @@ Y.00\_X.1 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 \\
 Y.10\_X.1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 \\
 Y.01\_X.1 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\
 Y.11\_X.1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 \\
+\bottomrule()
 \end{longtable}
 
 Importantly, the \(P\) matrix works as before, despite confounding. We
@@ -1378,7 +1397,7 @@ make_model("A <- X -> B; A <-> X; B <-> X") |>
 
 \begin{figure}[H]
 
-{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-20-1.pdf}
+{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-40-1.pdf}
 
 }
 
@@ -1498,13 +1517,14 @@ make_model("X->Y") |>
    1    1    1    1    3    1 
 \end{verbatim}
 
-\texttt{set\_priors} allows for the specification of any non-redundant
-combination of arguments on the \texttt{param\_names}, \texttt{node},
-\texttt{nodal\_type}, \texttt{param\_set} and \texttt{given} columns of
-\texttt{parameters\_df} to uniquely identify parameters to set priors
-on. Alternatively a fully formed subsetting statement may be supplied to
-\texttt{alter\_at}. As all these arguments get mapped to the parameters
-the identify internally they may be used interchangeably.
+As such \texttt{set\_priors} allows for the specification of any
+non-redundant combination of arguments on the \texttt{param\_names},
+\texttt{node}, \texttt{nodal\_type}, \texttt{param\_set} and
+\texttt{given} columns of \texttt{parameters\_df} to uniquely identify
+parameters to set priors for. Alternatively a fully formed subsetting
+statement may be supplied to \texttt{alter\_at}. Since all these
+arguments get mapped to the parameters the identify internally they may
+be used interchangeably.
 
 \begin{verbatim}
 make_model("X-> M -> Y; X <-> Y") |>
@@ -1537,7 +1557,8 @@ convenient and flexible; it should be done with caution. Setting priors
 on specific parameters in complex models; especially models involving
 confounding, may strongly affect inferences in intractable ways.
 
-See \texttt{?set\_priors} and \texttt{?make\_priors} for many examples.
+See \texttt{?set\_priors} and \texttt{?make\_priors} for many more
+examples.
 
 We note that flat priors over nodal types does not necessarily translate
 into flat priors over queries. ``Flat'' priors over parameters in a
@@ -1564,7 +1585,7 @@ make_model("X -> Y") |>
   >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0366}}
   >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1707}}
   >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1951}}@{}}
-\toprule\noalign{}
+\toprule()
 \begin{minipage}[b]{\linewidth}\raggedright
 query
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
@@ -1582,12 +1603,11 @@ cred.low.2.5\%
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 cred.high.97.5\%
 \end{minipage} \\
-\midrule\noalign{}
+\midrule()
 \endhead
-\bottomrule\noalign{}
-\endlastfoot
 Y{[}X=1{]} - Y{[}X=0{]} & - & parameters & FALSE & 0.33 & NA & 0.33 &
 0.33 \\
+\bottomrule()
 \end{longtable}
 
 More subtly the \emph{structure} of a model, coupled with flat priors,
@@ -1615,7 +1635,7 @@ make_model("X -> Y") |>
   >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0366}}
   >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1707}}
   >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1951}}@{}}
-\toprule\noalign{}
+\toprule()
 \begin{minipage}[b]{\linewidth}\raggedright
 query
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
@@ -1633,12 +1653,11 @@ cred.low.2.5\%
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 cred.high.97.5\%
 \end{minipage} \\
-\midrule\noalign{}
+\midrule()
 \endhead
-\bottomrule\noalign{}
-\endlastfoot
 Y{[}X=1{]} \textgreater{} Y{[}X=0{]} & - & parameters & FALSE & 0.25 &
 NA & 0.25 & 0.25 \\
+\bottomrule()
 \end{longtable}
 
 \begin{verbatim}
@@ -1656,7 +1675,7 @@ make_model("X -> M -> Y") |>
   >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0361}}
   >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1687}}
   >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1928}}@{}}
-\toprule\noalign{}
+\toprule()
 \begin{minipage}[b]{\linewidth}\raggedright
 query
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
@@ -1674,12 +1693,11 @@ cred.low.2.5\%
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 cred.high.97.5\%
 \end{minipage} \\
-\midrule\noalign{}
+\midrule()
 \endhead
-\bottomrule\noalign{}
-\endlastfoot
 Y{[}X=1{]} \textgreater{} Y{[}X=0{]} & - & parameters & FALSE & 0.125 &
 NA & 0.125 & 0.125 \\
+\bottomrule()
 \end{longtable}
 
 Caution regarding priors is particularly important when models are not
@@ -1756,17 +1774,16 @@ model |> make_data(n = 5) |> kable()
 \end{verbatim}
 
 \begin{longtable}[]{@{}rr@{}}
-\toprule\noalign{}
+\toprule()
 X & Y \\
-\midrule\noalign{}
+\midrule()
 \endhead
-\bottomrule\noalign{}
-\endlastfoot
 0 & 0 \\
 0 & 1 \\
 1 & 0 \\
+1 & 0 \\
 1 & 1 \\
-1 & 1 \\
+\bottomrule()
 \end{longtable}
 
 LONG AND COMPACT FORMS
@@ -1929,7 +1946,7 @@ chains in parallel can be achieved by setting up a nested parallel
 process. With 8 cores one can run 2 updating processes with 3 parallel
 chains each simultaneously. More generally the number of parallel
 processes at the upper level of the nested parallel structure are given
-by \texttt{floor(cores/(chains\ +\ 1))}.
+by \(\left \lfloor \frac{cores}{chains + 1} \right \rfloor\).
 
 \begin{verbatim}
 chains <- 3
@@ -2046,7 +2063,7 @@ model$posterior_distribution |>
 `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 \end{verbatim}
 
-\includegraphics{paper_files/figure-pdf/unnamed-chunk-38-1.pdf}
+\includegraphics{paper_files/figure-pdf/unnamed-chunk-76-1.pdf}
 
 \hypertarget{query-distribution}{%
 \subsection{Query distribution}\label{query-distribution}}
@@ -2069,7 +2086,7 @@ make_model("X -> Y") |>
 
 \begin{figure}[H]
 
-{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-39-1.pdf}
+{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-78-1.pdf}
 
 }
 
@@ -2153,44 +2170,43 @@ query_model(
 \end{verbatim}
 
 \begin{longtable}[]{@{}lllllrr@{}}
-\toprule\noalign{}
+\toprule()
 model & query & given & using & case\_level & mean & sd \\
-\midrule\noalign{}
+\midrule()
 \endhead
-\bottomrule\noalign{}
-\endlastfoot
 1 & ATE & - & parameters & FALSE & 0.00 & NA \\
 2 & ATE & - & parameters & FALSE & 0.33 & NA \\
-1 & ATE & - & priors & FALSE & 0.00 & 0.32 \\
-2 & ATE & - & priors & FALSE & 0.34 & 0.24 \\
+1 & ATE & - & priors & FALSE & 0.00 & 0.31 \\
+2 & ATE & - & priors & FALSE & 0.33 & 0.24 \\
 1 & ATE & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA \\
 2 & ATE & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA \\
 1 & ATE & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29 \\
-2 & ATE & Y==1 \& X==1 & priors & FALSE & 0.51 & 0.29 \\
+2 & ATE & Y==1 \& X==1 & priors & FALSE & 0.49 & 0.29 \\
 1 & POS & - & parameters & FALSE & 0.25 & NA \\
 2 & POS & - & parameters & FALSE & 0.33 & NA \\
-1 & POS & - & priors & FALSE & 0.25 & 0.20 \\
-2 & POS & - & priors & FALSE & 0.34 & 0.24 \\
+1 & POS & - & priors & FALSE & 0.25 & 0.19 \\
+2 & POS & - & priors & FALSE & 0.33 & 0.24 \\
 1 & POS & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA \\
 2 & POS & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA \\
 1 & POS & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29 \\
-2 & POS & Y==1 \& X==1 & priors & FALSE & 0.51 & 0.29 \\
+2 & POS & Y==1 \& X==1 & priors & FALSE & 0.49 & 0.29 \\
 1 & ATE & - & parameters & TRUE & 0.00 & NA \\
 2 & ATE & - & parameters & TRUE & 0.33 & NA \\
 1 & ATE & - & priors & TRUE & 0.00 & NA \\
-2 & ATE & - & priors & TRUE & 0.34 & NA \\
+2 & ATE & - & priors & TRUE & 0.33 & NA \\
 1 & ATE & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA \\
 2 & ATE & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA \\
 1 & ATE & Y==1 \& X==1 & priors & TRUE & 0.50 & NA \\
-2 & ATE & Y==1 \& X==1 & priors & TRUE & 0.51 & NA \\
+2 & ATE & Y==1 \& X==1 & priors & TRUE & 0.49 & NA \\
 1 & POS & - & parameters & TRUE & 0.25 & NA \\
 2 & POS & - & parameters & TRUE & 0.33 & NA \\
 1 & POS & - & priors & TRUE & 0.25 & NA \\
-2 & POS & - & priors & TRUE & 0.34 & NA \\
+2 & POS & - & priors & TRUE & 0.33 & NA \\
 1 & POS & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA \\
 2 & POS & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA \\
 1 & POS & Y==1 \& X==1 & priors & TRUE & 0.50 & NA \\
-2 & POS & Y==1 \& X==1 & priors & TRUE & 0.51 & NA \\
+2 & POS & Y==1 \& X==1 & priors & TRUE & 0.49 & NA \\
+\bottomrule()
 \end{longtable}
 
 \hypertarget{computational-details-and-software-requirements}{%
@@ -2199,17 +2215,128 @@ requirements}\label{computational-details-and-software-requirements}}
 \addcontentsline{toc}{section}{Computational details and software
 requirements}
 
-TILL TEXT
-
+\begin{longtable}[]{@{}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.2241}}
+  >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.7155}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.0517}}@{}}
+\toprule()
+\endhead
+Version & 1.0.0 & \\
+Availability & \begin{minipage}[t]{\linewidth}\centering
 \begin{itemize}
 \tightlist
 \item
-  information about certain computational details such as version
-  numbers, operating systems, or compilers could be included in an
-  unnumbered section. Also, auxiliary packages (say, for visualizations,
-  maps, tables, \ldots) that are not cited in the main text can be
-  credited here.
+  Stable Release:
+  https://cran.rstudio.com/web/packages/CausalQueries/index.html
+\item
+  Development: https://github.com/integrated-inferences/CausalQueries
 \end{itemize}
+\end{minipage} & \\
+Issues & \begin{minipage}[t]{\linewidth}\centering
+\begin{itemize}
+\tightlist
+\item
+  https://github.com/integrated-inferences/CausalQueries/issues
+\end{itemize}
+\end{minipage} & \\
+Operating Systems & \begin{minipage}[t]{\linewidth}\centering
+\begin{itemize}
+\tightlist
+\item
+  Linux
+\item
+  MacOS
+\item
+  Windows
+\end{itemize}
+\end{minipage} & \\
+Testing Environments OS & \begin{minipage}[t]{\linewidth}\centering
+\begin{itemize}
+\tightlist
+\item
+  Ubuntu 22.04.2
+\item
+  Debian 12.2
+\item
+  MacOS
+\item
+  Windows
+\end{itemize}
+\end{minipage} & \\
+Testing Environments R & \begin{minipage}[t]{\linewidth}\centering
+\begin{itemize}
+\tightlist
+\item
+  R 4.3.1
+\item
+  R 4.3.0
+\item
+  R 4.2.3
+\item
+  r-devel
+\end{itemize}
+\end{minipage} & \\
+R Version & R(\textgreater= 3.4.0) & \\
+Compiler & e.g. - g++ - clang++ & \\
+Stan requirements & \begin{minipage}[t]{\linewidth}\centering
+\begin{itemize}
+\tightlist
+\item
+  inline
+\item
+  Rcpp (\textgreater= 0.12.0)
+\item
+  RcppEigen (\textgreater= 0.3.3.3.0)
+\item
+  RcppArmadillo (\textgreater= 0.12.6.4.0)
+\item
+  RcppParallel (\textgreater= 5.1.4)
+\item
+  BH (\textgreater= 1.66.0)
+\item
+  StanHeaders (\textgreater= 2.26.0)
+\item
+  rstan (\textgreater= 2.26.0)
+\end{itemize}
+\end{minipage} & \\
+R-Packages Depends & \begin{minipage}[t]{\linewidth}\centering
+\begin{itemize}
+\tightlist
+\item
+  dplyr
+\item
+  methods
+\end{itemize}
+\end{minipage} & \\
+R-Packages Imports & \begin{minipage}[t]{\linewidth}\centering
+\begin{itemize}
+\tightlist
+\item
+  dagitty (\textgreater= 0.3-1)
+\item
+  dirmult (\textgreater= 0.1.3-4)
+\item
+  stats (\textgreater= 4.1.1)
+\item
+  rlang (\textgreater= 0.2.0)
+\item
+  rstan (\textgreater= 2.26.0)
+\item
+  rstantools (\textgreater= 2.0.0)
+\item
+  stringr (\textgreater= 1.4.0)
+\item
+  ggdag (\textgreater= 0.2.4)
+\item
+  latex2exp (\textgreater= 0.9.4)
+\item
+  ggplot2 (\textgreater= 3.3.5)
+\item
+  lifecycle (\textgreater= 1.0.1)
+\end{itemize}
+\end{minipage} & \\
+\bottomrule()
+\end{longtable}
 
 :::
 
@@ -2223,7 +2350,7 @@ Network (CRAN) at {[}https://CRAN.R-project.org/{]}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, left=2mm, breakable, opacityback=0, bottomrule=.15mm, leftrule=.75mm, toprule=.15mm, rightrule=.15mm, colback=white]
+\begin{tcolorbox}[enhanced jigsaw, colframe=quarto-callout-color-frame, opacityback=0, breakable, leftrule=.75mm, arc=.35mm, colback=white, left=2mm, bottomrule=.15mm, toprule=.15mm, rightrule=.15mm]
 
 The approach to generating a generic stan function that can take data
 from arbitrary models was developed in key contributions by
@@ -2244,8 +2371,9 @@ improved every part of it.
 \section*{References}\label{references}}
 \addcontentsline{toc}{section}{References}
 
-\renewcommand{\bibsection}{}
-\bibliography{bib.bib}
+\hypertarget{refs}{}
+\begin{CSLReferences}{0}{0}
+\end{CSLReferences}
 
 \newpage{}
 
@@ -2253,7 +2381,7 @@ improved every part of it.
 \section*{More technical details}\label{sec-techdetails}}
 \addcontentsline{toc}{section}{More technical details}
 
-\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, left=2mm, breakable, opacityback=0, bottomrule=.15mm, leftrule=.75mm, toprule=.15mm, rightrule=.15mm, colback=white]
+\begin{tcolorbox}[enhanced jigsaw, colframe=quarto-callout-color-frame, opacityback=0, breakable, leftrule=.75mm, arc=.35mm, colback=white, left=2mm, bottomrule=.15mm, toprule=.15mm, rightrule=.15mm]
 
 Appendices can be included after the bibliography (with a page break).
 Each section within the appendix should have a proper section title
@@ -2285,7 +2413,7 @@ which includes the following topics:
 \section*{Using BibTeX}\label{sec-bibtex}}
 \addcontentsline{toc}{section}{Using BibTeX}
 
-\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, left=2mm, breakable, opacityback=0, bottomrule=.15mm, leftrule=.75mm, toprule=.15mm, rightrule=.15mm, colback=white]
+\begin{tcolorbox}[enhanced jigsaw, colframe=quarto-callout-color-frame, opacityback=0, breakable, leftrule=.75mm, arc=.35mm, colback=white, left=2mm, bottomrule=.15mm, toprule=.15mm, rightrule=.15mm]
 
 References need to be provided in a \textsc{Bib}{\TeX} file
 (\texttt{.bib}). All references should be made with \texttt{@cite}
@@ -2438,6 +2566,7 @@ for (i in 1:n_types) {
 \end{verbatim}
 
 
+  \bibliography{bib.bib}
 
 
 \end{document}
