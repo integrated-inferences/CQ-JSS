@@ -337,7 +337,7 @@ cred.high.97.5\%
 \bottomrule\noalign{}
 \endlastfoot
 Y{[}X=1{]} - Y{[}X=0{]} & - & 0.56 & 0.10 & 0.37 & 0.73 \\
-Y{[}X=1{]} - Y{[}X=0{]} & X==0 \& Y==0 & 0.64 & 0.15 & 0.37 & 0.89 \\
+Y{[}X=1{]} - Y{[}X=0{]} & X==0 \& Y==0 & 0.64 & 0.15 & 0.38 & 0.89 \\
 Y{[}X=1{]} - Y{[}X=0{]} & X{[}Z=1{]} \textgreater{} X{[}Z=0{]} & 0.70 &
 0.05 & 0.59 & 0.80 \\
 \caption{Rows 1 and 2 replicate results in Chickering and Pearl (1997);
@@ -682,7 +682,7 @@ how many parents each node has.
 
 The model includes additional elements, \texttt{nodal\_types,}
 \texttt{parameters\_df,} and \texttt{causal\_types,} which we explain
-later in detail .
+later in detail.
 
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.1462}}
@@ -910,6 +910,67 @@ attr(,"interpret")$Y
 Note that we use \(\theta^j\) to indicate nodal types because for
 qualitative analysis the nodal types are often the parameters of
 interest.
+
+Alternatively, the \texttt{interpret\_type} function can be used to
+obtain interpretations for the nodal types of each node in the model.
+For instance, consider the model with two parents
+\(X \rightarrow Y \leftarrow M.\) In such a case, the nodal types of
+\(Y\) will have subscripts with four digits, with each digit
+representing one of the possible combinations of values that \(Y\) can
+take, given the values of its parents \(X\) and \(M.\) These
+combinations include the value of \(Y\) when:
+
+\begin{itemize}
+\tightlist
+\item
+  X = 0 and M = 0,
+\item
+  X = 0 and M = 1,
+\item
+  X = 1 and M = 0,
+\item
+  X = 1 and M = 1.
+\end{itemize}
+
+As the number of parents increases, keeping track of what each digit
+represents becomes more difficult. For instance, if \(Y\) had three
+parents, its nodal types would have subscripts of eight digits, each
+associated with the value that \(Y\) would take for each combination of
+the three parents. The \texttt{interpret\_type} function provides a
+clear map to identify what each digit in the subscript represents. See
+the examples below for models with two and three parents.
+
+\begin{verbatim}
+model <- make_model("X -> Y <- M ")
+interpretations <- interpret_type(model)
+interpretations$Y
+\end{verbatim}
+
+\begin{verbatim}
+  node position display    interpretation
+1    Y        1 Y[*]*** Y | M = 0 & X = 0
+2    Y        2 Y*[*]** Y | M = 1 & X = 0
+3    Y        3 Y**[*]* Y | M = 0 & X = 1
+4    Y        4 Y***[*] Y | M = 1 & X = 1
+\end{verbatim}
+
+\begin{verbatim}
+model <- make_model("X -> Y <- M; W -> Y")
+interpretations <- interpret_type(model)
+interpretations$Y
+\end{verbatim}
+
+\begin{verbatim}
+  node position     display            interpretation
+1    Y        1 Y[*]******* Y | M = 0 & W = 0 & X = 0
+2    Y        2 Y*[*]****** Y | M = 1 & W = 0 & X = 0
+3    Y        3 Y**[*]***** Y | M = 0 & W = 1 & X = 0
+4    Y        4 Y***[*]**** Y | M = 1 & W = 1 & X = 0
+5    Y        5 Y****[*]*** Y | M = 0 & W = 0 & X = 1
+6    Y        6 Y*****[*]** Y | M = 1 & W = 0 & X = 1
+7    Y        7 Y******[*]* Y | M = 0 & W = 1 & X = 1
+8    Y        8 Y*******[*] Y | M = 1 & W = 1 & X = 1
+\end{verbatim}
 
 LM: section on lookup types; \texttt{interpret\_type} EXAMPLE with maybe
 2 parents
@@ -1702,7 +1763,7 @@ X & Y \\
 \bottomrule\noalign{}
 \endlastfoot
 0 & 0 \\
-0 & 0 \\
+0 & 1 \\
 1 & 0 \\
 1 & 1 \\
 1 & 1 \\
@@ -2101,35 +2162,35 @@ model & query & given & using & case\_level & mean & sd \\
 1 & ATE & - & parameters & FALSE & 0.00 & NA \\
 2 & ATE & - & parameters & FALSE & 0.33 & NA \\
 1 & ATE & - & priors & FALSE & 0.00 & 0.32 \\
-2 & ATE & - & priors & FALSE & 0.32 & 0.23 \\
+2 & ATE & - & priors & FALSE & 0.34 & 0.24 \\
 1 & ATE & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA \\
 2 & ATE & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA \\
-1 & ATE & Y==1 \& X==1 & priors & FALSE & 0.51 & 0.29 \\
-2 & ATE & Y==1 \& X==1 & priors & FALSE & 0.49 & 0.29 \\
+1 & ATE & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29 \\
+2 & ATE & Y==1 \& X==1 & priors & FALSE & 0.51 & 0.29 \\
 1 & POS & - & parameters & FALSE & 0.25 & NA \\
 2 & POS & - & parameters & FALSE & 0.33 & NA \\
-1 & POS & - & priors & FALSE & 0.25 & 0.19 \\
-2 & POS & - & priors & FALSE & 0.32 & 0.23 \\
+1 & POS & - & priors & FALSE & 0.25 & 0.20 \\
+2 & POS & - & priors & FALSE & 0.34 & 0.24 \\
 1 & POS & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA \\
 2 & POS & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA \\
-1 & POS & Y==1 \& X==1 & priors & FALSE & 0.51 & 0.29 \\
-2 & POS & Y==1 \& X==1 & priors & FALSE & 0.49 & 0.29 \\
+1 & POS & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29 \\
+2 & POS & Y==1 \& X==1 & priors & FALSE & 0.51 & 0.29 \\
 1 & ATE & - & parameters & TRUE & 0.00 & NA \\
 2 & ATE & - & parameters & TRUE & 0.33 & NA \\
 1 & ATE & - & priors & TRUE & 0.00 & NA \\
-2 & ATE & - & priors & TRUE & 0.32 & NA \\
+2 & ATE & - & priors & TRUE & 0.34 & NA \\
 1 & ATE & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA \\
 2 & ATE & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA \\
 1 & ATE & Y==1 \& X==1 & priors & TRUE & 0.50 & NA \\
-2 & ATE & Y==1 \& X==1 & priors & TRUE & 0.49 & NA \\
+2 & ATE & Y==1 \& X==1 & priors & TRUE & 0.51 & NA \\
 1 & POS & - & parameters & TRUE & 0.25 & NA \\
 2 & POS & - & parameters & TRUE & 0.33 & NA \\
 1 & POS & - & priors & TRUE & 0.25 & NA \\
-2 & POS & - & priors & TRUE & 0.32 & NA \\
+2 & POS & - & priors & TRUE & 0.34 & NA \\
 1 & POS & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA \\
 2 & POS & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA \\
 1 & POS & Y==1 \& X==1 & priors & TRUE & 0.50 & NA \\
-2 & POS & Y==1 \& X==1 & priors & TRUE & 0.49 & NA \\
+2 & POS & Y==1 \& X==1 & priors & TRUE & 0.51 & NA \\
 \end{longtable}
 
 \hypertarget{computational-details-and-software-requirements}{%
@@ -2162,7 +2223,7 @@ Network (CRAN) at {[}https://CRAN.R-project.org/{]}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, breakable, rightrule=.15mm, leftrule=.75mm, colback=white, bottomrule=.15mm, arc=.35mm, opacityback=0, toprule=.15mm, left=2mm]
+\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, left=2mm, breakable, opacityback=0, bottomrule=.15mm, leftrule=.75mm, toprule=.15mm, rightrule=.15mm, colback=white]
 
 The approach to generating a generic stan function that can take data
 from arbitrary models was developed in key contributions by
@@ -2192,7 +2253,7 @@ improved every part of it.
 \section*{More technical details}\label{sec-techdetails}}
 \addcontentsline{toc}{section}{More technical details}
 
-\begin{tcolorbox}[enhanced jigsaw, breakable, rightrule=.15mm, leftrule=.75mm, colback=white, bottomrule=.15mm, arc=.35mm, opacityback=0, toprule=.15mm, left=2mm]
+\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, left=2mm, breakable, opacityback=0, bottomrule=.15mm, leftrule=.75mm, toprule=.15mm, rightrule=.15mm, colback=white]
 
 Appendices can be included after the bibliography (with a page break).
 Each section within the appendix should have a proper section title
@@ -2224,7 +2285,7 @@ which includes the following topics:
 \section*{Using BibTeX}\label{sec-bibtex}}
 \addcontentsline{toc}{section}{Using BibTeX}
 
-\begin{tcolorbox}[enhanced jigsaw, breakable, rightrule=.15mm, leftrule=.75mm, colback=white, bottomrule=.15mm, arc=.35mm, opacityback=0, toprule=.15mm, left=2mm]
+\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, left=2mm, breakable, opacityback=0, bottomrule=.15mm, leftrule=.75mm, toprule=.15mm, rightrule=.15mm, colback=white]
 
 References need to be provided in a \textsc{Bib}{\TeX} file
 (\texttt{.bib}). All references should be made with \texttt{@cite}

@@ -233,7 +233,7 @@ When a model is defined, a set of objects is generated. These are the key quanti
 
 The first element is a `statement` which defines how the nodes in the model are related, specified by the user using dagitty syntax. The second element, `dag`, is a data frame that outlines the parent-child relationships within the model. `Nodes` is simply a list of the node names in the model. Lastly,  `parents_df,` is a table listing the nodes, indicating if they are root nodes, and showing how many parents each node has.
 
-The model includes additional elements, `nodal_types,` `parameters_df,` and `causal_types,` which we explain later in detail .
+The model includes additional elements, `nodal_types,` `parameters_df,` and `causal_types,` which we explain later in detail.
 
 
 
@@ -317,7 +317,29 @@ make_model("X -> Y")$nodal_types
 
 Note that we use $\theta^j$ to indicate nodal types because for qualitative analysis the nodal types are often the parameters of interest.
 
-<!-- is this good/clear enough-->
+Alternatively, the `interpret_type` function can be used to obtain interpretations for the nodal types of each node in the model. For instance, consider the model with two parents $X \rightarrow Y \leftarrow M.$ In such a case, the nodal types of $Y$ will have subscripts with four digits, with each digit representing one of the possible combinations of values that $Y$ can take, given the values of its parents $X$ and $M.$ These combinations include the value of $Y$ when:
+
+- X = 0 and M = 0,
+- X = 0 and M = 1,
+- X = 1 and M = 0,
+- X = 1 and M = 1.
+
+As the number of parents increases, keeping track of what each digit represents becomes more difficult. For instance, if $Y$ had three parents, its nodal types would have subscripts of eight digits, each associated with the value that $Y$ would take for each combination of  the three parents. The `interpret_type` function provides a clear map to identify what each digit in the subscript represents. See the examples below for models with two and three parents.
+
+
+```{r lookup_types1}
+model <- make_model("X -> Y <- M ")
+interpretations <- interpret_type(model)
+interpretations$Y
+```
+
+
+```{r lookup_types2}
+model <- make_model("X -> Y <- M; W -> Y")
+interpretations <- interpret_type(model)
+interpretations$Y
+```
+
 
 LM: section on lookup types; 
 `interpret_type`
