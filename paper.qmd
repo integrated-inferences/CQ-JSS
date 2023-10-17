@@ -557,7 +557,7 @@ make_model("X->Y") |>
   get_priors()
 ```
 
-`set_priors` allows for the specification of any non-redundant combination of arguments on the `param_names`, `node`, `nodal_type`, `param_set` and `given` columns of `parameters_df` to uniquely identify parameters to set priors on. Alternatively a fully formed subsetting statement may be supplied to `alter_at`. As all these arguments get mapped to the parameters the identify internally they may be used interchangeably. 
+As such `set_priors` allows for the specification of any non-redundant combination of arguments on the `param_names`, `node`, `nodal_type`, `param_set` and `given` columns of `parameters_df` to uniquely identify parameters to set priors for. Alternatively a fully formed subsetting statement may be supplied to `alter_at`. Since all these arguments get mapped to the parameters the identify internally they may be used interchangeably. 
 
 ```{r, comment = "", warning=FALSE}
 make_model("X-> M -> Y; X <-> Y") |>
@@ -571,7 +571,7 @@ make_model("X-> M -> Y; X <-> Y") |>
 
 It should be noted that while highly targeted prior setting is convenient and flexible; it should be done with caution. Setting priors on specific parameters in complex models; especially models involving confounding, may strongly affect inferences in intractable ways. 
 
-See `?set_priors` and `?make_priors` for many examples.
+See `?set_priors` and `?make_priors` for many more examples.
 
 We note that flat priors over nodal types does not necessarily translate into flat priors over queries. "Flat" priors over parameters in a parameter family put equal weight on each nodal type, but this in turn can translate into strong assumptions on causal quantities of interest. 
 
@@ -715,7 +715,7 @@ If you have multiple cores you can do parallel processing by including this line
 options(mc.cores = parallel::detectCores())
 ```
 
-Additionally parallelizing across models or data while running MCMC chains in parallel can be achieved by setting up a nested parallel process. With 8 cores one can run 2 updating processes with 3 parallel chains each simultaneously. More generally the number of parallel processes at the upper level of the nested parallel structure are given by `floor(cores/(chains + 1))`. 
+Additionally parallelizing across models or data while running MCMC chains in parallel can be achieved by setting up a nested parallel process. With 8 cores one can run 2 updating processes with 3 parallel chains each simultaneously. More generally the number of parallel processes at the upper level of the nested parallel structure are given by $\left \lfloor \frac{cores}{chains + 1} \right \rfloor$. 
 
 ```{r, eval = FALSE}
 chains <- 3
@@ -908,45 +908,59 @@ query_model(
 
 ## Computational details and software requirements {.unnumbered}
 
++------------------------:+:--------------------------------------------------------------------------------:+:----+
+| Version                 | - 1.0.0                                                                          |     |
++-------------------------+----------------------------------------------------------------------------------+-----+
+| Availability            | - Stable Release: https://cran.rstudio.com/web/packages/CausalQueries/index.html |     |
+|                         | - Development: https://github.com/integrated-inferences/CausalQueries            |     |
++-------------------------+----------------------------------------------------------------------------------+-----+
+| Issues                  | - https://github.com/integrated-inferences/CausalQueries/issues                  |     |
++-------------------------+----------------------------------------------------------------------------------+-----+
+| Operating Systems       | - Linux                                                                          |     |
+|                         | - MacOS                                                                          |     |
+|                         | - Windows                                                                        |     |
++-------------------------+----------------------------------------------------------------------------------+-----+
+| Testing Environments OS | - Ubuntu 22.04.2                                                                 |     |
+|                         | - Debian 12.2                                                                    |     |
+|                         | - MacOS                                                                          |     |
+|                         | - Windows                                                                        |     |
++-------------------------+----------------------------------------------------------------------------------+-----+
+| Testing Environments R  | - R 4.3.1                                                                        |     |
+|                         | - R 4.3.0                                                                        |     |
+|                         | - R 4.2.3                                                                        |     |
+|                         | - r-devel                                                                        |     |
++-------------------------+----------------------------------------------------------------------------------+-----+
+| R Version               | - R(>= 3.4.0)                                                                    |     |
++-------------------------+----------------------------------------------------------------------------------+-----+
+| Compiler                | - either of the below or similar:                                                |     |
+|                         | - g++                                                                            |     |
+|                         | - clang++                                                                        |     |
++-------------------------+----------------------------------------------------------------------------------+-----+
+| Stan requirements       | - inline                                                                         |     |
+|                         | - Rcpp (>= 0.12.0)                                                               |     |
+|                         | - RcppEigen (>= 0.3.3.3.0)                                                       |     |
+|                         | - RcppArmadillo (>= 0.12.6.4.0)                                                  |     |
+|                         | - RcppParallel (>= 5.1.4)                                                        |     |
+|                         | - BH (>= 1.66.0)                                                                 |     |
+|                         | - StanHeaders (>= 2.26.0)                                                        |     |
+|                         | - rstan (>= 2.26.0)                                                              |     |
++-------------------------+----------------------------------------------------------------------------------+-----+
+| R-Packages Depends      | - dplyr                                                                          |     |
+|                         | - methods                                                                        |     |
++-------------------------+----------------------------------------------------------------------------------+-----+
+| R-Packages Imports      | - dagitty (>= 0.3-1)                                                             |     |
+|                         | - dirmult (>= 0.1.3-4)                                                           |     |
+|                         | - stats (>= 4.1.1)                                                               |     |
+|                         | - rlang (>= 0.2.0)                                                               |     | 
+|                         | - rstan (>= 2.26.0)                                                              |     |
+|                         | - rstantools (>= 2.0.0)                                                          |     |
+|                         | - stringr (>= 1.4.0)                                                             |     |
+|                         | - ggdag (>= 0.2.4)                                                               |     |
+|                         | - latex2exp (>= 0.9.4)                                                           |     |
+|                         | - ggplot2 (>= 3.3.5)                                                             |     |
+|                         | - lifecycle (>= 1.0.1)                                                           |     |
++-------------------------+----------------------------------------------------------------------------------+-----+
 
-
-TILL TEXT
-
-<!--
-operating systems: Linux, MacOS, Windows 
-Version: current 0.1.1 >> by time of publications 1.0.0 >> stable on CRAN, development from GitHub
-testing environments OS: 
-        - Ubuntu 22.04.2 
-        - Debian 12.2
-        - MacOS
-        - Windows 
-testing environments R:
-        - R 4.3.1
-        - R 4.3.0
-        - R 4.2.3
-        - r-devel
-requirements:
-        - R Version: R(>= 3.4.0)
-        - Packages: >> part of CausalQueries install 
-              - Rcpp 
-              - RcppEigen 
-              - RcppArmadillo 
-              - BH
-              - inline 
-              - StanHeaders 
-              - rstan
-         - Compilers: C++ compiler like g++ or clang++ 
-         
-         
- CausalQueries is being actively developed, issues can be flagged at https://github.com/integrated-inferences/CausalQueries/issues
- 
-
-
--->
-
-* information about certain computational details such as version numbers, operating systems, or compilers could be included
-in an unnumbered section. Also, auxiliary packages (say, for visualizations,
-maps, tables, …) that are not cited in the main text can be credited here.
 
 :::
 
