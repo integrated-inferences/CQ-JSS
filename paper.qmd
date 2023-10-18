@@ -741,13 +741,13 @@ sample_data |> kable()
 
 Whereas data naturally comes in long form, with a row per observation, as in the examples above, the data passed to `stan` is in a compact form, which records only the number of units of each data type. `CausalQueries` includes functions that lets you move between these two forms in case of need.
 
-```{r, warning=FALSE}
+```{r, warning=FALSE, eval = FALSE}
 sample_data_1 |> collapse_data(model) |> kable()
 ```
 
 If data has been gathered using a data strategy the collapsed data groups data types according to which nodes have been observed:
 
-```{r, warnin=FALSE}
+```{r, warnin=FALSE, eval = FALSE}
 sample_data_2 |> collapse_data(model) |> kable()
 ```
 In the same way it is possible to move from "compact data" to "long data" using `expand_data" 
