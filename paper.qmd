@@ -142,10 +142,12 @@ w_{01} & = & \lambda^X_0(\lambda^Y_{11} + \lambda^Y_{10})\\
 w_{10} & = & \lambda^X_1(\lambda^Y_{00} + \lambda^Y_{10})\\
 w_{11} & = & \lambda^X_1(\lambda^Y_{11} + \lambda^Y_{01})\end{array} \right.$$
 
+The value of the `CausalQueries` package is to allow users to specify models of this form, figure out all the implied causal types, and then update given priors and data by calculating event probabilities implied by all possible parameter vectors and in turn the likelihood of the data given the model. In addition, the package allows for arbitrary querying of a model to assess the values of estimands of interest that a re funciton of the values or counterfactual values of nodes conditional on values or counterfactual values of nodes.
+
+**TILL**
 * Embed the  *software* into the respective relevant literature. 
 * For the latter both competing and complementary software should be discussed (within the same software environment and beyond), bringing out relative (dis)advantages. All software mentioned should be properly `@cited`'d. (See also [Using BibTeX] for more details on {{< bibtex >}}.)
 
-MH: LINE ABOUT WHAT CQ DOES IN THIS FRAMEWORK...
 
 ```{r, eval = FALSE, include = FALSE}
 make_model("A -> B -> C -> D -> E")$parameters_df |> nrow()
@@ -153,7 +155,7 @@ make_model("A -> B -> C -> D -> E")$parameters_df |> nrow()
 make_model("A -> E <- B; C->E<-D")$parameters_df |> nrow()
 ```
 
-The strength of `CausalQueries` is to allow users to specify arbitrary DAGs, arbitrary queries over nodes in those DAGs, and use the same canonical procedure to learn about those queries whether or not the queries are identified. Thus is principle if researchers are interest in learning about a quantitiy like the local average treatment effect and their model in fact satisfies the conditions in @angrist1996identification, then updating will recover valid estimates even if researchers are unaware that the local average treatment effect is identified and are ignorant of  the estimation procedure proposed by @angrist1996identification.    
+The particular  strength of `CausalQueries` is to allow users to specify arbitrary DAGs, arbitrary queries over nodes in those DAGs, and use the same canonical procedure to learn about those queries whether or not the queries are identified. Thus is principle if researchers are interest in learning about a quantitiy like the local average treatment effect and their model in fact satisfies the conditions in @angrist1996identification, then updating will recover valid estimates even if researchers are unaware that the local average treatment effect is identified and are ignorant of  the estimation procedure proposed by @angrist1996identification.    
 
 There are two broad limitation on the sets of models handled natively by  `CausalQueries`. First `CausalQueries` is designed for  models with a relatively small number  over binary nodes. Because there is no compromise made on the space of possible causal relations implied by a given model, the parameter space grows very rapidly with the complexity of the causal model.  The complexity also depends on the causal structure and grows rapidly with the number of parents affecting a given child. A chain model of the form $A \rightarrow B \rightarrow C \rightarrow D \rightarrow E$ has just 40 parameters. A model in which $A, B, C, D$  are all direct of $E$ has 65544 parameters. Moving from binary to non binary nodes has similar effects. The restriction to binary nodes is for computational and not conceptual reasons. In fact there are ways to employ `CausalQueries`  to answer queries from models with nonbinary nodes but in general the computational costs make analysis of these model prohibitive. 
 <!--# should we mention computational constraints more explicitly here? >> i.e. constraints on memory as calculated in the CausalQueriesTools documentation. Could also be a place to mention the package + frankensteining methods though that might better be placed in the updating models section -->
@@ -496,9 +498,12 @@ make_model("A <- X -> B; A <-> X; B <-> X") |>
 
 #### Setting Priors {#priors}
 
-Priors on model parameters can be added to the parameters dataframe. The priors are interpreted as alpha arguments for a Dirichlet distribution. They can be seen using `get_priors`.
+Priors on model parameters can be added to the parameters dataframe. The priors are interpreted as "alpha" arguments for a Dirichlet distribution. The Dirichlet distribution is a probability distribution over an $n-1$ dimensional unit simplex. It can be thought of as a generalization of the Beta distribution and is  parameterized by an $n$-dimensional vector positive vector $\alpha$.
+Thus for example a Dirichlet  with $\alpha = (1, 1, 1, 1, 1)$ gives a probability distrubution over all non negative 5 dimensional vectors that sum to 1, e.g. (0.1, 0.1, 0.1, 0.1, 0.6) or (0.1, 0.2, 0.3, 0.3, 0.1).  This particular value for $\alpha$ implies that all such vectors are equally likely.  Other values for $\alpha$ can be used to control the expectation for each dimension as well as certainty.  Thus for instance the vector $\alpha = (100, 1, 1, 1, 100)$ woudl result in more weight on distributions that are close to (.5, 0, 0, 0. .5).
 
-MH: TEXT ON DIRICHLET
+In `CausalQueries` priors are generally specified over the distribution of nodal types (or over the conditional distribution of nodal types, when there is confounding). Thus for instance in an $X \rightarrow Y$ model we have one Dirichlet distribution over the two types for $\theta^X$ and  one Dirichlet distribution over the four types for $\theta^Y$. 
+
+To wit:
 
 ```{r, comment = ""}
 
