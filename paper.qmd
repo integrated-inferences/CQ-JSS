@@ -616,9 +616,10 @@ The key point here is to make sure you do not fall into a trap of thinking that 
 
 #### Setting Parameters {#parameters}
 
-MH: POINT OUT FOLLOWING SAME LOGIC AS LASTS SECTION parameters rather than alphas as arguments
 
 By default, models have a vector of parameter values included in the `parameters_df` dataframe. These are useful for generating data, or for situations, such as process tracing, when one wants to make inferences about causal types ($\theta$), given case level data, under the assumption that the model is known. 
+
+The logic for setting parameters is similar to that for setting priors: effectively we need to place values on the probability of nodal types. The key difference is that whereas the $alpha$ value placed on a nodal types can be any positive number---capturing our certainty over the parameter value---the parameter values must lie in the unit interval, $[0,1]$. In general if parameter values are passed that do not lie in the unit interval, these are normalized so that they do.  
 
 Consider the causal model below. It has two parameter sets, X and Y, with six nodal types, two corresponding to X and four corresponding to Y. The key feature of the parameters is that they must sum to 1 within each parameter set. 
 
@@ -629,7 +630,7 @@ make_model("X->Y") |>
 
 ```
 
-Setting parameters can be done using a similar syntax as `set_priors`. The main difference is that when a given value is altered the entire set must still always sum to 1. The example below illustrates a change in the value of the parameter $Y$ in the case it is increasing in $X$. Here nodal type `Y.Y01` is set to be .5, while the other nodal types of this parameter set were renormalized so that the parameters in the set still sum to one.
+The example below illustrates a change in the value of the parameter $Y$ in the case it is increasing in $X$. Here nodal type `Y.Y01` is set to be .5, while the other nodal types of this parameter set were renormalized so that the parameters in the set still sum to one.
 
 ```{r, comment = ""}
 make_model("X->Y") |>
