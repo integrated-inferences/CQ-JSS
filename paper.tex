@@ -4,6 +4,7 @@
 \PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
 %
 \documentclass[
+  11pt,
   article]{jss}
 
 \usepackage{amsmath,amssymb}
@@ -90,6 +91,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{makecell}
 \usepackage{xcolor}
+\usepackage{placeins}
 
 
 \newtheorem{definition}{Definition}
@@ -167,7 +169,6 @@
 \hypersetup{
   pdftitle={Making, Updating, and Querying Causal Models using CausalQueries},
   pdfauthor={Till Tietz; Lily Medina; Macartan Humphreys; Georgiy Syunyaev},
-  pdfkeywords={causal models, stan, bayes},
   colorlinks=true,
   linkcolor={blue},
   filecolor={Maroon},
@@ -196,7 +197,6 @@ making, updating, and querying causal models}
 
 %% at least one keyword must be supplied
 \Keywords{causal models, stan, bayes}
-\Plainkeywords{causal models, stan, bayes}
 
 %% publication information
 %% NOTE: Typically, this can be left commented and will be filled out by the technical editor
@@ -316,8 +316,8 @@ R> make_model("Z -> X -> Y; X <-> Y") |>
 query & given & mean & sd & cred.low.2.5\% & cred.high.97.5\%\\
 \midrule
 Y[X=1] - Y[X=0] & - & 0.56 & 0.10 & 0.37 & 0.73\\
-Y[X=1] - Y[X=0] & X==0 \& Y==0 & 0.64 & 0.15 & 0.38 & 0.90\\
-Y[X=1] - Y[X=0] & X[Z=1] > X[Z=0] & 0.70 & 0.05 & 0.59 & 0.80\\
+Y[X=1] - Y[X=0] & X==0 \& Y==0 & 0.64 & 0.15 & 0.37 & 0.89\\
+Y[X=1] - Y[X=0] & X[Z=1] > X[Z=0] & 0.70 & 0.05 & 0.60 & 0.80\\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}
@@ -468,22 +468,27 @@ and then update given priors and data by calculating event probabilities
 implied by all possible parameter vectors and in turn the likelihood of
 the data given the model. In addition, the package allows for arbitrary
 querying of a model to assess the values of estimands of interest that a
-re funciton of the values or counterfactual values of nodes conditional
+re function of the values or counterfactual values of nodes conditional
 on values or counterfactual values of nodes.
 
-\textbf{TILL} - Embed the \emph{software} into the respective relevant
-literature. - For the latter both competing and complementary software
-should be discussed (within the same software environment and beyond),
-bringing out relative (dis)advantages. All software mentioned should be
-properly \texttt{@cited}'d.~(See also
-\protect\hyperlink{sec-bibtex}{Using BibTeX} for more details on
-\textsc{Bib}{\TeX}.)
+\textbf{TILL}
+
+\begin{itemize}
+\item
+  Embed the \emph{software} into the respective relevant literature.
+\item
+  For the latter both competing and complementary software should be
+  discussed (within the same software environment and beyond), bringing
+  out relative (dis)advantages. All software mentioned should be
+  properly \texttt{@cited}'d.\footnote{See (Using
+    BibTeX){[}\#sec-bibtex{]} for more details.}
+\end{itemize}
 
 The particular strength of \texttt{CausalQueries} is to allow users to
 specify arbitrary DAGs, arbitrary queries over nodes in those DAGs, and
 use the same canonical procedure to learn about those queries whether or
 not the queries are identified. Thus is principle if researchers are
-interest in learning about a quantitiy like the local average treatment
+interest in learning about a quantity like the local average treatment
 effect and their model in fact satisfies the conditions in
 \citet{angrist1996identification}, then updating will recover valid
 estimates even if researchers are unaware that the local average
@@ -526,57 +531,46 @@ For instance:
 R> model <- make_model("X -> M -> Y <- X")
 \end{verbatim}
 
-The statement (in quotes) provides the names of nodes. An arrow
-(``\texttt{-\textgreater{}}'' or ``\texttt{\textless{}-}'') connecting
-nodes indicates that one node is a potential cause of another (that is,
-whether a given node is a ``parent'' or ``child'' of another.
+The statement in quotes,
+\texttt{"X\ -\textgreater{}\ M\ -\textgreater{}\ Y\ \textless{}-\ X"},
+provides the names of nodes. An arrow (``\texttt{-\textgreater{}}'' or
+``\texttt{\textless{}-}'') connecting nodes indicates that one node is a
+potential cause of another, i.e.~whether a given node is a ``parent'' or
+``child'' of another.
 
 Formally a statement like this is interpreted as:
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
-\tightlist
 \item
   Functional equations:
-\end{enumerate}
 
-\begin{itemize}
-\tightlist
-\item
-  \(Y = f(M, X, \theta^Y)\)
-\item
-  \(M = f(X, \theta^M)\)
-\item
-  \(X = \theta^X\)
-\end{itemize}
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\setcounter{enumi}{1}
-\tightlist
+  \begin{itemize}
+  \tightlist
+  \item
+    \(Y = f(M, X, \theta^Y)\)
+  \item
+    \(M = f(X, \theta^M)\)
+  \item
+    \(X = \theta^X\)
+  \end{itemize}
 \item
   Distributions on \(\Theta\):
-\end{enumerate}
 
-\begin{itemize}
-\tightlist
-\item
-  \(\Pr(\theta^i = \theta^i_k) = \lambda^i_k\)
-\end{itemize}
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\setcounter{enumi}{2}
-\tightlist
+  \begin{itemize}
+  \tightlist
+  \item
+    \(\Pr(\theta^i = \theta^i_k) = \lambda^i_k\)
+  \end{itemize}
 \item
   Independence assumptions:\\
-\end{enumerate}
 
-\begin{itemize}
-\tightlist
-\item
-  \(\theta_i \perp\!\!\! \perp \theta_j, i\neq j\)
-\end{itemize}
+  \begin{itemize}
+  \tightlist
+  \item
+    \(\theta_i \perp\!\!\! \perp \theta_j, i\neq j\)
+  \end{itemize}
+\end{enumerate}
 
 where function \(f\) maps from the set of possible values of the parents
 of \(i\) to values of node \(i\) given \(\theta^i\) as described above.
@@ -674,7 +668,7 @@ for each one.
 The first element is a \texttt{statement} which defines how the nodes in
 the model are related, specified by the user using dagitty syntax. The
 second element, \texttt{dag}, is a data frame that outlines the
-parent-child relationships within the model. \texttt{Nodes} is simply a
+parent-child relationships within the model. \texttt{nodes} is simply a
 list of the node names in the model. Lastly, \texttt{parents\_df,} is a
 table listing the nodes, indicating if they are root nodes, and showing
 how many parents each node has.
@@ -684,8 +678,9 @@ The model includes additional elements, \texttt{nodal\_types,}
 later in detail.
 
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.1170}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.8830}}@{}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.3000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.7000}}@{}}
+\caption{Core Elements of a Causal Model}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 Element
@@ -704,23 +699,22 @@ Description
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-statement & A character string that describes directed causal relations
-between variables in a causal model, where arrows denote that one node
-is a potential cause of another. \\
-dag & A data frame with columns `parent' and `children' indicating how
-nodes relate to each other. \\
-nodes & A list containing the nodes in the model. \\
-parents\_df & A table listing nodes, whether they are root nodes or not,
-and the number of parents they have. \\
-nodal\_types & A list with the nodal types in the model. (See Nodal
-Types Section) \\
-parameters\_df & A data frame linking the model's parameters with the
-nodal types of the model, as well as the family to which they belong.
-(See Parameters dataframe Section) \\
-causal\_types & A data frame listing causal types and the nodal types
-that produce them. (See Causal Types Section) \\
-P: parameter matrix & Should I include it? \\
-\caption{Core Elements of a Causal Model}\tabularnewline
+\texttt{statement} & A character string that describes directed causal
+relations between variables in a causal model, where arrows denote that
+one node is a potential cause of another. \\
+\texttt{dag} & A data frame with columns `parent' and `children'
+indicating how nodes relate to each other. \\
+\texttt{nodes} & A list containing the nodes in the model. \\
+\texttt{parents\_df} & A table listing nodes, whether they are root
+nodes or not, and the number of parents they have. \\
+\texttt{nodal\_types} & A list with the nodal types in the model. See
+Section~\ref{sec-nodal-types} for more details. \\
+\texttt{parameters\_df} & A data frame linking the model's parameters
+with the nodal types of the model, as well as the family to which they
+belong. See Section~\ref{sec-param-df} for more details. \\
+\texttt{causal\_types} & A data frame listing causal types and the nodal
+types that produce them. (See Causal Types Section) \\
+\texttt{P}: parameter matrix & Should I include it? \\
 \end{longtable}
 
 After updating a model, two additional components are attached to it:
@@ -738,15 +732,24 @@ After updating a model, two additional components are attached to it:
 Optionally, users can choose whether to keep and append additional
 elements to the \texttt{stan\_objects.} For instance, they can specify
 whether to include \texttt{w}, which maps parameters to event
-probabilities, as well as the `stanfit' object, the output generated by
-stan
+probabilities, as well as the \texttt{stanfit} object, the output
+generated by stan
 
 The table below summarizes the objects attached to the model after
 updating.
 
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.2155}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.7845}}@{}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.3000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.7000}}@{}}
+\caption{Additional Elements}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Element
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Description
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 Element
@@ -757,22 +760,22 @@ Description
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-posterior\_distribution & The posterir distribution of the updated
-parameters generated by stan. \\
-stan\_objects & A list of objects, including, at a minimum,
+\texttt{posterior\_distribution} & The posterir distribution of the
+updated parameters generated by stan. \\
+\texttt{stan\_objects} & A list of objects, including, at a minimum,
 \texttt{type\_distribution} and \texttt{data}. \\
-data & The data used for updating the model, appended to
+\texttt{data} & The data used for updating the model, appended to
 \texttt{stan\_objects.} \\
-type\_distribution & The updated distribution of the nodal types,
-appended to \texttt{stan\_objects.} \\
-w & A mapping from parameters to event probabilities, optionally
-appended to \texttt{stan\_objects.} \\
-stan\_fit & The \texttt{stanfit} object generated by stan. This is
+\texttt{type\_distribution} & The updated distribution of the nodal
+types, appended to \texttt{stan\_objects.} \\
+\texttt{w} & A mapping from parameters to event probabilities,
 optionally appended to \texttt{stan\_objects.} \\
+\texttt{stan\_fit} & The \texttt{stanfit} object generated by stan. This
+is optionally appended to \texttt{stan\_objects.} \\
 \end{longtable}
 
-\hypertarget{parameters-dataframe}{%
-\subsubsection{Parameters dataframe}\label{parameters-dataframe}}
+\hypertarget{sec-param-df}{%
+\subsubsection{Parameters data frame}\label{sec-param-df}}
 
 When a model is created, \texttt{CausalQueries} attaches a ``parameters
 dataframe'' which keeps track of model parameters, which belong together
@@ -786,29 +789,44 @@ types.
 For instance:
 
 \begin{verbatim}
-R> make_model("X->Y")$parameters_df |>
-+  knitr::kable()
+R> make_model("X->Y")$parameters_df
 \end{verbatim}
 
-\begin{tabular}{l|l|r|l|l|l|r|r}
-\hline
-param\_names & node & gen & param\_set & nodal\_type & given & param\_value & priors\\
-\hline
-X.0 & X & 1 & X & 0 &  & 0.50 & 1\\
-\hline
-X.1 & X & 1 & X & 1 &  & 0.50 & 1\\
-\hline
-Y.00 & Y & 2 & Y & 00 &  & 0.25 & 1\\
-\hline
-Y.10 & Y & 2 & Y & 10 &  & 0.25 & 1\\
-\hline
-Y.01 & Y & 2 & Y & 01 &  & 0.25 & 1\\
-\hline
-Y.11 & Y & 2 & Y & 11 &  & 0.25 & 1\\
-\hline
-\end{tabular}
+\begin{verbatim}
+# A tibble: 6 x 8
+  param_names node    gen param_set nodal_type given param_value priors
+  <chr>       <chr> <int> <chr>     <chr>      <chr>       <dbl>  <dbl>
+1 X.0         X         1 X         0          ""           0.5       1
+2 X.1         X         1 X         1          ""           0.5       1
+3 Y.00        Y         2 Y         00         ""           0.25      1
+4 Y.10        Y         2 Y         10         ""           0.25      1
+5 Y.01        Y         2 Y         01         ""           0.25      1
+6 Y.11        Y         2 Y         11         ""           0.25      1
+\end{verbatim}
 
-Each row in the dataframe corresponds to a single parameter.
+\hypertarget{tbl-params-df}{}
+\begin{table}
+\caption{\label{tbl-params-df}Example of Parameters Data Frame }\tabularnewline
+
+\centering
+\resizebox{\linewidth}{!}{
+\begin{tabular}{cccccccc}
+\toprule
+param\_names & node & gen & param\_set & nodal\_type & given & param\_value & priors\\
+\midrule
+X.0 & X & 1 & X & 0 &  & 0.50 & 1\\
+X.1 & X & 1 & X & 1 &  & 0.50 & 1\\
+Y.00 & Y & 2 & Y & 00 &  & 0.25 & 1\\
+Y.10 & Y & 2 & Y & 10 &  & 0.25 & 1\\
+Y.01 & Y & 2 & Y & 01 &  & 0.25 & 1\\
+\addlinespace
+Y.11 & Y & 2 & Y & 11 &  & 0.25 & 1\\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+Produces parameters data frame shown in Table~\ref{tbl-params-df}. Each
+row in the data frame corresponds to a single parameter.
 
 The columns of the parameters data frame are understood as follows:
 
@@ -845,8 +863,8 @@ Below we will see examples where the parameter dataframe helps keep
 track of parameters that are created when confounding is added to a
 model.
 
-\hypertarget{nodal-types}{%
-\subsubsection{Nodal types}\label{nodal-types}}
+\hypertarget{sec-nodal-types}{%
+\subsubsection{Nodal types}\label{sec-nodal-types}}
 
 Two units have the same \emph{nodal type} at node \(Y\), \(\theta^Y\),
 if their outcome at \(Y\) responds in the same ways to parents of \(Y\).
@@ -1413,7 +1431,7 @@ R> make_model("A <- X -> B; A <-> X; B <-> X") |>
 
 \begin{figure}[H]
 
-{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-23-1.pdf}
+{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-24-1.pdf}
 
 }
 
@@ -1726,6 +1744,10 @@ model using the \texttt{make\_data} function. This can be useful for
 instance for assessing the expected performance of a model given data
 drawn from some speculated set of parameter values.
 
+\begin{verbatim}
+R> model <- make_model("X -> M -> Y") 
+\end{verbatim}
+
 \hypertarget{drawing-data-basics}{%
 \subsubsection{Drawing data basics}\label{drawing-data-basics}}
 
@@ -1733,27 +1755,10 @@ By default, the parameters used are taken from
 \texttt{model\$parameters\_df}.
 
 \begin{verbatim}
-R> model <- make_model("X -> M -> Y")
-R> 
 R> sample_data_1 <- 
-+  model |> make_data(n = 4) 
-R> 
-R> sample_data_1 |> kable()
++  model |> 
++  make_data(n = 4)
 \end{verbatim}
-
-\begin{tabular}{r|r|r}
-\hline
-X & M & Y\\
-\hline
-0 & 1 & 0\\
-\hline
-0 & 1 & 0\\
-\hline
-1 & 0 & 0\\
-\hline
-1 & 1 & 0\\
-\hline
-\end{tabular}
 
 However you can also specify parameters directly or use parameter draws
 from a prior or posterior distribution. For instance:
@@ -1779,13 +1784,14 @@ data on different nodes, possibly as a function of prior nodes observed.
 
 \begin{verbatim}
 R> set.seed(1)
+R> 
 R> sample_data_2 <-
 +  make_data(
-+  model,
-+  n = 8,
-+  nodes = list(c("X", "Y"), "M"),
-+  probs = list(1, .5),
-+  subsets = list(TRUE, "X==1 & Y==0"))
++    model,
++    n = 8,
++    nodes = list(c("X", "Y"), "M"),
++    probs = list(1, .5),
++    subsets = list(TRUE, "X==1 & Y==0"))
 \end{verbatim}
 
 \begin{verbatim}
@@ -1998,6 +2004,8 @@ If you have multiple cores you can do parallel processing by including
 this line before running \texttt{CausalQueries}:
 
 \begin{verbatim}
+R> library(parallel)
+R> 
 R> options(mc.cores = parallel::detectCores())
 \end{verbatim}
 
@@ -2009,6 +2017,9 @@ processes at the upper level of the nested parallel structure are given
 by \(\left \lfloor \frac{cores}{chains + 1} \right \rfloor\).
 
 \begin{verbatim}
+R> library(future)
+R> library(future.apply)
+R> 
 R> chains <- 3
 R> cores <- 8
 R> 
@@ -2156,17 +2167,29 @@ distribution provided by \texttt{stan}.
 \begin{verbatim}
 R> library(DeclareDesign)
 R> 
-R> data  <- fabricate(N = 10, X = complete_ra(N), Y = X)
+R> data  <- 
++  fabricate(N = 100, X = complete_ra(N), Y = X)
 R> 
-R> model <- make_model("X -> Y") |>
+R> model <- 
++  make_model("X -> Y") |>
 +  update_model(data, iter  = 4000)
 R> 
 R> model$posterior_distribution |> 
-+  ggplot(aes(Y.01 - Y.10)) + 
-+           geom_histogram()
++  ggplot(aes(Y.01 - Y.10)) + geom_histogram()
 \end{verbatim}
 
-\includegraphics{paper_files/figure-pdf/unnamed-chunk-46-1.pdf}
+\begin{figure}[h]
+
+{\centering \includegraphics{paper_files/figure-pdf/fig-posterior-dist-1.pdf}
+
+}
+
+\caption{\label{fig-posterior-dist}Posterior on 'Probability \(Y\) is
+increasing in \(X\)'}
+
+\end{figure}
+
+\FloatBarrier
 
 \hypertarget{query-distribution}{%
 \subsection{Query distribution}\label{query-distribution}}
@@ -2179,17 +2202,17 @@ R> make_model("X -> Y") |>
 +  query_distribution(
 +    query = list(increasing = "(Y[X=1] > Y[X=0])"), 
 +    using = "priors") |>
-+  ggplot(aes(increasing)) +
-+  geom_histogram()
++  ggplot(aes(increasing)) + geom_histogram() + theme_bw()
 \end{verbatim}
 
-\begin{figure}[H]
+\begin{figure}[h]
 
-{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-47-1.pdf}
+{\centering \includegraphics{paper_files/figure-pdf/fig-query-dist-1.pdf}
 
 }
 
-\caption{Prior on 'Probability \(Y\) is increasing in \(X\)'}
+\caption{\label{fig-query-dist}Prior on 'Probability \(Y\) is increasing
+in \(X\)'}
 
 \end{figure}
 
@@ -2211,9 +2234,9 @@ R> lipids_model |>
 
 \begin{verbatim}
             query              given      using case_level      mean         sd
-1 Y[X=1] - Y[X=0] X==1 & Y==1 & Z==1 posteriors      FALSE 0.9541329 0.03575594
+1 Y[X=1] - Y[X=0] X==1 & Y==1 & Z==1 posteriors      FALSE 0.9538868 0.03713467
   cred.low.2.5% cred.high.97.5%
-1     0.8624872       0.9969585
+1     0.8611883       0.9969631
 \end{verbatim}
 
 The answer we get is what we now believe for all cases in which
@@ -2309,7 +2332,7 @@ model & query & given & using & case\_level & mean & sd\\
 \hline
 2 & ATE & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA\\
 \hline
-1 & ATE & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29\\
+1 & ATE & Y==1 \& X==1 & priors & FALSE & 0.49 & 0.29\\
 \hline
 2 & ATE & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29\\
 \hline
@@ -2317,7 +2340,7 @@ model & query & given & using & case\_level & mean & sd\\
 \hline
 2 & POS & - & parameters & FALSE & 0.33 & NA\\
 \hline
-1 & POS & - & priors & FALSE & 0.25 & 0.20\\
+1 & POS & - & priors & FALSE & 0.24 & 0.19\\
 \hline
 2 & POS & - & priors & FALSE & 0.33 & 0.24\\
 \hline
@@ -2325,7 +2348,7 @@ model & query & given & using & case\_level & mean & sd\\
 \hline
 2 & POS & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA\\
 \hline
-1 & POS & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29\\
+1 & POS & Y==1 \& X==1 & priors & FALSE & 0.49 & 0.29\\
 \hline
 2 & POS & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29\\
 \hline
@@ -2341,15 +2364,15 @@ model & query & given & using & case\_level & mean & sd\\
 \hline
 2 & ATE & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA\\
 \hline
-1 & ATE & Y==1 \& X==1 & priors & TRUE & 0.51 & NA\\
+1 & ATE & Y==1 \& X==1 & priors & TRUE & 0.49 & NA\\
 \hline
-2 & ATE & Y==1 \& X==1 & priors & TRUE & 0.50 & NA\\
+2 & ATE & Y==1 \& X==1 & priors & TRUE & 0.49 & NA\\
 \hline
 1 & POS & - & parameters & TRUE & 0.25 & NA\\
 \hline
 2 & POS & - & parameters & TRUE & 0.33 & NA\\
 \hline
-1 & POS & - & priors & TRUE & 0.25 & NA\\
+1 & POS & - & priors & TRUE & 0.24 & NA\\
 \hline
 2 & POS & - & priors & TRUE & 0.33 & NA\\
 \hline
@@ -2357,9 +2380,9 @@ model & query & given & using & case\_level & mean & sd\\
 \hline
 2 & POS & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA\\
 \hline
-1 & POS & Y==1 \& X==1 & priors & TRUE & 0.51 & NA\\
+1 & POS & Y==1 \& X==1 & priors & TRUE & 0.49 & NA\\
 \hline
-2 & POS & Y==1 \& X==1 & priors & TRUE & 0.50 & NA\\
+2 & POS & Y==1 \& X==1 & priors & TRUE & 0.49 & NA\\
 \hline
 \end{tabular}
 
@@ -2527,7 +2550,7 @@ Network (CRAN) at {[}https://CRAN.R-project.org/{]}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, breakable, bottomrule=.15mm, arc=.35mm, left=2mm, rightrule=.15mm, toprule=.15mm, colback=white, leftrule=.75mm, opacityback=0]
+\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, leftrule=.75mm, toprule=.15mm, breakable, opacityback=0, bottomrule=.15mm, rightrule=.15mm, left=2mm, colback=white]
 
 The approach to generating a generic stan function that can take data
 from arbitrary models was developed in key contributions by
@@ -2557,7 +2580,7 @@ improved every part of it.
 \section*{More technical details}\label{sec-techdetails}}
 \addcontentsline{toc}{section}{More technical details}
 
-\begin{tcolorbox}[enhanced jigsaw, breakable, bottomrule=.15mm, arc=.35mm, left=2mm, rightrule=.15mm, toprule=.15mm, colback=white, leftrule=.75mm, opacityback=0]
+\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, leftrule=.75mm, toprule=.15mm, breakable, opacityback=0, bottomrule=.15mm, rightrule=.15mm, left=2mm, colback=white]
 
 Appendices can be included after the bibliography (with a page break).
 Each section within the appendix should have a proper section title
@@ -2589,7 +2612,7 @@ which includes the following topics:
 \section*{Using BibTeX}\label{sec-bibtex}}
 \addcontentsline{toc}{section}{Using BibTeX}
 
-\begin{tcolorbox}[enhanced jigsaw, breakable, bottomrule=.15mm, arc=.35mm, left=2mm, rightrule=.15mm, toprule=.15mm, colback=white, leftrule=.75mm, opacityback=0]
+\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, leftrule=.75mm, toprule=.15mm, breakable, opacityback=0, bottomrule=.15mm, rightrule=.15mm, left=2mm, colback=white]
 
 References need to be provided in a \textsc{Bib}{\TeX} file
 (\texttt{.bib}). All references should be made with \texttt{@cite}
@@ -2656,52 +2679,54 @@ int<lower=1> n_paths;
 int<lower=1> n_types;
 int<lower=1> n_param_sets;
 int<lower=1> n_nodes;
-int<lower=1> n_param_each[n_param_sets];
+array[n_param_sets] int<lower=1> n_param_each;
 int<lower=1> n_data;
 int<lower=1> n_events;
 int<lower=1> n_strategies;
 int<lower=0, upper=1> keep_transformed;
 vector<lower=0>[n_params] lambdas_prior;
-int<lower=1> l_starts[n_param_sets];
-int<lower=1> l_ends[n_param_sets];
-int<lower=1> node_starts[n_nodes];
-int<lower=1> node_ends[n_nodes];
-int<lower=1> strategy_starts[n_strategies];
-int<lower=1> strategy_ends[n_strategies];
+array[n_param_sets] int<lower=1> l_starts;
+array[n_param_sets] int<lower=1> l_ends;
+array[n_nodes] int<lower=1> node_starts;
+array[n_nodes] int<lower=1> node_ends;
+array[n_strategies] int<lower=1> strategy_starts;
+array[n_strategies] int<lower=1> strategy_ends;
 matrix[n_params, n_types] P;
 matrix[n_params, n_paths] parmap;
 matrix[n_paths, n_data] map;
 matrix<lower=0,upper=1>[n_events,n_data] E;
-int<lower=0> Y[n_events];
+array[n_events] int<lower=0> Y;
 }
 parameters {
 vector<lower=0>[n_params - n_param_sets] gamma;
 }
 transformed parameters {
-vector<lower=0>[n_params] lambdas;
+vector<lower=0, upper=1>[n_params] lambdas;
 vector<lower=1>[n_param_sets] sum_gammas;
 matrix[n_params, n_paths] parlam;
 matrix[n_nodes, n_paths] parlam2;
 vector<lower=0, upper=1>[n_paths] w_0;
 vector<lower=0, upper=1>[n_data] w;
-vector[n_events] w_full;
+vector<lower=0, upper=1>[n_events] w_full;
 // Cases in which a parameter set has only one value need special handling
 // they have no gamma components and sum_gamma needs to be made manually
 for (i in 1:n_param_sets) {
-if (l_starts[i] >= l_ends[i]) {
-  sum_gammas[i] = 1;
-  // syntax here to return unity as a vector
-  lambdas[l_starts[i]] = lambdas_prior[1]/lambdas_prior[1];
-  }
-else if (l_starts[i] < l_ends[i]) {
-  sum_gammas[i] =
-  1 + sum(gamma[(l_starts[i] - (i-1)):(l_ends[i] - i)]);
-  lambdas[l_starts[i]:l_ends[i]] =
-  append_row(1, gamma[(l_starts[i] - (i-1)):(l_ends[i] - i)]) / sum_gammas[i];
-  }
+  if (l_starts[i] >= l_ends[i]) {
+    sum_gammas[i] = 1;
+    // syntax here to return unity as a vector
+    lambdas[l_starts[i]] = lambdas_prior[1]/lambdas_prior[1];
+    }
+  else if (l_starts[i] < l_ends[i]) {
+    sum_gammas[i] =
+    1 + sum(gamma[(l_starts[i] - (i-1)):(l_ends[i] - i)]);
+    lambdas[l_starts[i]:l_ends[i]] =
+    append_row(1, gamma[(l_starts[i] - (i-1)):(l_ends[i] - i)]) /
+      sum_gammas[i];
+    }
   }
 // Mapping from parameters to data types
-parlam  = rep_matrix(lambdas, n_paths) .* parmap; // (usual case): [n_par * n_data] * [n_par * n_data]
+// (usual case): [n_par * n_data] * [n_par * n_data]
+parlam  = rep_matrix(lambdas, n_paths) .* parmap;
 // Sum probability over nodes on each path
 for (i in 1:n_nodes) {
  parlam2[i,] = col_sums(parlam[(node_starts[i]):(node_ends[i]),]);
@@ -2712,23 +2737,26 @@ for (i in 1:n_paths) {
  }
  // last (if confounding): map to n_data columns instead of n_paths
  w = map'*w_0;
- w = w / sum(w);
+  // Extend/reduce to cover all observed data types
  w_full = E * w;
 }
 model {
 // Dirichlet distributions (earlier versions used gamma)
 for (i in 1:n_param_sets) {
-  target += dirichlet_lpdf(lambdas[l_starts[i]:l_ends[i]]  | lambdas_prior[l_starts[i] :l_ends[i]]);
+  target += dirichlet_lpdf(lambdas[l_starts[i]:l_ends[i]]  |
+    lambdas_prior[l_starts[i] :l_ends[i]]);
   target += -n_param_each[i] * log(sum_gammas[i]);
  }
 // Multinomials
+// Note with censoring event_probabilities might not sum to 1
 for (i in 1:n_strategies) {
   target += multinomial_lpmf(
-  Y[strategy_starts[i]:strategy_ends[i]] | w_full[strategy_starts[i]:strategy_ends[i]]);
+  Y[strategy_starts[i]:strategy_ends[i]] |
+    w_full[strategy_starts[i]:strategy_ends[i]]/
+     sum(w_full[strategy_starts[i]:strategy_ends[i]]));
  }
 }
 // Option to export distribution of causal types
-// Note if clause used here to effectively turn off this block if not required
 generated quantities{
 vector[n_types] prob_of_types;
 if (keep_transformed == 1){
