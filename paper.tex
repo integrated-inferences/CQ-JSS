@@ -240,7 +240,7 @@ URL: \url{https://macartan.github.io/}\\
 
 \begin{document}
 \maketitle
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[borderline west={3pt}{0pt}{shadecolor}, sharp corners, interior hidden, enhanced, boxrule=0pt, breakable, frame hidden]}{\end{tcolorbox}}\fi
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[frame hidden, interior hidden, boxrule=0pt, borderline west={3pt}{0pt}{shadecolor}, breakable, enhanced, sharp corners]}{\end{tcolorbox}}\fi
 
 \hypertarget{sec-intro}{%
 \section{Introduction: Causal models}\label{sec-intro}}
@@ -361,8 +361,8 @@ cred.high.97.5\%
 \end{minipage} \\
 \midrule()
 \endhead
-Y{[}X=1{]} - Y{[}X=0{]} & - & 0.56 & 0.10 & 0.38 & 0.74 \\
-Y{[}X=1{]} - Y{[}X=0{]} & X==0 \& Y==0 & 0.64 & 0.15 & 0.37 & 0.90 \\
+Y{[}X=1{]} - Y{[}X=0{]} & - & 0.55 & 0.10 & 0.37 & 0.73 \\
+Y{[}X=1{]} - Y{[}X=0{]} & X==0 \& Y==0 & 0.64 & 0.15 & 0.37 & 0.89 \\
 Y{[}X=1{]} - Y{[}X=0{]} & X{[}Z=1{]} \textgreater{} X{[}Z=0{]} & 0.70 &
 0.05 & 0.59 & 0.80 \\
 \bottomrule()
@@ -661,7 +661,7 @@ make_model("X -> M -> Y <- X; Z -> Y") |>
 
 \begin{figure}[H]
 
-{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-14-1.pdf}
+{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-16-1.pdf}
 
 }
 
@@ -684,7 +684,7 @@ make_model("X -> M -> Y <- X; Z -> Y") |>
 
 \begin{figure}[H]
 
-{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-16-1.pdf}
+{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-18-1.pdf}
 
 }
 
@@ -1478,7 +1478,7 @@ make_model("A <- X -> B; A <-> X; B <-> X") |>
 
 \begin{figure}[H]
 
-{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-44-1.pdf}
+{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-46-1.pdf}
 
 }
 
@@ -1895,10 +1895,10 @@ sample_data_1 |> kable()
 X & M & Y \\
 \midrule()
 \endhead
+0 & 0 & 0 \\
 0 & 0 & 1 \\
-0 & 1 & 0 \\
-0 & 1 & 1 \\
-1 & 0 & 1 \\
+1 & 0 & 0 \\
+1 & 1 & 0 \\
 \bottomrule()
 \end{longtable}
 
@@ -2311,7 +2311,7 @@ model$posterior_distribution |>
 `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 \end{verbatim}
 
-\includegraphics{paper_files/figure-pdf/unnamed-chunk-90-1.pdf}
+\includegraphics{paper_files/figure-pdf/unnamed-chunk-92-1.pdf}
 
 \hypertarget{query-distribution}{%
 \subsection{Query distribution}\label{query-distribution}}
@@ -2334,7 +2334,7 @@ make_model("X -> Y") |>
 
 \begin{figure}[H]
 
-{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-92-1.pdf}
+{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-94-1.pdf}
 
 }
 
@@ -2345,23 +2345,50 @@ make_model("X -> Y") |>
 \hypertarget{case-level-queries}{%
 \subsection{Case level queries}\label{case-level-queries}}
 
-MH
+Sometimes one is interested in assessing the value of a query for a
+\emph{particular case}. In a sense this is equivalent to posing a
+conditional query, querying conditional on valuesin a case.
 
-Case level queries provide the inference for a `new case', which is a
-scalar The case level query \emph{updates} on the given information
+For instance we might consult our posterior lipds model and ask about
+the effect of \(X\) on \(Y\) for a case in which \(Z=1, X=1\) and
+\(Y=1\).
+
+\begin{verbatim}
+lipid_model |>
+    query_model(query = "Y[X=1] - Y[X=0]",
+              given = c("X==1 & Y==1 & Z==1"),
+              using = "posteriors")
+\end{verbatim}
+
+\begin{verbatim}
+            query              given      using case_level      mean        sd
+1 Y[X=1] - Y[X=0] X==1 & Y==1 & Z==1 posteriors      FALSE 0.9529793 0.0364487
+  cred.low.2.5% cred.high.97.5%
+1     0.8636499       0.9968372
+\end{verbatim}
+
+The answer we get is what we now believe for all cases in which
+\(Z=1, X=1\) and \(Y=1\). It is in fact the expected average effect
+among cases with this data type and so this expectation has an
+uncertainty attached to it.
+
+Subtly though this is, in principle, different to what we would infer
+for a a `new case' that we wonder about. When inquirying about a new
+case, the case level query \emph{updates} on the given information
 observed in the new case. The resulting inference is different to the
 inference that would be made from the posterior \emph{given} the
 features of the case.
 
 To illustrate, consider a model for which we are quite sure that \(X\)
 causes \(Y\) but we do not know whether it works through two positive
-effects or two negative effects. Thus we do not know if M=0 would
-suggest an effect or no effect. If asked what we would infer for a case
-that had \(M=0\) we would not know whether \(M=0\) information is
-consistent with a positive effect or not. However if provided with a
-randomly case and learn that it has \(M=0\), then we update about the
-causal model and infer that there is an effect in this case (but that
-there wouldn't be were \(M=1\)).
+effects or two negative effects.
+
+Thus we do not know if M=0 would suggest an effect or no effect. If
+asked what we would infer for a case that had \(M=0\) we would not know
+whether \(M=0\) information is consistent with a positive effect or not.
+However if provided with a randomly case and learn that it has \(M=0\),
+then we update about the causal model and infer that there is an effect
+in this case (but that there wouldn't be were \(M=1\)).
 
 \begin{verbatim}
 # DO ALL THIS IN ONE TABLE
@@ -2620,7 +2647,7 @@ Network (CRAN) at {[}https://CRAN.R-project.org/{]}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, colframe=quarto-callout-color-frame, bottomrule=.15mm, leftrule=.75mm, toprule=.15mm, colback=white, arc=.35mm, opacityback=0, rightrule=.15mm, left=2mm, breakable]
+\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, arc=.35mm, bottomrule=.15mm, rightrule=.15mm, toprule=.15mm, breakable, left=2mm, colback=white, opacityback=0, colframe=quarto-callout-color-frame]
 
 The approach to generating a generic stan function that can take data
 from arbitrary models was developed in key contributions by
@@ -2651,7 +2678,7 @@ improved every part of it.
 \section*{More technical details}\label{sec-techdetails}}
 \addcontentsline{toc}{section}{More technical details}
 
-\begin{tcolorbox}[enhanced jigsaw, colframe=quarto-callout-color-frame, bottomrule=.15mm, leftrule=.75mm, toprule=.15mm, colback=white, arc=.35mm, opacityback=0, rightrule=.15mm, left=2mm, breakable]
+\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, arc=.35mm, bottomrule=.15mm, rightrule=.15mm, toprule=.15mm, breakable, left=2mm, colback=white, opacityback=0, colframe=quarto-callout-color-frame]
 
 Appendices can be included after the bibliography (with a page break).
 Each section within the appendix should have a proper section title
@@ -2683,7 +2710,7 @@ which includes the following topics:
 \section*{Using BibTeX}\label{sec-bibtex}}
 \addcontentsline{toc}{section}{Using BibTeX}
 
-\begin{tcolorbox}[enhanced jigsaw, colframe=quarto-callout-color-frame, bottomrule=.15mm, leftrule=.75mm, toprule=.15mm, colback=white, arc=.35mm, opacityback=0, rightrule=.15mm, left=2mm, breakable]
+\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, arc=.35mm, bottomrule=.15mm, rightrule=.15mm, toprule=.15mm, breakable, left=2mm, colback=white, opacityback=0, colframe=quarto-callout-color-frame]
 
 References need to be provided in a \textsc{Bib}{\TeX} file
 (\texttt{.bib}). All references should be made with \texttt{@cite}
