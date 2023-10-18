@@ -962,16 +962,19 @@ make_model("X -> Y") |>
 
 Sometimes one is interested in assessing the value of a query for a *particular case*. In a sense this is equivalent to posing a conditional query, querying conditional on valuesin a case. 
 
-For instance we 
+For instance we might consult our posterior lipds model and ask about the effect of $X$ on $Y$ for a case in which $Z=1, X=1$ and $Y=1$. 
 
 ```{r}
 
+lipid_model |>
+    query_model(query = "Y[X=1] - Y[X=0]",
+              given = c("X==1 & Y==1 & Z==1"),
+              using = "posteriors")
+```
 
-````
+The answer we get is what we now believe for all cases in which $Z=1, X=1$ and $Y=1$. It is in fact the expected average effect among cases with this data type and so this expectation has an uncertainty attached to it.
 
-
- Case level queries provide the inference for a 'new case', which is a scalar
- The case level query *updates* on the given information observed in the new case. The resulting inference is different to the inference that would be made from the posterior *given* the features of the case.
+Subtly though this is, in principle, different to what we would infer for a a 'new case' that we wonder about. When inquirying about a new case, the case level query *updates* on the given information observed in the new case. The resulting inference is different to the inference that would be made from the posterior *given* the features of the case.
  
  To illustrate, consider a   model for which we are quite sure that $X$ causes $Y$ but we do not know whether it works through two positive effects or two negative effects.
 
