@@ -35,6 +35,9 @@ format:
   jss-pdf:
     keep-tex: true
     include-in-header: supp/in-header.tex
+    knitr: 
+      opts_chunk:
+        prompt: true
 execute: 
   eval: true
   warning: false
@@ -42,7 +45,7 @@ execute:
   cache: false
 keywords: [causal models, stan, bayes]
 keywords-formatted: [causal models, stan, bayes]
-bibliography: bib.bib  
+bibliography: supp/bib.bib  
 ---
 
 ```{r}
@@ -61,44 +64,17 @@ run <- FALSE
 
 ## Introduction: Causal models {#sec-intro}
 
-### What CausalQueries does {#what-cq-does}
+### What CausalQueries does
 
-`CausalQueries` is an [R]{.proglang} package that lets users make,
-update, and query causal models. The base specification asks users to
-provide a statement that reports a set of binary variables and the
-relations of causal ancestry between them: which variables are direct
-causes of other variables, given the other variables in the model. Once
-provided to `make_model()`, `CausalQueries` generates a set of
-parameters that fully describe all possible types of causal relations
-between variables ("causal types"), given the causal structure. Given a
-prior over distributions over causal types and data over some or all
-nodes, `update_model()` deploys a `stan` model in order to generate a
-posterior distribution over parameters. The function `query_model()` can
-then be used to ask any causal query of the model, using either the
-prior distribution, the posterior distribution, or a user specified
-candidate vector of parameters.\
-We illustrate these three core functions by showing how to use
-`CuasalQueries` to replicate the analysis in @chickering1996clinician
-(see also @ii2023).
+`CausalQueries` is an [R]{.proglang} package that lets users make, update, and query causal models. The base specification asks users to provide a statement that reports a set of binary variables and the relations of causal ancestry between them: which variables are direct causes of other variables, given the other variables in the model. Once provided to `make_model()`, `CausalQueries` generates a set of parameters that fully describe all possible types of causal relations between variables ("causal types"), given the causal structure. Given a prior over distributions over causal types and data over some or all nodes, `update_model()` deploys a `stan` model in order to generate a posterior distribution over parameters. The function `query_model()` can then be used to ask any causal query of the model, using either the prior distribution, the posterior distribution, or a user specified candidate vector of parameters.
 
-@chickering1996clinician seek to draw inference on causal effects in the
-presence of imperfect compliance. We have access to an instrument $Z$ (a
-randomly assigned prescription for cholesterol medication), which is a
-cause of $X$ (treatment uptake) but otherwise unrelated to $Y$
-(cholesterol). We imagine we are interested in three specific queries.
-The first is the average causal effect of $X$ on $Y$. The second is the
-average effect for units for which $X=0$ and $Y=0$. The last is the
-average treatment effect *for* "compliers": units for which $X$ responds
-positively to $Z$. Thus two of these queries are conditional queries,
-with one conditional on a counterfactual quantity.
+We illustrate these three core functions by showing how to use `CuasalQueries` to replicate the analysis in @chickering1996clinician (see also @ii2023). @chickering1996clinician seek to draw inference on causal effects in the presence of imperfect compliance. We have access to an instrument $Z$ (a randomly assigned prescription for cholesterol medication), which is a cause of $X$ (treatment uptake) but otherwise unrelated to $Y$ (cholesterol). We imagine we are interested in three specific queries. The first is the average causal effect of $X$ on $Y$. The second is the average effect for units for which $X=0$ and $Y=0$. The last is the average treatment effect *for* "compliers": units for which $X$ responds positively to $Z$. Thus two of these queries are conditional queries, with one conditional on a counterfactual quantity.
 
-Our data on $Z$, $X$, and $Y$ is complete for all units and looks, in
-compact form, as follows:
+Our data on $Z$, $X$, and $Y$ is complete for all units and looks, in compact form, as follows:
 
 ```{r}
 #| echo: true
 #| results: markup
-#| prompt: true
 
 data("lipids_data")
 
@@ -106,13 +82,11 @@ lipids_data
 
 ```
 
-Using `CausalQueries` we can define the model, update it with data, and
-query it, thus.
+Using `CausalQueries` we can define the model, update it with data, and query it, thus.
 
 ```{r}
 #| echo: true
 #| eval: false
-#| prompt: true
 
 make_model("Z -> X -> Y; X <-> Y") |>
   update_model(lipids_data, refresh = 0) |>
@@ -121,9 +95,7 @@ make_model("Z -> X -> Y; X <-> Y") |>
               using = "posteriors") 
 ```
 
-The output is a data frame with estimates, posterior standard
-deviations, and credibility intervals. For example the data frame
-produced by the code above is shown in @tbl-lipids.
+The output is a data frame with estimates, posterior standard deviations, and credibility intervals. For example the data frame produced by the code above is shown in @tbl-lipids.
 
 ```{r}
 #| label: tbl-lipids
@@ -152,10 +124,7 @@ results |>
 
 ```
 
-As we describe below the same basic procedure of making, updating, and
-querying models, can be used (up to computational constraints) for
-arbitrary causal models, for different types of data structures, and for
-all causal queries that can be posed of the causal model.
+As we describe below the same basic procedure of making, updating, and querying models, can be used (up to computational constraints) for arbitrary causal models, for different types of data structures, and for all causal queries that can be posed of the causal model.
 
 ### Connections to existing packages
 
@@ -167,104 +136,44 @@ all causal queries that can be posed of the causal model.
 
 ## Statistical model
 
-**MH: simplify ; clarify how we can get away with simpler structure;
-Embed the *methods***
+**MH: simplify ; clarify how we can get away with simpler structure; Embed the *methods***
 
-The core conceptual framework is described in Pearl's *Causality*
-[@pearl2009causality] but can be summarized as follows (using the
-notation used in @ii2023).
+The core conceptual framework is described in Pearl's *Causality* [@pearl2009causality] but can be summarized as follows (using the notation used in @ii2023).
 
-**Definition** A "**causal model**" is:
+```{=tex}
+\begin{definition}
+  
+  A \textbf{``causal model''} includes:
+  \begin{enumerate}
+    \item an ordered collection of "endogenous nodes" $Y = \{Y_1, Y_2, \dots, Y_n\}$
+    \item an ordered collection of "exogenous nodes" $\Theta = \{\theta^{Y_1}, \theta^{Y_1}, \dots, \theta^{Y_n}\}$
+    \item a collection of functions $F = \{f_{Y_1}, f_{Y_2}, \dots, f_{Y_n}\}$ specifying, for each node $j$, how outcome $y_j$ depends on $\theta_j$ and realizations of endogenous nodes prior to $j$.
+    \item a probability distribution over $\Theta$, $\lambda$
+  \end{enumerate}
+  
+\end{definition}
+```
+In the usual case we take the endogenous nodes to be binary.[^1] When we specify a causal structure we specify which endogenous nodes are (possibly) direct causes of a node, $Y_j$, given other nodes in the model. These nodes are called the parents of $Y_j$, $PA_j$ (we use upper case $PA_j$ to indicate the collection of nodes and lower case $pa_j$ to indicate a particular set of values that these nodes might take on). In this case, with discrete valued nodes, it is possible to identify all possible ways that a node might relate to its parents. We call these "nodal types," and they correspond to principal strata familiar, for instance, in the study of instrumental variables [@frangakis2002principal]. If node $Y_i$ can take on $k_i$ possible values then the set of possible values that can be taken on by parents of $j$ is $m :=\prod_{i\in PA_j}k_i$, then there are $k_j^{m}$ nodal types --- distinct ways that $j$ might respond to its parents---with each types corresponding to a distinct way that $j$ takes for a given constellation of values of its parents. In the case of binary nodes this becomes $2^{\left(2^{|PA_j|}\right)}$. Thus for an endogenous node with no parents there are 2 nodal types, for a binary node with one binary parent there are four types, for a binary node with 2 parents there are 16, and so on.
 
-1.  an ordered collection of "endogenous nodes"
-    $Y = \{Y_1, Y_2, \dots, Y_n\}$
-2.  an ordered collection of "exogenous nodes"
-    $\Theta = \{\theta^{Y_1}, \theta^{Y_1}, \dots, \theta^{Y_n}\}$
-3.  a collection of functions $F = \{f_{Y_1}, f_{Y_2}, \dots, f_{Y_n}\}$
-    specifying, for each node $j$, how outcome $y_j$ depends on
-    $\theta_j$ and realizations of endogenous nodes prior to $j$.
-4.  A probability distribution over $\Theta$, $\lambda$
+The set of all possible causal reactions of a given unit to all possible values of parents is then given by its collection of nodal types at each node. We call this collection a unit's "causal type", $\theta$.
 
-In the usual case we take the endogenous nodes to be binary.[^1] When we
-specify a causal structure we specify which endogenous nodes are
-(possibly) direct causes of a node, $Y_j$, given other nodes in the
-model. These nodes are called the parents of $Y_j$, $PA_j$ (we use upper
-case $PA_j$ to indicate the collection of nodes and lower case $pa_j$ to
-indicate a particular set of values that these nodes might take on). In
-this case, with discrete valued nodes, it is possible to identify all
-possible ways that a node might relate to its parents. We call these
-"nodal types," and they correspond to principal strata familiar, for
-instance, in the study of instrumental variables
-[@frangakis2002principal]. If node $Y_i$ can take on $k_i$ possible
-values then the set of possible values that can be taken on by parents
-of $j$ is $m :=\prod_{i\in PA_j}k_i$, then there are $k_j^{m}$ nodal
-types --- distinct ways that $j$ might respond to its parents---with
-each types corresponding to a distinct way that $j$ takes for a given
-constellation of values of its parents. In the case of binary nodes this
-becomes $2^{\left(2^{|PA_j|}\right)}$. Thus for an endogenous node with
-no parents there are 2 nodal types, for a binary node with one binary
-parent there are four types, for a binary node with 2 parents there are
-16, and so on.
+The approach used by `CausalQueries` is to let the domain of $\theta^{Y_j}$ be coextensive with the number of nodal types for $Y_j$. Function $f^j$ then determines the value of $y$ by simply reporting the value of $Y_j$ implied by the nodal type and the values of the parents of $Y_j$. Thus if $\theta^j_{pa_j}$ is the value for $j$ when parents have values $pa_j$, then we have simply that $f_{y_j}(\theta^{j}, pa_j) = \theta^j_{pa_j}$. The practical implication is that, given the causal structure, learning about the model reduces to learning about the distribution $\lambda$ over the nodal types.
 
-The set of all possible causal reactions of a given unit to all possible
-values of parents is then given by its collection of nodal types at each
-node. We call this collection a unit's "causal type", $\theta$.
+In cases in which there is no unobserved confounding, we take the probability distributions over the nodal types for different nodes to be independent: $\theta^i \perp\!\!\! \perp \theta^j, i\neq j$. In this case we use a categorical distribution to specify the ${\lambda^j}' := \Pr(\theta^j = {\theta^j}')$. From independence then we have that the probability of a given causal type $\theta'$ is simply $\prod_{i=1}^n {\lambda^i}'$.
 
-The approach used by `CausalQueries` is to let the domain of
-$\theta^{Y_j}$ be coextensive with the number of nodal types for $Y_j$.
-Function $f^j$ then determines the value of $y$ by simply reporting the
-value of $Y_j$ implied by the nodal type and the values of the parents
-of $Y_j$. Thus if $\theta^j_{pa_j}$ is the value for $j$ when parents
-have values $pa_j$, then we have simply that
-$f_{y_j}(\theta^{j}, pa_j) = \theta^j_{pa_j}$. The practical implication
-is that, given the causal structure, learning about the model reduces to
-learning about the distribution $\lambda$ over the nodal types.
+In cases in which there is confounding, the essential logic is the same except that we need to specify enough parameters to capture the joint distribution over nodal types for different nodes.
 
-In cases in which there is no unobserved confounding, we take the
-probability distributions over the nodal types for different nodes to be
-independent: $\theta^i \perp\!\!\! \perp \theta^j, i\neq j$. In this
-case we use a categorical distribution to specify the
-${\lambda^j}' := \Pr(\theta^j = {\theta^j}')$. From independence then we
-have that the probability of a given causal type $\theta'$ is simply
-$\prod_{i=1}^n {\lambda^i}'$.
+For concreteness: table illustrating all these values for a $X\rightarrow Y$ model
 
-In cases in which there is confounding, the essential logic is the same
-except that we need to specify enough parameters to capture the joint
-distribution over nodal types for different nodes.
+Representing beliefs over causal models thus requires specifying a probability distribution over $\lambda$. This might be a degenerate distribution if users want to specify a particular model. `CausalQueries` allows users to specify parameters, $\alpha$ of a Dirichlet distribution over $\lambda$. If all entries of $\alpha$ are 0.5 this corresponds to Jeffrey's priors. The default behavior is for `CausalQueries` to assume a uniform distribution -- that is, that all nodal types are equally likely -- which corresponds to $\alpha$ being a vector of 1s.
 
-For concreteness: table illustrating all these values for a
-$X\rightarrow Y$ model
+Updating is then done with respect to beliefs over $\lambda$. In the Bayesian approach we have simply:
 
-Representing beliefs over causal models thus requires specifying a
-probability distribution over $\lambda$. This might be a degenerate
-distribution if users want to specify a particular model.
-`CausalQueries` allows users to specify parameters, $\alpha$ of a
-Dirichlet distribution over $\lambda$. If all entries of $\alpha$ are
-0.5 this corresponds to Jeffrey's priors. The default behavior is for
-`CausalQueries` to assume a uniform distribution -- that is, that all
-nodal types are equally likely -- which corresponds to $\alpha$ being a
-vector of 1s.
-
-Updating is then done with respect to beliefs over $\lambda$. In the
-Bayesian approach we have simply:
-
-$$p(\lambda'|D) = \frac{p(D|\lambda')p(\lambda')}{\int_{\lambda^{''}} p(D|\lambda'')p(\lambda'')}$$
-$p(D|\lambda')$ is calculated under the assumption that units are
-exchangeable and independently drawn, and of course, under the model. In
-practice this means that the probability that two units have causal
-types $\theta_i$ and $\theta_j$ is simply $\lambda'_i\lambda'_j$. Since
-a causal type fully determines an outcome vector
-$d = \{y_1, y_2,\dots,y_n\}$, the probability of a given outcome
-("event"), $w_d$, is given simply by the probability that the causal
-type is among those that yield outcome $d$. Thus from $\lambda'$ we can
-calculate a vector of event probabilities, $w(\lambda)$, for each vector
-of outcomes, and under independence we have:
+$$p(\lambda'|D) = \frac{p(D|\lambda')p(\lambda')}{\int_{\lambda^{''}} p(D|\lambda'')p(\lambda'')}$$ $p(D|\lambda')$ is calculated under the assumption that units are exchangeable and independently drawn, and of course, under the model. In practice this means that the probability that two units have causal types $\theta_i$ and $\theta_j$ is simply $\lambda'_i\lambda'_j$. Since a causal type fully determines an outcome vector $d = \{y_1, y_2,\dots,y_n\}$, the probability of a given outcome ("event"), $w_d$, is given simply by the probability that the causal type is among those that yield outcome $d$. Thus from $\lambda'$ we can calculate a vector of event probabilities, $w(\lambda)$, for each vector of outcomes, and under independence we have:
 
 $$D \sim \text{Mulitimonial}(w(\lambda), N)$$
 
-Thus for instance in the case of a $X \rightarrow Y$ model, and letting
-$w_{xy}$ denote the probability of a data type $X=x, Y=y$, the event
-probabilities are:
+Thus for instance in the case of a $X \rightarrow Y$ model, and letting $w_{xy}$ denote the probability of a data type $X=x, Y=y$, the event probabilities are:
 
 $$w(\lambda) = \left\{\begin{array}{ccc} w_{00} & = & \lambda^X_0(\lambda^Y_{00} + \lambda^Y_{01})\\ 
 w_{01} & = & \lambda^X_0(\lambda^Y_{11} + \lambda^Y_{10})\\
@@ -272,18 +181,13 @@ w_{10} & = & \lambda^X_1(\lambda^Y_{00} + \lambda^Y_{10})\\
 w_{11} & = & \lambda^X_1(\lambda^Y_{11} + \lambda^Y_{01})\end{array} \right.$$
 
 -   Embed the *software* into the respective relevant literature.
--   For the latter both competing and complementary software should be
-    discussed (within the same software environment and beyond),
-    bringing out relative (dis)advantages. All software mentioned should
-    be properly `@cited`'d. (See also [Using BibTeX](#sec-bibtex) for
-    more details on {{< bibtex >}}.)
+-   For the latter both competing and complementary software should be discussed (within the same software environment and beyond), bringing out relative (dis)advantages. All software mentioned should be properly `@cited`'d. (See also [Using BibTeX](#sec-bibtex) for more details on {{< bibtex >}}.)
 
 MH: LINE ABOUT WHAT CQ DOES IN THIS FRAMEWORK...
 
 ```{r}
 #| echo: true
 #| results: markup
-#| prompt: true
 #| eval: false
 #| include: false
 
@@ -292,60 +196,26 @@ make_model("A -> B -> C -> D -> E")$parameters_df |> nrow()
 make_model("A -> E <- B; C->E<-D")$parameters_df |> nrow()
 ```
 
-The strength of `CausalQueries` is to allow users to specify arbitrary
-DAGs, arbitrary queries over nodes in those DAGs, and use the same
-canonical procedure to learn about those queries whether or not the
-queries are identified. Thus is principle if researchers are interest in
-learning about a quantitiy like the local average treatment effect and
-their model in fact satisfies the conditions in
-@angrist1996identification, then updating will recover valid estimates
-even if researchers are unaware that the local average treatment effect
-is identified and are ignorant of the estimation procedure proposed by
-@angrist1996identification.
+The strength of `CausalQueries` is to allow users to specify arbitrary DAGs, arbitrary queries over nodes in those DAGs, and use the same canonical procedure to learn about those queries whether or not the queries are identified. Thus is principle if researchers are interest in learning about a quantitiy like the local average treatment effect and their model in fact satisfies the conditions in @angrist1996identification, then updating will recover valid estimates even if researchers are unaware that the local average treatment effect is identified and are ignorant of the estimation procedure proposed by @angrist1996identification.
 
-There are two broad limitation on the sets of models handled natively by
-`CausalQueries`. First `CausalQueries` is designed for models with a
-relatively small number over binary nodes. Because there is no
-compromise made on the space of possible causal relations implied by a
-given model, the parameter space grows very rapidly with the complexity
-of the causal model. The complexity also depends on the causal structure
-and grows rapidly with the number of parents affecting a given child. A
-chain model of the form
-$A \rightarrow B \rightarrow C \rightarrow D \rightarrow E$ has just 40
-parameters. A model in which $A, B, C, D$ are all direct of $E$ has
-65544 parameters. Moving from binary to non binary nodes has similar
-effects. The restriction to binary nodes is for computational and not
-conceptual reasons. In fact there are ways to employ `CausalQueries` to
-answer queries from models with nonbinary nodes but in general the
-computational costs make analysis of these model prohibitive.
-<!--# should we mention computational constraints more explicitly here? >> i.e. constraints on memory as calculated in the CausalQueriesTools documentation. Could also be a place to mention the package + frankensteining methods though that might better be placed in the updating models section -->
+There are two broad limitation on the sets of models handled natively by `CausalQueries`. First `CausalQueries` is designed for models with a relatively small number over binary nodes. Because there is no compromise made on the space of possible causal relations implied by a given model, the parameter space grows very rapidly with the complexity of the causal model. The complexity also depends on the causal structure and grows rapidly with the number of parents affecting a given child. A chain model of the form $A \rightarrow B \rightarrow C \rightarrow D \rightarrow E$ has just 40 parameters. A model in which $A, B, C, D$ are all direct of $E$ has 65544 parameters. Moving from binary to non binary nodes has similar effects. The restriction to binary nodes is for computational and not conceptual reasons. In fact there are ways to employ `CausalQueries` to answer queries from models with nonbinary nodes but in general the computational costs make analysis of these model prohibitive. <!--# should we mention computational constraints more explicitly here? >> i.e. constraints on memory as calculated in the CausalQueriesTools documentation. Could also be a place to mention the package + frankensteining methods though that might better be placed in the updating models section -->
 
-Second the package is geared for learning about populations from samples
-of units that are independent of each other and are independently
-randomly sampled from populations. This the basic set up does not
-address problems of sampling, clustering, hierarchical structures, or
-purposive sampling, for example. In section X we provide pointers to how
-all of these can be addressed.
+Second the package is geared for learning about populations from samples of units that are independent of each other and are independently randomly sampled from populations. This the basic set up does not address problems of sampling, clustering, hierarchical structures, or purposive sampling, for example. In section X we provide pointers to how all of these can be addressed.
 
 ## Making models {#sec-models}
 
-A model is defined in one step using a `dagitty` syntax in which the
-structure of the model is provided as a statement.
+A model is defined in one step using a `dagitty` syntax in which the structure of the model is provided as a statement.
 
 For instance:
 
 ```{r}
 #| echo: true
 #| results: markup
-#| prompt: true
 
 model <- make_model("X -> M -> Y <- X")
 ```
 
-The statement (in quotes) provides the names of nodes. An arrow ("`->`"
-or "`<-`") connecting nodes indicates that one node is a potential cause
-of another (that is, whether a given node is a "parent" or "child" of
-another.
+The statement (in quotes) provides the names of nodes. An arrow ("`->`" or "`<-`") connecting nodes indicates that one node is a potential cause of another (that is, whether a given node is a "parent" or "child" of another.
 
 Formally a statement like this is interpreted as:
 
@@ -363,45 +233,30 @@ Formally a statement like this is interpreted as:
 
 -   $\theta_i \perp\!\!\! \perp \theta_j, i\neq j$
 
-where function $f$ maps from the set of possible values of the parents
-of $i$ to values of node $i$ given $\theta^i$ as described above.
+where function $f$ maps from the set of possible values of the parents of $i$ to values of node $i$ given $\theta^i$ as described above.
 
-In addition, as we did in the @chickering1996clinician example, it is
-also possible to use two headed arrows (`<->`) to indicate "unobserved
-confounding", that is, the presence of an unobserved variable that might
-influence observed variables. In this case condition 3 above is relaxed
-and the exogeneous nodes associated with confounded variables have a
-joint distribution. We describe how this is done in greater detail in
-section @confounding.
+In addition, as we did in the @chickering1996clinician example, it is also possible to use two headed arrows (`<->`) to indicate "unobserved confounding", that is, the presence of an unobserved variable that might influence observed variables. In this case condition 3 above is relaxed and the exogeneous nodes associated with confounded variables have a joint distribution. We describe how this is done in greater detail in section @confounding.
 
 ### Graphing
 
-Plotting the model can be useful to check that you have defined the
-structure of the model correctly. `CausalQueries` provides simple
-graphing tools that draw on functionality from the `dagitty`, `ggplot2`,
-and `ggdag` packages.
+Plotting the model can be useful to check that you have defined the structure of the model correctly. `CausalQueries` provides simple graphing tools that draw on functionality from the `dagitty`, `ggplot2`, and `ggdag` packages.
 
-Once defined, a model can be graphed by calling the `plot()` method
-defined for the objects with class `causal_model` produced by
-`make_model()` function.
+Once defined, a model can be graphed by calling the `plot()` method defined for the objects with class `causal_model` produced by `make_model()` function.
 
 ```{r}
 #| echo: true
 #| eval: false
-#| prompt: true
 
 make_model("X -> M -> Y <- X; Z -> Y") |>
   plot()
 
 ```
 
-Alternatively you can provide a number of options to the `plot()` call
-that will be passed to `CausalQueries:::plot_dag` via the method.
+Alternatively you can provide a number of options to the `plot()` call that will be passed to `CausalQueries:::plot_dag` via the method.
 
 ```{r}
 #| echo: true
 #| eval: false
-#| prompt: true
 
 make_model("X -> M -> Y <- X; Z -> Y") |>
   plot(x_coord = 1:4,
@@ -414,10 +269,7 @@ make_model("X -> M -> Y <- X; Z -> Y") |>
 
 ```
 
-The graphs produced by the two calls above are shown in @fig-plots. In
-both cases the resulting plot will have class `c("gg", "ggplot")` and so
-will accept any additional modifications available via `ggplot2`
-package.
+The graphs produced by the two calls above are shown in @fig-plots. In both cases the resulting plot will have class `c("gg", "ggplot")` and so will accept any additional modifications available via `ggplot2` package.
 
 ```{r}
 #| label: fig-plots
@@ -440,209 +292,111 @@ make_model("X -> M -> Y <- X; Z -> Y") |>
        shape = 18,
        nodecol = "grey",
        nodesize = 12)
-
 ```
 
 ### Model characterization
 
-When a model is defined, a set of objects is generated. These are the
-key quantities that are used for all inference. The table below
-summarizes the core components of a model, providing a brief explanation
-for each one.
+When a model is defined, a set of objects is generated. These are the key quantities that are used for all inference. The table below summarizes the core components of a model, providing a brief explanation for each one.
 
-The first element is a `statement` which defines how the nodes in the
-model are related, specified by the user using dagitty syntax. The
-second element, `dag`, is a data frame that outlines the parent-child
-relationships within the model. `Nodes` is simply a list of the node
-names in the model. Lastly, `parents_df,` is a table listing the nodes,
-indicating if they are root nodes, and showing how many parents each
-node has.
+The first element is a `statement` which defines how the nodes in the model are related, specified by the user using dagitty syntax. The second element, `dag`, is a data frame that outlines the parent-child relationships within the model. `Nodes` is simply a list of the node names in the model. Lastly, `parents_df,` is a table listing the nodes, indicating if they are root nodes, and showing how many parents each node has.
 
-The model includes additional elements, `nodal_types,` `parameters_df,`
-and `causal_types,` which we explain later in detail.
+The model includes additional elements, `nodal_types,` `parameters_df,` and `causal_types,` which we explain later in detail.
 
-+-------------+--------------------------------------------------------+
-| Element     | Description                                            |
-+=============+========================================================+
-| statement   | A character string that describes directed causal      |
-|             | relations between variables in a causal model, where   |
-|             | arrows denote that one node is a potential cause of    |
-|             | another.                                               |
-+-------------+--------------------------------------------------------+
-| dag         | A data frame with columns 'parent' and 'children'      |
-|             | indicating how nodes relate to each other.             |
-+-------------+--------------------------------------------------------+
-| nodes       | A list containing the nodes in the model.              |
-+-------------+--------------------------------------------------------+
-| parents_df  | A table listing nodes, whether they are root nodes or  |
-|             | not, and the number of parents they have.              |
-+-------------+--------------------------------------------------------+
-| nodal_types | A list with the nodal types in the model. (See Nodal   |
-|             | Types Section)                                         |
-+-------------+--------------------------------------------------------+
-| pa          | A data frame linking the model's parameters with the   |
-| rameters_df | nodal types of the model, as well as the family to     |
-|             | which they belong. (See Parameters dataframe Section)  |
-+-------------+--------------------------------------------------------+
-| c           | A data frame listing causal types and the nodal types  |
-| ausal_types | that produce them. (See Causal Types Section)          |
-+-------------+--------------------------------------------------------+
-| P:          | Should I include it?                                   |
-| parameter   |                                                        |
-| matrix      |                                                        |
-+-------------+--------------------------------------------------------+
++---------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Element             | Description                                                                                                                                                         |
++=====================+=====================================================================================================================================================================+
+| statement           | A character string that describes directed causal relations between variables in a causal model, where arrows denote that one node is a potential cause of another. |
++---------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| dag                 | A data frame with columns 'parent' and 'children' indicating how nodes relate to each other.                                                                        |
++---------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| nodes               | A list containing the nodes in the model.                                                                                                                           |
++---------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| parents_df          | A table listing nodes, whether they are root nodes or not, and the number of parents they have.                                                                     |
++---------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| nodal_types         | A list with the nodal types in the model. (See Nodal Types Section)                                                                                                 |
++---------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| parameters_df       | A data frame linking the model's parameters with the nodal types of the model, as well as the family to which they belong. (See Parameters dataframe Section)       |
++---------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| causal_types        | A data frame listing causal types and the nodal types that produce them. (See Causal Types Section)                                                                 |
++---------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| P: parameter matrix | Should I include it?                                                                                                                                                |
++---------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 : Core Elements of a Causal Model
 
 After updating a model, two additional components are attached to it:
 
--   A posterior distribution of the parameters in the model, generated
-    by stan. This distribution reflects the updated parameter values.
+-   A posterior distribution of the parameters in the model, generated by stan. This distribution reflects the updated parameter values.
 
--   A list of objects, which we refer to as `stan_objects`. The
-    `stan_objects` will, at a minimum, include the distribution of nodal
-    types and the data used for updating the model
+-   A list of objects, which we refer to as `stan_objects`. The `stan_objects` will, at a minimum, include the distribution of nodal types and the data used for updating the model
 
-Optionally, users can choose whether to keep and append additional
-elements to the `stan_objects.` For instance, they can specify whether
-to include `w`, which maps parameters to event probabilities, as well as
-the 'stanfit' object, the output generated by stan
+Optionally, users can choose whether to keep and append additional elements to the `stan_objects.` For instance, they can specify whether to include `w`, which maps parameters to event probabilities, as well as the 'stanfit' object, the output generated by stan
 
-The table below summarizes the objects attached to the model after
-updating.
+The table below summarizes the objects attached to the model after updating.
 
-+----------------+-----------------------------------------------------+
-| Element        | Description                                         |
-+================+=====================================================+
-| posterio       | The posterir distribution of the updated parameters |
-| r_distribution | generated by stan.                                  |
-+----------------+-----------------------------------------------------+
-| stan_objects   | A list of objects, including, at a minimum,         |
-|                | `type_distribution` and `data`.                     |
-+----------------+-----------------------------------------------------+
-| data           | The data used for updating the model, appended to   |
-|                | `stan_objects.`                                     |
-+----------------+-----------------------------------------------------+
-| typ            | The updated distribution of the nodal types,        |
-| e_distribution | appended to `stan_objects.`                         |
-+----------------+-----------------------------------------------------+
-| w              | A mapping from parameters to event probabilities,   |
-|                | optionally appended to `stan_objects.`              |
-+----------------+-----------------------------------------------------+
-| stan_fit       | The `stanfit` object generated by stan. This is     |
-|                | optionally appended to `stan_objects.`              |
-+----------------+-----------------------------------------------------+
++------------------------+------------------------------------------------------------------------------------------+
+| Element                | Description                                                                              |
++========================+==========================================================================================+
+| posterior_distribution | The posterir distribution of the updated parameters generated by stan.                   |
++------------------------+------------------------------------------------------------------------------------------+
+| stan_objects           | A list of objects, including, at a minimum, `type_distribution` and `data`.              |
++------------------------+------------------------------------------------------------------------------------------+
+| data                   | The data used for updating the model, appended to `stan_objects.`                        |
++------------------------+------------------------------------------------------------------------------------------+
+| type_distribution      | The updated distribution of the nodal types, appended to `stan_objects.`                 |
++------------------------+------------------------------------------------------------------------------------------+
+| w                      | A mapping from parameters to event probabilities, optionally appended to `stan_objects.` |
++------------------------+------------------------------------------------------------------------------------------+
+| stan_fit               | The `stanfit` object generated by stan. This is optionally appended to `stan_objects.`   |
++------------------------+------------------------------------------------------------------------------------------+
 
-#### Parameters data frame
+#### Parameters dataframe
 
-When a model is created, `CausalQueries` attaches a "parameters data
-frame" which keeps track of model parameters, which belong together in a
-family, and how they relate to causal types. This becomes especially
-important for more complex models with confounding that might involve
-more complicated mappings between parameters and nodal types. In the
-case with no confounding the nodal types *are* the parameters; in cases
-with confounding you generally have more parameters than nodal types.
+When a model is created, `CausalQueries` attaches a "parameters dataframe" which keeps track of model parameters, which belong together in a family, and how they relate to causal types. This becomes especially important for more complex models with confounding that might involve more complicated mappings between parameters and nodal types. In the case with no confounding the nodal types *are* the parameters; in cases with confounding you generally have more parameters than nodal types.
 
-For instance the following code:
+For instance:
 
-```{r}
-#| echo: true
-#| eval: false
-#| prompt: true
-
-make_model("X->Y")$parameters_df
-
-```
-
-will produce table @tbl-params-df.
-
-```{r}
-#| label: tbl-params-df
-#| tbl-cap: "Example of `parameters_df` produced by make_model"
-#| echo: false
-
+```{r, comment = ""}
 make_model("X->Y")$parameters_df |>
-  knitr::kable(
-    digits = 2,
-    booktabs = TRUE,
-    align = "c",
-    escape = TRUE) |> 
-  kableExtra::kable_classic_2(latex_options = c("scale_down"))
-
+  knitr::kable()
 ```
 
-Each row in the data frame corresponds to a single parameter.
+Each row in the dataframe corresponds to a single parameter.
 
 The columns of the parameters data frame are understood as follows:
 
--   `param_names` gives the name of the parameter, in shorthand. For
-    instance the parameter $\lambda^X_0 = \Pr(\theta^X = \theta^X_0)$
-    has `par_name` `X.0`. See section \@ref(notation) for a summary of
-    notation.
--   `param_value` gives the (possibly default) parameter values. These
-    are probabilities.\
--   `param_set` indicates which parameters group together to form a
-    simplex. The parameters in a set have parameter values that sum
-    to 1. In this example $\lambda^X_0 + \lambda^X_1 = 1$.
--   `node` indicates the node associated with the parameter. For
-    parameter `\lambda^X_0` this is $X$.
--   `nodal_type` indicates the nodal types associated with the
-    parameter.
--   `gen` indicates the place in the partial causal ordering
-    (generation) of the node associated with the parameter
--   `priors` gives (possibly default) Dirichlet priors arguments for
-    parameters in a set. Values of 1 (.5) for all parameters in a set
-    implies uniform (Jeffrey's) priors over this set.
+-   `param_names` gives the name of the parameter, in shorthand. For instance the parameter $\lambda^X_0 = \Pr(\theta^X = \theta^X_0)$ has `par_name` `X.0`. See section \@ref(notation) for a summary of notation.
+-   `param_value` gives the (possibly default) parameter values. These are probabilities.\
+-   `param_set` indicates which parameters group together to form a simplex. The parameters in a set have parameter values that sum to 1. In this example $\lambda^X_0 + \lambda^X_1 = 1$.
+-   `node` indicates the node associated with the parameter. For parameter `\lambda^X_0` this is $X$.
+-   `nodal_type` indicates the nodal types associated with the parameter.
+-   `gen` indicates the place in the partial causal ordering (generation) of the node associated with the parameter
+-   `priors` gives (possibly default) Dirichlet priors arguments for parameters in a set. Values of 1 (.5) for all parameters in a set implies uniform (Jeffrey's) priors over this set.
 
-Below we will see examples where the parameter data frame helps keep
-track of parameters that are created when confounding is added to a
-model.
+Below we will see examples where the parameter dataframe helps keep track of parameters that are created when confounding is added to a model.
 
 #### Nodal types
 
-Two units have the same *nodal type* at node $Y$, $\theta^Y$, if their
-outcome at $Y$ responds in the same ways to parents of $Y$.
+Two units have the same *nodal type* at node $Y$, $\theta^Y$, if their outcome at $Y$ responds in the same ways to parents of $Y$.
 
-A node with $k$ parents has $2^{2^k}$ nodal types. The reason is that
-with $k$ parents, there are $2^k$ possible values of the parents and so
-$2^{2^k}$ ways to respond to these possible parental values. As a
-convention we say that a node with no parents has two nodal types (0 or
-1).
+A node with $k$ parents has $2^{2^k}$ nodal types. The reason is that with $k$ parents, there are $2^k$ possible values of the parents and so $2^{2^k}$ ways to respond to these possible parental values. As a convention we say that a node with no parents has two nodal types (0 or 1).
 
-When a model is created the full set of "nodal types" is identified.
-These are stored in the model. The subscripts become very long and hard
-to parse for more complex models so the model object also includes a
-guide to interpreting nodal type values. You can see them like this.
+When a model is created the full set of "nodal types" is identified. These are stored in the model. The subscripts become very long and hard to parse for more complex models so the model object also includes a guide to interpreting nodal type values. You can see them like this.
 
 ```{r, comment = ""}
 make_model("X -> Y")$nodal_types
 ```
 
-Note that we use $\theta^j$ to indicate nodal types because for
-qualitative analysis the nodal types are often the parameters of
-interest.
+Note that we use $\theta^j$ to indicate nodal types because for qualitative analysis the nodal types are often the parameters of interest.
 
-Alternatively, the `interpret_type` function can be used to obtain
-interpretations for the nodal types of each node in the model. For
-instance, consider the model with two parents
-$X \rightarrow Y \leftarrow M.$ In such a case, the nodal types of $Y$
-will have subscripts with four digits, with each digit representing one
-of the possible combinations of values that $Y$ can take, given the
-values of its parents $X$ and $M.$ These combinations include the value
-of $Y$ when:
+Alternatively, the `interpret_type` function can be used to obtain interpretations for the nodal types of each node in the model. For instance, consider the model with two parents $X \rightarrow Y \leftarrow M.$ In such a case, the nodal types of $Y$ will have subscripts with four digits, with each digit representing one of the possible combinations of values that $Y$ can take, given the values of its parents $X$ and $M.$ These combinations include the value of $Y$ when:
 
 -   X = 0 and M = 0,
 -   X = 0 and M = 1,
 -   X = 1 and M = 0,
 -   X = 1 and M = 1.
 
-As the number of parents increases, keeping track of what each digit
-represents becomes more difficult. For instance, if $Y$ had three
-parents, its nodal types would have subscripts of eight digits, each
-associated with the value that $Y$ would take for each combination of
-the three parents. The `interpret_type` function provides a clear map to
-identify what each digit in the subscript represents. See the examples
-below for models with two and three parents.
+As the number of parents increases, keeping track of what each digit represents becomes more difficult. For instance, if $Y$ had three parents, its nodal types would have subscripts of eight digits, each associated with the value that $Y$ would take for each combination of the three parents. The `interpret_type` function provides a clear map to identify what each digit in the subscript represents. See the examples below for models with two and three parents.
 
 ```{r lookup_types1}
 model <- make_model("X -> Y <- M ")
@@ -656,53 +410,31 @@ interpretations <- interpret_type(model)
 interpretations$Y
 ```
 
-LM: section on lookup types; `interpret_type` EXAMPLE with maybe 2
-parents
+LM: section on lookup types; `interpret_type` EXAMPLE with maybe 2 parents
 
 #### Causal types
 
-Causal types are collections of nodal types. Two units are of the same
-*causal type* if they have the same nodal type at every node. For
-example in a $X \rightarrow M \rightarrow Y$ model,
-$\theta = (\theta^X_0, \theta^M_{01}, \theta^Y_{10})$ is a type that has
-$X=0$, $M$ responds positively to $X$, and $Y$ responds positively to
-$M$.
+Causal types are collections of nodal types. Two units are of the same *causal type* if they have the same nodal type at every node. For example in a $X \rightarrow M \rightarrow Y$ model, $\theta = (\theta^X_0, \theta^M_{01}, \theta^Y_{10})$ is a type that has $X=0$, $M$ responds positively to $X$, and $Y$ responds positively to $M$.
 
-When a model is created, the full set of causal types is identified.
-These are stored in the model object:
+When a model is created, the full set of causal types is identified. These are stored in the model object:
 
 ```{r, comment = ""}
 make_model("A -> B")$causal_types
 ```
 
-A model with $n_j$ nodal types at node $j$ has $\prod_jn_j$ causal
-types. Thus the set of causal types can be large. In the model
-$(X\rightarrow M \rightarrow Y \leftarrow X)$ there are
-$2\times 4\times 16 = 128$ causal types.
+A model with $n_j$ nodal types at node $j$ has $\prod_jn_j$ causal types. Thus the set of causal types can be large. In the model $(X\rightarrow M \rightarrow Y \leftarrow X)$ there are $2\times 4\times 16 = 128$ causal types.
 
-Knowledge of a causal type tells you what values a unit would take, on
-all nodes, absent an intervention. For example for a model
-$X \rightarrow M \rightarrow Y$ a type
-$\theta = (\theta^X_0, \theta^M_{01}, \theta^Y_{10})$ would imply data
-$(X=0, M=0, Y=1)$. (The converse of this, of course, is the key to
-updating: observation of data $(X=0, M=0, Y=1)$ result in more weight
-placed on $\theta^X_0$, $\theta^M_{01}$, and $\theta^Y_{10})$.)
+Knowledge of a causal type tells you what values a unit would take, on all nodes, absent an intervention. For example for a model $X \rightarrow M \rightarrow Y$ a type $\theta = (\theta^X_0, \theta^M_{01}, \theta^Y_{10})$ would imply data $(X=0, M=0, Y=1)$. (The converse of this, of course, is the key to updating: observation of data $(X=0, M=0, Y=1)$ result in more weight placed on $\theta^X_0$, $\theta^M_{01}$, and $\theta^Y_{10})$.)
 
-Till: Show how realise_outcomes connects causal types with data types:
-Show for something with a do operation and without a do operation; point
-out causal types on left
+Till: Show how realise_outcomes connects causal types with data types: Show for something with a do operation and without a do operation; point out causal types on left
 
 <!--# should we include how interventions are handled here via realise_outcomes() ... the logic of how we do this in c++ is quite neat and might be illustrative in reading off realisations from complex nodal types >> not sure if this is too detailed and will just be confusing for a first time users/reader though-->
 
 #### Parameter matrix
 
-The parameters dataframe keeps track of parameter values and priors for
-parameters but it does not provide a mapping between parameters and the
-probability of causal types.
+The parameters dataframe keeps track of parameter values and priors for parameters but it does not provide a mapping between parameters and the probability of causal types.
 
-The parameter matrix ($P$ matrix) can be added to the model to provide
-this mapping. The $P$ matrix has a row for each parameter and a column
-for each causal type. For instance:
+The parameter matrix ($P$ matrix) can be added to the model to provide this mapping. The $P$ matrix has a row for each parameter and a column for each causal type. For instance:
 
 ```{r, comment = ""}
 make_model("X->Y") |> 
@@ -710,18 +442,13 @@ make_model("X->Y") |>
   knitr::kable()
 ```
 
-The probability of a causal type is given by the product of the
-parameters values for parameters whose row in the $P$ matrix contains a
-1.
+The probability of a causal type is given by the product of the parameters values for parameters whose row in the $P$ matrix contains a 1.
 
-Below we will see examples where the $P$ matrix helps keep track of
-parameters that are created when confounding is added to a model. CROSS
-REFERENCE
+Below we will see examples where the $P$ matrix helps keep track of parameters that are created when confounding is added to a model. CROSS REFERENCE
 
 <!--# perhaps we should explicitly mention where this data structure us used >> i.e. causal type probabilities are the key data structure in querying models, making these probabilities requires the P matrix -->
 
-To speed up different operations it is sometuimes useful to have P added
-to the model:
+To speed up different operations it is sometuimes useful to have P added to the model:
 
 -   `set_parameter_matrix`...
 
@@ -731,16 +458,11 @@ to the model:
 
 TILL: READ THROUGH
 
-When a model is defined, the complete set of possible causal relations
-are worked out. This set can be very large.
+When a model is defined, the complete set of possible causal relations are worked out. This set can be very large.
 
-Sometimes for theoretical or practical reasons it is useful to constrain
-the set of types. In `CausalQueries` this is done at the level of nodal
-types, with restrictions on causal types following from restrictions on
-nodal types.
+Sometimes for theoretical or practical reasons it is useful to constrain the set of types. In `CausalQueries` this is done at the level of nodal types, with restrictions on causal types following from restrictions on nodal types.
 
-For instance to impose an assumption that $Y$ is not decreasing in $X$
-we generate a restricted model as follows:
+For instance to impose an assumption that $Y$ is not decreasing in $X$ we generate a restricted model as follows:
 
 ```{r}
 model <- make_model("X->Y") |> set_restrictions("Y[X=1] < Y[X=0]")
@@ -752,37 +474,20 @@ or:
 model <- make_model("X->Y") |> set_restrictions(decreasing("X", "Y"))
 ```
 
-Viewing the resulting parameter matrix we see that both the set of
-parameters and the set of causal types are now restricted:
+Viewing the resulting parameter matrix we see that both the set of parameters and the set of causal types are now restricted:
 
 ```{r, comment = ""}
 get_parameter_matrix(model)
 ```
 
-Here and in general, setting restrictions typically involves using
-causal syntax; see Section \@ref(syntax) for a guide the syntax used by
-`CausalQueries`.
+Here and in general, setting restrictions typically involves using causal syntax; see Section \@ref(syntax) for a guide the syntax used by `CausalQueries`.
 
 Note:
 
--   Restrictions have to operate on nodal types: restrictions on
-    *levels* of endogenous nodes aren't allowed. This, for example, will
-    fail:
-    `make_model("X->Y") |> set_restrictions(statement =  "(Y == 1)")`.
-    The reason is that it requests a correlated restriction on nodal
-    types for `X` and `Y` which involves undeclared confounding.
--   Restrictions implicitly assume fixed values for *all* parents of a
-    node. For instance:
-    `make_model("A -> B <- C") |> set_restrictions("(B[C=1]==1)")` is
-    interpreted as shorthand for the restriction
-    `"B[C = 1, A = 0]==1 | B[C = 1, A = 1]==1"`.
--   To place restrictions on multiple nodes at the same time, provide
-    these as a vector of restrictions. This is not permitted:
-    `set_restrictions("Y[X=1]==1 & X==1")`, since it requests correlated
-    restrictions. This however is allowed:
-    `set_restrictions(c("Y[X=1]==1", "X==1"))`.\
--   Use the `keep` argument to indicate whether nodal types should be
-    dropped (default) or retained.
+-   Restrictions have to operate on nodal types: restrictions on *levels* of endogenous nodes aren't allowed. This, for example, will fail: `make_model("X->Y") |> set_restrictions(statement =  "(Y == 1)")`. The reason is that it requests a correlated restriction on nodal types for `X` and `Y` which involves undeclared confounding.
+-   Restrictions implicitly assume fixed values for *all* parents of a node. For instance: `make_model("A -> B <- C") |> set_restrictions("(B[C=1]==1)")` is interpreted as shorthand for the restriction `"B[C = 1, A = 0]==1 | B[C = 1, A = 1]==1"`.
+-   To place restrictions on multiple nodes at the same time, provide these as a vector of restrictions. This is not permitted: `set_restrictions("Y[X=1]==1 & X==1")`, since it requests correlated restrictions. This however is allowed: `set_restrictions(c("Y[X=1]==1", "X==1"))`.\
+-   Use the `keep` argument to indicate whether nodal types should be dropped (default) or retained.
 -   Restrictions can be set using nodal type labels.
 
 ```{r, eval = FALSE}
@@ -808,44 +513,27 @@ model <- make_model("X -> Y -> Z; X <-> Z") %>%
 
 #### Allowing confounding {#confounding}
 
-(Unobserved) confounding between two nodes arises when the nodal types
-for the nodes are not independently distributed.
+(Unobserved) confounding between two nodes arises when the nodal types for the nodes are not independently distributed.
 
-In the $X \rightarrow Y$ graph, for instance, there are 2 nodal types
-for $X$ and 4 for $Y$. There are thus 8 joint nodal types (or causal
-types):
+In the $X \rightarrow Y$ graph, for instance, there are 2 nodal types for $X$ and 4 for $Y$. There are thus 8 joint nodal types (or causal types):
 
-+----------+----------+-----------------+-----------------+----------+
-|          |          | $\theta^X$      |                 |          |
-+:========:+:========:+:===============:+:================+==========+
-|          |          | 0               | 1               | Sum      |
-+----------+----------+-----------------+-----------------+----------+
-| $\       | 00       | $\              | $\              | $\Pr     |
-| theta^Y$ |          | Pr(\theta^X_0,  | Pr(\theta^X_1,  | (\theta^ |
-|          |          | \theta^Y_{00})$ | \theta^Y_{00})$ | Y_{00})$ |
-+----------+----------+-----------------+-----------------+----------+
-|          | 10       | $\              | $\              | $\Pr     |
-|          |          | Pr(\theta^X_0,  | Pr(\theta^X_1,  | (\theta^ |
-|          |          | \theta^Y_{10})$ | \theta^Y_{10})$ | Y_{10})$ |
-+----------+----------+-----------------+-----------------+----------+
-|          | 01       | $\              | $\              | $\Pr     |
-|          |          | Pr(\theta^X_0,  | Pr(\theta^X_1,  | (\theta^ |
-|          |          | \theta^Y_{01})$ | \theta^Y_{01})$ | Y_{01})$ |
-+----------+----------+-----------------+-----------------+----------+
-|          | 11       | $\              | $\              | $\Pr     |
-|          |          | Pr(\theta^X_0,  | Pr(\theta^X_1,  | (\theta^ |
-|          |          | \theta^Y_{11})$ | \theta^Y_{11})$ | Y_{11})$ |
-+----------+----------+-----------------+-----------------+----------+
-|          | Sum      | $\              | $\              | 1        |
-|          |          | Pr(\theta^X_0)$ | Pr(\theta^X_1)$ |          |
-+----------+----------+-----------------+-----------------+----------+
++------------+-----------+----------------------------------+----------------------------------+----------------------+
+|            |           | $\theta^X$                       |                                  |                      |
++:==========:+:=========:+:================================:+:=================================+======================+
+|            |           | 0                                | 1                                | Sum                  |
++------------+-----------+----------------------------------+----------------------------------+----------------------+
+| $\theta^Y$ | 00        | $\Pr(\theta^X_0, \theta^Y_{00})$ | $\Pr(\theta^X_1, \theta^Y_{00})$ | $\Pr(\theta^Y_{00})$ |
++------------+-----------+----------------------------------+----------------------------------+----------------------+
+|            | 10        | $\Pr(\theta^X_0, \theta^Y_{10})$ | $\Pr(\theta^X_1, \theta^Y_{10})$ | $\Pr(\theta^Y_{10})$ |
++------------+-----------+----------------------------------+----------------------------------+----------------------+
+|            | 01        | $\Pr(\theta^X_0, \theta^Y_{01})$ | $\Pr(\theta^X_1, \theta^Y_{01})$ | $\Pr(\theta^Y_{01})$ |
++------------+-----------+----------------------------------+----------------------------------+----------------------+
+|            | 11        | $\Pr(\theta^X_0, \theta^Y_{11})$ | $\Pr(\theta^X_1, \theta^Y_{11})$ | $\Pr(\theta^Y_{11})$ |
++------------+-----------+----------------------------------+----------------------------------+----------------------+
+|            | Sum       | $\Pr(\theta^X_0)$                | $\Pr(\theta^X_1)$                | 1                    |
++------------+-----------+----------------------------------+----------------------------------+----------------------+
 
-This table has 8 interior elements and so an unconstrained joint
-distribution would have 7 degrees of freedom. A no confounding
-assumption means that $\Pr(\theta^X | \theta^Y) = \Pr(\theta^X)$, or
-$\Pr(\theta^X, \theta^Y) = \Pr(\theta^X)\Pr(\theta^Y)$. In this case we
-just put a distribution on the marginals and there would be 3 degrees of
-freedom for $Y$ and 1 for $X$, totaling $4$ rather than 7.
+This table has 8 interior elements and so an unconstrained joint distribution would have 7 degrees of freedom. A no confounding assumption means that $\Pr(\theta^X | \theta^Y) = \Pr(\theta^X)$, or $\Pr(\theta^X, \theta^Y) = \Pr(\theta^X)\Pr(\theta^Y)$. In this case we just put a distribution on the marginals and there would be 3 degrees of freedom for $Y$ and 1 for $X$, totaling $4$ rather than 7.
 
 ```{r, comment  = ""}
 confounded <- make_model("X->Y ; X <-> Y")
@@ -854,38 +542,20 @@ confounded$parameters_df |> knitr::kable()
 
 ```
 
-We see here that there are now two parameter families for parameters
-associated with the node $Y$. Each family captures the conditional
-distribution of $Y$'s nodal types, given $X$. For instance the parameter
-`Y01_X.1` can be interpreted as $\Pr(\theta^Y = \theta^Y_{01} | X=1)$.
+We see here that there are now two parameter families for parameters associated with the node $Y$. Each family captures the conditional distribution of $Y$'s nodal types, given $X$. For instance the parameter `Y01_X.1` can be interpreted as $\Pr(\theta^Y = \theta^Y_{01} | X=1)$.
 
-To see exactly how the parameters map to causal types we can view the
-parameter matrix:
+To see exactly how the parameters map to causal types we can view the parameter matrix:
 
 ```{r, comment = ""}
 get_parameter_matrix(confounded) |> knitr::kable()
 ```
 
-Importantly, the $P$ matrix works as before, despite confounding. We can
-assess the probability of causal types by multiplying the probabilities
-of the constituent parameters.
+Importantly, the $P$ matrix works as before, despite confounding. We can assess the probability of causal types by multiplying the probabilities of the constituent parameters.
 
--   Unlike nodal restrictions, a confounding relation can involve
-    multiple nodal types simultaneously. For instance
-    `make_model("X -> M -> Y") |> set_confound(list(X = "Y[X=1] > Y[X=0]"))`
-    allows for a parameter that renders $X$ more or less likely
-    depending on whether $X$ has a positive effect on $Y$ whether it
-    runs through a positive or a negative effect on $M$.
--   The parameters needed to capture confounding relations depend on the
-    direction of causal arrows. For example compare:
-    -   `make_model("A -> W <- B ; A <-> W; B <-> W")$parameters_df |> dim`
-        In this case we can decompose shocks on $A, B, W$ via:
-        $\Pr(\theta^A, \theta^B, \theta^W) = \Pr(\theta^W | \theta^A, \theta^A)\Pr(\theta^A)\Pr(\theta^B)$,
-        and we have 68 parameters.
-    -   `make_model("A <- W -> B ; A <-> W; B <-> W")$parameters_df |> dim`
-        In this case we have
-        $\Pr(\theta^A, \theta^B, \theta^W) = \Pr(\theta^A | \theta^W)\Pr(\theta^B|\theta^W)\Pr(\theta^W)$
-        and just has just 18 parameters.
+-   Unlike nodal restrictions, a confounding relation can involve multiple nodal types simultaneously. For instance `make_model("X -> M -> Y") |> set_confound(list(X = "Y[X=1] > Y[X=0]"))` allows for a parameter that renders $X$ more or less likely depending on whether $X$ has a positive effect on $Y$ whether it runs through a positive or a negative effect on $M$.
+-   The parameters needed to capture confounding relations depend on the direction of causal arrows. For example compare:
+    -   `make_model("A -> W <- B ; A <-> W; B <-> W")$parameters_df |> dim` In this case we can decompose shocks on $A, B, W$ via: $\Pr(\theta^A, \theta^B, \theta^W) = \Pr(\theta^W | \theta^A, \theta^A)\Pr(\theta^A)\Pr(\theta^B)$, and we have 68 parameters.
+    -   `make_model("A <- W -> B ; A <-> W; B <-> W")$parameters_df |> dim` In this case we have $\Pr(\theta^A, \theta^B, \theta^W) = \Pr(\theta^A | \theta^W)\Pr(\theta^B|\theta^W)\Pr(\theta^W)$ and just has just 18 parameters.
 
 ```{r}
 make_model("A <- X -> B; A <-> X; B <-> X") |> 
@@ -894,9 +564,7 @@ make_model("A <- X -> B; A <-> X; B <-> X") |>
 
 #### Setting Priors {#priors}
 
-Priors on model parameters can be added to the parameters dataframe. The
-priors are interpreted as alpha arguments for a Dirichlet distribution.
-They can be seen using `get_priors`.
+Priors on model parameters can be added to the parameters dataframe. The priors are interpreted as alpha arguments for a Dirichlet distribution. They can be seen using `get_priors`.
 
 MH: TEXT ON DIRICHLET
 
@@ -906,8 +574,7 @@ make_model("X->Y") |> get_priors()
 
 ```
 
-Here the priors have not been specified and so they default to 1, which
-corresponds to uniform priors.
+Here the priors have not been specified and so they default to 1, which corresponds to uniform priors.
 
 Alternatively you could set jeffreys priors like this:
 
@@ -919,8 +586,7 @@ make_model("X->Y") |>
 
 ```
 
-Custom priors are most simply specified by being added as a vector of
-numbers using `set_priors`. For instance:
+Custom priors are most simply specified by being added as a vector of numbers using `set_priors`. For instance:
 
 ```{r, comment = ""}
 
@@ -932,15 +598,10 @@ make_model("X->Y") |>
 
 The priors here should be interpreted as indicating:
 
--   $\alpha_X = (1,2)$, which implies a distribution over
-    $(\lambda^X_0, \lambda^X_1)$ centered on $(1/3, 2/3)$.
--   $\alpha_Y = (3,4,5,6)$, which implies a distribution over
-    $(\lambda^Y_{00}, \lambda^Y_{10}, \lambda^Y_{01} \lambda^Y_{11})$
-    centered on $(3/18, 4/18, 5/18, 6/18)$.
+-   $\alpha_X = (1,2)$, which implies a distribution over $(\lambda^X_0, \lambda^X_1)$ centered on $(1/3, 2/3)$.
+-   $\alpha_Y = (3,4,5,6)$, which implies a distribution over $(\lambda^Y_{00}, \lambda^Y_{10}, \lambda^Y_{01} \lambda^Y_{11})$ centered on $(3/18, 4/18, 5/18, 6/18)$.
 
-For larger models it can be hard to provide priors as a vector of
-numbers and so `set_priors` can allow for more targeted modifications of
-the parameter vector. For instance:
+For larger models it can be hard to provide priors as a vector of numbers and so `set_priors` can allow for more targeted modifications of the parameter vector. For instance:
 
 ```{r, comment = ""}
 make_model("X->Y") |>
@@ -948,15 +609,7 @@ make_model("X->Y") |>
   get_priors()
 ```
 
-As setting priors simply requires mapping alpha values to parameters;
-the process boils down to selecting rows of the `parmeters_df`
-dataframe, at which to alter values. When specifying a causal statement
-as above, CausalQueries internally identifies nodal types that are
-consistent with the statement, which in turn identify parameters to
-alter priors for. Note that there is nothing particularly unique about
-setting priors via causal syntax, as it is simply an abstract way of
-specifying how to subset the `parameters_df` dataframe. To wit; we can
-achieve the same result as above by specifying:
+As setting priors simply requires mapping alpha values to parameters; the process boils down to selecting rows of the `parmeters_df` dataframe, at which to alter values. When specifying a causal statement as above, CausalQueries internally identifies nodal types that are consistent with the statement, which in turn identify parameters to alter priors for. Note that there is nothing particularly unique about setting priors via causal syntax, as it is simply an abstract way of specifying how to subset the `parameters_df` dataframe. To wit; we can achieve the same result as above by specifying:
 
 ```{r, comment = ""}
 make_model("X->Y") |>
@@ -972,13 +625,7 @@ make_model("X->Y") |>
   get_priors()
 ```
 
-As such `set_priors` allows for the specification of any non-redundant
-combination of arguments on the `param_names`, `node`, `nodal_type`,
-`param_set` and `given` columns of `parameters_df` to uniquely identify
-parameters to set priors for. Alternatively a fully formed subsetting
-statement may be supplied to `alter_at`. Since all these arguments get
-mapped to the parameters the identify internally they may be used
-interchangeably.
+As such `set_priors` allows for the specification of any non-redundant combination of arguments on the `param_names`, `node`, `nodal_type`, `param_set` and `given` columns of `parameters_df` to uniquely identify parameters to set priors for. Alternatively a fully formed subsetting statement may be supplied to `alter_at`. Since all these arguments get mapped to the parameters the identify internally they may be used interchangeably.
 
 ```{r, comment = "", warning=FALSE}
 make_model("X-> M -> Y; X <-> Y") |>
@@ -990,21 +637,13 @@ make_model("X-> M -> Y; X <-> Y") |>
   get_priors()
 ```
 
-It should be noted that while highly targeted prior setting is
-convenient and flexible; it should be done with caution. Setting priors
-on specific parameters in complex models; especially models involving
-confounding, may strongly affect inferences in intractable ways.
+It should be noted that while highly targeted prior setting is convenient and flexible; it should be done with caution. Setting priors on specific parameters in complex models; especially models involving confounding, may strongly affect inferences in intractable ways.
 
 See `?set_priors` and `?make_priors` for many more examples.
 
-We note that flat priors over nodal types does not necessarily translate
-into flat priors over queries. "Flat" priors over parameters in a
-parameter family put equal weight on each nodal type, but this in turn
-can translate into strong assumptions on causal quantities of interest.
+We note that flat priors over nodal types does not necessarily translate into flat priors over queries. "Flat" priors over parameters in a parameter family put equal weight on each nodal type, but this in turn can translate into strong assumptions on causal quantities of interest.
 
-For instance in an $X \rightarrow Y$ model model in which negative
-effects are ruled out, the average causal effect implied by "flat"
-priors is $1/3$. This can be seen by querying the model:
+For instance in an $X \rightarrow Y$ model model in which negative effects are ruled out, the average causal effect implied by "flat" priors is $1/3$. This can be seen by querying the model:
 
 ```{r}
 
@@ -1015,15 +654,9 @@ make_model("X -> Y") |>
 
 ```
 
-More subtly the *structure* of a model, coupled with flat priors, has
-substantive importance for priors on causal quantities. For instance
-with flat priors, priors on the probability that $X$ has a positive
-effect on $Y$ in the model $X \rightarrow Y$ is centered on $1/4$. But
-priors on the probability that $X$ has a positive effect on $Y$ in the
-model $X \rightarrow M \rightarrow Y$ is centered on $1/8$.
+More subtly the *structure* of a model, coupled with flat priors, has substantive importance for priors on causal quantities. For instance with flat priors, priors on the probability that $X$ has a positive effect on $Y$ in the model $X \rightarrow Y$ is centered on $1/4$. But priors on the probability that $X$ has a positive effect on $Y$ in the model $X \rightarrow M \rightarrow Y$ is centered on $1/8$.
 
-Again, you can use `query_model` to figure out what flat (or other)
-priors over parameters imply for priors over causal quantities:
+Again, you can use `query_model` to figure out what flat (or other) priors over parameters imply for priors over causal quantities:
 
 ```{r}
 
@@ -1037,37 +670,17 @@ make_model("X -> M -> Y") |>
 
 ```
 
-Caution regarding priors is particularly important when models are not
-identified, as is the case for many of the models considered here. In
-such cases, for some quantities, the marginal posterior distribution can
-be the same as the marginal prior distribution [@poirier1998revising].
+Caution regarding priors is particularly important when models are not identified, as is the case for many of the models considered here. In such cases, for some quantities, the marginal posterior distribution can be the same as the marginal prior distribution [@poirier1998revising].
 
-The key point here is to make sure you do not fall into a trap of
-thinking that "uninformative" priors make no commitments regarding the
-values of causal quantities of interest. They do, and the implications
-of flat priors for causal quantities can depend on the structure of the
-model. Moreover for some inferences from causal models the priors can
-matter a lot even if you have a lot of data. In such cases it can be
-helpful to know what priors on parameters imply for priors on causal
-quantities of interest (by using `query_model`) and to assess how much
-conclusions depend on priors (by comparing results across models that
-vary in their priors).
+The key point here is to make sure you do not fall into a trap of thinking that "uninformative" priors make no commitments regarding the values of causal quantities of interest. They do, and the implications of flat priors for causal quantities can depend on the structure of the model. Moreover for some inferences from causal models the priors can matter a lot even if you have a lot of data. In such cases it can be helpful to know what priors on parameters imply for priors on causal quantities of interest (by using `query_model`) and to assess how much conclusions depend on priors (by comparing results across models that vary in their priors).
 
 #### Setting Parameters {#parameters}
 
-MH: POINT OUT FOLLOWING SAME LOGIC AS LASTS SECTION parameters rather
-than alphas as arguments
+MH: POINT OUT FOLLOWING SAME LOGIC AS LASTS SECTION parameters rather than alphas as arguments
 
-By default, models have a vector of parameter values included in the
-`parameters_df` dataframe. These are useful for generating data, or for
-situations, such as process tracing, when one wants to make inferences
-about causal types ($\theta$), given case level data, under the
-assumption that the model is known.
+By default, models have a vector of parameter values included in the `parameters_df` dataframe. These are useful for generating data, or for situations, such as process tracing, when one wants to make inferences about causal types ($\theta$), given case level data, under the assumption that the model is known.
 
-Consider the causal model below. It has two parameter sets, X and Y,
-with six nodal types, two corresponding to X and four corresponding to
-Y. The key feature of the parameters is that they must sum to 1 within
-each parameter set.
+Consider the causal model below. It has two parameter sets, X and Y, with six nodal types, two corresponding to X and four corresponding to Y. The key feature of the parameters is that they must sum to 1 within each parameter set.
 
 ```{r, comment = ""}
 
@@ -1076,13 +689,7 @@ make_model("X->Y") |>
 
 ```
 
-Setting parameters can be done using a similar syntax as `set_priors`.
-The main difference is that when a given value is altered the entire set
-must still always sum to 1. The example below illustrates a change in
-the value of the parameter $Y$ in the case it is increasing in $X$. Here
-nodal type `Y.Y01` is set to be .5, while the other nodal types of this
-parameter set were renormalized so that the parameters in the set still
-sum to one.
+Setting parameters can be done using a similar syntax as `set_priors`. The main difference is that when a given value is altered the entire set must still always sum to 1. The example below illustrates a change in the value of the parameter $Y$ in the case it is increasing in $X$. Here nodal type `Y.Y01` is set to be .5, while the other nodal types of this parameter set were renormalized so that the parameters in the set still sum to one.
 
 ```{r, comment = ""}
 make_model("X->Y") |>
@@ -1108,15 +715,11 @@ LONG AND COMPACT FORMS
 
 ## Updating models
 
-The approach used by the `CausalQueries` package to updating parameter
-values given observed data uses `stan` and involves the following
-elements:
+The approach used by the `CausalQueries` package to updating parameter values given observed data uses `stan` and involves the following elements:
 
--   Dirichlet priors over parameters, $\lambda$ (which, in cases without
-    confounding, correspond to nodal types)
+-   Dirichlet priors over parameters, $\lambda$ (which, in cases without confounding, correspond to nodal types)
 -   A mapping from parameters to event probabilities, $w$
--   A likelihood function that assumes events are distributed according
-    to a multinomial distribution given event probabilities.
+-   A likelihood function that assumes events are distributed according to a multinomial distribution given event probabilities.
 
 We provide further details below.
 
@@ -1124,25 +727,13 @@ We provide further details below.
 
 GS: general edit to this section
 
-We use a generic `stan` model that works for all binary causal models.
-Rather than writing a new `stan` model for each causal model we send
-`stan` details of each particular causal model as data inputs.
+We use a generic `stan` model that works for all binary causal models. Rather than writing a new `stan` model for each causal model we send `stan` details of each particular causal model as data inputs.
 
-In particular we provide a set of matrices that `stan` tailor itself to
-particular models: the parameter matrix ($P$ ) tells `stan` how many
-parameters there are, and how they map into causal types; an ambiguity
-matrix $A$ tells `stan` how causal types map into data types; and an
-event matrix $E$ relates data types into patterns of observed data (in
-cases where there are incomplete observations).
+In particular we provide a set of matrices that `stan` tailor itself to particular models: the parameter matrix ($P$ ) tells `stan` how many parameters there are, and how they map into causal types; an ambiguity matrix $A$ tells `stan` how causal types map into data types; and an event matrix $E$ relates data types into patterns of observed data (in cases where there are incomplete observations).
 
-The internal function `prep_stan_data` prepares data for `stan`. You
-generally don't need to use this manually, but we show here a sample of
-what it produces as input for `stan`.
+The internal function `prep_stan_data` prepares data for `stan`. You generally don't need to use this manually, but we show here a sample of what it produces as input for `stan`.
 
-Note that NAs are interpreted as data not having been sought. So in this
-case the interpretation is that there are two data strategies: data on
-$Y$ and $X$ was sought in three cases; data on $Y$ only was sought in
-just one case.
+Note that NAs are interpreted as data not having been sought. So in this case the interpretation is that there are two data strategies: data on $Y$ and $X$ was sought in three cases; data on $Y$ only was sought in just one case.
 
 <!--# is it useful to touch on the possibility to update submodels when there is no confounding and no missing data here?-->
 
@@ -1154,61 +745,17 @@ The `stan` model works as follows:
 
 MH: ADD DISCUSSION OF parmap;
 
--   We are interested in "sets" of parameters. For example in the
-    $X \rightarrow Y$ model we have two parameter sets (`param_sets`).
-    The first is $\lambda^X \in \{\lambda^X_0, \lambda^X_1\}$ whose
-    elements give the probability that $X$ is 0 or 1. These two
-    probabilities sum to one. The second parameter set is
-    $\lambda^Y \in \{\lambda^Y_{00}, \lambda^Y_{10}, \lambda^Y_{01} \lambda^Y_{11}\}$.
-    These are also probabilities and their values sum to one. Note in
-    all that we have 6 parameters but just 1 + 3 = 4 degrees of freedom.
+-   We are interested in "sets" of parameters. For example in the $X \rightarrow Y$ model we have two parameter sets (`param_sets`). The first is $\lambda^X \in \{\lambda^X_0, \lambda^X_1\}$ whose elements give the probability that $X$ is 0 or 1. These two probabilities sum to one. The second parameter set is $\lambda^Y \in \{\lambda^Y_{00}, \lambda^Y_{10}, \lambda^Y_{01} \lambda^Y_{11}\}$. These are also probabilities and their values sum to one. Note in all that we have 6 parameters but just 1 + 3 = 4 degrees of freedom.
 
--   We would like to express priors over these parameters using multiple
-    Dirichlet distributions (two in this case). In practice because we
-    are dealing with multiple simplices of varying length, it is easier
-    to express priors over gamma distributions with a unit scale
-    parameter and shape parameter corresponding to the Dirichlet priors,
-    $\alpha$. We make use of the fact that
-    $\lambda^X_0 \sim Gamma(\alpha^X_0,1)$ and
-    $\lambda^X_1 \sim Gamma(\alpha^X_1,1)$ then
-    $\frac{1}{\lambda^X_0 +\lambda^X_1}(\lambda^X_0, \lambda^X_1) \sim Dirichlet(\alpha^X_0, \alpha^X_1)$.
-    For a discussion of implementation of this approach in `stan` see
-    https://discourse.mc-stan.org/t/ragged-array-of-simplexes/1382.
+-   We would like to express priors over these parameters using multiple Dirichlet distributions (two in this case). In practice because we are dealing with multiple simplices of varying length, it is easier to express priors over gamma distributions with a unit scale parameter and shape parameter corresponding to the Dirichlet priors, $\alpha$. We make use of the fact that $\lambda^X_0 \sim Gamma(\alpha^X_0,1)$ and $\lambda^X_1 \sim Gamma(\alpha^X_1,1)$ then $\frac{1}{\lambda^X_0 +\lambda^X_1}(\lambda^X_0, \lambda^X_1) \sim Dirichlet(\alpha^X_0, \alpha^X_1)$. For a discussion of implementation of this approach in `stan` see https://discourse.mc-stan.org/t/ragged-array-of-simplexes/1382.
 
--   For any candidate parameter vector $\lambda$ we calculate the
-    probability of *causal* types (`prob_of_types`) by taking, for each
-    type $i$, the product of the probabilities of all parameters
-    ($\lambda_j$) that appear in column $i$ of the parameter matrix $P$.
-    Thus the probability of a $(X_0,Y_{00})$ case is just
-    $\lambda^X_0 \times \lambda^Y_{00}$. The implementations in `stan`
-    uses `prob_of_types_[i]`
-    $= \prod_j \left(P_{j,i} \lambda_j + (1-P_{j,i})\right)$: this
-    multiplies the probability of all parameters involved in the causal
-    type (and substitutes 1s for parameters that are not). (`P` and
-    `not_P` (1-$P$) are provided as data to `stan`).
+-   For any candidate parameter vector $\lambda$ we calculate the probability of *causal* types (`prob_of_types`) by taking, for each type $i$, the product of the probabilities of all parameters ($\lambda_j$) that appear in column $i$ of the parameter matrix $P$. Thus the probability of a $(X_0,Y_{00})$ case is just $\lambda^X_0 \times \lambda^Y_{00}$. The implementations in `stan` uses `prob_of_types_[i]` $= \prod_j \left(P_{j,i} \lambda_j + (1-P_{j,i})\right)$: this multiplies the probability of all parameters involved in the causal type (and substitutes 1s for parameters that are not). (`P` and `not_P` (1-$P$) are provided as data to `stan`).
 
--   The probability of data types, `w`, is given by summing up the
-    probabilities of all causal types that produce a given data type.
-    For example, the probability of a $X=0,Y=0$ case, $w_{00}$ is
-    $\lambda^X_0\times \lambda^Y_{00} + \lambda^X_0\times \lambda^Y_{01}$.
-    The ambiguity matrix $A$ is provided to `stan` to indicate which
-    probabilities need to be summed.
+-   The probability of data types, `w`, is given by summing up the probabilities of all causal types that produce a given data type. For example, the probability of a $X=0,Y=0$ case, $w_{00}$ is $\lambda^X_0\times \lambda^Y_{00} + \lambda^X_0\times \lambda^Y_{01}$. The ambiguity matrix $A$ is provided to `stan` to indicate which probabilities need to be summed.
 
--   In the case of incomplete data we first identify the set of "data
-    strategies", where a collection of a data strategy might be of the
-    form "gather data on $X$ and $M$, but not $Y$, for $n_1$ cases and
-    gather data on $X$ and $Y$, but not $M$, for $n_2$ cases. The
-    probability of an observed event, within a data strategy, is given
-    by summing the probabilities of the types that could give rise to
-    the incomplete data. For example $X$ is observed, but $Y$ is not,
-    then the probability of $X=0, Y = \text{NA}$ is $w_{00} +w_{01}$.
-    The matrix $E$ is passed to `stan` to figure out which event
-    probabilities need to be combined for events with missing data.
+-   In the case of incomplete data we first identify the set of "data strategies", where a collection of a data strategy might be of the form "gather data on $X$ and $M$, but not $Y$, for $n_1$ cases and gather data on $X$ and $Y$, but not $M$, for $n_2$ cases. The probability of an observed event, within a data strategy, is given by summing the probabilities of the types that could give rise to the incomplete data. For example $X$ is observed, but $Y$ is not, then the probability of $X=0, Y = \text{NA}$ is $w_{00} +w_{01}$. The matrix $E$ is passed to `stan` to figure out which event probabilities need to be combined for events with missing data.
 
--   The probability of a dataset is then given by a multinomial
-    distribution with these event probabilities (or, in the case of
-    incomplete data, the product of multinomials, one for each data
-    strategy).
+-   The probability of a dataset is then given by a multinomial distribution with these event probabilities (or, in the case of incomplete data, the product of multinomials, one for each data strategy).
 
 GS: TO CHECK THE PATHS FUNCTIONALITY
 
@@ -1220,30 +767,20 @@ To update a CausalQueries model with data use:
 update_model(model, data)
 ```
 
-where the data argument is a dataset containing some or all of the nodes
-in the model.
+where the data argument is a dataset containing some or all of the nodes in the model.
 
-As `update_model()` calls `rstan::sampling` one can pass along all
-arguments in `...` to `rstan::sampling`. For instance:
+As `update_model()` calls `rstan::sampling` one can pass along all arguments in `...` to `rstan::sampling`. For instance:
 
--   `iter` sets the number of iterations and ultimately the number of
-    draws in the posterior
--   `chains` sets the number of chains; doing multiple chains in
-    parallel speeds things up
+-   `iter` sets the number of iterations and ultimately the number of draws in the posterior
+-   `chains` sets the number of chains; doing multiple chains in parallel speeds things up
 
-If you have multiple cores you can do parallel processing by including
-this line before running `CausalQueries`:
+If you have multiple cores you can do parallel processing by including this line before running `CausalQueries`:
 
 ```{r, eval = FALSE}
 options(mc.cores = parallel::detectCores())
 ```
 
-Additionally parallelizing across models or data while running MCMC
-chains in parallel can be achieved by setting up a nested parallel
-process. With 8 cores one can run 2 updating processes with 3 parallel
-chains each simultaneously. More generally the number of parallel
-processes at the upper level of the nested parallel structure are given
-by $\left \lfloor \frac{cores}{chains + 1} \right \rfloor$.
+Additionally parallelizing across models or data while running MCMC chains in parallel can be achieved by setting up a nested parallel process. With 8 cores one can run 2 updating processes with 3 parallel chains each simultaneously. More generally the number of parallel processes at the upper level of the nested parallel structure are given by $\left \lfloor \frac{cores}{chains + 1} \right \rfloor$.
 
 ```{r, eval = FALSE}
 chains <- 3
@@ -1275,41 +812,23 @@ MH
 
 ### Output
 
-The primary output from `update_model()` is a posterior distribution
-over model parameters, stored as a dataframe in
-`model$posterior_distribution`. However another of other objects are
-also optionally stored:
+The primary output from `update_model()` is a posterior distribution over model parameters, stored as a dataframe in `model$posterior_distribution`. However another of other objects are also optionally stored:
 
-Models can be queried using the `query_distribution` and `query_model`
-functions. The difference between these functions is that
-`query_distribution` examines a single query and returns a full
-distribution of draws from the distribution of the estimand (prior or
-posterior); `query_model` takes a collection of queries and returns a
-dataframe with summary statistics on the queries.
+Models can be queried using the `query_distribution` and `query_model` functions. The difference between these functions is that `query_distribution` examines a single query and returns a full distribution of draws from the distribution of the estimand (prior or posterior); `query_model` takes a collection of queries and returns a dataframe with summary statistics on the queries.
 
 ## Queries
 
 LM: REVIEW AND FIX SECTION
 
-WRITE SECTION DESCRIBING FACTUAL AND COUNTERFACTULA QUERIES AND THE
-SYNTAX INCLUDING Role of \[\] AND OF GIVEN
+WRITE SECTION DESCRIBING FACTUAL AND COUNTERFACTULA QUERIES AND THE SYNTAX INCLUDING Role of \[\] AND OF GIVEN
 
 get_query_types
 
 return sets; discuss how all querties related to these sets
 
-Another way to develop a clearer understanding of how to interpret nodal
-types subscripts is to consider the conditions they may fulfill. We
-refer to these conditions as 'causal queries'. Causal queries are useful
-because they allow us to target and alter specific nodal types, and they
-come in handy for functions that we will introduce below. For instance,
-in a model such as $X \rightarrow Y \leftarrow M$, you may want to
-identify the nodal types that correspond to cases where increasing both
-$X$ and $M$ from 0 to 1 results in an increase in $Y$. You can do this
-using the `get_query_types` function as shown below:
+Another way to develop a clearer understanding of how to interpret nodal types subscripts is to consider the conditions they may fulfill. We refer to these conditions as 'causal queries'. Causal queries are useful because they allow us to target and alter specific nodal types, and they come in handy for functions that we will introduce below. For instance, in a model such as $X \rightarrow Y \leftarrow M$, you may want to identify the nodal types that correspond to cases where increasing both $X$ and $M$ from 0 to 1 results in an increase in $Y$. You can do this using the `get_query_types` function as shown below:
 
-start off with querty Y==1 then Y\[X=1\] ==1 then Y\[X=1\] \>= Y\[X=0\]
-then show linear functions possible Y\[X=1\] - Y\[X=0\]
+start off with querty Y==1 then Y\[X=1\] ==1 then Y\[X=1\] \>= Y\[X=0\] then show linear functions possible Y\[X=1\] - Y\[X=0\]
 
 ```{r, comment = ""}
 model <- make_model('X -> M -> Y <- X')
@@ -1321,8 +840,7 @@ get_query_types(model, query, map= "nodal_type")
 
 ### Queries by hand
 
-Queries can draw directly from the prior distribution of the posterior
-distribution provided by `stan`.
+Queries can draw directly from the prior distribution of the posterior distribution provided by `stan`.
 
 ```{r, warning = FALSE, eval = FALSE}
 library(DeclareDesign)
@@ -1360,8 +878,7 @@ model$posterior_distribution |>
 
 ### Query distribution
 
-`query_distribution` works similarly except that distributions over
-queries are returned:
+`query_distribution` works similarly except that distributions over queries are returned:
 
 ```{r, fig.cap = "Prior on 'Probability $Y$ is increasing in $X$'"}
 make_model("X -> Y") |> 
@@ -1377,20 +894,9 @@ make_model("X -> Y") |>
 
 MH
 
-Case level queries provide the inference for a 'new case', which is a
-scalar The case level query *updates* on the given information observed
-in the new case. The resulting inference is different to the inference
-that would be made from the posterior *given* the features of the case.
+Case level queries provide the inference for a 'new case', which is a scalar The case level query *updates* on the given information observed in the new case. The resulting inference is different to the inference that would be made from the posterior *given* the features of the case.
 
-To illustrate, consider a model for which we are quite sure that $X$
-causes $Y$ but we do not know whether it works through two positive
-effects or two negative effects. Thus we do not know if M=0 would
-suggest an effect or no effect. If asked what we would infer for a case
-that had $M=0$ we would not know whether $M=0$ information is consistent
-with a positive effect or not. However if provided with a randomly case
-and learn that it has $M=0$, then we update about the causal model and
-infer that there is an effect in this case (but that there wouldn't be
-were $M=1$).
+To illustrate, consider a model for which we are quite sure that $X$ causes $Y$ but we do not know whether it works through two positive effects or two negative effects. Thus we do not know if M=0 would suggest an effect or no effect. If asked what we would infer for a case that had $M=0$ we would not know whether $M=0$ information is consistent with a positive effect or not. However if provided with a randomly case and learn that it has $M=0$, then we update about the causal model and infer that there is an effect in this case (but that there wouldn't be were $M=1$).
 
 ```{r, eval = FALSE}
 
@@ -1424,9 +930,7 @@ set.seed(1)
 
 ### Batch queries
 
-The `query_model` function takes causal queries and conditions (`given`)
-and specifies the parameters to be used. The result is a dataframe which
-can be displayed as a table.
+The `query_model` function takes causal queries and conditions (`given`) and specifies the parameters to be used. The result is a dataframe which can be displayed as a table.
 
 ```{r}
 models <- list(
@@ -1449,86 +953,67 @@ query_model(
 
 ## Computational details and software requirements {.unnumbered}
 
-+----------:+:-------------------------------------------:+:----------+
-| Version   | -   1.0.0                                   |           |
-+-----------+---------------------------------------------+-----------+
-| Ava       | -   Stable Release:                         |           |
-| ilability |     https://cran.rstudi                     |           |
-|           | o.com/web/packages/CausalQueries/index.html |           |
-|           | -   Development:                            |           |
-|           |     https://git                             |           |
-|           | hub.com/integrated-inferences/CausalQueries |           |
-+-----------+---------------------------------------------+-----------+
-| Issues    | -   https://github.com                      |           |
-|           | /integrated-inferences/CausalQueries/issues |           |
-+-----------+---------------------------------------------+-----------+
-| Operating | -   Linux                                   |           |
-| Systems   | -   MacOS                                   |           |
-|           | -   Windows                                 |           |
-+-----------+---------------------------------------------+-----------+
-| Testing   | -   Ubuntu 22.04.2                          |           |
-| Env       | -   Debian 12.2                             |           |
-| ironments | -   MacOS                                   |           |
-| OS        | -   Windows                                 |           |
-+-----------+---------------------------------------------+-----------+
-| Testing   | -   R 4.3.1                                 |           |
-| Env       | -   R 4.3.0                                 |           |
-| ironments | -   R 4.2.3                                 |           |
-| R         | -   r-devel                                 |           |
-+-----------+---------------------------------------------+-----------+
-| R Version | -   R(\>= 3.4.0)                            |           |
-+-----------+---------------------------------------------+-----------+
-| Compiler  | -   either of the below or similar:         |           |
-|           | -   g++                                     |           |
-|           | -   clang++                                 |           |
-+-----------+---------------------------------------------+-----------+
-| Stan      | -   inline                                  |           |
-| req       | -   Rcpp (\>= 0.12.0)                       |           |
-| uirements | -   RcppEigen (\>= 0.3.3.3.0)               |           |
-|           | -   RcppArmadillo (\>= 0.12.6.4.0)          |           |
-|           | -   RcppParallel (\>= 5.1.4)                |           |
-|           | -   BH (\>= 1.66.0)                         |           |
-|           | -   StanHeaders (\>= 2.26.0)                |           |
-|           | -   rstan (\>= 2.26.0)                      |           |
-+-----------+---------------------------------------------+-----------+
-| R         | -   dplyr                                   |           |
-| -Packages | -   methods                                 |           |
-| Depends   |                                             |           |
-+-----------+---------------------------------------------+-----------+
-| R         | -   dagitty (\>= 0.3-1)                     |           |
-| -Packages | -   dirmult (\>= 0.1.3-4)                   |           |
-| Imports   | -   stats (\>= 4.1.1)                       |           |
-|           | -   rlang (\>= 0.2.0)                       |           |
-|           | -   rstan (\>= 2.26.0)                      |           |
-|           | -   rstantools (\>= 2.0.0)                  |           |
-|           | -   stringr (\>= 1.4.0)                     |           |
-|           | -   ggdag (\>= 0.2.4)                       |           |
-|           | -   latex2exp (\>= 0.9.4)                   |           |
-|           | -   ggplot2 (\>= 3.3.5)                     |           |
-|           | -   lifecycle (\>= 1.0.1)                   |           |
-+-----------+---------------------------------------------+-----------+
++------------------------:+:----------------------------------------------------------------------------------:+:-----------+
+| Version                 | -   1.0.0                                                                          |            |
++-------------------------+------------------------------------------------------------------------------------+------------+
+| Availability            | -   Stable Release: https://cran.rstudio.com/web/packages/CausalQueries/index.html |            |
+|                         | -   Development: https://github.com/integrated-inferences/CausalQueries            |            |
++-------------------------+------------------------------------------------------------------------------------+------------+
+| Issues                  | -   https://github.com/integrated-inferences/CausalQueries/issues                  |            |
++-------------------------+------------------------------------------------------------------------------------+------------+
+| Operating Systems       | -   Linux                                                                          |            |
+|                         | -   MacOS                                                                          |            |
+|                         | -   Windows                                                                        |            |
++-------------------------+------------------------------------------------------------------------------------+------------+
+| Testing Environments OS | -   Ubuntu 22.04.2                                                                 |            |
+|                         | -   Debian 12.2                                                                    |            |
+|                         | -   MacOS                                                                          |            |
+|                         | -   Windows                                                                        |            |
++-------------------------+------------------------------------------------------------------------------------+------------+
+| Testing Environments R  | -   R 4.3.1                                                                        |            |
+|                         | -   R 4.3.0                                                                        |            |
+|                         | -   R 4.2.3                                                                        |            |
+|                         | -   r-devel                                                                        |            |
++-------------------------+------------------------------------------------------------------------------------+------------+
+| R Version               | -   R(\>= 3.4.0)                                                                   |            |
++-------------------------+------------------------------------------------------------------------------------+------------+
+| Compiler                | -   either of the below or similar:                                                |            |
+|                         | -   g++                                                                            |            |
+|                         | -   clang++                                                                        |            |
++-------------------------+------------------------------------------------------------------------------------+------------+
+| Stan requirements       | -   inline                                                                         |            |
+|                         | -   Rcpp (\>= 0.12.0)                                                              |            |
+|                         | -   RcppEigen (\>= 0.3.3.3.0)                                                      |            |
+|                         | -   RcppArmadillo (\>= 0.12.6.4.0)                                                 |            |
+|                         | -   RcppParallel (\>= 5.1.4)                                                       |            |
+|                         | -   BH (\>= 1.66.0)                                                                |            |
+|                         | -   StanHeaders (\>= 2.26.0)                                                       |            |
+|                         | -   rstan (\>= 2.26.0)                                                             |            |
++-------------------------+------------------------------------------------------------------------------------+------------+
+| R-Packages Depends      | -   dplyr                                                                          |            |
+|                         | -   methods                                                                        |            |
++-------------------------+------------------------------------------------------------------------------------+------------+
+| R-Packages Imports      | -   dagitty (\>= 0.3-1)                                                            |            |
+|                         | -   dirmult (\>= 0.1.3-4)                                                          |            |
+|                         | -   stats (\>= 4.1.1)                                                              |            |
+|                         | -   rlang (\>= 0.2.0)                                                              |            |
+|                         | -   rstan (\>= 2.26.0)                                                             |            |
+|                         | -   rstantools (\>= 2.0.0)                                                         |            |
+|                         | -   stringr (\>= 1.4.0)                                                            |            |
+|                         | -   ggdag (\>= 0.2.4)                                                              |            |
+|                         | -   latex2exp (\>= 0.9.4)                                                          |            |
+|                         | -   ggplot2 (\>= 3.3.5)                                                            |            |
+|                         | -   lifecycle (\>= 1.0.1)                                                          |            |
++-------------------------+------------------------------------------------------------------------------------+------------+
 
 :::
 
-The results in this paper were obtained using [R]{.proglang}\~3.4.1 with
-the [MASS]{.pkg}\~7.3.47 package. [R]{.proglang} itself and all packages
-used are available from the Comprehensive [R]{.proglang} Archive Network
-(CRAN) at \[https://CRAN.R-project.org/\].
+The results in this paper were obtained using [R]{.proglang}\~3.4.1 with the [MASS]{.pkg}\~7.3.47 package. [R]{.proglang} itself and all packages used are available from the Comprehensive [R]{.proglang} Archive Network (CRAN) at \[https://CRAN.R-project.org/\].
 
 ## Acknowledgments {.unnumbered}
 
 ::: callout
-The approach to generating a generic stan function that can take data
-from arbitrary models was developed in key contributions by [Jasper
-Cooper](http://jasper-cooper.com/) and [Georgiy
-Syunyaev](http://gsyunyaev.com/). [Lily
-Medina](https://lilymedina.github.io/) did magical work pulling it all
-together and developing approaches to characterizing confounding and
-defining estimands. Clara Bicalho helped figure out the syntax for
-causal statements. Julio Solis made many key contributions figuring out
-how to simplify the specification of priors. Merlin Heidemanns figured
-out the `rstantools` integration and made myriad code improvements. Till
-Tietz revamped the entire package and improved every part of it.
+The approach to generating a generic stan function that can take data from arbitrary models was developed in key contributions by [Jasper Cooper](http://jasper-cooper.com/) and [Georgiy Syunyaev](http://gsyunyaev.com/). [Lily Medina](https://lilymedina.github.io/) did magical work pulling it all together and developing approaches to characterizing confounding and defining estimands. Clara Bicalho helped figure out the syntax for causal statements. Julio Solis made many key contributions figuring out how to simplify the specification of priors. Merlin Heidemanns figured out the `rstantools` integration and made myriad code improvements. Till Tietz revamped the entire package and improved every part of it.
 :::
 
 ## References {.unnumbered}
@@ -1541,13 +1026,9 @@ Tietz revamped the entire package and improved every part of it.
 ## More technical details {#sec-techdetails .unnumbered}
 
 ::: callout
-Appendices can be included after the bibliography (with a page break).
-Each section within the appendix should have a proper section title
-(rather than just *Appendix*).
+Appendices can be included after the bibliography (with a page break). Each section within the appendix should have a proper section title (rather than just *Appendix*).
 
-For more technical style details, please check out JSS's style FAQ at
-\[https://www.jstatsoft.org/pages/view/style#frequently-asked-questions\]
-which includes the following topics:
+For more technical style details, please check out JSS's style FAQ at \[https://www.jstatsoft.org/pages/view/style#frequently-asked-questions\] which includes the following topics:
 
 -   Title vs. sentence case.
 -   Graphics formatting.
@@ -1560,36 +1041,20 @@ which includes the following topics:
 ## Using BibTeX {#sec-bibtex .unnumbered}
 
 ::: callout
-References need to be provided in a {{< bibtex >}} file (`.bib`). All
-references should be made with `@cite` syntax. This commands yield
-different formats of author-year citations and allow to include
-additional details (e.g.,pages, chapters, \dots) in brackets. In case
-you are not familiar with these commands see the JSS style FAQ for
-details.
+References need to be provided in a {{< bibtex >}} file (`.bib`). All references should be made with `@cite` syntax. This commands yield different formats of author-year citations and allow to include additional details (e.g.,pages, chapters, \dots) in brackets. In case you are not familiar with these commands see the JSS style FAQ for details.
 
-Cleaning up {{< bibtex >}} files is a somewhat tedious task --
-especially when acquiring the entries automatically from mixed online
-sources. However, it is important that informations are complete and
-presented in a consistent style to avoid confusions. JSS requires the
-following format.
+Cleaning up {{< bibtex >}} files is a somewhat tedious task -- especially when acquiring the entries automatically from mixed online sources. However, it is important that informations are complete and presented in a consistent style to avoid confusions. JSS requires the following format.
 
--   item JSS-specific markup (`\proglang`, `\pkg`, `\code`) should be
-    used in the references.
+-   item JSS-specific markup (`\proglang`, `\pkg`, `\code`) should be used in the references.
 -   item Titles should be in title case.
 -   item Journal titles should not be abbreviated and in title case.
 -   item DOIs should be included where available.
--   item Software should be properly cited as well. For [R]{.proglang}
-    packages `citation("pkgname")` typically provides a good starting
-    point.
+-   item Software should be properly cited as well. For [R]{.proglang} packages `citation("pkgname")` typically provides a good starting point.
 :::
 
 ## Appendix: stan code
 
-`prep_stan_data` then returns a list of objects that `stan` expects to
-receive. These include indicators to figure out where a parameter set
-starts (`l_starts`, `l_ends`) and ends and where a data strategy starts
-and ends (`strategy_starts`, `strategy_ends`), as well as the matrices
-described above.
+`prep_stan_data` then returns a list of objects that `stan` expects to receive. These include indicators to figure out where a parameter set starts (`l_starts`, `l_ends`) and ends and where a data strategy starts and ends (`strategy_starts`, `strategy_ends`), as well as the matrices described above.
 
 ```{r ch2prep, comment = "", include = FALSE}
 
@@ -1599,11 +1064,7 @@ described above.
 
 MOVE TO APPENDIX? ADD DISCUSSION OF PARMAP
 
-Below we show the `stan` code. This starts off with a block saying what
-input data is to be expected. Then there is a characterization of
-parameters and the transformed parameters. Then the likelihoods and
-priors are provided. `stan` takes it from there and generates a
-posterior distribution.
+Below we show the `stan` code. This starts off with a block saying what input data is to be expected. Then there is a characterization of parameters and the transformed parameters. Then the likelihoods and priors are provided. `stan` takes it from there and generates a posterior distribution.
 
 ```{r, echo = FALSE, comment = ""}
  if(run) 
@@ -1615,7 +1076,4 @@ cat(rstan::get_stancode(read_rds("saved/fit.rds")))
 
 ```
 
-[^1]: `CausalQueries` can be used also to analyse non binary data though
-    with a cost of greatly increased complexity. See section 9.4.1 of
-    @ii2023 for an approach that codes non binary data as a profile of
-    outcomes on multiple binary nodes.
+[^1]: `CausalQueries` can be used also to analyse non binary data though with a cost of greatly increased complexity. See section 9.4.1 of @ii2023 for an approach that codes non binary data as a profile of outcomes on multiple binary nodes.
