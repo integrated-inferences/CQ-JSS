@@ -7,7 +7,6 @@
   article]{jss}
 
 \usepackage{amsmath,amssymb}
-\usepackage{lmodern}
 \usepackage{iftex}
 \ifPDFTeX
   \usepackage[T1]{fontenc}
@@ -17,6 +16,10 @@
   \usepackage{unicode-math}
   \defaultfontfeatures{Scale=MatchLowercase}
   \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else  
+    % xetex/luatex font selection
 \fi
 % Use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
@@ -72,36 +75,30 @@
 \makeatletter
 \def\fps@figure{htbp}
 \makeatother
-\newlength{\cslhangindent}
-\setlength{\cslhangindent}{1.5em}
-\newlength{\csllabelwidth}
-\setlength{\csllabelwidth}{3em}
-\newlength{\cslentryspacingunit} % times entry-spacing
-\setlength{\cslentryspacingunit}{\parskip}
-\newenvironment{CSLReferences}[2] % #1 hanging-ident, #2 entry spacing
- {% don't indent paragraphs
-  \setlength{\parindent}{0pt}
-  % turn on hanging indent if param 1 is 1
-  \ifodd #1
-  \let\oldpar\par
-  \def\par{\hangindent=\cslhangindent\oldpar}
-  \fi
-  % set entry spacing
-  \setlength{\parskip}{#2\cslentryspacingunit}
- }%
- {}
-\usepackage{calc}
-\newcommand{\CSLBlock}[1]{#1\hfill\break}
-\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{#1}}
-\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{#1}\break}
-\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
 
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage[utf8]{inputenc}
+\usepackage{makecell}
+\usepackage{xcolor}
+
+
+\newtheorem{definition}{Definition}
 \usepackage{orcidlink,thumbpdf,lmodern}
 
 \newcommand{\class}[1]{`\code{#1}'}
 \newcommand{\fct}[1]{\code{#1()}}
 \makeatletter
-\@ifpackageloaded{tcolorbox}{}{\usepackage[many]{tcolorbox}}
+\@ifpackageloaded{tcolorbox}{}{\usepackage[skins,breakable]{tcolorbox}}
 \@ifpackageloaded{fontawesome5}{}{\usepackage{fontawesome5}}
 \definecolor{quarto-callout-color}{HTML}{909090}
 \definecolor{quarto-callout-note-color}{HTML}{0758E5}
@@ -160,12 +157,6 @@
 \@ifpackageloaded{subcaption}{}{\usepackage{subcaption}}
 \makeatother
 \makeatletter
-\@ifpackageloaded{tcolorbox}{}{\usepackage[many]{tcolorbox}}
-\makeatother
-\makeatletter
-\@ifundefined{shadecolor}{\definecolor{shadecolor}{rgb}{.97, .97, .97}}
-\makeatother
-\makeatletter
 \makeatother
 \ifLuaTeX
   \usepackage{selnolig}  % disable illegal ligatures
@@ -175,7 +166,7 @@
 \urlstyle{same} % disable monospaced font for URLs
 \hypersetup{
   pdftitle={Making, Updating, and Querying Causal Models using CausalQueries},
-  pdfauthor={Till Tietz; Lily Medina; Macartan Humphreys},
+  pdfauthor={Till Tietz; Lily Medina; Macartan Humphreys; Georgiy Syunyaev},
   pdfkeywords={causal models, stan, bayes},
   colorlinks=true,
   linkcolor={blue},
@@ -189,9 +180,10 @@
 %% Author information
 \author{Till Tietz~\orcidlink{0000-0002-2916-9059}\\WZB \And Lily
 Medina\\UC Berkeley \AND Macartan
-Humphreys~\orcidlink{0000-0001-7029-2326}\\WZB}
-\Plainauthor{Till Tietz, Lily Medina, Macartan
-Humphreys} %% comma-separated
+Humphreys~\orcidlink{0000-0001-7029-2326}\\WZB \And Georgiy
+Syunyaev~\orcidlink{0000-0002-4391-6313}\\Vanderbilt University}
+\Plainauthor{Till Tietz, Lily Medina, Macartan Humphreys, Georgiy
+Syunyaev} %% comma-separated
 
 \title{Making, Updating, and Querying Causal Models using
 \texttt{CausalQueries}}
@@ -235,13 +227,15 @@ Macartan Humphreys\\
 E-mail: \email{macartan.humphreys@wzb.eu}\\
 URL: \url{https://macartan.github.io/}\\
 \\~
+Georgiy Syunyaev\\
+E-mail: \email{g.syunyaev@vanderbilt.edu}\\
+URL: \url{https://gsyunyaev.com/}\\
+\\~
 
 }
 
 \begin{document}
 \maketitle
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[frame hidden, sharp corners, borderline west={3pt}{0pt}{shadecolor}, enhanced, interior hidden, breakable, boxrule=0pt]}{\end{tcolorbox}}\fi
-
 \hypertarget{sec-intro}{%
 \section{Introduction: Causal models}\label{sec-intro}}
 
@@ -266,7 +260,6 @@ distribution, or a user specified candidate vector of parameters.
 We illustrate these three core functions by showing how to use
 \texttt{CuasalQueries} to replicate the analysis in
 \citet{chickering1996clinician} (see also \citet{ii2023}).
-
 \citet{chickering1996clinician} seek to draw inference on causal effects
 in the presence of imperfect compliance. We have access to an instrument
 \(Z\) (a randomly assigned prescription for cholesterol medication),
@@ -283,92 +276,60 @@ Our data on \(Z\), \(X\), and \(Y\) is complete for all units and looks,
 in compact form, as follows:
 
 \begin{verbatim}
-data("lipids_data")
-
-lipids_data |> kable()
+R> data("lipids_data")
+R> 
+R> lipids_data
 \end{verbatim}
-
-\begin{longtable}[]{@{}llr@{}}
-\toprule()
-event & strategy & count \\
-\midrule()
-\endhead
-Z0X0Y0 & ZXY & 158 \\
-Z1X0Y0 & ZXY & 52 \\
-Z0X1Y0 & ZXY & 0 \\
-Z1X1Y0 & ZXY & 23 \\
-Z0X0Y1 & ZXY & 14 \\
-Z1X0Y1 & ZXY & 12 \\
-Z0X1Y1 & ZXY & 0 \\
-Z1X1Y1 & ZXY & 78 \\
-\bottomrule()
-\end{longtable}
-
-Using \texttt{CausalQueries} we can define the model, update it with
-data, and query it, thus.
 
 \begin{verbatim}
-results <- 
-  
-  make_model("Z -> X -> Y; X <-> Y") |>
-  
-  update_model(lipids_data, refresh = 0) |>
-  
-  query_model(query = "Y[X=1] - Y[X=0]",
-              given = c("All",  "X==0 & Y==0", "X[Z=1] > X[Z=0]"),
-              using = "posteriors") 
+   event strategy count
+1 Z0X0Y0      ZXY   158
+2 Z1X0Y0      ZXY    52
+3 Z0X1Y0      ZXY     0
+4 Z1X1Y0      ZXY    23
+5 Z0X0Y1      ZXY    14
+6 Z1X0Y1      ZXY    12
+7 Z0X1Y1      ZXY     0
+8 Z1X1Y1      ZXY    78
 \end{verbatim}
 
-The output is a dataframe with estimates, posterior standard deviations,
-and credibility intervals.
+With \texttt{CausalQueries}, you can create the model, input data to
+update it, and then query the model for results.
 
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.2222}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.2222}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.0694}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.0694}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1944}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.2222}}@{}}
-\toprule()
-\begin{minipage}[b]{\linewidth}\raggedright
-query
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-given
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-mean
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-sd
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-cred.low.2.5\%
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-cred.high.97.5\%
-\end{minipage} \\
-\midrule()
-\endfirsthead
-\toprule()
-\begin{minipage}[b]{\linewidth}\raggedright
-query
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-given
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-mean
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-sd
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-cred.low.2.5\%
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-cred.high.97.5\%
-\end{minipage} \\
-\midrule()
-\endhead
-Y{[}X=1{]} - Y{[}X=0{]} & - & 0.55 & 0.10 & 0.37 & 0.72 \\
-Y{[}X=1{]} - Y{[}X=0{]} & X==0 \& Y==0 & 0.64 & 0.15 & 0.38 & 0.89 \\
-Y{[}X=1{]} - Y{[}X=0{]} & X{[}Z=1{]} \textgreater{} X{[}Z=0{]} & 0.70 &
-0.06 & 0.59 & 0.80 \\
-\bottomrule()
-\caption{Rows 1 and 2 replicate results in Chickering and Pearl (1997);
-row 3 returns inferences for complier average effects.}\tabularnewline
-\end{longtable}
+\begin{verbatim}
+R> make_model("Z -> X -> Y; X <-> Y") |>
++  update_model(lipids_data, refresh = 0) |>
++  query_model(query = "Y[X=1] - Y[X=0]",
++              given = c("All",  "X==0 & Y==0", "X[Z=1] > X[Z=0]"),
++              using = "posteriors") 
+\end{verbatim}
+
+\hypertarget{tbl-lipids}{}
+\begin{table}
+\caption{\label{tbl-lipids}Replication of \citet{chickering1996clinician}. }\tabularnewline
+
+\centering
+\resizebox{\linewidth}{!}{
+\begin{threeparttable}
+\begin{tabular}{cccccc}
+\toprule
+query & given & mean & sd & cred.low.2.5\% & cred.high.97.5\%\\
+\midrule
+Y[X=1] - Y[X=0] & - & 0.56 & 0.10 & 0.37 & 0.73\\
+Y[X=1] - Y[X=0] & X==0 \& Y==0 & 0.64 & 0.15 & 0.38 & 0.90\\
+Y[X=1] - Y[X=0] & X[Z=1] > X[Z=0] & 0.70 & 0.05 & 0.59 & 0.80\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+\small
+\item Rows 1 and 2 replicate results in \citet{chickering1996clinician}; row 3 returns inferences for complier average effects.
+\end{tablenotes}
+\end{threeparttable}}
+\end{table}
+
+The output is a data frame with estimates, posterior standard
+deviations, and credibility intervals. For example the data frame
+produced by the code above is shown in Table~\ref{tbl-lipids}.
 
 As we describe below the same basic procedure of making, updating, and
 querying models, can be used (up to computational constraints) for
@@ -380,12 +341,13 @@ all causal queries that can be posed of the causal model.
 packages}\label{connections-to-existing-packages}}
 
 \begin{itemize}
-\tightlist
 \item
   Embed the \emph{software} into the respective relevant literature.
+\item
+  compare with bareinboim package
+\item
+  knox bounds package
 \end{itemize}
-
--compare with bareinboim package - knox bounds package
 
 \hypertarget{statistical-model}{%
 \section{Statistical model}\label{statistical-model}}
@@ -395,26 +357,19 @@ structure; Embed the \emph{methods}}
 
 The core conceptual framework is described in Pearl's \emph{Causality}
 \citep{pearl2009causality} but can be summarized as follows (using the
-notation used in \citet{ii2023}).
+notation used in \citet{ii2023}):
 
-\textbf{Definition} A ``\textbf{causal model}'' is:
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  an ordered collection of ``endogenous nodes''
-  \(Y = \{Y_1, Y_2, \dots, Y_n\}\)
-\item
-  an ordered collection of ``exogenous nodes''
-  \(\Theta = \{\theta^{Y_1}, \theta^{Y_1}, \dots, \theta^{Y_n}\}\)
-\item
-  a collection of functions \(F = \{f_{Y_1}, f_{Y_2}, \dots, f_{Y_n}\}\)
-  specifying, for each node \(j\), how outcome \(y_j\) depends on
-  \(\theta_j\) and realizations of endogenous nodes prior to \(j\).
-\item
-  A probability distribution over \(\Theta\), \(\lambda\)
-\end{enumerate}
+\begin{definition}
+  
+  A \textbf{``causal model''} includes:
+  \begin{enumerate}
+    \item an ordered collection of "endogenous nodes" $Y = \{Y_1, Y_2, \dots, Y_n\}$
+    \item an ordered collection of "exogenous nodes" $\Theta = \{\theta^{Y_1}, \theta^{Y_1}, \dots, \theta^{Y_n}\}$
+    \item a collection of functions $F = \{f_{Y_1}, f_{Y_2}, \dots, f_{Y_n}\}$ specifying, for each node $j$, how outcome $y_j$ depends on $\theta_j$ and realizations of endogenous nodes prior to $j$.
+    \item a probability distribution over $\Theta$, $\lambda$
+  \end{enumerate}
+  
+\end{definition}
 
 In the usual case we take the endogenous nodes to be binary.\footnote{\texttt{CausalQueries}
   can be used also to analyse non binary data though with a cost of
@@ -507,27 +462,29 @@ w_{01} & = & \lambda^X_0(\lambda^Y_{11} + \lambda^Y_{10})\\
 w_{10} & = & \lambda^X_1(\lambda^Y_{00} + \lambda^Y_{10})\\
 w_{11} & = & \lambda^X_1(\lambda^Y_{11} + \lambda^Y_{01})\end{array} \right.\]
 
-\begin{itemize}
-\tightlist
-\item
-  Embed the \emph{software} into the respective relevant literature.
-\item
-  For the latter both competing and complementary software should be
-  discussed (within the same software environment and beyond), bringing
-  out relative (dis)advantages. All software mentioned should be
-  properly \texttt{@cited}'d.~(See also
-  \protect\hyperlink{sec-bibtex}{Using BibTeX} for more details on
-  \textsc{Bib}{\TeX}.)
-\end{itemize}
+The value of the \texttt{CausalQueries} package is to allow users to
+specify models of this form, figure out all the implied causal types,
+and then update given priors and data by calculating event probabilities
+implied by all possible parameter vectors and in turn the likelihood of
+the data given the model. In addition, the package allows for arbitrary
+querying of a model to assess the values of estimands of interest that a
+re funciton of the values or counterfactual values of nodes conditional
+on values or counterfactual values of nodes.
 
-MH: LINE ABOUT WHAT CQ DOES IN THIS FRAMEWORK\ldots{}
+\textbf{TILL} - Embed the \emph{software} into the respective relevant
+literature. - For the latter both competing and complementary software
+should be discussed (within the same software environment and beyond),
+bringing out relative (dis)advantages. All software mentioned should be
+properly \texttt{@cited}'d.~(See also
+\protect\hyperlink{sec-bibtex}{Using BibTeX} for more details on
+\textsc{Bib}{\TeX}.)
 
-The strength of \texttt{CausalQueries} is to allow users to specify
-arbitrary DAGs, arbitrary queries over nodes in those DAGs, and use the
-same canonical procedure to learn about those queries whether or not the
-queries are identified. Thus is principle if researchers are interest in
-learning about a quantitiy like the local average treatment effect and
-their model in fact satisfies the conditions in
+The particular strength of \texttt{CausalQueries} is to allow users to
+specify arbitrary DAGs, arbitrary queries over nodes in those DAGs, and
+use the same canonical procedure to learn about those queries whether or
+not the queries are identified. Thus is principle if researchers are
+interest in learning about a quantitiy like the local average treatment
+effect and their model in fact satisfies the conditions in
 \citet{angrist1996identification}, then updating will recover valid
 estimates even if researchers are unaware that the local average
 treatment effect is identified and are ignorant of the estimation
@@ -566,7 +523,7 @@ the structure of the model is provided as a statement.
 For instance:
 
 \begin{verbatim}
-model <- make_model("X -> M -> Y <- X")
+R> model <- make_model("X -> M -> Y <- X")
 \end{verbatim}
 
 The statement (in quotes) provides the names of nodes. An arrow
@@ -636,57 +593,73 @@ detail in section \citet{confounding}.
 \hypertarget{graphing}{%
 \subsection{Graphing}\label{graphing}}
 
-Once defined, a model can be graphed. Graphing draws on functionality
-from \texttt{dagitty}, \texttt{ggplot}, and \texttt{ggdag}.
+Plotting the model can be useful to check that you have defined the
+structure of the model correctly. \texttt{CausalQueries} provides simple
+graphing tools that draw on functionality from the \texttt{dagitty},
+\texttt{ggplot2}, and \texttt{ggdag} packages.
 
-Plotting is useful to check that you have written the structure down
-correctly.
-
-Options for plotting are accepted by \texttt{CausalQueries:::plot\_dag}.
-The plot that is produced is a ggplot object and so accepts additional
-modification in the usual way.
-
-\begin{itemize}
-\tightlist
-\item
-  GS Put side by side with labels
-\end{itemize}
+Once defined, a model can be graphed by calling the \texttt{plot()}
+method defined for the objects with class \texttt{causal\_model}
+produced by \texttt{make\_model()} function.
 
 \begin{verbatim}
-make_model("X -> M -> Y <- X; Z -> Y") |>
-  plot()
+R> make_model("X -> M -> Y <- X; Z -> Y") |>
++  plot()
 \end{verbatim}
 
-\begin{figure}[H]
+Alternatively you can provide a number of options to the \texttt{plot()}
+call that will be passed to \texttt{CausalQueries:::plot\_dag} via the
+method.
 
-{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-14-1.pdf}
+\begin{verbatim}
+R> make_model("X -> M -> Y <- X; Z -> Y") |>
++  plot(x_coord = 1:4,
++       y_coord = c(1.5,2,1,2),
++       textcol = "white",
++       textsize = 3,
++       shape = 18,
++       nodecol = "grey",
++       nodesize = 12)
+\end{verbatim}
+
+The graphs produced by the two calls above are shown in
+Figure~\ref{fig-plots}. In both cases the resulting plot will have class
+\texttt{c("gg",\ "ggplot")} and so will accept any additional
+modifications available via \texttt{ggplot2} package.
+
+\begin{figure}
+
+\begin{minipage}[t]{0.50\linewidth}
+
+{\centering 
+
+\raisebox{-\height}{
+
+\includegraphics{paper_files/figure-pdf/fig-plots-1.pdf}
 
 }
 
-\caption{A plotted model.}
+}
 
-\end{figure}
+\subcaption{\label{fig-plots-1}Without options}
+\end{minipage}%
+%
+\begin{minipage}[t]{0.50\linewidth}
 
-\begin{verbatim}
-make_model("X -> M -> Y <- X; Z -> Y") |>
-  plot(x_coord = 1:4,
-       y_coord = c(1.5,2,1,2),
-       title = "With options",
-       textcol = "white",
-       textsize = 3,
-       shape = 18,
-       nodecol = "grey",
-       nodesize = 12) +
-  theme(plot.background = element_rect(colour = "grey", fill=NA, linewidth=2))
-\end{verbatim}
+{\centering 
 
-\begin{figure}[H]
+\raisebox{-\height}{
 
-{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-16-1.pdf}
+\includegraphics{paper_files/figure-pdf/fig-plots-2.pdf}
 
 }
 
-\caption{A plotted model, showing options.}
+}
+
+\subcaption{\label{fig-plots-2}With options}
+\end{minipage}%
+
+\caption{\label{fig-plots}Examples of model graphs.}
 
 \end{figure}
 
@@ -711,24 +684,26 @@ The model includes additional elements, \texttt{nodal\_types,}
 later in detail.
 
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.1462}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.8538}}@{}}
-\toprule()
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.1170}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.8830}}@{}}
+\toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 Element
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 Description
 \end{minipage} \\
-\midrule()
+\midrule\noalign{}
 \endfirsthead
-\toprule()
+\toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 Element
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 Description
 \end{minipage} \\
-\midrule()
+\midrule\noalign{}
 \endhead
+\bottomrule\noalign{}
+\endlastfoot
 statement & A character string that describes directed causal relations
 between variables in a causal model, where arrows denote that one node
 is a potential cause of another. \\
@@ -745,7 +720,6 @@ nodal types of the model, as well as the family to which they belong.
 causal\_types & A data frame listing causal types and the nodal types
 that produce them. (See Causal Types Section) \\
 P: parameter matrix & Should I include it? \\
-\bottomrule()
 \caption{Core Elements of a Causal Model}\tabularnewline
 \end{longtable}
 
@@ -771,16 +745,18 @@ The table below summarizes the objects attached to the model after
 updating.
 
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.2312}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.7688}}@{}}
-\toprule()
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.2155}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.7845}}@{}}
+\toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 Element
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 Description
 \end{minipage} \\
-\midrule()
+\midrule\noalign{}
 \endhead
+\bottomrule\noalign{}
+\endlastfoot
 posterior\_distribution & The posterir distribution of the updated
 parameters generated by stan. \\
 stan\_objects & A list of objects, including, at a minimum,
@@ -793,7 +769,6 @@ w & A mapping from parameters to event probabilities, optionally
 appended to \texttt{stan\_objects.} \\
 stan\_fit & The \texttt{stanfit} object generated by stan. This is
 optionally appended to \texttt{stan\_objects.} \\
-\bottomrule()
 \end{longtable}
 
 \hypertarget{parameters-dataframe}{%
@@ -811,47 +786,27 @@ types.
 For instance:
 
 \begin{verbatim}
-make_model("X->Y")$parameters_df |>
-  kable()
+R> make_model("X->Y")$parameters_df |>
++  knitr::kable()
 \end{verbatim}
 
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1791}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0746}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0597}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1493}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1642}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0896}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1791}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1045}}@{}}
-\toprule()
-\begin{minipage}[b]{\linewidth}\raggedright
-param\_names
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-node
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-gen
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-param\_set
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-nodal\_type
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-given
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-param\_value
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-priors
-\end{minipage} \\
-\midrule()
-\endhead
-X.0 & X & 1 & X & 0 & & 0.50 & 1 \\
-X.1 & X & 1 & X & 1 & & 0.50 & 1 \\
-Y.00 & Y & 2 & Y & 00 & & 0.25 & 1 \\
-Y.10 & Y & 2 & Y & 10 & & 0.25 & 1 \\
-Y.01 & Y & 2 & Y & 01 & & 0.25 & 1 \\
-Y.11 & Y & 2 & Y & 11 & & 0.25 & 1 \\
-\bottomrule()
-\end{longtable}
+\begin{tabular}{l|l|r|l|l|l|r|r}
+\hline
+param\_names & node & gen & param\_set & nodal\_type & given & param\_value & priors\\
+\hline
+X.0 & X & 1 & X & 0 &  & 0.50 & 1\\
+\hline
+X.1 & X & 1 & X & 1 &  & 0.50 & 1\\
+\hline
+Y.00 & Y & 2 & Y & 00 &  & 0.25 & 1\\
+\hline
+Y.10 & Y & 2 & Y & 10 &  & 0.25 & 1\\
+\hline
+Y.01 & Y & 2 & Y & 01 &  & 0.25 & 1\\
+\hline
+Y.11 & Y & 2 & Y & 11 &  & 0.25 & 1\\
+\hline
+\end{tabular}
 
 Each row in the dataframe corresponds to a single parameter.
 
@@ -908,7 +863,7 @@ to parse for more complex models so the model object also includes a
 guide to interpreting nodal type values. You can see them like this.
 
 \begin{verbatim}
-make_model("X -> Y")$nodal_types
+R> make_model("X -> Y")$nodal_types
 \end{verbatim}
 
 \begin{verbatim}
@@ -964,9 +919,9 @@ clear map to identify what each digit in the subscript represents. See
 the examples below for models with two and three parents.
 
 \begin{verbatim}
-model <- make_model("X -> Y <- M ")
-interpretations <- interpret_type(model)
-interpretations$Y
+R> model <- make_model("X -> Y <- M ")
+R> interpretations <- interpret_type(model)
+R> interpretations$Y
 \end{verbatim}
 
 \begin{verbatim}
@@ -978,9 +933,9 @@ interpretations$Y
 \end{verbatim}
 
 \begin{verbatim}
-model <- make_model("X -> Y <- M; W -> Y")
-interpretations <- interpret_type(model)
-interpretations$Y
+R> model <- make_model("X -> Y <- M; W -> Y")
+R> interpretations <- interpret_type(model)
+R> interpretations$Y
 \end{verbatim}
 
 \begin{verbatim}
@@ -1012,19 +967,19 @@ When a model is created, the full set of causal types is identified.
 These are stored in the model object:
 
 \begin{verbatim}
-make_model("A -> B")$causal_types
+R> make_model("X -> Y")$causal_types
 \end{verbatim}
 
 \begin{verbatim}
-       A  B
-A0.B00 0 00
-A1.B00 1 00
-A0.B10 0 10
-A1.B10 1 10
-A0.B01 0 01
-A1.B01 1 01
-A0.B11 0 11
-A1.B11 1 11
+       X  Y
+X0.Y00 0 00
+X1.Y00 1 00
+X0.Y10 0 10
+X1.Y10 1 10
+X0.Y01 0 01
+X1.Y01 1 01
+X0.Y11 0 11
+X1.Y11 1 11
 \end{verbatim}
 
 A model with \(n_j\) nodal types at node \(j\) has \(\prod_jn_j\) causal
@@ -1044,6 +999,97 @@ Till: Show how realise\_outcomes connects causal types with data types:
 Show for something with a do operation and without a do operation; point
 out causal types on left
 
+In effect; we can map from causal types to data types by propagating
+realized values on nodes forward in the DAG, moving from exogenous or
+intervened upon nodes to their descendants in generational order. The
+\texttt{realise\_outcomes} functions achieves this by traversing the
+DAG, while recording for each node's nodal types, the values implied by
+realizations on the node's parents. By way of example, consider the
+first causal type of the \(X \rightarrow Y\) model above:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \(X\) is exogenous and has a realized value of \(0\)
+\item
+  We substitute for \(Y\) the value implied by the \(00\) nodal type
+  given a \(0\) value on \(X\), which in turn is \(0\) (see nodal types)
+\end{enumerate}
+
+Recovering implied values on complex nodal types given parent
+realizations efficiently at scale, exploits the fact that nodal types
+are the Cartesian Product of possible parent realizations. Finding the
+index of a Node's realized value given parent realizations in a nodal
+type is equivalent to finding the row index in the Cartesian Product
+matrix corresponding to those parent realizations. By definition of the
+Cartesian product, the number of consecutive 0 or 1 elements in a given
+column is \(2^{columnindex}\), when indexing columns from 0. Given a set
+of parent realizations \(R\) indexed from 0, the corresponding row index
+in the Cartesian Product Matrix indexed from 0 can thus be computed via:
+\(row = (\sum_{i = 0}^{|R| - 1} (2^{i} \times R_i))\).
+
+Calling \texttt{realise\_outcomes} on the above model thus yields:
+
+\begin{verbatim}
+R> model <- make_model("X->Y") 
+R> realise_outcomes(model) |>
++  kable()
+\end{verbatim}
+
+\begin{tabular}{l|l|l}
+\hline
+  & X & Y\\
+\hline
+0.00 & 0 & 0\\
+\hline
+1.00 & 1 & 0\\
+\hline
+0.10 & 0 & 1\\
+\hline
+1.10 & 1 & 0\\
+\hline
+0.01 & 0 & 0\\
+\hline
+1.01 & 1 & 1\\
+\hline
+0.11 & 0 & 1\\
+\hline
+1.11 & 1 & 1\\
+\hline
+\end{tabular}
+
+with rownames indicating nodal types and columns ralized values.
+Intervening on \(X\) with \(do(X=1)\) yields:
+
+\begin{verbatim}
+R> model <- make_model("X->Y") 
+R> realise_outcomes(model, dos = list(X=1)) |>
++  kable()
+\end{verbatim}
+
+\begin{tabular}{l|l|l}
+\hline
+  & X & Y\\
+\hline
+0.00 & 1 & 0\\
+\hline
+1.00 & 1 & 0\\
+\hline
+0.10 & 1 & 0\\
+\hline
+1.10 & 1 & 0\\
+\hline
+0.01 & 1 & 1\\
+\hline
+1.01 & 1 & 1\\
+\hline
+0.11 & 1 & 1\\
+\hline
+1.11 & 1 & 1\\
+\hline
+\end{tabular}
+
 \hypertarget{parameter-matrix}{%
 \subsubsection{Parameter matrix}\label{parameter-matrix}}
 
@@ -1056,25 +1102,28 @@ this mapping. The \(P\) matrix has a row for each parameter and a column
 for each causal type. For instance:
 
 \begin{verbatim}
-make_model("X->Y") |> 
-  get_parameter_matrix() |>
-  kable()
+R> make_model("X->Y") |> 
++  get_parameter_matrix() |>
++  knitr::kable()
 \end{verbatim}
 
-\begin{longtable}[]{@{}lrrrrrrrr@{}}
-\toprule()
-& X0.Y00 & X1.Y00 & X0.Y10 & X1.Y10 & X0.Y01 & X1.Y01 & X0.Y11 &
-X1.Y11 \\
-\midrule()
-\endhead
-X.0 & 1 & 0 & 1 & 0 & 1 & 0 & 1 & 0 \\
-X.1 & 0 & 1 & 0 & 1 & 0 & 1 & 0 & 1 \\
-Y.00 & 1 & 1 & 0 & 0 & 0 & 0 & 0 & 0 \\
-Y.10 & 0 & 0 & 1 & 1 & 0 & 0 & 0 & 0 \\
-Y.01 & 0 & 0 & 0 & 0 & 1 & 1 & 0 & 0 \\
-Y.11 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 1 \\
-\bottomrule()
-\end{longtable}
+\begin{tabular}{l|r|r|r|r|r|r|r|r}
+\hline
+  & X0.Y00 & X1.Y00 & X0.Y10 & X1.Y10 & X0.Y01 & X1.Y01 & X0.Y11 & X1.Y11\\
+\hline
+X.0 & 1 & 0 & 1 & 0 & 1 & 0 & 1 & 0\\
+\hline
+X.1 & 0 & 1 & 0 & 1 & 0 & 1 & 0 & 1\\
+\hline
+Y.00 & 1 & 1 & 0 & 0 & 0 & 0 & 0 & 0\\
+\hline
+Y.10 & 0 & 0 & 1 & 1 & 0 & 0 & 0 & 0\\
+\hline
+Y.01 & 0 & 0 & 0 & 0 & 1 & 1 & 0 & 0\\
+\hline
+Y.11 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 1\\
+\hline
+\end{tabular}
 
 The probability of a causal type is given by the product of the
 parameters values for parameters whose row in the \(P\) matrix contains
@@ -1113,20 +1162,20 @@ For instance to impose an assumption that \(Y\) is not decreasing in
 \(X\) we generate a restricted model as follows:
 
 \begin{verbatim}
-model <- make_model("X->Y") |> set_restrictions("Y[X=1] < Y[X=0]")
+R> model <- make_model("X->Y") |> set_restrictions("Y[X=1] < Y[X=0]")
 \end{verbatim}
 
 or:
 
 \begin{verbatim}
-model <- make_model("X->Y") |> set_restrictions(decreasing("X", "Y"))
+R> model <- make_model("X->Y") |> set_restrictions(decreasing("X", "Y"))
 \end{verbatim}
 
 Viewing the resulting parameter matrix we see that both the set of
 parameters and the set of causal types are now restricted:
 
 \begin{verbatim}
-get_parameter_matrix(model)
+R> get_parameter_matrix(model)
 \end{verbatim}
 
 \begin{verbatim}
@@ -1185,9 +1234,9 @@ Note:
 \end{itemize}
 
 \begin{verbatim}
-make_model("S -> C -> Y <- R <- X; X -> C -> R") |>
-  set_restrictions(labels = list(C = "1000", R = "0001", Y = "0001"), 
-                   keep = TRUE)
+R> make_model("S -> C -> Y <- R <- X; X -> C -> R") |>
++  set_restrictions(labels = list(C = "1000", R = "0001", Y = "0001"), 
++                   keep = TRUE)
 \end{verbatim}
 
 \begin{itemize}
@@ -1197,8 +1246,8 @@ make_model("S -> C -> Y <- R <- X; X -> C -> R") |>
 \end{itemize}
 
 \begin{verbatim}
-make_model("X->Y") |>
-  set_restrictions(labels = list(Y = "Y?0"))
+R> make_model("X->Y") |>
++  set_restrictions(labels = list(Y = "Y?0"))
 \end{verbatim}
 
 \begin{itemize}
@@ -1218,12 +1267,12 @@ for \(X\) and 4 for \(Y\). There are thus 8 joint nodal types (or causal
 types):
 
 \begin{longtable}[]{@{}
-  >{\centering\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.0517}}
-  >{\centering\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.0690}}
-  >{\centering\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.3448}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.3448}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1897}}@{}}
-\toprule()
+  >{\centering\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1074}}
+  >{\centering\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.0992}}
+  >{\centering\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2893}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2893}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1901}}@{}}
+\toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\centering
 \end{minipage} & \begin{minipage}[b]{\linewidth}\centering
 \end{minipage} & \begin{minipage}[b]{\linewidth}\centering
@@ -1231,8 +1280,10 @@ types):
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 \end{minipage} \\
-\midrule()
+\midrule\noalign{}
 \endhead
+\bottomrule\noalign{}
+\endlastfoot
 & & 0 & 1 & Sum \\
 \(\theta^Y\) & 00 & \(\Pr(\theta^X_0, \theta^Y_{00})\) &
 \(\Pr(\theta^X_1, \theta^Y_{00})\) & \(\Pr(\theta^Y_{00})\) \\
@@ -1243,7 +1294,6 @@ types):
 & 11 & \(\Pr(\theta^X_0, \theta^Y_{11})\) &
 \(\Pr(\theta^X_1, \theta^Y_{11})\) & \(\Pr(\theta^Y_{11})\) \\
 & Sum & \(\Pr(\theta^X_0)\) & \(\Pr(\theta^X_1)\) & 1 \\
-\bottomrule()
 \end{longtable}
 
 This table has 8 interior elements and so an unconstrained joint
@@ -1254,52 +1304,36 @@ we just put a distribution on the marginals and there would be 3 degrees
 of freedom for \(Y\) and 1 for \(X\), totaling \(4\) rather than 7.
 
 \begin{verbatim}
-confounded <- make_model("X->Y ; X <-> Y")
-
-confounded$parameters_df |> kable()
+R> confounded <- make_model("X->Y ; X <-> Y")
+R> 
+R> confounded$parameters_df |> knitr::kable()
 \end{verbatim}
 
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1791}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0746}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0597}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1493}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1642}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0896}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1791}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1045}}@{}}
-\toprule()
-\begin{minipage}[b]{\linewidth}\raggedright
-param\_names
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-node
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-gen
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-param\_set
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-nodal\_type
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-given
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-param\_value
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-priors
-\end{minipage} \\
-\midrule()
-\endhead
-X.0 & X & 1 & X & 0 & & 0.50 & 1 \\
-X.1 & X & 1 & X & 1 & & 0.50 & 1 \\
-Y.00\_X.0 & Y & 2 & Y.X.0 & 00 & X.0 & 0.25 & 1 \\
-Y.10\_X.0 & Y & 2 & Y.X.0 & 10 & X.0 & 0.25 & 1 \\
-Y.01\_X.0 & Y & 2 & Y.X.0 & 01 & X.0 & 0.25 & 1 \\
-Y.11\_X.0 & Y & 2 & Y.X.0 & 11 & X.0 & 0.25 & 1 \\
-Y.00\_X.1 & Y & 2 & Y.X.1 & 00 & X.1 & 0.25 & 1 \\
-Y.10\_X.1 & Y & 2 & Y.X.1 & 10 & X.1 & 0.25 & 1 \\
-Y.01\_X.1 & Y & 2 & Y.X.1 & 01 & X.1 & 0.25 & 1 \\
-Y.11\_X.1 & Y & 2 & Y.X.1 & 11 & X.1 & 0.25 & 1 \\
-\bottomrule()
-\end{longtable}
+\begin{tabular}{l|l|r|l|l|l|r|r}
+\hline
+param\_names & node & gen & param\_set & nodal\_type & given & param\_value & priors\\
+\hline
+X.0 & X & 1 & X & 0 &  & 0.50 & 1\\
+\hline
+X.1 & X & 1 & X & 1 &  & 0.50 & 1\\
+\hline
+Y.00\_X.0 & Y & 2 & Y.X.0 & 00 & X.0 & 0.25 & 1\\
+\hline
+Y.10\_X.0 & Y & 2 & Y.X.0 & 10 & X.0 & 0.25 & 1\\
+\hline
+Y.01\_X.0 & Y & 2 & Y.X.0 & 01 & X.0 & 0.25 & 1\\
+\hline
+Y.11\_X.0 & Y & 2 & Y.X.0 & 11 & X.0 & 0.25 & 1\\
+\hline
+Y.00\_X.1 & Y & 2 & Y.X.1 & 00 & X.1 & 0.25 & 1\\
+\hline
+Y.10\_X.1 & Y & 2 & Y.X.1 & 10 & X.1 & 0.25 & 1\\
+\hline
+Y.01\_X.1 & Y & 2 & Y.X.1 & 01 & X.1 & 0.25 & 1\\
+\hline
+Y.11\_X.1 & Y & 2 & Y.X.1 & 11 & X.1 & 0.25 & 1\\
+\hline
+\end{tabular}
 
 We see here that there are now two parameter families for parameters
 associated with the node \(Y\). Each family captures the conditional
@@ -1311,52 +1345,34 @@ To see exactly how the parameters map to causal types we can view the
 parameter matrix:
 
 \begin{verbatim}
-get_parameter_matrix(confounded) |> kable()
+R> get_parameter_matrix(confounded) |> knitr::kable()
 \end{verbatim}
 
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1385}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1077}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1077}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1077}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1077}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1077}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1077}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1077}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1077}}@{}}
-\toprule()
-\begin{minipage}[b]{\linewidth}\raggedright
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-X0.Y00
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-X1.Y00
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-X0.Y10
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-X1.Y10
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-X0.Y01
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-X1.Y01
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-X0.Y11
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-X1.Y11
-\end{minipage} \\
-\midrule()
-\endhead
-X.0 & 1 & 0 & 1 & 0 & 1 & 0 & 1 & 0 \\
-X.1 & 0 & 1 & 0 & 1 & 0 & 1 & 0 & 1 \\
-Y.00\_X.0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
-Y.10\_X.0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 \\
-Y.01\_X.0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\
-Y.11\_X.0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\
-Y.00\_X.1 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 \\
-Y.10\_X.1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 \\
-Y.01\_X.1 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\
-Y.11\_X.1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 \\
-\bottomrule()
-\end{longtable}
+\begin{tabular}{l|r|r|r|r|r|r|r|r}
+\hline
+  & X0.Y00 & X1.Y00 & X0.Y10 & X1.Y10 & X0.Y01 & X1.Y01 & X0.Y11 & X1.Y11\\
+\hline
+X.0 & 1 & 0 & 1 & 0 & 1 & 0 & 1 & 0\\
+\hline
+X.1 & 0 & 1 & 0 & 1 & 0 & 1 & 0 & 1\\
+\hline
+Y.00\_X.0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+\hline
+Y.10\_X.0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0\\
+\hline
+Y.01\_X.0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0\\
+\hline
+Y.11\_X.0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0\\
+\hline
+Y.00\_X.1 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0\\
+\hline
+Y.10\_X.1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0\\
+\hline
+Y.01\_X.1 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0\\
+\hline
+Y.11\_X.1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1\\
+\hline
+\end{tabular}
 
 Importantly, the \(P\) matrix works as before, despite confounding. We
 can assess the probability of causal types by multiplying the
@@ -1391,13 +1407,13 @@ probabilities of the constituent parameters.
 \end{itemize}
 
 \begin{verbatim}
-make_model("A <- X -> B; A <-> X; B <-> X") |> 
-  plot()
+R> make_model("A <- X -> B; A <-> X; B <-> X") |> 
++  plot()
 \end{verbatim}
 
 \begin{figure}[H]
 
-{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-40-1.pdf}
+{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-23-1.pdf}
 
 }
 
@@ -1407,13 +1423,31 @@ make_model("A <- X -> B; A <-> X; B <-> X") |>
 \subsubsection{Setting Priors}\label{priors}}
 
 Priors on model parameters can be added to the parameters dataframe. The
-priors are interpreted as alpha arguments for a Dirichlet distribution.
-They can be seen using \texttt{get\_priors}.
+priors are interpreted as ``alpha'' arguments for a Dirichlet
+distribution. The Dirichlet distribution is a probability distribution
+over an \(n-1\) dimensional unit simplex. It can be thought of as a
+generalization of the Beta distribution and is parameterized by an
+\(n\)-dimensional vector positive vector \(\alpha\). Thus for example a
+Dirichlet with \(\alpha = (1, 1, 1, 1, 1)\) gives a probability
+distrubution over all non negative 5 dimensional vectors that sum to 1,
+e.g.~(0.1, 0.1, 0.1, 0.1, 0.6) or (0.1, 0.2, 0.3, 0.3, 0.1). This
+particular value for \(\alpha\) implies that all such vectors are
+equally likely. Other values for \(\alpha\) can be used to control the
+expectation for each dimension as well as certainty. Thus for instance
+the vector \(\alpha = (100, 1, 1, 1, 100)\) woudl result in more weight
+on distributions that are close to (.5, 0, 0, 0. .5).
 
-MH: TEXT ON DIRICHLET
+In \texttt{CausalQueries} priors are generally specified over the
+distribution of nodal types (or over the conditional distribution of
+nodal types, when there is confounding). Thus for instance in an
+\(X \rightarrow Y\) model we have one Dirichlet distribution over the
+two types for \(\theta^X\) and one Dirichlet distribution over the four
+types for \(\theta^Y\).
+
+To wit:
 
 \begin{verbatim}
-make_model("X->Y") |> get_priors()
+R> make_model("X->Y") |> get_priors()
 \end{verbatim}
 
 \begin{verbatim}
@@ -1427,13 +1461,9 @@ corresponds to uniform priors.
 Alternatively you could set jeffreys priors like this:
 
 \begin{verbatim}
-make_model("X->Y") |> 
-  set_priors(distribution = "jeffreys") |> 
-  get_priors()
-\end{verbatim}
-
-\begin{verbatim}
-No specific parameters to alter values for specified. Altering all parameters.
+R> make_model("X->Y") |> 
++  set_priors(distribution = "jeffreys") |> 
++  get_priors()
 \end{verbatim}
 
 \begin{verbatim}
@@ -1445,9 +1475,9 @@ Custom priors are most simply specified by being added as a vector of
 numbers using \texttt{set\_priors}. For instance:
 
 \begin{verbatim}
-make_model("X->Y") |> 
-  set_priors(1:6) |> 
-  get_priors()
+R> make_model("X->Y") |> 
++  set_priors(1:6) |> 
++  get_priors()
 \end{verbatim}
 
 \begin{verbatim}
@@ -1473,9 +1503,9 @@ numbers and so \texttt{set\_priors} can allow for more targeted
 modifications of the parameter vector. For instance:
 
 \begin{verbatim}
-make_model("X->Y") |>
-  set_priors(statement = "Y[X=1] > Y[X=0]", alphas = 3) |>
-  get_priors()
+R> make_model("X->Y") |>
++  set_priors(statement = "Y[X=1] > Y[X=0]", alphas = 3) |>
++  get_priors()
 \end{verbatim}
 
 \begin{verbatim}
@@ -1494,9 +1524,9 @@ specifying how to subset the \texttt{parameters\_df} dataframe. To wit;
 we can achieve the same result as above by specifying:
 
 \begin{verbatim}
-make_model("X->Y") |>
-  set_priors(nodal_type = "01", alphas = 3) |>
-  get_priors()
+R> make_model("X->Y") |>
++  set_priors(nodal_type = "01", alphas = 3) |>
++  get_priors()
 \end{verbatim}
 
 \begin{verbatim}
@@ -1507,9 +1537,9 @@ make_model("X->Y") |>
 or even:
 
 \begin{verbatim}
-make_model("X->Y") |>
-  set_priors(param_names = "Y.01", alphas = 3) |>
-  get_priors()
+R> make_model("X->Y") |>
++  set_priors(param_names = "Y.01", alphas = 3) |>
++  get_priors()
 \end{verbatim}
 
 \begin{verbatim}
@@ -1524,12 +1554,13 @@ non-redundant combination of arguments on the \texttt{param\_names},
 parameters to set priors for. Alternatively a fully formed subsetting
 statement may be supplied to \texttt{alter\_at}. Since all these
 arguments get mapped to the parameters the identify internally they may
-be used interchangeably.
+be used interchangeably.\footnote{See \texttt{?set\_priors} and
+  \texttt{?make\_priors} for many more examples.}
 
 \begin{verbatim}
-make_model("X-> M -> Y; X <-> Y") |>
-  set_priors(node = "Y", nodal_type = c("01","11"), given = "X.1", alphas = c(3,2)) |>
-  get_priors()
+R> make_model("X-> M -> Y; X <-> Y") |>
++  set_priors(node = "Y", nodal_type = c("01","11"), given = "X.1", alphas = c(3,2)) |>
++  get_priors()
 \end{verbatim}
 
 \begin{verbatim}
@@ -1540,9 +1571,9 @@ Y.01_X.0 Y.11_X.0 Y.00_X.1 Y.10_X.1 Y.01_X.1 Y.11_X.1
 \end{verbatim}
 
 \begin{verbatim}
-make_model("X-> M -> Y; X <-> Y") |>
-  set_priors(alter_at = "node == 'Y' & nodal_type %in% c('01','11') & given == 'X.1'", alphas = c(3,2)) |>
-  get_priors()
+R> make_model("X-> M -> Y; X <-> Y") |>
++  set_priors(alter_at = "node == 'Y' & nodal_type %in% c('01','11') & given == 'X.1'", alphas = c(3,2)) |>
++  get_priors()
 \end{verbatim}
 
 \begin{verbatim}
@@ -1557,58 +1588,30 @@ convenient and flexible; it should be done with caution. Setting priors
 on specific parameters in complex models; especially models involving
 confounding, may strongly affect inferences in intractable ways.
 
-See \texttt{?set\_priors} and \texttt{?make\_priors} for many more
-examples.
-
-We note that flat priors over nodal types does not necessarily translate
-into flat priors over queries. ``Flat'' priors over parameters in a
-parameter family put equal weight on each nodal type, but this in turn
-can translate into strong assumptions on causal quantities of interest.
+We aditionally note that flat priors over nodal types do not necessarily
+translate into flat priors over queries. ``Flat'' priors over parameters
+in a parameter family put equal weight on each nodal type, but this in
+turn can translate into strong assumptions on causal quantities of
+interest.
 
 For instance in an \(X \rightarrow Y\) model model in which negative
 effects are ruled out, the average causal effect implied by ``flat''
 priors is \(1/3\). This can be seen by querying the model:
 
 \begin{verbatim}
-make_model("X -> Y") |>
-  set_restrictions(decreasing("X", "Y")) |>
-  query_model("Y[X=1] - Y[X=0]", n_draws = 10000) |>
-  kable(digits = 2)
+R> make_model("X -> Y") |>
++  set_restrictions(decreasing("X", "Y")) |>
++  query_model("Y[X=1] - Y[X=0]", n_draws = 10000) |>
++  kable(digits = 2)
 \end{verbatim}
 
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1951}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0732}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1341}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1341}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0610}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0366}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1707}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1951}}@{}}
-\toprule()
-\begin{minipage}[b]{\linewidth}\raggedright
-query
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-given
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-using
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-case\_level
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-mean
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-sd
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-cred.low.2.5\%
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-cred.high.97.5\%
-\end{minipage} \\
-\midrule()
-\endhead
-Y{[}X=1{]} - Y{[}X=0{]} & - & parameters & FALSE & 0.33 & NA & 0.33 &
-0.33 \\
-\bottomrule()
-\end{longtable}
+\begin{tabular}{l|l|l|l|r|r|r|r}
+\hline
+query & given & using & case\_level & mean & sd & cred.low.2.5\% & cred.high.97.5\%\\
+\hline
+Y[X=1] - Y[X=0] & - & parameters & FALSE & 0.33 & NA & 0.33 & 0.33\\
+\hline
+\end{tabular}
 
 More subtly the \emph{structure} of a model, coupled with flat priors,
 has substantive importance for priors on causal quantities. For instance
@@ -1621,84 +1624,32 @@ Again, you can use \texttt{query\_model} to figure out what flat (or
 other) priors over parameters imply for priors over causal quantities:
 
 \begin{verbatim}
-make_model("X -> Y") |>
-  query_model("Y[X=1] > Y[X=0]", n_draws = 10000) |>
-  kable()
+R> make_model("X -> Y") |>
++  query_model("Y[X=1] > Y[X=0]", n_draws = 10000) |>
++  knitr::kable()
 \end{verbatim}
 
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1951}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0732}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1341}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1341}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0610}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0366}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1707}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1951}}@{}}
-\toprule()
-\begin{minipage}[b]{\linewidth}\raggedright
-query
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-given
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-using
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-case\_level
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-mean
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-sd
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-cred.low.2.5\%
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-cred.high.97.5\%
-\end{minipage} \\
-\midrule()
-\endhead
-Y{[}X=1{]} \textgreater{} Y{[}X=0{]} & - & parameters & FALSE & 0.25 &
-NA & 0.25 & 0.25 \\
-\bottomrule()
-\end{longtable}
+\begin{tabular}{l|l|l|l|r|r|r|r}
+\hline
+query & given & using & case\_level & mean & sd & cred.low.2.5\% & cred.high.97.5\%\\
+\hline
+Y[X=1] > Y[X=0] & - & parameters & FALSE & 0.25 & NA & 0.25 & 0.25\\
+\hline
+\end{tabular}
 
 \begin{verbatim}
-make_model("X -> M -> Y") |>
-  query_model("Y[X=1] > Y[X=0]", n_draws = 10000) |>
-  kable()
+R> make_model("X -> M -> Y") |>
++  query_model("Y[X=1] > Y[X=0]", n_draws = 10000) |>
++  knitr::kable()
 \end{verbatim}
 
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1928}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0723}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1325}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1325}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0723}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.0361}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1687}}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1928}}@{}}
-\toprule()
-\begin{minipage}[b]{\linewidth}\raggedright
-query
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-given
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-using
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-case\_level
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-mean
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-sd
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-cred.low.2.5\%
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-cred.high.97.5\%
-\end{minipage} \\
-\midrule()
-\endhead
-Y{[}X=1{]} \textgreater{} Y{[}X=0{]} & - & parameters & FALSE & 0.125 &
-NA & 0.125 & 0.125 \\
-\bottomrule()
-\end{longtable}
+\begin{tabular}{l|l|l|l|r|r|r|r}
+\hline
+query & given & using & case\_level & mean & sd & cred.low.2.5\% & cred.high.97.5\%\\
+\hline
+Y[X=1] > Y[X=0] & - & parameters & FALSE & 0.125 & NA & 0.125 & 0.125\\
+\hline
+\end{tabular}
 
 Caution regarding priors is particularly important when models are not
 identified, as is the case for many of the models considered here. In
@@ -1720,14 +1671,19 @@ models that vary in their priors).
 \hypertarget{parameters}{%
 \subsubsection{Setting Parameters}\label{parameters}}
 
-MH: POINT OUT FOLLOWING SAME LOGIC AS LASTS SECTION parameters rather
-than alphas as arguments
-
 By default, models have a vector of parameter values included in the
 \texttt{parameters\_df} dataframe. These are useful for generating data,
 or for situations, such as process tracing, when one wants to make
 inferences about causal types (\(\theta\)), given case level data, under
 the assumption that the model is known.
+
+The logic for setting parameters is similar to that for setting priors:
+effectively we need to place values on the probability of nodal types.
+The key difference is that whereas the \(alpha\) value placed on a nodal
+types can be any positive number---capturing our certainty over the
+parameter value---the parameter values must lie in the unit interval,
+\([0,1]\). In general if parameter values are passed that do not lie in
+the unit interval, these are normalized so that they do.
 
 Consider the causal model below. It has two parameter sets, X and Y,
 with six nodal types, two corresponding to X and four corresponding to
@@ -1735,8 +1691,8 @@ Y. The key feature of the parameters is that they must sum to 1 within
 each parameter set.
 
 \begin{verbatim}
-make_model("X->Y") |> 
-  get_parameters()
+R> make_model("X->Y") |> 
++  get_parameters()
 \end{verbatim}
 
 \begin{verbatim}
@@ -1744,18 +1700,16 @@ make_model("X->Y") |>
 0.50 0.50 0.25 0.25 0.25 0.25 
 \end{verbatim}
 
-Setting parameters can be done using a similar syntax as
-\texttt{set\_priors}. The main difference is that when a given value is
-altered the entire set must still always sum to 1. The example below
-illustrates a change in the value of the parameter \(Y\) in the case it
-is increasing in \(X\). Here nodal type \texttt{Y.Y01} is set to be .5,
-while the other nodal types of this parameter set were renormalized so
-that the parameters in the set still sum to one.
+The example below illustrates a change in the value of the parameter
+\(Y\) in the case it is increasing in \(X\). Here nodal type
+\texttt{Y.Y01} is set to be .5, while the other nodal types of this
+parameter set were renormalized so that the parameters in the set still
+sum to one.
 
 \begin{verbatim}
-make_model("X->Y") |>
-  set_parameters(statement = "Y[X=1] > Y[X=0]", parameters = .5) |>
-  get_parameters()
+R> make_model("X->Y") |>
++  set_parameters(statement = "Y[X=1] > Y[X=0]", parameters = .5) |>
++  get_parameters()
 \end{verbatim}
 
 \begin{verbatim}
@@ -1767,26 +1721,129 @@ make_model("X->Y") |>
 \subsection{Drawing and manipulating
 data}\label{drawing-and-manipulating-data}}
 
-MH MAKE SENSE OF THIS HERE
+Once a model has been defined it is possible to simulate data from the
+model using the \texttt{make\_data} function. This can be useful for
+instance for assessing the expected performance of a model given data
+drawn from some speculated set of parameter values.
+
+\hypertarget{drawing-data-basics}{%
+\subsubsection{Drawing data basics}\label{drawing-data-basics}}
+
+By default, the parameters used are taken from
+\texttt{model\$parameters\_df}.
 
 \begin{verbatim}
-model |> make_data(n = 5) |> kable()
+R> model <- make_model("X -> M -> Y")
+R> 
+R> sample_data_1 <- 
++  model |> make_data(n = 4) 
+R> 
+R> sample_data_1 |> kable()
 \end{verbatim}
 
-\begin{longtable}[]{@{}rr@{}}
-\toprule()
-X & Y \\
-\midrule()
-\endhead
-0 & 0 \\
-0 & 1 \\
-1 & 0 \\
-1 & 0 \\
-1 & 1 \\
-\bottomrule()
-\end{longtable}
+\begin{tabular}{r|r|r}
+\hline
+X & M & Y\\
+\hline
+0 & 1 & 0\\
+\hline
+0 & 1 & 0\\
+\hline
+1 & 0 & 0\\
+\hline
+1 & 1 & 0\\
+\hline
+\end{tabular}
 
-LONG AND COMPACT FORMS
+However you can also specify parameters directly or use parameter draws
+from a prior or posterior distribution. For instance:
+
+\begin{verbatim}
+R> make_data(model, n = 3, param_type = "prior_draw")
+\end{verbatim}
+
+Note that the data is returned ordered by data type as in the example
+above.
+
+\hypertarget{drawing-incomplete-data}{%
+\subsubsection{Drawing incomplete data}\label{drawing-incomplete-data}}
+
+\texttt{CausalQueries} can be used in settings in which researchers have
+gathered different amounts of data for different nodes. For instance
+gathering \(X\) and \(Y\) data for all units but \(M\) data only for
+some.
+
+The function \texttt{make\_data} allows you to draw data like this if
+you specify a data strategy indicating the probabilities of observing
+data on different nodes, possibly as a function of prior nodes observed.
+
+\begin{verbatim}
+R> set.seed(1)
+R> sample_data_2 <-
++  make_data(
++  model,
++  n = 8,
++  nodes = list(c("X", "Y"), "M"),
++  probs = list(1, .5),
++  subsets = list(TRUE, "X==1 & Y==0"))
+\end{verbatim}
+
+\begin{verbatim}
+# A tibble: 2 x 5
+  node_names nodes     n_steps probs subsets    
+  <chr>      <list>    <lgl>   <dbl> <chr>      
+1 X, Y       <chr [2]> NA        1   TRUE       
+2 M          <chr [1]> NA        0.5 X==1 & Y==0
+\end{verbatim}
+
+\begin{verbatim}
+R> sample_data_2 |> kable()
+\end{verbatim}
+
+\begin{tabular}{r|r|r}
+\hline
+X & M & Y\\
+\hline
+0 & NA & 0\\
+\hline
+0 & NA & 1\\
+\hline
+1 & NA & 0\\
+\hline
+1 & NA & 1\\
+\hline
+1 & NA & 1\\
+\hline
+1 & 1 & 0\\
+\hline
+1 & NA & 0\\
+\hline
+1 & 1 & 0\\
+\hline
+\end{tabular}
+
+\hypertarget{reshaping-data}{%
+\subsubsection{Reshaping data}\label{reshaping-data}}
+
+Whereas data naturally comes in long form, with a row per observation,
+as in the examples above, the data passed to \texttt{stan} is in a
+compact form, which records only the number of units of each data type.
+\texttt{CausalQueries} includes functions that lets you move between
+these two forms in case of need.
+
+\begin{verbatim}
+R> sample_data_1 |> collapse_data(model) |> kable()
+\end{verbatim}
+
+If data has been gathered using a data strategy the collapsed data
+groups data types according to which nodes have been observed:
+
+\begin{verbatim}
+R> sample_data_2 |> collapse_data(model) |> kable()
+\end{verbatim}
+
+In the same way it is possible to move from ``compact data'' to ``long
+data'' using `expand\_data''
 
 \hypertarget{updating-models}{%
 \section{Updating models}\label{updating-models}}
@@ -1914,7 +1971,7 @@ GS: TO CHECK THE PATHS FUNCTIONALITY
 To update a CausalQueries model with data use:
 
 \begin{verbatim}
-update_model(model, data)
+R> update_model(model, data)
 \end{verbatim}
 
 where the data argument is a dataset containing some or all of the nodes
@@ -1934,11 +1991,14 @@ instance:
   parallel speeds things up
 \end{itemize}
 
+\hypertarget{parallelization}{%
+\subsection{Parallelization}\label{parallelization}}
+
 If you have multiple cores you can do parallel processing by including
 this line before running \texttt{CausalQueries}:
 
 \begin{verbatim}
-options(mc.cores = parallel::detectCores())
+R> options(mc.cores = parallel::detectCores())
 \end{verbatim}
 
 Additionally parallelizing across models or data while running MCMC
@@ -1949,32 +2009,79 @@ processes at the upper level of the nested parallel structure are given
 by \(\left \lfloor \frac{cores}{chains + 1} \right \rfloor\).
 
 \begin{verbatim}
-chains <- 3
-cores <- 8
-
-future::plan(list(
-      future::tweak(future::multisession, workers = floor(cores/(chains + 1))),
-      future::tweak(future::multisession, workers = chains)
-    ))
-
-model <- make_model("X -> Y")
-data <- list(data_1, data_2)
-
-future.apply::future_lapply(data, function(d) {
-  update_model(
-    model = model,
-    data = d,
-    chains = chains,
-    refresh = 0
-  )
-})
+R> chains <- 3
+R> cores <- 8
+R> 
+R> future::plan(list(
++      future::tweak(future::multisession, workers = floor(cores/(chains + 1))),
++      future::tweak(future::multisession, workers = chains)
++    ))
+R> 
+R> model <- make_model("X -> Y")
+R> data <- list(data_1, data_2)
+R> 
+R> future.apply::future_lapply(data, function(d) {
++  update_model(
++    model = model,
++    data = d,
++    chains = chains,
++    refresh = 0
++  )
++})
 \end{verbatim}
 
 \hypertarget{incomplete-and-censored-data}{%
 \subsection{Incomplete and censored
 data}\label{incomplete-and-censored-data}}
 
-MH
+\texttt{CausalQueries} assumes that missing data is missing at random,
+conditional on observed data. Thus for instance in a
+\(X \rightarrow M \rightarrow Y\) model one might choose to observe
+\(M\) in a random set of cases in which \(X=1\) and \(Y=1\). In that
+case if there are positive relations at each stage you may be more
+likely to observe \(M\) in cases in which \(M=1\). However observation
+of \(M\) is still random \emph{conditional} on the observed \(X\) and
+\(Y\) data. The \texttt{stan} model in \texttt{CausalQueries} takes
+account of this kind of sampling naturally by assessing the probability
+of observing a particular pattern of data within each data strategy. For
+a discussion see section 9.2.3.2 of \citet{ii2023}.
+
+In addition it is possible to indicate when data has been censored and
+for the \texttt{stan} model to take this into account also. Say for
+instance that we only get to observe \(X\) in cases where \(X=1\) and
+not when \(X=0\). This kind of sampling is non random conditional on
+observables. It is taken account however by indicating to \texttt{stan}
+that the probability of observing a particular data type is 0,
+regardless of parameter values. This is done using the
+\texttt{censored\_types} argument in \texttt{update\_model}.
+
+To illustrate, in the example below we observe perfectly correlated data
+for \(X\) and \(Y\). If we are aware that data in which \(X \neg Y\) has
+been censored then when we update we do not move towards a belief that
+\(X\) causes \(Y\).
+
+\begin{verbatim}
+R> list(uncensored = make_model("X->Y") %>%
++       update_model(data.frame(X=rep(0:1,5), Y=rep(0:1,5)),
++                    refresh = 0, iter = 3000),
++     censored = make_model("X->Y") %>%
++       update_model(data.frame(X=rep(0:1,5), Y=rep(0:1,5)),
++                    censored_types = c("X1Y0",  "X0Y1"),
++                    refresh = 0, iter = 3000)) %>%
++  query_model(te("X", "Y"), using = "posteriors") |>
++  select(model, query, mean, sd) |>
++  kable(digits = 2)
+\end{verbatim}
+
+\begin{tabular}{l|l|r|r}
+\hline
+model & query & mean & sd\\
+\hline
+uncensored & (Y[X=1] - Y[X=0]) & 0.59 & 0.20\\
+\hline
+censored & (Y[X=1] - Y[X=0]) & 0.01 & 0.31\\
+\hline
+\end{tabular}
 
 \hypertarget{output}{%
 \subsection{Output}\label{output}}
@@ -2018,9 +2125,9 @@ start off with querty Y==1 then Y{[}X=1{]} ==1 then Y{[}X=1{]}
 - Y{[}X=0{]}
 
 \begin{verbatim}
-model <- make_model('X -> M -> Y <- X')
-query <- 'Y[X=1, M=1] > Y[X=0, M=0]'
-get_query_types(model, query, map= "nodal_type")
+R> model <- make_model('X -> M -> Y <- X')
+R> query <- 'Y[X=1, M=1] > Y[X=0, M=0]'
+R> get_query_types(model, query, map= "nodal_type")
 \end{verbatim}
 
 \begin{verbatim}
@@ -2047,23 +2154,19 @@ Queries can draw directly from the prior distribution of the posterior
 distribution provided by \texttt{stan}.
 
 \begin{verbatim}
-library(DeclareDesign)
-
-data  <- fabricate(N = 10, X = complete_ra(N), Y = X)
-
-model <- make_model("X -> Y") |>
-  update_model(data, iter  = 4000)
-
-model$posterior_distribution |> 
-  ggplot(aes(Y.01 - Y.10)) + 
-           geom_histogram()
+R> library(DeclareDesign)
+R> 
+R> data  <- fabricate(N = 10, X = complete_ra(N), Y = X)
+R> 
+R> model <- make_model("X -> Y") |>
++  update_model(data, iter  = 4000)
+R> 
+R> model$posterior_distribution |> 
++  ggplot(aes(Y.01 - Y.10)) + 
++           geom_histogram()
 \end{verbatim}
 
-\begin{verbatim}
-`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-\end{verbatim}
-
-\includegraphics{paper_files/figure-pdf/unnamed-chunk-76-1.pdf}
+\includegraphics{paper_files/figure-pdf/unnamed-chunk-46-1.pdf}
 
 \hypertarget{query-distribution}{%
 \subsection{Query distribution}\label{query-distribution}}
@@ -2072,21 +2175,17 @@ model$posterior_distribution |>
 over queries are returned:
 
 \begin{verbatim}
-make_model("X -> Y") |> 
-  query_distribution(
-    query = list(increasing = "(Y[X=1] > Y[X=0])"), 
-    using = "priors") |>
-  ggplot(aes(increasing)) +
-  geom_histogram()
-\end{verbatim}
-
-\begin{verbatim}
-`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+R> make_model("X -> Y") |> 
++  query_distribution(
++    query = list(increasing = "(Y[X=1] > Y[X=0])"), 
++    using = "priors") |>
++  ggplot(aes(increasing)) +
++  geom_histogram()
 \end{verbatim}
 
 \begin{figure}[H]
 
-{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-78-1.pdf}
+{\centering \includegraphics{paper_files/figure-pdf/unnamed-chunk-47-1.pdf}
 
 }
 
@@ -2097,51 +2196,76 @@ make_model("X -> Y") |>
 \hypertarget{case-level-queries}{%
 \subsection{Case level queries}\label{case-level-queries}}
 
-MH
+Sometimes one is interested in assessing the value of a query for a
+\emph{particular case}. In a sense this is equivalent to posing a
+conditional query, querying conditional on valuesin a case. For instance
+we might consult our posterior lipds model and ask about the effect of
+\(X\) on \(Y\) for a case in which \(Z=1, X=1\) and \(Y=1\).
 
-Case level queries provide the inference for a `new case', which is a
-scalar The case level query \emph{updates} on the given information
+\begin{verbatim}
+R> lipids_model |>
++    query_model(query = "Y[X=1] - Y[X=0]",
++              given = c("X==1 & Y==1 & Z==1"),
++              using = "posteriors")
+\end{verbatim}
+
+\begin{verbatim}
+            query              given      using case_level      mean         sd
+1 Y[X=1] - Y[X=0] X==1 & Y==1 & Z==1 posteriors      FALSE 0.9541329 0.03575594
+  cred.low.2.5% cred.high.97.5%
+1     0.8624872       0.9969585
+\end{verbatim}
+
+The answer we get is what we now believe for all cases in which
+\(Z=1, X=1\) and \(Y=1\). It is in fact the expected average effect
+among cases with this data type and so this expectation has an
+uncertainty attached to it.
+
+Subtly though this is, in principle, different to what we would infer
+for a a `new case' that we wonder about. When inquirying about a new
+case, the case level query \emph{updates} on the given information
 observed in the new case. The resulting inference is different to the
 inference that would be made from the posterior \emph{given} the
 features of the case.
 
 To illustrate, consider a model for which we are quite sure that \(X\)
 causes \(Y\) but we do not know whether it works through two positive
-effects or two negative effects. Thus we do not know if M=0 would
-suggest an effect or no effect. If asked what we would infer for a case
-that had \(M=0\) we would not know whether \(M=0\) information is
-consistent with a positive effect or not. However if provided with a
-randomly case and learn that it has \(M=0\), then we update about the
-causal model and infer that there is an effect in this case (but that
-there wouldn't be were \(M=1\)).
+effects or two negative effects.
+
+Thus we do not know if M=0 would suggest an effect or no effect. If
+asked what we would infer for a case that had \(M=0\) we would not know
+whether \(M=0\) information is consistent with a positive effect or not.
+However if provided with a randomly case and learn that it has \(M=0\),
+then we update about the causal model and infer that there is an effect
+in this case (but that there wouldn't be were \(M=1\)).
 
 \begin{verbatim}
-# DO ALL THIS IN ONE TABLE
-
-set.seed(1)
- model <-
-   make_model("X -> M -> Y") |>
-   update_model(data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)), iter = 10000)
-
- Q <- "Y[X=1] > Y[X=0]"
- G <- "X==1 & Y==1 & M==1"
- QG <- "(Y[X=1] > Y[X=0]) & (X==1 & Y==1 & M==1)"
-
- # In this case these are very different:
- query_distribution(model, Q, given = G, using = "posteriors")[[1]] |> mean()
- query_distribution(model, Q, given = G, using = "posteriors",
-   case_level = TRUE)
-
- # These are equivalent:
- # 1. Case level query via function
- query_distribution(model, Q, given = G,
-    using = "posteriors", case_level = TRUE)
-
- # 2. Case level query by hand using Bayes
- distribution <- query_distribution(
-    model, list(QG = QG, G = G), using = "posteriors")
-
- mean(distribution$QG)/mean(distribution$G)
+R> # DO ALL THIS IN ONE TABLE
+R> 
+R> set.seed(1)
+R>  model <-
++   make_model("X -> M -> Y") |>
++   update_model(data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)), iter = 10000)
+R> 
+R>  Q <- "Y[X=1] > Y[X=0]"
+R>  G <- "X==1 & Y==1 & M==1"
+R>  QG <- "(Y[X=1] > Y[X=0]) & (X==1 & Y==1 & M==1)"
+R> 
+R>  # In this case these are very different:
+R>  query_distribution(model, Q, given = G, using = "posteriors")[[1]] |> mean()
+R>  query_distribution(model, Q, given = G, using = "posteriors",
++   case_level = TRUE)
+R> 
+R>  # These are equivalent:
+R>  # 1. Case level query via function
+R>  query_distribution(model, Q, given = G,
++    using = "posteriors", case_level = TRUE)
+R> 
+R>  # 2. Case level query by hand using Bayes
+R>  distribution <- query_distribution(
++    model, list(QG = QG, G = G), using = "posteriors")
+R> 
+R>  mean(distribution$QG)/mean(distribution$G)
 \end{verbatim}
 
 \hypertarget{batch-queries}{%
@@ -2152,62 +2276,92 @@ The \texttt{query\_model} function takes causal queries and conditions
 a dataframe which can be displayed as a table.
 
 \begin{verbatim}
-models <- list(
- `1` = make_model("X -> Y"),
- `2` = make_model("X -> Y") |> set_restrictions("Y[X=1] < Y[X=0]")
- )
-
-query_model(
-  models,
-  query = list(ATE = "Y[X=1] - Y[X=0]", POS = "Y[X=1] > Y[X=0]"),
-  given = c(TRUE,  "Y==1 & X==1"),
-  case_level = c(FALSE, TRUE),
-  using = c("parameters", "priors"),
-  expand_grid = TRUE) |>
-  select(-starts_with("cred")) |>
-  
-  kable(digits = 2)
+R> models <- list(
++ `1` = make_model("X -> Y"),
++ `2` = make_model("X -> Y") |> set_restrictions("Y[X=1] < Y[X=0]")
++ )
+R> 
+R> query_model(
++  models,
++  query = list(ATE = "Y[X=1] - Y[X=0]", POS = "Y[X=1] > Y[X=0]"),
++  given = c(TRUE,  "Y==1 & X==1"),
++  case_level = c(FALSE, TRUE),
++  using = c("parameters", "priors"),
++  expand_grid = TRUE) |>
++  select(-starts_with("cred")) |>
++  
++  kable(digits = 2)
 \end{verbatim}
 
-\begin{longtable}[]{@{}lllllrr@{}}
-\toprule()
-model & query & given & using & case\_level & mean & sd \\
-\midrule()
-\endhead
-1 & ATE & - & parameters & FALSE & 0.00 & NA \\
-2 & ATE & - & parameters & FALSE & 0.33 & NA \\
-1 & ATE & - & priors & FALSE & 0.00 & 0.31 \\
-2 & ATE & - & priors & FALSE & 0.33 & 0.24 \\
-1 & ATE & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA \\
-2 & ATE & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA \\
-1 & ATE & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29 \\
-2 & ATE & Y==1 \& X==1 & priors & FALSE & 0.49 & 0.29 \\
-1 & POS & - & parameters & FALSE & 0.25 & NA \\
-2 & POS & - & parameters & FALSE & 0.33 & NA \\
-1 & POS & - & priors & FALSE & 0.25 & 0.19 \\
-2 & POS & - & priors & FALSE & 0.33 & 0.24 \\
-1 & POS & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA \\
-2 & POS & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA \\
-1 & POS & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29 \\
-2 & POS & Y==1 \& X==1 & priors & FALSE & 0.49 & 0.29 \\
-1 & ATE & - & parameters & TRUE & 0.00 & NA \\
-2 & ATE & - & parameters & TRUE & 0.33 & NA \\
-1 & ATE & - & priors & TRUE & 0.00 & NA \\
-2 & ATE & - & priors & TRUE & 0.33 & NA \\
-1 & ATE & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA \\
-2 & ATE & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA \\
-1 & ATE & Y==1 \& X==1 & priors & TRUE & 0.50 & NA \\
-2 & ATE & Y==1 \& X==1 & priors & TRUE & 0.49 & NA \\
-1 & POS & - & parameters & TRUE & 0.25 & NA \\
-2 & POS & - & parameters & TRUE & 0.33 & NA \\
-1 & POS & - & priors & TRUE & 0.25 & NA \\
-2 & POS & - & priors & TRUE & 0.33 & NA \\
-1 & POS & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA \\
-2 & POS & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA \\
-1 & POS & Y==1 \& X==1 & priors & TRUE & 0.50 & NA \\
-2 & POS & Y==1 \& X==1 & priors & TRUE & 0.49 & NA \\
-\bottomrule()
-\end{longtable}
+\begin{tabular}{l|l|l|l|l|r|r}
+\hline
+model & query & given & using & case\_level & mean & sd\\
+\hline
+1 & ATE & - & parameters & FALSE & 0.00 & NA\\
+\hline
+2 & ATE & - & parameters & FALSE & 0.33 & NA\\
+\hline
+1 & ATE & - & priors & FALSE & -0.01 & 0.32\\
+\hline
+2 & ATE & - & priors & FALSE & 0.33 & 0.24\\
+\hline
+1 & ATE & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA\\
+\hline
+2 & ATE & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA\\
+\hline
+1 & ATE & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29\\
+\hline
+2 & ATE & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29\\
+\hline
+1 & POS & - & parameters & FALSE & 0.25 & NA\\
+\hline
+2 & POS & - & parameters & FALSE & 0.33 & NA\\
+\hline
+1 & POS & - & priors & FALSE & 0.25 & 0.20\\
+\hline
+2 & POS & - & priors & FALSE & 0.33 & 0.24\\
+\hline
+1 & POS & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA\\
+\hline
+2 & POS & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA\\
+\hline
+1 & POS & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29\\
+\hline
+2 & POS & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29\\
+\hline
+1 & ATE & - & parameters & TRUE & 0.00 & NA\\
+\hline
+2 & ATE & - & parameters & TRUE & 0.33 & NA\\
+\hline
+1 & ATE & - & priors & TRUE & -0.01 & NA\\
+\hline
+2 & ATE & - & priors & TRUE & 0.33 & NA\\
+\hline
+1 & ATE & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA\\
+\hline
+2 & ATE & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA\\
+\hline
+1 & ATE & Y==1 \& X==1 & priors & TRUE & 0.51 & NA\\
+\hline
+2 & ATE & Y==1 \& X==1 & priors & TRUE & 0.50 & NA\\
+\hline
+1 & POS & - & parameters & TRUE & 0.25 & NA\\
+\hline
+2 & POS & - & parameters & TRUE & 0.33 & NA\\
+\hline
+1 & POS & - & priors & TRUE & 0.25 & NA\\
+\hline
+2 & POS & - & priors & TRUE & 0.33 & NA\\
+\hline
+1 & POS & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA\\
+\hline
+2 & POS & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA\\
+\hline
+1 & POS & Y==1 \& X==1 & priors & TRUE & 0.51 & NA\\
+\hline
+2 & POS & Y==1 \& X==1 & priors & TRUE & 0.50 & NA\\
+\hline
+\end{tabular}
 
 \hypertarget{computational-details-and-software-requirements}{%
 \section*{Computational details and software
@@ -2216,12 +2370,20 @@ requirements}\label{computational-details-and-software-requirements}}
 requirements}
 
 \begin{longtable}[]{@{}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.2241}}
-  >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.7155}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.0517}}@{}}
-\toprule()
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.2080}}
+  >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.6800}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.1040}}@{}}
+\toprule\noalign{}
 \endhead
-Version & 1.0.0 & \\
+\bottomrule\noalign{}
+\endlastfoot
+Version & \begin{minipage}[t]{\linewidth}\centering
+\begin{itemize}
+\tightlist
+\item
+  1.0.0
+\end{itemize}
+\end{minipage} & \\
 Availability & \begin{minipage}[t]{\linewidth}\centering
 \begin{itemize}
 \tightlist
@@ -2276,8 +2438,24 @@ Testing Environments R & \begin{minipage}[t]{\linewidth}\centering
   r-devel
 \end{itemize}
 \end{minipage} & \\
-R Version & R(\textgreater= 3.4.0) & \\
-Compiler & e.g. - g++ - clang++ & \\
+R Version & \begin{minipage}[t]{\linewidth}\centering
+\begin{itemize}
+\tightlist
+\item
+  R(\textgreater= 3.4.0)
+\end{itemize}
+\end{minipage} & \\
+Compiler & \begin{minipage}[t]{\linewidth}\centering
+\begin{itemize}
+\tightlist
+\item
+  either of the below or similar:
+\item
+  g++
+\item
+  clang++
+\end{itemize}
+\end{minipage} & \\
 Stan requirements & \begin{minipage}[t]{\linewidth}\centering
 \begin{itemize}
 \tightlist
@@ -2335,7 +2513,6 @@ R-Packages Imports & \begin{minipage}[t]{\linewidth}\centering
   lifecycle (\textgreater= 1.0.1)
 \end{itemize}
 \end{minipage} & \\
-\bottomrule()
 \end{longtable}
 
 :::
@@ -2350,7 +2527,7 @@ Network (CRAN) at {[}https://CRAN.R-project.org/{]}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, colframe=quarto-callout-color-frame, opacityback=0, breakable, leftrule=.75mm, arc=.35mm, colback=white, left=2mm, bottomrule=.15mm, toprule=.15mm, rightrule=.15mm]
+\begin{tcolorbox}[enhanced jigsaw, breakable, bottomrule=.15mm, arc=.35mm, left=2mm, rightrule=.15mm, toprule=.15mm, colback=white, leftrule=.75mm, opacityback=0]
 
 The approach to generating a generic stan function that can take data
 from arbitrary models was developed in key contributions by
@@ -2371,9 +2548,8 @@ improved every part of it.
 \section*{References}\label{references}}
 \addcontentsline{toc}{section}{References}
 
-\hypertarget{refs}{}
-\begin{CSLReferences}{0}{0}
-\end{CSLReferences}
+\renewcommand{\bibsection}{}
+\bibliography{supp/bib.bib}
 
 \newpage{}
 
@@ -2381,7 +2557,7 @@ improved every part of it.
 \section*{More technical details}\label{sec-techdetails}}
 \addcontentsline{toc}{section}{More technical details}
 
-\begin{tcolorbox}[enhanced jigsaw, colframe=quarto-callout-color-frame, opacityback=0, breakable, leftrule=.75mm, arc=.35mm, colback=white, left=2mm, bottomrule=.15mm, toprule=.15mm, rightrule=.15mm]
+\begin{tcolorbox}[enhanced jigsaw, breakable, bottomrule=.15mm, arc=.35mm, left=2mm, rightrule=.15mm, toprule=.15mm, colback=white, leftrule=.75mm, opacityback=0]
 
 Appendices can be included after the bibliography (with a page break).
 Each section within the appendix should have a proper section title
@@ -2413,7 +2589,7 @@ which includes the following topics:
 \section*{Using BibTeX}\label{sec-bibtex}}
 \addcontentsline{toc}{section}{Using BibTeX}
 
-\begin{tcolorbox}[enhanced jigsaw, colframe=quarto-callout-color-frame, opacityback=0, breakable, leftrule=.75mm, arc=.35mm, colback=white, left=2mm, bottomrule=.15mm, toprule=.15mm, rightrule=.15mm]
+\begin{tcolorbox}[enhanced jigsaw, breakable, bottomrule=.15mm, arc=.35mm, left=2mm, rightrule=.15mm, toprule=.15mm, colback=white, leftrule=.75mm, opacityback=0]
 
 References need to be provided in a \textsc{Bib}{\TeX} file
 (\texttt{.bib}). All references should be made with \texttt{@cite}
@@ -2566,7 +2742,6 @@ for (i in 1:n_types) {
 \end{verbatim}
 
 
-  \bibliography{bib.bib}
 
 
 \end{document}
