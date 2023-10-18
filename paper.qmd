@@ -354,7 +354,7 @@ Causal types are collections of nodal types. Two units are of the same *causal t
 When a model is created, the full set of causal types is identified. These are stored in the model object:
 
 ```{r, comment = ""}
-make_model("A -> B")$causal_types
+make_model("X -> Y")$causal_types
 ```
 
 A model with $n_j$ nodal types at node $j$ has $\prod_jn_j$ causal types. Thus the set of causal types can be large. In the model $(X\rightarrow M \rightarrow Y \leftarrow X)$ there are $2\times 4\times 16 = 128$ causal types.
@@ -363,7 +363,32 @@ Knowledge of a causal type tells you what values a unit would take, on all nodes
 
 Till: Show how realise_outcomes connects causal types with data types: Show for something with a do operation and without a do operation; point out causal types on left
 
-<!--# should we include how interventions are handled here via realise_outcomes() ... the logic of how we do this in c++ is quite neat and might be illustrative in reading off realisations from complex nodal types >> not sure if this is too detailed and will just be confusing for a first time users/reader though-->
+In effect; we can map from causal types to data types by propagating realized values on nodes forward in the DAG, moving from exogenous or intervened upon nodes to their descendants in generational order. The `realise_outcomes` functions achieves this by traversing the DAG, while recording for each node's nodal types, the values implied by realizations on the node's parents. By way of example, consider the first causal type of the $X \rightarrow Y$ model above:
+
+1. $X$ is exogenous and has a realized value of $0$
+2. We substitute for $Y$ the value implied by the $00$ nodal type given a $0$ value on $X$, which in turn is $0$ (see nodal types)
+
+Recovering implied values on complex nodal types given parent realizations efficiently at scale, exploits the fact that nodal types are the Cartesian Product of possible parent realizations. 
+Finding the index of a Node's realized value given parent realizations in a nodal type is equivalent to finding the row index in the Cartesian Product matrix corresponding to those parent realizations. By definition of the Cartesian product, the number of consecutive 0 or 1 elements in a given column is $2^{columnindex}$, when indexing columns from 0. Given a set of parent realizations $R$ indexed from 0, the corresponding row index in the Cartesian Product Matrix indexed from 0 can thus be computed via: $row = (\sum_{i = 0}^{|R| - 1} (2^{i} \times R_i))$. 
+
+Calling `realise_outcomes` on the above model thus yields: 
+
+```{r, comment = ""}
+model <- make_model("X->Y") 
+realise_outcomes(model) |>
+  kable()
+```
+
+with rownames indicating nodal types and columns ralized values. Intervening on $X$ with $do(X=1)$ yields: 
+
+```{r, comment = ""}
+model <- make_model("X->Y") 
+realise_outcomes(model, dos = list(X=1)) |>
+  kable()
+```
+
+
+<!--# should we show data types for comparison here with all_data_types() ? -->
 
 #### Parameter matrix
 
@@ -381,8 +406,6 @@ The probability of a causal type is given by the product of the parameters value
 
 Below we will see examples where the $P$ matrix helps keep track of parameters that are created when confounding is added to a model.  CROSS REFERENCE
 
-
-<!--# perhaps we should explicitly mention where this data structure us used >> i.e. causal type probabilities are the key data structure in querying models, making these probabilities requires the P matrix -->
 
 To speed up different operations it is sometuimes useful to have P added to the model:
 
@@ -574,11 +597,11 @@ make_model("X-> M -> Y; X <-> Y") |>
   get_priors()
 ```
 
-It should be noted that while highly targeted prior setting is convenient and flexible; it should be done with caution. Setting priors on specific parameters in complex models; especially models involving confounding, may strongly affect inferences in intractable ways. 
-
 See `?set_priors` and `?make_priors` for many more examples.
 
-We note that flat priors over nodal types does not necessarily translate into flat priors over queries. "Flat" priors over parameters in a parameter family put equal weight on each nodal type, but this in turn can translate into strong assumptions on causal quantities of interest. 
+It should be noted that while highly targeted prior setting is convenient and flexible; it should be done with caution. Setting priors on specific parameters in complex models; especially models involving confounding, may strongly affect inferences in intractable ways. 
+
+We aditionally note that flat priors over nodal types do not necessarily translate into flat priors over queries. "Flat" priors over parameters in a parameter family put equal weight on each nodal type, but this in turn can translate into strong assumptions on causal quantities of interest. 
 
 For instance in an $X \rightarrow Y$ model model in which negative effects are ruled out, the average causal effect implied by "flat" priors is $1/3$. This can be seen by querying the model:
 
@@ -693,13 +716,13 @@ sample_data |> kable()
 
 Whereas data naturally comes in long form, with a row per observation, as in the examples above, the data passed to `stan` is in a compact form, which records only the number of units of each data type. `CausalQueries` includes functions that lets you move between these two forms in case of need.
 
-```{r}
+```{r, warning=FALSE}
 sample_data_1 |> collapse_data(model) |> kable()
 ```
 
 If data has been gathered using a data strategy the collapsed data groups data types according to which nodes have been observed:
 
-```{r}
+```{r, warnin=FALSE}
 sample_data_2 |> collapse_data(model) |> kable()
 ```
 In the same way it is possible to move from "compact data" to "long data" using `expand_data" 
