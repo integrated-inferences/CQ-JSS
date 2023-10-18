@@ -69,7 +69,7 @@ lipids_data |> kable()
 
 Using `CausalQueries` we can define the model, update it with data, and query it, thus. 
 
-```{r}  
+```{r, eval = FALSE}  
 results <- 
   
   make_model("Z -> X -> Y; X <-> Y") |>
@@ -79,6 +79,31 @@ results <-
   query_model(query = "Y[X=1] - Y[X=0]",
               given = c("All",  "X==0 & Y==0", "X[Z=1] > X[Z=0]"),
               using = "posteriors") 
+```
+
+```{r, echo = FALSE}  
+if(run)
+  
+  make_model("Z -> X -> Y; X <-> Y") |>
+  
+  update_model(lipids_data, refresh = 0)  |>
+  
+  write_rds("saved/lipid_model.rds")
+
+lipid_model <-  read_rds("saved/lipid_model.rds")
+
+if(run) 
+  
+  lipid_model |>
+  
+  query_model(query = "Y[X=1] - Y[X=0]",
+              given = c("All",  "X==0 & Y==0", "X[Z=1] > X[Z=0]"),
+              using = "posteriors") |>
+  
+  write_rds("saved/lipid_results.rds")
+
+results <-    read_rds("saved/lipid_results.rds")
+
 ```
 
 The output is a dataframe with estimates, posterior standard deviations, and credibility intervals. 
@@ -912,15 +937,22 @@ make_model("X -> Y") |>
 
 ### Case level queries
 
-MH
+Sometimes one is interested in assessing the value of a query for a *particular case*. In a sense this is equivalent to posing a conditional query, querying conditional on valuesin a case. 
+
+For instance we 
+
+```{r}
+
+
+````
 
 
  Case level queries provide the inference for a 'new case', which is a scalar
  The case level query *updates* on the given information observed in the new case. The resulting inference is different to the inference that would be made from the posterior *given* the features of the case.
  
- To illustrate, consider a   model for which we are quite sure that $X$ causes $Y$ but we do not
-  know whether it works through two positive effects or two negative effects.
-  Thus we do not know if M=0 would suggest an effect or no effect. If asked what we would infer for a case that had $M=0$ we would not know whether $M=0$ information is consistent with a positive effect or not. However if provided with a randomly case and learn that it has $M=0$, then we update about the causal model and infer that there is an effect in this case (but that there wouldn't be were $M=1$).
+ To illustrate, consider a   model for which we are quite sure that $X$ causes $Y$ but we do not know whether it works through two positive effects or two negative effects.
+
+Thus we do not know if M=0 would suggest an effect or no effect. If asked what we would infer for a case that had $M=0$ we would not know whether $M=0$ information is consistent with a positive effect or not. However if provided with a randomly case and learn that it has $M=0$, then we update about the causal model and infer that there is an effect in this case (but that there wouldn't be were $M=1$).
 
 ```{r, eval = FALSE}
 
