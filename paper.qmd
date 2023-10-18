@@ -756,6 +756,8 @@ As `update_model()` calls `rstan::sampling` one can pass along all arguments in 
 * `iter` sets the number of iterations and ultimately the number of draws in the posterior
 * `chains` sets the number of chains; doing multiple chains in parallel speeds things up
 
+
+### Parallelization
 If you have multiple cores you can do parallel processing by including this line before running `CausalQueries`:
 
 ```{r, eval = FALSE}
@@ -790,7 +792,24 @@ future.apply::future_lapply(data, function(d) {
 
 ### Incomplete and censored data
 
-MH
+`CausalQueries` assumes that missing data is missing at random, conditional on observed data. Thus for instance in a $X \rightarrow M \rightarrow Y$ model one might choose to observe $M$ in a random set of cases in which $X=1$ and $Y=1$. In that case if there are positive relations at each stage you may be more likely to observe $M$ in cases in which $M=1$. However observation of $M$ is still random *conditional* on the observed $X$ and $Y$ data. The `stan` model in `CausalQueries` takes account of this kind of sampling naturally by assessing the probability of observing a particular pattern of data within each data strategy. For a discussion see section 9.2.3.2 of @ii2023.
+
+In addition it is possible to indicate when data has been censored and for the `stan` model to take this into account also. Say for instance that we only get to observe $X$ in cases where $X=1$ and not when $X=0$. This kind of sampling is non random conditional on observables. It is taken account however by indicating to `stan` that the probability of observing a particular data type is 0, regardless of parameter values. This is done using the `censored_types` argument in `update_model`.
+
+To illustrate, in the example below we  observe perfectly correlated data for $X$ and $Y$. If we are aware that data in which $X \neg Y$ has been censored then when we update we do not move towards a belief that $X$ causes $Y$.
+
+```{r}
+list(uncensored = make_model("X->Y") %>%
+       update_model(data.frame(X=rep(0:1,5), Y=rep(0:1,5)),
+                    refresh = 0, iter = 3000),
+     censored = make_model("X->Y") %>%
+       update_model(data.frame(X=rep(0:1,5), Y=rep(0:1,5)),
+                    censored_types = c("X1Y0",  "X0Y1"),
+                    refresh = 0, iter = 3000)) %>%
+  query_model(te("X", "Y"), using = "posteriors") |>
+  select(model, query, mean, sd) |>
+  kable(digits = 2)
+```
 
 ### Output
 
