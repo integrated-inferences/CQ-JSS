@@ -727,14 +727,14 @@ The function `make_data` allows you to draw data like this if you specify a data
 
 ```{r}
 set.seed(1)
-sample_data <-
+sample_data_2 <-
   make_data(
   model,
   n = 8,
   nodes = list(c("X", "Y"), "M"),
   probs = list(1, .5),
   subsets = list(TRUE, "X==1 & Y==0"))
-sample_data |> kable()
+sample_data_2 |> kable()
 ```  
 
 #### Reshaping data
