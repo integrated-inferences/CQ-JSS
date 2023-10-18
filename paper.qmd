@@ -642,14 +642,61 @@ i.e. we have options: alter_at, node, nodal_type, param_set, given, statement, p
 
 ### Drawing and manipulating data
 
-MH MAKE SENSE OF THIS HERE
+Once a model has been defined it is possible to simulate data from the model using the `make_data` function. This can be useful for instance for assessing the expected performance of a model given data drawn from some speculated set of parameter values.
+
+#### Drawing data basics
+
+By default, the parameters used are taken  from `model$parameters_df`.
 
 ```{r, eval = TRUE}
-model |> make_data(n = 5) |> kable()
+model <- make_model("X -> M -> Y")
+
+sample_data_1 <- 
+  model |> make_data(n = 4) 
+
+sample_data_1 |> kable()
 ```
 
-LONG AND COMPACT FORMS
+However you can also specify parameters directly or use parameter draws from a prior or posterior distribution.  For instance:
 
+```{r, eval = FALSE}
+make_data(model, n = 3, param_type = "prior_draw")
+```
+
+Note that the data is returned ordered by data type as in the example above. 
+
+#### Drawing incomplete data
+
+`CausalQueries` can be used in settings in which researchers have gathered different amounts of data for different nodes. For instance gathering $X$ and $Y$ data for all units but $M$ data only for some. 
+
+The function `make_data` allows you to draw data like this if you specify a data strategy indicating the probabilities of observing data on different nodes, possibly as a function of prior nodes observed.
+
+```{r}
+set.seed(1)
+sample_data <-
+  make_data(
+  model,
+  n = 8,
+  nodes = list(c("X", "Y"), "M"),
+  probs = list(1, .5),
+  subsets = list(TRUE, "X==1 & Y==0"))
+sample_data |> kable()
+```  
+
+#### Reshaping data
+
+Whereas data naturally comes in long form, with a row per observation, as in the examples above, the data passed to `stan` is in a compact form, which records only the number of units of each data type. `CausalQueries` includes functions that lets you move between these two forms in case of need.
+
+```{r}
+sample_data_1 |> collapse_data(model) |> kable()
+```
+
+If data has been gathered using a data strategy the collapsed data groups data types according to which nodes have been observed:
+
+```{r}
+sample_data_2 |> collapse_data(model) |> kable()
+```
+In the same way it is possible to move from "compact data" to "long data" using `expand_data" 
 
 ## Updating models
 
