@@ -2138,6 +2138,19 @@ R> make_model('X -> M -> Y <- X') |>
 #>  Total number of nodal types related to Y = 16
 \end{verbatim}
 
+\textbf{LM: REVIEW AND FIX SECTION}
+
+WRITE SECTION DESCRIBING FACTUAL AND COUNTERFACTULA QUERIES AND THE
+SYNTAX INCLUDING Role of {[}{]} AND OF GIVEN
+
+\texttt{get\_query\_types}
+
+return sets; discuss how all queries related to these sets
+
+start off with query Y==1 then Y{[}X=1{]} ==1 then Y{[}X=1{]}
+\textgreater= Y{[}X=0{]} then show linear functions possible Y{[}X=1{]}
+- Y{[}X=0{]}
+
 \hypertarget{query-implementation}{%
 \subsection{Query implementation}\label{query-implementation}}
 
@@ -2511,7 +2524,7 @@ Network (CRAN) at {[}https://CRAN.R-project.org/{]}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, rightrule=.15mm, breakable, bottomrule=.15mm, left=2mm, colback=white, arc=.35mm, leftrule=.75mm, opacityback=0, toprule=.15mm]
+\begin{tcolorbox}[enhanced jigsaw, opacityback=0, bottomrule=.15mm, colback=white, breakable, arc=.35mm, left=2mm, rightrule=.15mm, leftrule=.75mm, toprule=.15mm]
 
 The approach to generating a generic stan function that can take data
 from arbitrary models was developed in key contributions by
@@ -2541,7 +2554,7 @@ improved every part of it.
 \section*{More technical details}\label{sec-techdetails}}
 \addcontentsline{toc}{section}{More technical details}
 
-\begin{tcolorbox}[enhanced jigsaw, rightrule=.15mm, breakable, bottomrule=.15mm, left=2mm, colback=white, arc=.35mm, leftrule=.75mm, opacityback=0, toprule=.15mm]
+\begin{tcolorbox}[enhanced jigsaw, opacityback=0, bottomrule=.15mm, colback=white, breakable, arc=.35mm, left=2mm, rightrule=.15mm, leftrule=.75mm, toprule=.15mm]
 
 Appendices can be included after the bibliography (with a page break).
 Each section within the appendix should have a proper section title
@@ -2573,7 +2586,7 @@ which includes the following topics:
 \section*{Using BibTeX}\label{sec-bibtex}}
 \addcontentsline{toc}{section}{Using BibTeX}
 
-\begin{tcolorbox}[enhanced jigsaw, rightrule=.15mm, breakable, bottomrule=.15mm, left=2mm, colback=white, arc=.35mm, leftrule=.75mm, opacityback=0, toprule=.15mm]
+\begin{tcolorbox}[enhanced jigsaw, opacityback=0, bottomrule=.15mm, colback=white, breakable, arc=.35mm, left=2mm, rightrule=.15mm, leftrule=.75mm, toprule=.15mm]
 
 References need to be provided in a \textsc{Bib}{\TeX} file
 (\texttt{.bib}). All references should be made with \texttt{@cite}
