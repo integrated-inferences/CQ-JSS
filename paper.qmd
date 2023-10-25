@@ -185,26 +185,43 @@ The approach used by `CausalQueries` is to let the domain of $\theta^{Y_j}$ be c
 
 In cases in which there is no unobserved confounding, we take the probability distributions over the nodal types for different nodes to be independent: $\theta^i \perp\!\!\! \perp \theta^j, i\neq j$. In this case we use a categorical distribution to specify the ${\lambda^j}' := \Pr(\theta^j = {\theta^j}')$. From independence then we have that the probability of a given causal type $\theta'$ is simply $\prod_{i=1}^n {\lambda^i}'$.
 
-In cases in which there is confounding, the essential logic is the same except that we need to specify enough parameters to capture the joint distribution over nodal types for different nodes.
+In cases in which there is confounding, the  logic is essentially the same except that we need to specify enough parameters to capture the joint distribution over nodal types for different nodes.
+
+Again we make use of the causal structure to simplify. As an example, for the lipids model, the the full joint distribution of nodal types can be simplified as in @eq-join.
 
 
-Representing beliefs over causal models thus requires specifying a probability distribution over $\lambda$. This might be a degenerate distribution if users want to specify a particular model. `CausalQueries` allows users to specify parameters, $\alpha$ of a Dirichlet distribution over $\lambda$. If all entries of $\alpha$ are 0.5 this corresponds to Jeffrey's priors. The default behavior is for `CausalQueries` to assume a uniform distribution -- that is, that all nodal types are equally likely -- which corresponds to $\alpha$ being a vector of 1s.
-
-For concreteness: table @tab:lipidspar illustrates these values for the lipids model. We see here that we have two types for node $Z$,  four for $X$ (representing the strata familiar from instrumental variables analysis: never takers, always takers, defiers, and compliers)  and 4 for $Y$. For $Z$ and $X$ we have parameters corresponding to probability of these nodal types. For instance `Z.0` is the probability that $Z=1$. `Z.1` is the complementary probability that $Z=1$.  Things are little more complicated for distributions on nodal types for $Y$ however: because of confounding between $X$ and $Y$ we have parameters that capture the conditional probability of the nodal types for $Y$ *given* the nodal types for $X$. This allows us to faithfully represent the full joint distribution of nodal types (see @eq-join).
-
-
-\begin{eqnarray}
+$$
 \Pr(\theta^Z = \theta^Z_1, \theta^X = \theta^X_{10}, \theta^Y = \theta^Y_{11}) = 
-\Pr(\theta^Z = \theta^Z_1)\Pr(\theta^X = \theta^X_{10})\Pr(\theta^Y = \theta^Y_{11}|\theta^X = \theta^X_{10}) 
-\end{eqnarray} {#eq-join}
+\Pr(\theta^Z = \theta^Z_1)\Pr(\theta^X = \theta^X_{10})\Pr(\theta^Y = \theta^Y_{11}|\theta^X = \theta^X_{10})
+$$ {#eq-join}
 
-We see there are four sets of these parameters. 
+And so for this model $\lambda$ would include  parameters that represent $\Pr(\theta^Z)$ and $\Pr(\theta^X)$ but also the conditional probability $\Pr(\theta^Y|\theta^X)$:
+
+$$
+\Pr(\theta^Z = \theta^Z_1, \theta^X = \theta^X_{10}, \theta^Y = \theta^Y_{11}) = 
+\lambda^Z_1\lambda^X_{10}\lambda^{Y|\theta^X_{10}}_{11}
+$$ {#eq-join2}
+
+Representing beliefs *over causal models* thus requires specifying a probability distribution over $\lambda$. This might be a degenerate distribution if users want to specify a particular model. `CausalQueries` allows users to specify parameters, $\alpha$ of a Dirichlet distribution over $\lambda$. If all entries of $\alpha$ are 0.5 this corresponds to Jeffrey's priors. The default behavior is for `CausalQueries` to assume a uniform distribution -- that is, that all nodal types are equally likely -- which corresponds to $\alpha$ being a vector of 1s.
 
 
+Updating is then done with respect to beliefs over $\lambda$. In the Bayesian approach we have simply:
 
-The final column shows a sample set of parameter values.
+$$p(\lambda'|D) = \frac{p(D|\lambda')p(\lambda')}{\int_{\lambda^{''}} p(D|\lambda'')p(\lambda'')}$$ $p(D|\lambda')$ is calculated under the assumption that units are exchangeable and independently drawn, and of course, under the model. In practice this means that the probability that two units have causal types $\theta_i$ and $\theta_j$ is simply $\lambda'_i\lambda'_j$. Since a causal type fully determines an outcome vector $d = \{y_1, y_2,\dots,y_n\}$, the probability of a given outcome ("event"), $w_d$, is given simply by the probability that the causal type is among those that yield outcome $d$. Thus from $\lambda'$ we can calculate a vector of event probabilities, $w(\lambda)$, for each vector of outcomes, and under independence we have:
 
-Together  the parameters can describe a full joint probability distribution over types for $Z$, $X$ and $Y$ that is faithful to the graph. 
+$$D \sim \text{Mulitinomial}(w(\lambda), N)$$
+
+Thus for instance in the case of a $X \rightarrow Y$ model, and letting $w_{xy}$ denote the probability of a data type $X=x, Y=y$, the event probabilities are:
+
+$$w(\lambda) = \left\{\begin{array}{ccc} w_{00} & = & \lambda^X_0(\lambda^Y_{00} + \lambda^Y_{01})\\ 
+w_{01} & = & \lambda^X_0(\lambda^Y_{11} + \lambda^Y_{10})\\
+w_{10} & = & \lambda^X_1(\lambda^Y_{00} + \lambda^Y_{10})\\
+w_{11} & = & \lambda^X_1(\lambda^Y_{11} + \lambda^Y_{01})\end{array} \right.$$
+
+
+For concreteness: table @lipidspar illustrates key  values for the lipids model. We see here that we have two types for node $Z$,  four for $X$ (representing the strata familiar from instrumental variables analysis: never takers, always takers, defiers, and compliers)  and 4 for $Y$. For $Z$ and $X$ we have parameters corresponding to probability of these nodal types. For instance `Z.0` is the probability that $Z=1$. `Z.1` is the complementary probability that $Z=1$.  Things are little more complicated for distributions on nodal types for $Y$ however: because of confounding between $X$ and $Y$ we have parameters that capture the conditional probability of the nodal types for $Y$ *given* the nodal types for $X$.  We see there are four sets of these parameters. 
+
+
 
 
 ```{r lipidspar, echo = FALSE}
@@ -225,20 +242,17 @@ with_pars$parameters_df |>
 
 ```
 
-Updating is then done with respect to beliefs over $\lambda$. In the Bayesian approach we have simply:
+The final column shows a sample set of parameter values.  Together  the parameters describe a full joint probability distribution over types for $Z$, $X$ and $Y$ that is faithful to the graph. 
 
-$$p(\lambda'|D) = \frac{p(D|\lambda')p(\lambda')}{\int_{\lambda^{''}} p(D|\lambda'')p(\lambda'')}$$ $p(D|\lambda')$ is calculated under the assumption that units are exchangeable and independently drawn, and of course, under the model. In practice this means that the probability that two units have causal types $\theta_i$ and $\theta_j$ is simply $\lambda'_i\lambda'_j$. Since a causal type fully determines an outcome vector $d = \{y_1, y_2,\dots,y_n\}$, the probability of a given outcome ("event"), $w_d$, is given simply by the probability that the causal type is among those that yield outcome $d$. Thus from $\lambda'$ we can calculate a vector of event probabilities, $w(\lambda)$, for each vector of outcomes, and under independence we have:
+From these we can calculate the probability of each data type. For instance the probability of data type $Z=0, X=0, Y=0$ is: 
 
-$$D \sim \text{Mulitimonial}(w(\lambda), N)$$
+$$w_{000}=\Pr(Z=0, X=0, Y=0) = \lambda^Z_0\left(\lambda^X_{00}(\lambda^{Y|\lambda^X_{00}}_{00}+\lambda^{Y|\lambda^X_{00}}_{01}) + \lambda^X_{01}(\lambda^{Y|\lambda^X_{01}}_{00}+\lambda^{Y|\lambda^X_{01}}_{01})\right)$$
+In practice `CausalQueries` uses a matrix `parmap` that maps from parameters into data types.  
 
-Thus for instance in the case of a $X \rightarrow Y$ model, and letting $w_{xy}$ denote the probability of a data type $X=x, Y=y$, the event probabilities are:
 
-$$w(\lambda) = \left\{\begin{array}{ccc} w_{00} & = & \lambda^X_0(\lambda^Y_{00} + \lambda^Y_{01})\\ 
-w_{01} & = & \lambda^X_0(\lambda^Y_{11} + \lambda^Y_{10})\\
-w_{10} & = & \lambda^X_1(\lambda^Y_{00} + \lambda^Y_{10})\\
-w_{11} & = & \lambda^X_1(\lambda^Y_{11} + \lambda^Y_{01})\end{array} \right.$$
+The value of the `CausalQueries` package is to allow users to specify *arbitrary* models of this form, figure out all the implied nodal types and causal types, and then update given priors and data by calculating event probabilities implied by all possible parameter vectors and in turn the likelihood of the data given the model. In addition, the package allows for arbitrary querying of a model to assess the values of estimands of interest that a re function of the values or counterfactual values of nodes conditional on values or counterfactual values of nodes.
 
-The value of the `CausalQueries` package is to allow users to specify models of this form, figure out all the implied causal types, and then update given priors and data by calculating event probabilities implied by all possible parameter vectors and in turn the likelihood of the data given the model. In addition, the package allows for arbitrary querying of a model to assess the values of estimands of interest that a re function of the values or counterfactual values of nodes conditional on values or counterfactual values of nodes.
+### Related software
 
 **TILL**
 
