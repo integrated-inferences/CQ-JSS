@@ -190,10 +190,31 @@ In cases in which there is confounding, the essential logic is the same except t
 
 Representing beliefs over causal models thus requires specifying a probability distribution over $\lambda$. This might be a degenerate distribution if users want to specify a particular model. `CausalQueries` allows users to specify parameters, $\alpha$ of a Dirichlet distribution over $\lambda$. If all entries of $\alpha$ are 0.5 this corresponds to Jeffrey's priors. The default behavior is for `CausalQueries` to assume a uniform distribution -- that is, that all nodal types are equally likely -- which corresponds to $\alpha$ being a vector of 1s.
 
-For concreteness: table @tab:lipidspar illustrates these values for the lipids model. We see here that we have two types for node $Z$, two for $X$ and 4 for $Y$. For $Z$ and $X$ we have parameters corresponding to probability of these nodal types. However, because of confounding between $X$ and $Y$ we have parameters that capture the conditional probability of the nodal types for $Y$ *given* the nodal types for $X$. Thus the parameters can describe a full joint probability distribution over types for $X$ and types for $Y$. 
+For concreteness: table @tab:lipidspar illustrates these values for the lipids model. We see here that we have two types for node $Z$,  four for $X$ (representing the strata familiar from instrumental variables analysis: never takers, always takers, defiers, and compliers)  and 4 for $Y$. For $Z$ and $X$ we have parameters corresponding to probability of these nodal types. For instance `Z.0` is the probability that $Z=1$. `Z.1` is the complementary probability that $Z=1$.  Things are little more complicated for distributions on nodal types for $Y$ however: because of confounding between $X$ and $Y$ we have parameters that capture the conditional probability of the nodal types for $Y$ *given* the nodal types for $X$. This allows us to faithfully represent the full joint distribution of nodal types (see @eq-join).
+
+
+\begin{eqnarray}
+\Pr(\theta^Z = \theta^Z_1, \theta^X = \theta^X_{10}, \theta^Y = \theta^Y_{11}) = 
+\Pr(\theta^Z = \theta^Z_1)\Pr(\theta^X = \theta^X_{10})\Pr(\theta^Y = \theta^Y_{11}|\theta^X = \theta^X_{10}) 
+\end{eqnarray} {#eq-join}
+
+We see there are four sets of these parameters. 
+
+
+
+The final column shows a sample set of parameter values.
+
+Together  the parameters can describe a full joint probability distribution over types for $Z$, $X$ and $Y$ that is faithful to the graph. 
+
 
 ```{r lipidspar, echo = FALSE}
-lipids_model$parameters_df |> select(param_names, node, param_set, nodal_type) |> 
+with_pars <- 
+  lipids_model |>
+  set_parameters(param_type = "prior_draw") 
+
+with_pars$parameters_df |>
+  
+  select(node,  nodal_type, param_set, param_names, param_value) |> 
   knitr::kable(
     digits = 2,
     booktabs = TRUE,

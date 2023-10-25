@@ -432,43 +432,61 @@ that all nodal types are equally likely -- which corresponds to
 
 For concreteness: table \citet{tab:lipidspar} illustrates these values
 for the lipids model. We see here that we have two types for node \(Z\),
-two for \(X\) and 4 for \(Y\). For \(Z\) and \(X\) we have parameters
-corresponding to probability of these nodal types. However, because of
-confounding between \(X\) and \(Y\) we have parameters that capture the
-conditional probability of the nodal types for \(Y\) \emph{given} the
-nodal types for \(X\). Thus the parameters can describe a full joint
-probability distribution over types for \(X\) and types for \(Y\).
+four for \(X\) (representing the strata familiar from instrumental
+variables analysis: never takers, always takers, defiers, and compliers)
+and 4 for \(Y\). For \(Z\) and \(X\) we have parameters corresponding to
+probability of these nodal types. For instance \texttt{Z.0} is the
+probability that \(Z=1\). \texttt{Z.1} is the complementary probability
+that \(Z=1\). Things are little more complicated for distributions on
+nodal types for \(Y\) however: because of confounding between \(X\) and
+\(Y\) we have parameters that capture the conditional probability of the
+nodal types for \(Y\) \emph{given} the nodal types for \(X\). This
+allows us to faithfully represent the full joint distribution of nodal
+types (see \textbf{?@eq-join}).
+
+\begin{eqnarray}
+\Pr(\theta^Z = \theta^Z_1, \theta^X = \theta^X_{10}, \theta^Y = \theta^Y_{11}) = 
+\Pr(\theta^Z = \theta^Z_1)\Pr(\theta^X = \theta^X_{10})\Pr(\theta^Y = \theta^Y_{11}|\theta^X = \theta^X_{10}) 
+\end{eqnarray} \{\#eq-join\}
+
+We see there are four sets of these parameters.
+
+The final column shows a sample set of parameter values.
+
+Together the parameters can describe a full joint probability
+distribution over types for \(Z\), \(X\) and \(Y\) that is faithful to
+the graph.
 
 \begin{table}
 
 \caption{Nodal types and parameters for Lipids model}
 \centering
-\begin{tabular}[t]{cccc}
+\begin{tabular}[t]{ccccc}
 \toprule
-param\_names & node & param\_set & nodal\_type\\
+node & nodal\_type & param\_set & param\_names & param\_value\\
 \midrule
-Z.0 & Z & Z & 0\\
-Z.1 & Z & Z & 1\\
-X.00 & X & X & 00\\
-X.10 & X & X & 10\\
-X.01 & X & X & 01\\
-X.11 & X & X & 11\\
-Y.00\_X.00 & Y & Y.X.00 & 00\\
-Y.10\_X.00 & Y & Y.X.00 & 10\\
-Y.01\_X.00 & Y & Y.X.00 & 01\\
-Y.11\_X.00 & Y & Y.X.00 & 11\\
-Y.00\_X.01 & Y & Y.X.01 & 00\\
-Y.10\_X.01 & Y & Y.X.01 & 10\\
-Y.01\_X.01 & Y & Y.X.01 & 01\\
-Y.11\_X.01 & Y & Y.X.01 & 11\\
-Y.00\_X.10 & Y & Y.X.10 & 00\\
-Y.10\_X.10 & Y & Y.X.10 & 10\\
-Y.01\_X.10 & Y & Y.X.10 & 01\\
-Y.11\_X.10 & Y & Y.X.10 & 11\\
-Y.00\_X.11 & Y & Y.X.11 & 00\\
-Y.10\_X.11 & Y & Y.X.11 & 10\\
-Y.01\_X.11 & Y & Y.X.11 & 01\\
-Y.11\_X.11 & Y & Y.X.11 & 11\\
+Z & 0 & Z & Z.0 & 0.71\\
+Z & 1 & Z & Z.1 & 0.29\\
+X & 00 & X & X.00 & 0.36\\
+X & 10 & X & X.10 & 0.03\\
+X & 01 & X & X.01 & 0.51\\
+X & 11 & X & X.11 & 0.10\\
+Y & 00 & Y.X.00 & Y.00\_X.00 & 0.43\\
+Y & 10 & Y.X.00 & Y.10\_X.00 & 0.08\\
+Y & 01 & Y.X.00 & Y.01\_X.00 & 0.34\\
+Y & 11 & Y.X.00 & Y.11\_X.00 & 0.15\\
+Y & 00 & Y.X.01 & Y.00\_X.01 & 0.43\\
+Y & 10 & Y.X.01 & Y.10\_X.01 & 0.05\\
+Y & 01 & Y.X.01 & Y.01\_X.01 & 0.39\\
+Y & 11 & Y.X.01 & Y.11\_X.01 & 0.13\\
+Y & 00 & Y.X.10 & Y.00\_X.10 & 0.24\\
+Y & 10 & Y.X.10 & Y.10\_X.10 & 0.45\\
+Y & 01 & Y.X.10 & Y.01\_X.10 & 0.12\\
+Y & 11 & Y.X.10 & Y.11\_X.10 & 0.19\\
+Y & 00 & Y.X.11 & Y.00\_X.11 & 0.61\\
+Y & 10 & Y.X.11 & Y.10\_X.11 & 0.11\\
+Y & 01 & Y.X.11 & Y.01\_X.11 & 0.03\\
+Y & 11 & Y.X.11 & Y.11\_X.11 & 0.25\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1766,8 +1784,8 @@ R> make_data(model, n = 3, param_type = "prior_draw")
 
 \begin{verbatim}
 #>   X M Y
-#> 1 0 0 0
-#> 2 0 0 1
+#> 1 1 0 0
+#> 2 1 1 0
 #> 3 1 1 0
 \end{verbatim}
 
@@ -1810,12 +1828,12 @@ R> sample_data_2
 \begin{verbatim}
 #>   X  M Y
 #> 1 0 NA 0
-#> 2 0 NA 1
+#> 2 0 NA 0
 #> 3 0 NA 1
-#> 4 0 NA 0
+#> 4 0 NA 1
 #> 5 0 NA 1
-#> 6 1 NA 0
-#> 7 1  1 0
+#> 6 0 NA 1
+#> 7 0 NA 1
 #> 8 1 NA 1
 \end{verbatim}
 
@@ -1837,11 +1855,11 @@ R> sample_data_1 |> collapse_data(model)
 #> 1 X0M0Y0      XMY     0
 #> 2 X1M0Y0      XMY     0
 #> 3 X0M1Y0      XMY     1
-#> 4 X1M1Y0      XMY     2
+#> 4 X1M1Y0      XMY     0
 #> 5 X0M0Y1      XMY     0
 #> 6 X1M0Y1      XMY     0
-#> 7 X0M1Y1      XMY     0
-#> 8 X1M1Y1      XMY     1
+#> 7 X0M1Y1      XMY     3
+#> 8 X1M1Y1      XMY     0
 \end{verbatim}
 
 \begin{verbatim}
@@ -1849,19 +1867,11 @@ R> sample_data_2 |> collapse_data(model)
 \end{verbatim}
 
 \begin{verbatim}
-#>     event strategy count
-#> 1  X0M0Y0      XMY     0
-#> 2  X1M0Y0      XMY     0
-#> 3  X0M1Y0      XMY     0
-#> 4  X1M1Y0      XMY     1
-#> 5  X0M0Y1      XMY     0
-#> 6  X1M0Y1      XMY     0
-#> 7  X0M1Y1      XMY     0
-#> 8  X1M1Y1      XMY     0
-#> 9    X0Y0       XY     2
-#> 10   X1Y0       XY     1
-#> 11   X0Y1       XY     3
-#> 12   X1Y1       XY     1
+#>   event strategy count
+#> 1  X0Y0       XY     2
+#> 2  X1Y0       XY     0
+#> 3  X0Y1       XY     5
+#> 4  X1Y1       XY     1
 \end{verbatim}
 
 In the same way it is possible to move from ``compact data'' to ``long
@@ -2109,7 +2119,7 @@ model & query & mean & sd\\
 \hline
 uncensored & (Y[X=1] - Y[X=0]) & 0.59 & 0.20\\
 \hline
-censored & (Y[X=1] - Y[X=0]) & 0.02 & 0.31\\
+censored & (Y[X=1] - Y[X=0]) & 0.02 & 0.32\\
 \hline
 \end{tabular}
 
@@ -2600,7 +2610,7 @@ Network (CRAN) at {[}https://CRAN.R-project.org/{]}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, left=2mm, leftrule=.75mm, rightrule=.15mm, colback=white, breakable, bottomrule=.15mm, arc=.35mm, opacityback=0, toprule=.15mm]
+\begin{tcolorbox}[enhanced jigsaw, opacityback=0, colback=white, toprule=.15mm, breakable, rightrule=.15mm, arc=.35mm, leftrule=.75mm, bottomrule=.15mm, left=2mm]
 
 The approach to generating a generic stan function that can take data
 from arbitrary models was developed in key contributions by
@@ -2630,7 +2640,7 @@ improved every part of it.
 \section*{More technical details}\label{sec-techdetails}}
 \addcontentsline{toc}{section}{More technical details}
 
-\begin{tcolorbox}[enhanced jigsaw, left=2mm, leftrule=.75mm, rightrule=.15mm, colback=white, breakable, bottomrule=.15mm, arc=.35mm, opacityback=0, toprule=.15mm]
+\begin{tcolorbox}[enhanced jigsaw, opacityback=0, colback=white, toprule=.15mm, breakable, rightrule=.15mm, arc=.35mm, leftrule=.75mm, bottomrule=.15mm, left=2mm]
 
 Appendices can be included after the bibliography (with a page break).
 Each section within the appendix should have a proper section title
@@ -2662,7 +2672,7 @@ which includes the following topics:
 \section*{Using BibTeX}\label{sec-bibtex}}
 \addcontentsline{toc}{section}{Using BibTeX}
 
-\begin{tcolorbox}[enhanced jigsaw, left=2mm, leftrule=.75mm, rightrule=.15mm, colback=white, breakable, bottomrule=.15mm, arc=.35mm, opacityback=0, toprule=.15mm]
+\begin{tcolorbox}[enhanced jigsaw, opacityback=0, colback=white, toprule=.15mm, breakable, rightrule=.15mm, arc=.35mm, leftrule=.75mm, bottomrule=.15mm, left=2mm]
 
 References need to be provided in a \textsc{Bib}{\TeX} file
 (\texttt{.bib}). All references should be made with \texttt{@cite}
