@@ -352,16 +352,13 @@ packages}\label{connections-to-existing-packages}}
 \hypertarget{statistical-model}{%
 \section{Statistical model}\label{statistical-model}}
 
-\textbf{MH: simplify ; clarify how we can get away with simpler
-structure; Embed the \emph{methods}}
-
 The core conceptual framework is described in Pearl's \emph{Causality}
 \citep{pearl2009causality} but can be summarized as follows (using the
 notation used in \citet{ii2023}):
 
 \begin{definition}
   
-  A \textbf{``causal model''} includes:
+  A ``\textbf{causal model}'' is:
   \begin{enumerate}
     \item an ordered collection of "endogenous nodes" $Y = \{Y_1, Y_2, \dots, Y_n\}$
     \item an ordered collection of "exogenous nodes" $\Theta = \{\theta^{Y_1}, \theta^{Y_1}, \dots, \theta^{Y_n}\}$
@@ -380,21 +377,21 @@ which endogenous nodes are (possibly) direct causes of a node, \(Y_j\),
 given other nodes in the model. These nodes are called the parents of
 \(Y_j\), \(PA_j\) (we use upper case \(PA_j\) to indicate the collection
 of nodes and lower case \(pa_j\) to indicate a particular set of values
-that these nodes might take on). In this case, with discrete valued
-nodes, it is possible to identify all possible ways that a node might
-relate to its parents. We call these ``nodal types,'' and they
-correspond to principal strata familiar, for instance, in the study of
-instrumental variables \citep{frangakis2002principal}. If node \(Y_i\)
-can take on \(k_i\) possible values then the set of possible values that
-can be taken on by parents of \(j\) is \(m :=\prod_{i\in PA_j}k_i\),
-then there are \(k_j^{m}\) nodal types --- distinct ways that \(j\)
-might respond to its parents---with each types corresponding to a
-distinct way that \(j\) takes for a given constellation of values of its
-parents. In the case of binary nodes this becomes
-\(2^{\left(2^{|PA_j|}\right)}\). Thus for an endogenous node with no
-parents there are 2 nodal types, for a binary node with one binary
-parent there are four types, for a binary node with 2 parents there are
-16, and so on.
+that these nodes might take on). With discrete valued nodes, it is
+possible to identify all possible ways that a node might respond to its
+parents. We refer to the ways that a node responds and the nodes ``nodal
+type.'' The set of nodal types corresponds to principal strata familiar,
+for instance, in the study of instrumental variables
+\citep{frangakis2002principal}.
+
+If node \(Y_i\) can take on \(k_i\) possible values then the set of
+possible values that can be taken on by parents of \(j\) is
+\(m :=\prod_{i\in PA_j}k_i\), then there are \(k_j^{m}\) different ways
+that a node might respond to its parents. In the case of binary nodes
+this becomes \(2^{\left(2^{|PA_j|}\right)}\). Thus for an endogenous
+node with no parents there are 2 nodal types, for a binary node with one
+binary parent there are four types, for a binary node with 2 parents
+there are 16, and so on.
 
 The set of all possible causal reactions of a given unit to all possible
 values of parents is then given by its collection of nodal types at each
@@ -408,7 +405,7 @@ of the parents of \(Y_j\). Thus if \(\theta^j_{pa_j}\) is the value for
 \(j\) when parents have values \(pa_j\), then we have simply that
 \(f_{y_j}(\theta^{j}, pa_j) = \theta^j_{pa_j}\). The practical
 implication is that, given the causal structure, learning about the
-model reduces to learning about the distribution \(\lambda\) over the
+model reduces to learning about the distribution, \(\lambda\), over the
 nodal types.
 
 In cases in which there is no unobserved confounding, we take the
@@ -423,9 +420,6 @@ In cases in which there is confounding, the essential logic is the same
 except that we need to specify enough parameters to capture the joint
 distribution over nodal types for different nodes.
 
-For concreteness: table illustrating all these values for a
-\(X\rightarrow Y\) model
-
 Representing beliefs over causal models thus requires specifying a
 probability distribution over \(\lambda\). This might be a degenerate
 distribution if users want to specify a particular model.
@@ -435,6 +429,49 @@ are 0.5 this corresponds to Jeffrey's priors. The default behavior is
 for \texttt{CausalQueries} to assume a uniform distribution -- that is,
 that all nodal types are equally likely -- which corresponds to
 \(\alpha\) being a vector of 1s.
+
+For concreteness: table \citet{tab:lipidspar} illustrates these values
+for the lipids model. We see here that we have two types for node \(Z\),
+two for \(X\) and 4 for \(Y\). For \(Z\) and \(X\) we have parameters
+corresponding to probability of these nodal types. However, because of
+confounding between \(X\) and \(Y\) we have parameters that capture the
+conditional probability of the nodal types for \(Y\) \emph{given} the
+nodal types for \(X\). Thus the parameters can describe a full joint
+probability distribution over types for \(X\) and types for \(Y\).
+
+\begin{table}
+
+\caption{Nodal types and parameters for Lipids model}
+\centering
+\begin{tabular}[t]{cccc}
+\toprule
+param\_names & node & param\_set & nodal\_type\\
+\midrule
+Z.0 & Z & Z & 0\\
+Z.1 & Z & Z & 1\\
+X.00 & X & X & 00\\
+X.10 & X & X & 10\\
+X.01 & X & X & 01\\
+X.11 & X & X & 11\\
+Y.00\_X.00 & Y & Y.X.00 & 00\\
+Y.10\_X.00 & Y & Y.X.00 & 10\\
+Y.01\_X.00 & Y & Y.X.00 & 01\\
+Y.11\_X.00 & Y & Y.X.00 & 11\\
+Y.00\_X.01 & Y & Y.X.01 & 00\\
+Y.10\_X.01 & Y & Y.X.01 & 10\\
+Y.01\_X.01 & Y & Y.X.01 & 01\\
+Y.11\_X.01 & Y & Y.X.01 & 11\\
+Y.00\_X.10 & Y & Y.X.10 & 00\\
+Y.10\_X.10 & Y & Y.X.10 & 10\\
+Y.01\_X.10 & Y & Y.X.10 & 01\\
+Y.11\_X.10 & Y & Y.X.10 & 11\\
+Y.00\_X.11 & Y & Y.X.11 & 00\\
+Y.10\_X.11 & Y & Y.X.11 & 10\\
+Y.01\_X.11 & Y & Y.X.11 & 01\\
+Y.11\_X.11 & Y & Y.X.11 & 11\\
+\bottomrule
+\end{tabular}
+\end{table}
 
 Updating is then done with respect to beliefs over \(\lambda\). In the
 Bayesian approach we have simply:
@@ -2094,29 +2131,68 @@ queries and returns a dataframe with summary statistics on the queries.
 \hypertarget{queries}{%
 \section{Queries}\label{queries}}
 
-\textbf{LM: REVIEW AND FIX SECTION}
+\hypertarget{causal-syntax}{%
+\subsection{Causal Syntax}\label{causal-syntax}}
 
-WRITE SECTION DESCRIBING FACTUAL AND COUNTERFACTULA QUERIES AND THE
-SYNTAX INCLUDING Role of {[}{]} AND OF GIVEN
+Scholars typically explore a broad range of causal questions.
+\texttt{CausalQueries} provides syntax for the formulation of various
+causal queries, ranging from relatively straightforward queries, such as
+the proportion of units where \(Y\) equals 1 (expressed as
+\texttt{"Y\ ==\ 1"}), to more detailed ones, such as questions about the
+types for which \(Y\) is greater when \(X\) equals 1 than when \(X\)
+equals 0 (expressed as
+\texttt{"Y{[}X=1{]}\ \textgreater{}\ Y{[}X=0{]}"}).
 
-\texttt{get\_query\_types}
+This syntax enables users to write arbitrary causal queries to
+interrogate their models. For factual queries, users may employ logical
+statements to ask questions about observed conditions. Take, for
+example, the query mentioned above about the proportion of units where
+\(Y\) equals 1, expressed as \texttt{"Y\ ==\ 1"}. In this case the
+logical operator == indicates that \texttt{CausalQueries} should
+consider units that fulfill the condition of strict equality where \(Y\)
+equals 1.\footnote{\texttt{CausalQueries} also accepts = as a shorthand
+  for ==. However, == is preferred as it is the conventional logical
+  operator to express a condition of strict equality.}
 
-return sets; discuss how all queries related to these sets
+Counterfactual queries can be expressed in \texttt{CausalQueries} by
+using square brackets {[}{]}. Inside the brackets, variables that are to
+be intervened are specified. For instance, consider the counterfactual
+query that asks about the types for which \(Y\) equals 1 when \(X\) is
+\emph{set to} 0. In this case, since \(X\) is being intervened to be
+zero, \(X\) is placed inside the brackets. Given that \(Y\) equaling 1
+is a factual condition, it is expressed as in the paragraph above using
+the logical operator \texttt{==}. More precisely, such query can be
+written as \texttt{"Y{[}X=0{]}\ ==\ 1"}.
 
-Another way to develop a clearer understanding of how to interpret nodal
-types subscripts is to consider the conditions they may fulfill. We
-refer to these conditions as ``causal queries''. Causal queries are
-useful because they allow us to target and alter specific nodal types,
-and they come in handy for functions that we will introduce below. For
-instance, in a model such as \(X \rightarrow Y \leftarrow M\), you may
-want to identify the nodal types that correspond to cases where
-increasing both \(X\) and \(M\) from 0 to 1 results in an increase in
-\(Y\). You can do this using the \texttt{get\_query\_types} function as
-shown below:
+With the aid of logical operators such as \texttt{==}, \texttt{!=},
+\texttt{\textgreater{}}, \texttt{\textgreater{}=}
+\texttt{\textless{}},\texttt{\textless{}=} , and the use of square
+brackets, users can formulate a broad range of queries. For example,
+they can make queries about cases where \(X\) has a positive effect on
+\(Y\), i.e., whether \(Y\) is greater when \(X\) is set to 1 compared to
+when \(X\) is set to 0, expressed as
+\texttt{"Y{[}X=1{]}\ \textgreater{}\ Y{[}X=0{]}"}. Alternatively, they
+can explore complex counterfactuals like
+\texttt{"Y{[}M=M{[}X=0{]},\ X=1{]}==1"}. In this case,
+\texttt{CausalQueries} looks for the types for which \(Y\) equals 1 when
+\(X\) is set to 1, while keeping \(M\) constant at the value it would
+take if \(X\) were 0.
 
-start off with query Y==1 then Y{[}X=1{]} ==1 then Y{[}X=1{]}
-\textgreater= Y{[}X=0{]} then show linear functions possible Y{[}X=1{]}
-- Y{[}X=0{]}
+One way to develop a clearer understanding of what types are being
+targeted with each query is using the function
+\texttt{get\_query\_types}. For instance, consider the model
+\(X \rightarrow Y \leftarrow M\) and the query
+\texttt{"Y{[}X=1,\ M=1{]}\ \textgreater{}\ Y{[}X=0,\ M=0{]}"}.
+
+In this case, the aim is to identify the types for which \(Y\) equals
+zero when \(X = 0\) and \(M = 0\), and \(Y\) equals 1 when \(X = 1\) and
+\(M = 1\). The specific values that Y takes for other combinations of
+\(X\) and \(M\) are not relevant for this query. Therefore, the types
+targeted in this query have a zero as the first digit of the subscript
+i.e., when \(X = 0\) and \$ M = 0\$, and a 1 as the last digit i.e.,
+when \(X = 1\) and \(M = 1\), and any value in the second and third
+digits. The code and output below offer a more precise representation of
+this.
 
 \begin{verbatim}
 R> make_model('X -> M -> Y <- X') |> 
@@ -2524,7 +2600,7 @@ Network (CRAN) at {[}https://CRAN.R-project.org/{]}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, opacityback=0, bottomrule=.15mm, colback=white, breakable, arc=.35mm, left=2mm, rightrule=.15mm, leftrule=.75mm, toprule=.15mm]
+\begin{tcolorbox}[enhanced jigsaw, left=2mm, leftrule=.75mm, rightrule=.15mm, colback=white, breakable, bottomrule=.15mm, arc=.35mm, opacityback=0, toprule=.15mm]
 
 The approach to generating a generic stan function that can take data
 from arbitrary models was developed in key contributions by
@@ -2554,7 +2630,7 @@ improved every part of it.
 \section*{More technical details}\label{sec-techdetails}}
 \addcontentsline{toc}{section}{More technical details}
 
-\begin{tcolorbox}[enhanced jigsaw, opacityback=0, bottomrule=.15mm, colback=white, breakable, arc=.35mm, left=2mm, rightrule=.15mm, leftrule=.75mm, toprule=.15mm]
+\begin{tcolorbox}[enhanced jigsaw, left=2mm, leftrule=.75mm, rightrule=.15mm, colback=white, breakable, bottomrule=.15mm, arc=.35mm, opacityback=0, toprule=.15mm]
 
 Appendices can be included after the bibliography (with a page break).
 Each section within the appendix should have a proper section title
@@ -2586,7 +2662,7 @@ which includes the following topics:
 \section*{Using BibTeX}\label{sec-bibtex}}
 \addcontentsline{toc}{section}{Using BibTeX}
 
-\begin{tcolorbox}[enhanced jigsaw, opacityback=0, bottomrule=.15mm, colback=white, breakable, arc=.35mm, left=2mm, rightrule=.15mm, leftrule=.75mm, toprule=.15mm]
+\begin{tcolorbox}[enhanced jigsaw, left=2mm, leftrule=.75mm, rightrule=.15mm, colback=white, breakable, bottomrule=.15mm, arc=.35mm, opacityback=0, toprule=.15mm]
 
 References need to be provided in a \textsc{Bib}{\TeX} file
 (\texttt{.bib}). All references should be made with \texttt{@cite}

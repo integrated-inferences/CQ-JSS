@@ -53,23 +53,8 @@ execute:
   cache: false
 ---
 
-```{r}
-#| label: preamble
-#| include: false
 
-options(kableExtra.latex.load_packages = FALSE)
 
-library(tidyverse)
-library(CausalQueries)
-library(knitr)
-library(rstan)
-library(DeclareDesign)
-library(kableExtra)
-library(tikzDevice)
-
-set.seed(20231018)
-
-```
 
 ## Introduction: Causal models {#sec-intro}
 
@@ -81,70 +66,69 @@ We illustrate these three core functions by showing how to use `CuasalQueries` t
 
 Our data on $Z$, $X$, and $Y$ is complete for all units and looks, in compact form, as follows:
 
-```{r}
-#| echo: true
 
-data("lipids_data")
+::: {.cell}
 
-lipids_data
-
+```{.r .cell-code}
+R> data("lipids_data")
+R> 
+R> lipids_data
 ```
+
+::: {.cell-output .cell-output-stdout}
+```
+#>    event strategy count
+#> 1 Z0X0Y0      ZXY   158
+#> 2 Z1X0Y0      ZXY    52
+#> 3 Z0X1Y0      ZXY     0
+#> 4 Z1X1Y0      ZXY    23
+#> 5 Z0X0Y1      ZXY    14
+#> 6 Z1X0Y1      ZXY    12
+#> 7 Z0X1Y1      ZXY     0
+#> 8 Z1X1Y1      ZXY    78
+```
+:::
+:::
+
 
 With `CausalQueries`, you can create the model, input data to update it, and then query the model for results.
 
-```{r}
-#| echo: true
-#| eval: false
 
-make_model("Z -> X -> Y; X <-> Y") |>
-  update_model(lipids_data, refresh = 0) |>
-  query_model(query = "Y[X=1] - Y[X=0]",
-              given = c("All",  "X==0 & Y==0", "X[Z=1] > X[Z=0]"),
-              using = "posteriors") 
+::: {.cell}
+
+```{.r .cell-code}
+R> make_model("Z -> X -> Y; X <-> Y") |>
++  update_model(lipids_data, refresh = 0) |>
++  query_model(query = "Y[X=1] - Y[X=0]",
++              given = c("All",  "X==0 & Y==0", "X[Z=1] > X[Z=0]"),
++              using = "posteriors") 
 ```
+:::
 
-```{r}
-#| label: tbl-lipids
-#| tbl-cap: "Replication of \\citet{chickering1996clinician}."
-#| echo: false
+::: {#tbl-lipids .cell tbl-cap='Replication of \citet{chickering1996clinician}.'}
+::: {.cell-output-display}
+\begin{table}
+\centering
+\resizebox{\linewidth}{!}{
+\begin{threeparttable}
+\begin{tabular}{cccccc}
+\toprule
+query & given & mean & sd & cred.low.2.5\% & cred.high.97.5\%\\
+\midrule
+Y[X=1] - Y[X=0] & - & 0.56 & 0.10 & 0.38 & 0.73\\
+Y[X=1] - Y[X=0] & X==0 \& Y==0 & 0.64 & 0.15 & 0.38 & 0.89\\
+Y[X=1] - Y[X=0] & X[Z=1] > X[Z=0] & 0.70 & 0.05 & 0.60 & 0.80\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+\small
+\item Rows 1 and 2 replicate results in \citet{chickering1996clinician}; row 3 returns inferences for complier average effects.
+\end{tablenotes}
+\end{threeparttable}}
+\end{table}
+:::
+:::
 
-if (params$run) {
-  
-  lipids_model <- 
-    make_model("Z -> X -> Y; X <-> Y") |>
-    update_model(lipids_data, refresh = 0) 
-  
-  lipids_model |> 
-    readr::write_rds(x = _, file = "saved/lipids_model.rds")
-     
-  lipids_model |>
-    query_model(
-      query = "Y[X=1] - Y[X=0]",
-      given = c("All",  "X==0 & Y==0", "X[Z=1] > X[Z=0]"),
-      using = "posteriors") |>
-    readr::write_rds(x = _, file = "saved/lipids_results.rds")
-
-}
-
-lipids_model <- read_rds("saved/lipids_model.rds")
-
-results <- read_rds("saved/lipids_results.rds")
-
-results |>
-  dplyr::select(query, given, mean, sd, starts_with("cred")) |>
-  knitr::kable(
-    digits = 2,
-    booktabs = TRUE,
-    align = "c",
-    escape = TRUE, 
-    linesep = "") |> 
-  kableExtra::kable_classic_2(latex_options = c("scale_down")) |> 
-  kableExtra::footnote(
-    general = "Rows 1 and 2 replicate results in \\\\citet{chickering1996clinician}; row 3 returns inferences for complier average effects.",
-    escape = FALSE, fixed_small_size = TRUE, threeparttable = TRUE, general_title = ""
-  )
-
-```
 
 The output is a data frame with estimates, posterior standard deviations, and credibility intervals. For example the data frame produced by the code above is shown in @tbl-lipids.
 
@@ -162,6 +146,7 @@ As we describe below the same basic procedure of making, updating, and querying 
 
 The core conceptual framework is described in Pearl's *Causality* [@pearl2009causality] but can be summarized as follows (using the notation used in @ii2023):
 
+
 ```{=tex}
 \begin{definition}
   
@@ -175,6 +160,7 @@ The core conceptual framework is described in Pearl's *Causality* [@pearl2009cau
   
 \end{definition}
 ```
+
 In the usual case we take the endogenous nodes to be binary.[^1] When we specify a causal structure we specify which endogenous nodes are (possibly) direct causes of a node, $Y_j$, given other nodes in the model. These nodes are called the parents of $Y_j$, $PA_j$ (we use upper case $PA_j$ to indicate the collection of nodes and lower case $pa_j$ to indicate a particular set of values that these nodes might take on). With discrete valued nodes, it is possible to identify all possible ways that a node might respond to its parents.  We refer to the ways that a node responds and the nodes  "nodal type." The set of nodal types  corresponds to principal strata familiar, for instance, in the study of instrumental variables [@frangakis2002principal].    
 
 If node $Y_i$ can take on $k_i$ possible values then the set of possible values that can be taken on by parents of $j$ is $m :=\prod_{i\in PA_j}k_i$, then there are $k_j^{m}$ different ways that a node might respond to its parents.  In the case of binary nodes this becomes $2^{\left(2^{|PA_j|}\right)}$. Thus for an endogenous node with no parents there are 2 nodal types, for a binary node with one binary parent there are four types, for a binary node with 2 parents there are 16, and so on.
@@ -192,17 +178,45 @@ Representing beliefs over causal models thus requires specifying a probability d
 
 For concreteness: table @tab:lipidspar illustrates these values for the lipids model. We see here that we have two types for node $Z$, two for $X$ and 4 for $Y$. For $Z$ and $X$ we have parameters corresponding to probability of these nodal types. However, because of confounding between $X$ and $Y$ we have parameters that capture the conditional probability of the nodal types for $Y$ *given* the nodal types for $X$. Thus the parameters can describe a full joint probability distribution over types for $X$ and types for $Y$. 
 
-```{r lipidspar, echo = FALSE}
-lipids_model$parameters_df |> select(param_names, node, param_set, nodal_type) |> 
-  knitr::kable(
-    digits = 2,
-    booktabs = TRUE,
-    align = "c",
-    escape = TRUE, 
-    linesep = "",
-    caption = "Nodal types and parameters for Lipids model") 
 
-```
+::: {.cell}
+::: {.cell-output-display}
+\begin{table}
+
+\caption{\label{tab:lipidspar}Nodal types and parameters for Lipids model}
+\centering
+\begin{tabular}[t]{cccc}
+\toprule
+param\_names & node & param\_set & nodal\_type\\
+\midrule
+Z.0 & Z & Z & 0\\
+Z.1 & Z & Z & 1\\
+X.00 & X & X & 00\\
+X.10 & X & X & 10\\
+X.01 & X & X & 01\\
+X.11 & X & X & 11\\
+Y.00\_X.00 & Y & Y.X.00 & 00\\
+Y.10\_X.00 & Y & Y.X.00 & 10\\
+Y.01\_X.00 & Y & Y.X.00 & 01\\
+Y.11\_X.00 & Y & Y.X.00 & 11\\
+Y.00\_X.01 & Y & Y.X.01 & 00\\
+Y.10\_X.01 & Y & Y.X.01 & 10\\
+Y.01\_X.01 & Y & Y.X.01 & 01\\
+Y.11\_X.01 & Y & Y.X.01 & 11\\
+Y.00\_X.10 & Y & Y.X.10 & 00\\
+Y.10\_X.10 & Y & Y.X.10 & 10\\
+Y.01\_X.10 & Y & Y.X.10 & 01\\
+Y.11\_X.10 & Y & Y.X.10 & 11\\
+Y.00\_X.11 & Y & Y.X.11 & 00\\
+Y.10\_X.11 & Y & Y.X.11 & 10\\
+Y.01\_X.11 & Y & Y.X.11 & 01\\
+Y.11\_X.11 & Y & Y.X.11 & 11\\
+\bottomrule
+\end{tabular}
+\end{table}
+:::
+:::
+
 
 Updating is then done with respect to beliefs over $\lambda$. In the Bayesian approach we have simply:
 
@@ -225,16 +239,9 @@ The value of the `CausalQueries` package is to allow users to specify models of 
 
 -   For the latter both competing and complementary software should be discussed (within the same software environment and beyond), bringing out relative (dis)advantages. All software mentioned should be properly `@cited`'d.[^2]
 
-```{r}
-#| echo: true
-#| results: markup
-#| eval: false
-#| include: false
 
-make_model("A -> B -> C -> D -> E")$parameters_df |> nrow()
 
-make_model("A -> E <- B; C->E<-D")$parameters_df |> nrow()
-```
+
 
 The particular strength of `CausalQueries` is to allow users to specify arbitrary DAGs, arbitrary queries over nodes in those DAGs, and use the same canonical procedure to learn about those queries whether or not the queries are identified. Thus is principle if researchers are interest in learning about a quantity like the local average treatment effect and their model in fact satisfies the conditions in @angrist1996identification, then updating will recover valid estimates even if researchers are unaware that the local average treatment effect is identified and are ignorant of the estimation procedure proposed by @angrist1996identification.
 
@@ -248,12 +255,14 @@ A model is defined in one step using a `dagitty` syntax in which the structure o
 
 For instance:
 
-```{r}
-#| echo: true
-#| results: markup
 
-model <- make_model("X -> M -> Y <- X")
+::: {.cell}
+
+```{.r .cell-code}
+R> model <- make_model("X -> M -> Y <- X")
 ```
+:::
+
 
 The statement in quotes, `"X -> M -> Y <- X"`, provides the names of nodes. An arrow ("`->`" or "`<-`") connecting nodes indicates that one node is a potential cause of another, i.e. whether a given node is a "parent" or "child" of another.
 
@@ -283,57 +292,49 @@ Plotting the model can be useful to check that you have defined the structure of
 
 Once defined, a model can be graphed by calling the `plot()` method defined for the objects with class `causal_model` produced by `make_model()` function.
 
-```{r}
-#| echo: true
-#| eval: false
 
-make_model("X -> M -> Y <- X; Z -> Y") |>
-  plot()
+::: {.cell}
 
+```{.r .cell-code}
+R> make_model("X -> M -> Y <- X; Z -> Y") |>
++  plot()
 ```
+:::
+
 
 Alternatively you can provide a number of options to the `plot()` call that will be passed to `CausalQueries:::plot_dag` via the method.
 
-```{r}
-#| echo: true
-#| eval: false
 
-make_model("X -> M -> Y <- X; Z -> Y") |>
-  plot(x_coord = 1:4,
-       y_coord = c(1.5,2,1,2),
-       textcol = "white",
-       textsize = 3,
-       shape = 18,
-       nodecol = "grey",
-       nodesize = 12)
+::: {.cell}
 
+```{.r .cell-code}
+R> make_model("X -> M -> Y <- X; Z -> Y") |>
++  plot(x_coord = 1:4,
++       y_coord = c(1.5,2,1,2),
++       textcol = "white",
++       textsize = 3,
++       shape = 18,
++       nodecol = "grey",
++       nodesize = 12)
 ```
+:::
+
 
 The graphs produced by the two calls above are shown in @fig-plots. In both cases the resulting plot will have class `c("gg", "ggplot")` and so will accept any additional modifications available via `ggplot2` package.
 
-```{r}
-#| label: fig-plots
-#| echo: false
-#| fig-cap: "Examples of model graphs."
-#| fig-subcap:
-#|   - "Without options"
-#|   - "With options"
-#| fig-pos: 'h'
-#| layout-ncol: 2
 
-make_model("X -> M -> Y <- X; Z -> Y") |>
-  plot()
+::: {#fig-plots .cell layout-ncol="2"}
+::: {.cell-output-display}
+![Without options](paper_files/figure-pdf/fig-plots-1.pdf){#fig-plots-1 fig-pos='h'}
+:::
 
-make_model("X -> M -> Y <- X; Z -> Y") |>
-  plot(x_coord = 1:4,
-       y_coord = c(1.5,2,1,2),
-       textcol = "white",
-       textsize = 3,
-       shape = 18,
-       nodecol = "grey",
-       nodesize = 12)
+::: {.cell-output-display}
+![With options](paper_files/figure-pdf/fig-plots-2.pdf){#fig-plots-2 fig-pos='h'}
+:::
 
-```
+Examples of model graphs.
+:::
+
 
 ### Model characterization
 
@@ -399,27 +400,49 @@ When a model is created, `CausalQueries` attaches a "parameters data frame" whic
 
 For instance:
 
-```{r}
-#| label: params-df
-#| echo: true
 
-make_model("X -> Y")$parameters_df
+::: {.cell}
+
+```{.r .cell-code}
+R> make_model("X -> Y")$parameters_df
 ```
 
-```{r}
-#| label: tbl-params-df
-#| echo: false
-#| tbl-cap: "Example of Parameters Data Frame"
-
-make_model("X -> Y")$parameters_df |>
-  knitr::kable(
-    digits = 2,
-    booktabs = TRUE,
-    align = "c",
-    escape = TRUE, 
-    linesep = "") |> 
-  kableExtra::kable_classic_2(latex_options = c("scale_down"))
+::: {.cell-output .cell-output-stdout}
 ```
+#> # A tibble: 6 x 8
+#>   param_names node    gen param_set nodal_type given param_value priors
+#>   <chr>       <chr> <int> <chr>     <chr>      <chr>       <dbl>  <dbl>
+#> 1 X.0         X         1 X         0          ""           0.5       1
+#> 2 X.1         X         1 X         1          ""           0.5       1
+#> 3 Y.00        Y         2 Y         00         ""           0.25      1
+#> 4 Y.10        Y         2 Y         10         ""           0.25      1
+#> 5 Y.01        Y         2 Y         01         ""           0.25      1
+#> 6 Y.11        Y         2 Y         11         ""           0.25      1
+```
+:::
+:::
+
+::: {#tbl-params-df .cell tbl-cap='Example of Parameters Data Frame'}
+::: {.cell-output-display}
+\begin{table}
+\centering
+\resizebox{\linewidth}{!}{
+\begin{tabular}{cccccccc}
+\toprule
+param\_names & node & gen & param\_set & nodal\_type & given & param\_value & priors\\
+\midrule
+X.0 & X & 1 & X & 0 &  & 0.50 & 1\\
+X.1 & X & 1 & X & 1 &  & 0.50 & 1\\
+Y.00 & Y & 2 & Y & 00 &  & 0.25 & 1\\
+Y.10 & Y & 2 & Y & 10 &  & 0.25 & 1\\
+Y.01 & Y & 2 & Y & 01 &  & 0.25 & 1\\
+Y.11 & Y & 2 & Y & 11 &  & 0.25 & 1\\
+\bottomrule
+\end{tabular}}
+\end{table}
+:::
+:::
+
 
 Produces parameters data frame shown in @tbl-params-df. Each row in the data frame corresponds to a single parameter.
 
@@ -443,21 +466,26 @@ A node with $k$ parents has $2^{2^k}$ nodal types. The reason is that with $k$ p
 
 When a model is created the full set of "nodal types" is identified. These are stored in the model. The subscripts become very long and hard to parse for more complex models so the model object also includes a guide to interpreting nodal type values. You can see them like this.
 
-```{r}
-#| label: nodal-types
-#| echo: true
-#| eval: false
 
-make_model("X -> Y")$nodal_types
+::: {.cell}
+
+```{.r .cell-code}
+R> make_model("X -> Y")$nodal_types
 ```
+:::
 
-```{r}
-#| label: nodal-types-nointerpret
-#| echo: false
-#| eval: true
-
-make_model("X -> Y")$nodal_types |> `attr<-`("interpret", NULL)
+::: {.cell}
+::: {.cell-output .cell-output-stdout}
 ```
+#> $X
+#> [1] "0" "1"
+#> 
+#> $Y
+#> [1] "00" "10" "01" "11"
+```
+:::
+:::
+
 
 Note that we use $\theta^j$ to indicate nodal types because for qualitative analysis the nodal types are often the parameters of interest.
 
@@ -470,28 +498,53 @@ Alternatively, the `interpret_type` function can be used to obtain interpretatio
 
 As the number of parents increases, keeping track of what each digit represents becomes more difficult. For instance, if $Y$ had three parents, its nodal types would have subscripts of eight digits, each associated with the value that $Y$ would take for each combination of the three parents. The `interpret_type` function provides a clear map to identify what each digit in the subscript represents. See the examples below for models with two and three parents.
 
-```{r}
-#| label: lookup-types1
-#| echo: true
 
-interpretations <- 
-  make_model("X -> Y <- M ") |> 
-  interpret_type()
+::: {.cell}
 
-interpretations$Y
-
+```{.r .cell-code}
+R> interpretations <- 
++  make_model("X -> Y <- M ") |> 
++  interpret_type()
+R> 
+R> interpretations$Y
 ```
 
-```{r}
-#| label: lookup-types2
-#| echo: true
-
-interpretations <- 
-  make_model("X -> Y <- M; W -> Y") |> 
-  interpret_type()
-
-interpretations$Y
+::: {.cell-output .cell-output-stdout}
 ```
+#>   node position display    interpretation
+#> 1    Y        1 Y[*]*** Y | M = 0 & X = 0
+#> 2    Y        2 Y*[*]** Y | M = 1 & X = 0
+#> 3    Y        3 Y**[*]* Y | M = 0 & X = 1
+#> 4    Y        4 Y***[*] Y | M = 1 & X = 1
+```
+:::
+:::
+
+::: {.cell}
+
+```{.r .cell-code}
+R> interpretations <- 
++  make_model("X -> Y <- M; W -> Y") |> 
++  interpret_type()
+R> 
+R> interpretations$Y
+```
+
+::: {.cell-output .cell-output-stdout}
+```
+#>   node position     display            interpretation
+#> 1    Y        1 Y[*]******* Y | M = 0 & W = 0 & X = 0
+#> 2    Y        2 Y*[*]****** Y | M = 1 & W = 0 & X = 0
+#> 3    Y        3 Y**[*]***** Y | M = 0 & W = 1 & X = 0
+#> 4    Y        4 Y***[*]**** Y | M = 1 & W = 1 & X = 0
+#> 5    Y        5 Y****[*]*** Y | M = 0 & W = 0 & X = 1
+#> 6    Y        6 Y*****[*]** Y | M = 1 & W = 0 & X = 1
+#> 7    Y        7 Y******[*]* Y | M = 0 & W = 1 & X = 1
+#> 8    Y        8 Y*******[*] Y | M = 1 & W = 1 & X = 1
+```
+:::
+:::
+
 
 **LM: section on lookup types; `interpret_type` EXAMPLE with maybe 2 parents**
 
@@ -501,13 +554,28 @@ Causal types are collections of nodal types. Two units are of the same *causal t
 
 When a model is created, the full set of causal types is identified. These are stored in the model object:
 
-```{r}
-#| label: causal-types
-#| echo: true
 
-make_model("X -> Y")$causal_types
+::: {.cell}
 
+```{.r .cell-code}
+R> make_model("X -> Y")$causal_types
 ```
+
+::: {.cell-output .cell-output-stdout}
+```
+#>        X  Y
+#> X0.Y00 0 00
+#> X1.Y00 1 00
+#> X0.Y10 0 10
+#> X1.Y10 1 10
+#> X0.Y01 0 01
+#> X1.Y01 1 01
+#> X0.Y11 0 11
+#> X1.Y11 1 11
+```
+:::
+:::
+
 
 A model with $n_j$ nodal types at node $j$ has $\prod_jn_j$ causal types. Thus the set of causal types can be large. In the model $(X\rightarrow M \rightarrow Y \leftarrow X)$ there are $2\times 4\times 16 = 128$ causal types.
 
@@ -524,23 +592,53 @@ Recovering implied values on complex nodal types given parent realizations effic
 
 Calling `realise_outcomes` on the above model thus yields:
 
-```{r}
-#| label: realise-outcomes
-#| echo: true
 
-make_model("X -> Y") |> realise_outcomes()
+::: {.cell}
 
+```{.r .cell-code}
+R> make_model("X -> Y") |> realise_outcomes()
 ```
+
+::: {.cell-output .cell-output-stdout}
+```
+#>      X Y
+#> 0.00 0 0
+#> 1.00 1 0
+#> 0.10 0 1
+#> 1.10 1 0
+#> 0.01 0 0
+#> 1.01 1 1
+#> 0.11 0 1
+#> 1.11 1 1
+```
+:::
+:::
+
 
 with row names indicating nodal types and columns realized values. Intervening on $X$ with $do(X=1)$ yields:
 
-```{r}
-#| label: realise-outcomes-do
-#| echo: true
 
-make_model("X -> Y") |> realise_outcomes(dos = list(X = 1))
+::: {.cell}
 
+```{.r .cell-code}
+R> make_model("X -> Y") |> realise_outcomes(dos = list(X = 1))
 ```
+
+::: {.cell-output .cell-output-stdout}
+```
+#>      X Y
+#> 0.00 1 0
+#> 1.00 1 0
+#> 0.10 1 0
+#> 1.10 1 0
+#> 0.01 1 1
+#> 1.01 1 1
+#> 0.11 1 1
+#> 1.11 1 1
+```
+:::
+:::
+
 
 <!-- # should we show data types for comparison here with all_data_types() ? -->
 
@@ -550,13 +648,38 @@ The parameters data frame keeps track of parameter values and priors for paramet
 
 The parameter matrix ($P$ matrix) can be added to the model to provide this mapping. The $P$ matrix has a row for each parameter and a column for each causal type. For instance:
 
-```{r}
-#| label: get-param-matrix
-#| echo: true
 
-make_model("X -> Y") |> get_parameter_matrix()
+::: {.cell}
 
+```{.r .cell-code}
+R> make_model("X -> Y") |> get_parameter_matrix()
 ```
+
+::: {.cell-output .cell-output-stdout}
+```
+#> 
+#> Rows are parameters, grouped in parameter sets
+#> 
+#> Columns are causal types
+#> 
+#> Cell entries indicate whether a parameter probability is used
+#> in the calculation of causal type probability
+#> 
+#>      X0.Y00 X1.Y00 X0.Y10 X1.Y10 X0.Y01 X1.Y01 X0.Y11 X1.Y11
+#> X.0       1      0      1      0      1      0      1      0
+#> X.1       0      1      0      1      0      1      0      1
+#> Y.00      1      1      0      0      0      0      0      0
+#> Y.10      0      0      1      1      0      0      0      0
+#> Y.01      0      0      0      0      1      1      0      0
+#> Y.11      0      0      0      0      0      0      1      1
+#> 
+#>  
+#>  param_set  (P)
+#> 
+```
+:::
+:::
+
 
 The probability of a causal type is given by the product of the parameters values for parameters whose row in the $P$ matrix contains a 1.
 
@@ -578,31 +701,59 @@ Sometimes for theoretical or practical reasons it is useful to constrain the set
 
 For instance to impose an assumption that $Y$ is not decreasing in $X$ we generate a restricted model as follows:
 
-```{r}
-#| echo: true
-#| eval: false
 
-model <- make_model("X -> Y") |> set_restrictions("Y[X=1] < Y[X=0]")
+::: {.cell}
+
+```{.r .cell-code}
+R> model <- make_model("X -> Y") |> set_restrictions("Y[X=1] < Y[X=0]")
 ```
+:::
+
 
 or
 
-```{r}
-#| echo: true
-#| eval: true
 
-model <- make_model("X -> Y") |> set_restrictions(decreasing("X", "Y"))
+::: {.cell}
+
+```{.r .cell-code}
+R> model <- make_model("X -> Y") |> set_restrictions(decreasing("X", "Y"))
 ```
+:::
+
 
 Viewing the resulting parameter matrix we see that both the set of parameters and the set of causal types are now restricted:
 
-```{r}
-#| label: get-param-matrix-restrict
-#| echo: true
 
-get_parameter_matrix(model)
+::: {.cell}
 
+```{.r .cell-code}
+R> get_parameter_matrix(model)
 ```
+
+::: {.cell-output .cell-output-stdout}
+```
+#> 
+#> Rows are parameters, grouped in parameter sets
+#> 
+#> Columns are causal types
+#> 
+#> Cell entries indicate whether a parameter probability is used
+#> in the calculation of causal type probability
+#> 
+#>      X0.Y00 X1.Y00 X0.Y01 X1.Y01 X0.Y11 X1.Y11
+#> X.0       1      0      1      0      1      0
+#> X.1       0      1      0      1      0      1
+#> Y.00      1      1      0      0      0      0
+#> Y.01      0      0      1      1      0      0
+#> Y.11      0      0      0      0      1      1
+#> 
+#>  
+#>  param_set  (P)
+#> 
+```
+:::
+:::
+
 
 Here and in general, setting restrictions typically involves using causal syntax; see Section \@ref(syntax) for a guide the syntax used by `CausalQueries`.
 
@@ -616,26 +767,28 @@ Note:
 -   Use the `keep` argument to indicate whether nodal types should be dropped (default) or retained.
 -   Restrictions can be set using nodal type labels.
 
-```{r}
-#| label: set-restrictions1
-#| echo: true
-#| eval: false
 
-make_model("S -> C -> Y <- R <- X; X -> C -> R") |>
-  set_restrictions(labels = list(C = "1000", R = "0001", Y = "0001"), 
-                   keep = TRUE)
+::: {.cell}
+
+```{.r .cell-code}
+R> make_model("S -> C -> Y <- R <- X; X -> C -> R") |>
++  set_restrictions(labels = list(C = "1000", R = "0001", Y = "0001"), 
++                   keep = TRUE)
 ```
+:::
+
 
 -   Wild cards can be used in nodal type labels:
 
-```{r}
-#| label: set-restrictions2
-#| echo: true
-#| eval: false
 
-make_model("X -> Y") |>
-  set_restrictions(labels = list(Y = "?0"))
+::: {.cell}
+
+```{.r .cell-code}
+R> make_model("X -> Y") |>
++  set_restrictions(labels = list(Y = "?0"))
 ```
+:::
+
 
 <!-- # you can also specify a given when setting restrictions e.g.  -->
 
@@ -669,61 +822,79 @@ In the $X \rightarrow Y$ graph, for instance, there are 2 nodal types for $X$ an
 
 This table has 8 interior elements and so an unconstrained joint distribution would have $7$ degrees of freedom. A no confounding assumption means that $\Pr(\theta^X | \theta^Y) = \Pr(\theta^X)$, or $\Pr(\theta^X, \theta^Y) = \Pr(\theta^X)\Pr(\theta^Y)$. In this case we just put a distribution on the marginals and there would be $3$ degrees of freedom for $Y$ and $1$ for $X$, totaling $4$ rather than $7$.
 
-```{r}
-#| label: confound-params-df
-#| echo: true
-#| eval: false
 
-confounded <- make_model("X -> Y ; X <-> Y")
+::: {.cell}
 
-confounded$parameters_df
+```{.r .cell-code}
+R> confounded <- make_model("X -> Y ; X <-> Y")
+R> 
+R> confounded$parameters_df
 ```
+:::
 
-```{r}
-#| label: tbl-confound-params-df
-#| tbl-cap: "Parameters Data Frame for Model with Confounding."
-#| echo: false
-#| eval: true
+::: {#tbl-confound-params-df .cell tbl-cap='Parameters Data Frame for Model with Confounding.'}
+::: {.cell-output-display}
+\begin{table}
+\centering
+\resizebox{\linewidth}{!}{
+\begin{tabular}{cccccccc}
+\toprule
+param\_names & node & gen & param\_set & nodal\_type & given & param\_value & priors\\
+\midrule
+X.0 & X & 1 & X & 0 &  & 0.50 & 1\\
+X.1 & X & 1 & X & 1 &  & 0.50 & 1\\
+Y.00\_X.0 & Y & 2 & Y.X.0 & 00 & X.0 & 0.25 & 1\\
+Y.10\_X.0 & Y & 2 & Y.X.0 & 10 & X.0 & 0.25 & 1\\
+Y.01\_X.0 & Y & 2 & Y.X.0 & 01 & X.0 & 0.25 & 1\\
+Y.11\_X.0 & Y & 2 & Y.X.0 & 11 & X.0 & 0.25 & 1\\
+Y.00\_X.1 & Y & 2 & Y.X.1 & 00 & X.1 & 0.25 & 1\\
+Y.10\_X.1 & Y & 2 & Y.X.1 & 10 & X.1 & 0.25 & 1\\
+Y.01\_X.1 & Y & 2 & Y.X.1 & 01 & X.1 & 0.25 & 1\\
+Y.11\_X.1 & Y & 2 & Y.X.1 & 11 & X.1 & 0.25 & 1\\
+\bottomrule
+\end{tabular}}
+\end{table}
+:::
+:::
 
-confounded <- make_model("X -> Y ; X <-> Y")
-
-confounded$parameters_df |>
-  knitr::kable(
-    digits = 2,
-    booktabs = TRUE,
-    align = "c",
-    escape = TRUE, 
-    linesep = "") |> 
-  kableExtra::kable_classic_2(latex_options = c("scale_down"))
-```
 
 @tbl-confound-params-df shows the parameters data frame produced by the code above. We see here that there are now two parameter families for parameters associated with the node $Y$. Each family captures the conditional distribution of $Y$'s nodal types, given $X$. For instance the parameter `Y01_X.1` can be interpreted as $\Pr(\theta^Y = \theta^Y_{01} | X=1)$.
 
 To see exactly how the parameters map to causal types we can view the parameter matrix:
 
-```{r}
-#| label: confound-param-matrix
-#| echo: true
-#| eval: false
 
-get_parameter_matrix(confounded)
+::: {.cell}
+
+```{.r .cell-code}
+R> get_parameter_matrix(confounded)
 ```
+:::
 
-```{r}
-#| label: tbl-confound-param-matrix
-#| tbl-cap: "Parameter Matrix for Model with Confounding."
-#| echo: false
-#| eval: true
+::: {#tbl-confound-param-matrix .cell tbl-cap='Parameter Matrix for Model with Confounding.'}
+::: {.cell-output-display}
+\begin{table}
+\centering
+\resizebox{\linewidth}{!}{
+\begin{tabular}{lcccccccc}
+\toprule
+  & X0.Y00 & X1.Y00 & X0.Y10 & X1.Y10 & X0.Y01 & X1.Y01 & X0.Y11 & X1.Y11\\
+\midrule
+X.0 & 1 & 0 & 1 & 0 & 1 & 0 & 1 & 0\\
+X.1 & 0 & 1 & 0 & 1 & 0 & 1 & 0 & 1\\
+Y.00\_X.0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+Y.10\_X.0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0\\
+Y.01\_X.0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0\\
+Y.11\_X.0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0\\
+Y.00\_X.1 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0\\
+Y.10\_X.1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0\\
+Y.01\_X.1 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0\\
+Y.11\_X.1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1\\
+\bottomrule
+\end{tabular}}
+\end{table}
+:::
+:::
 
-get_parameter_matrix(confounded) |>
-  knitr::kable(
-    digits = 2,
-    booktabs = TRUE,
-    align = "c",
-    escape = TRUE, 
-    linesep = "") |> 
-  kableExtra::kable_classic_2(latex_options = c("scale_down"))
-```
 
 The output is shown in @tbl-confound-param-matrix. Importantly, the $P$ matrix works as before, despite confounding. We can assess the probability of causal types by multiplying the probabilities of the constituent parameters.
 
@@ -732,17 +903,13 @@ The output is shown in @tbl-confound-param-matrix. Importantly, the $P$ matrix w
     -   `make_model("A -> W <- B ; A <-> W; B <-> W")$parameters_df |> dim` In this case we can decompose shocks on $A, B, W$ via: $\Pr(\theta^A, \theta^B, \theta^W) = \Pr(\theta^W | \theta^A, \theta^A)\Pr(\theta^A)\Pr(\theta^B)$, and we have 68 parameters.
     -   `make_model("A <- W -> B ; A <-> W; B <-> W")$parameters_df |> dim` In this case we have $\Pr(\theta^A, \theta^B, \theta^W) = \Pr(\theta^A | \theta^W)\Pr(\theta^B|\theta^W)\Pr(\theta^W)$ and just has just 18 parameters.
 
-```{r}
-#| label: fig-confound
-#| echo: false
-#| fig-cap: "Graph of Model with Confounding."
-#| fig-pos: 't'
-#| fig-align: center
-#| out-width: "60%"
 
-make_model("A <- X -> B; A <-> X; B <-> X") |> 
-  plot()
-```
+::: {.cell layout-align="center"}
+::: {.cell-output-display}
+![Graph of Model with Confounding.](paper_files/figure-pdf/fig-confound-1.pdf){#fig-confound fig-align='center' fig-pos='t' width=60%}
+:::
+:::
+
 
 #### Setting Priors {#priors}
 
@@ -752,39 +919,61 @@ In `CausalQueries` priors are generally specified over the distribution of nodal
 
 To retrieve the model's priors we can run the following code:
 
-```{r}
-#| label: get-priors
-#| echo: true
-#| eval: true
 
-make_model("X -> Y") |> get_priors()
+::: {.cell}
 
+```{.r .cell-code}
+R> make_model("X -> Y") |> get_priors()
 ```
+
+::: {.cell-output .cell-output-stdout}
+```
+#>  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
+#>    1    1    1    1    1    1
+```
+:::
+:::
+
 
 Here the priors have not been specified and so they default to $1$, which corresponds to uniform priors. Alternatively you could set Jeffreys priors using `set_priors` as follows:
 
-```{r}
-#| label: set-priors
-#| echo: true
-#| eval: true
 
-make_model("X -> Y") |> 
-  set_priors(distribution = "jeffreys") |> 
-  get_priors()
+::: {.cell}
 
+```{.r .cell-code}
+R> make_model("X -> Y") |> 
++  set_priors(distribution = "jeffreys") |> 
++  get_priors()
 ```
+
+::: {.cell-output .cell-output-stdout}
+```
+#>  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
+#>  0.5  0.5  0.5  0.5  0.5  0.5
+```
+:::
+:::
+
 
 You can also add custom priors. Custom priors are most simply specified by being added as a vector of numbers using `set_priors`. For instance:
 
-```{r}
-#| label: set-priors-custom
-#| echo: true
-#| eval: true
 
-make_model("X -> Y") |> 
-  set_priors(1:6) |> 
-  get_priors()
+::: {.cell}
+
+```{.r .cell-code}
+R> make_model("X -> Y") |> 
++  set_priors(1:6) |> 
++  get_priors()
 ```
+
+::: {.cell-output .cell-output-stdout}
+```
+#>  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
+#>    1    2    3    4    5    6
+```
+:::
+:::
+
 
 The priors here should be interpreted as indicating:
 
@@ -793,63 +982,108 @@ The priors here should be interpreted as indicating:
 
 For larger models it can be hard to provide priors as a vector of numbers. For that reason `set_priors` allows for more targeted modifications of the parameter vector. For instance:
 
-```{r}
-#| label: set-priors-statement
-#| echo: true
-#| eval: true
 
-make_model("X -> Y") |>
-  set_priors(statement = "Y[X=1] > Y[X=0]", alphas = 3) |>
-  get_priors()
+::: {.cell}
+
+```{.r .cell-code}
+R> make_model("X -> Y") |>
++  set_priors(statement = "Y[X=1] > Y[X=0]", alphas = 3) |>
++  get_priors()
 ```
+
+::: {.cell-output .cell-output-stdout}
+```
+#>  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
+#>    1    1    1    1    3    1
+```
+:::
+:::
+
 
 As setting priors simply requires mapping alpha values to parameters, the process boils down to selecting rows of the `parmeters_df` data frame, at which to alter values. When specifying a causal statement as above, `CausalQueries` internally identifies nodal types that are consistent with the statement, which in turn identify parameters to alter priors for. 
 
 Note that there is nothing particularly unique about setting priors via causal syntax, as it is simply an abstract way of specifying how to subset the `parameters_df` data frame. We can achieve the same result as above by specifying nodal type for which we would like to adjust the priors:
 
-```{r}
-#| label: set-priors-nodal-type
-#| echo: true
-#| eval: true
 
-make_model("X -> Y") |>
-  set_priors(nodal_type = "01", alphas = 3) |>
-  get_priors()
+::: {.cell}
+
+```{.r .cell-code}
+R> make_model("X -> Y") |>
++  set_priors(nodal_type = "01", alphas = 3) |>
++  get_priors()
 ```
+
+::: {.cell-output .cell-output-stdout}
+```
+#>  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
+#>    1    1    1    1    3    1
+```
+:::
+:::
+
 
 or even parameter names
 
-```{r}
-#| label: set-priors-param-names
-#| echo: true
-#| eval: true
 
-make_model("X -> Y") |>
-  set_priors(param_names = "Y.01", alphas = 3) |>
-  get_priors()
+::: {.cell}
+
+```{.r .cell-code}
+R> make_model("X -> Y") |>
++  set_priors(param_names = "Y.01", alphas = 3) |>
++  get_priors()
 ```
+
+::: {.cell-output .cell-output-stdout}
+```
+#>  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
+#>    1    1    1    1    3    1
+```
+:::
+:::
+
 
 As such `set_priors` allows for the specification of any non-redundant combination of arguments on the `param_names`, `node`, `nodal_type`, `param_set` and `given` columns of `parameters_df` to uniquely identify parameters to set priors for. Alternatively a fully formed subsetting statement may be supplied to `alter_at`. Since all these arguments get mapped to the parameters the identify internally they may be used interchangeably.[^3]
 
-```{r}
-#| label: set-priors-other
-#| echo: true
-#| eval: true
 
-make_model("X -> M -> Y; X <-> Y") |>
-  set_priors(node = "Y", 
-             nodal_type = c("01","11"), 
-             given = "X.1", 
-             alphas = c(3,2)) |>
-  get_priors()
+::: {.cell}
 
-make_model("X -> M -> Y; X <-> Y") |>
-  set_priors(
-    alter_at = 
-      "node == 'Y' & nodal_type %in% c('01','11') & given == 'X.1'", 
-    alphas = c(3,2)) |>
-  get_priors()
+```{.r .cell-code}
+R> make_model("X -> M -> Y; X <-> Y") |>
++  set_priors(node = "Y", 
++             nodal_type = c("01","11"), 
++             given = "X.1", 
++             alphas = c(3,2)) |>
++  get_priors()
 ```
+
+::: {.cell-output .cell-output-stdout}
+```
+#>      X.0      X.1     M.00     M.10     M.01     M.11 Y.00_X.0 Y.10_X.0 
+#>        1        1        1        1        1        1        1        1 
+#> Y.01_X.0 Y.11_X.0 Y.00_X.1 Y.10_X.1 Y.01_X.1 Y.11_X.1 
+#>        1        1        1        1        3        2
+```
+:::
+
+```{.r .cell-code}
+R> make_model("X -> M -> Y; X <-> Y") |>
++  set_priors(
++    alter_at = 
++      "node == 'Y' & nodal_type %in% c('01','11') & given == 'X.1'", 
++    alphas = c(3,2)) |>
++  get_priors()
+```
+
+::: {.cell-output .cell-output-stdout}
+```
+#>      X.0      X.1     M.00     M.10     M.01     M.11 Y.00_X.0 Y.10_X.0 
+#>        1        1        1        1        1        1        1        1 
+#> Y.01_X.0 Y.11_X.0 Y.00_X.1 Y.10_X.1 Y.01_X.1 Y.11_X.1 
+#>        1        1        1        1        3        2
+```
+:::
+:::
+
 
 It should be noted that while highly targeted prior setting is convenient and flexible; it should be done with caution. Setting priors on specific parameters in complex models; especially models involving confounding, may strongly affect inferences in intractable ways.
 
@@ -857,67 +1091,35 @@ We additionally note that flat priors over nodal types do not necessarily transl
 
 For instance in an $X \rightarrow Y$ model in which negative effects are ruled out, the average causal effect implied by "flat" priors is $1/3$. This can be seen by querying the model as follows:
 
-```{r}
-#| label: set-priors-flat
-#| echo: true
-#| eval: false
 
-make_model("X -> Y") |>
-  set_restrictions(decreasing("X", "Y")) |>
-  query_model("Y[X=1] - Y[X=0]", n_draws = 10000)
+::: {.cell}
 
+```{.r .cell-code}
+R> make_model("X -> Y") |>
++  set_restrictions(decreasing("X", "Y")) |>
++  query_model("Y[X=1] - Y[X=0]", n_draws = 10000)
 ```
+:::
+
 
 More subtly the *structure* of a model, coupled with flat priors, has substantive importance for priors on causal quantities. For instance with flat priors, priors on the probability that $X$ has a positive effect on $Y$ in the model $X \rightarrow Y$ is centered on $1/4$. But priors on the probability that $X$ has a positive effect on $Y$ in the model $X \rightarrow M \rightarrow Y$ is centered on $1/8$.
 
 Again, you can use `query_model` to figure out what flat (or other) priors over parameters imply for priors over causal quantities:
 
-```{r}
-#| label: compare-flat-priors
-#| echo: true
-#| eval: false
 
-make_model("X -> Y") |>
-  query_model("Y[X=1] > Y[X=0]", n_draws = 10000)
+::: {.cell}
 
-make_model("X -> M -> Y") |>
-  query_model("Y[X=1] > Y[X=0]", n_draws = 10000)
-
+```{.r .cell-code}
+R> make_model("X -> Y") |>
++  query_model("Y[X=1] > Y[X=0]", n_draws = 10000)
+R> 
+R> make_model("X -> M -> Y") |>
++  query_model("Y[X=1] > Y[X=0]", n_draws = 10000)
 ```
-
-```{r}
-#| label: tbl-compare-flat-priors
-#| tbl-cap: "Comparison between $X \\rightarrow Y$ vs $X \\rightarrow M \\rightarrow Y$ Models."
-#| tbl-subcap: 
-#|    - "Average Causal Effect in $X \\rightarrow Y$ Model."
-#|    - "Average Causal Effect in $X \\rightarrow M \\rightarrow Y$ Model."
-#| echo: false
-#| eval: false
-#| include: false
+:::
 
 
-make_model("X -> Y") |>
-  query_model("Y[X=1] > Y[X=0]", n_draws = 10000) |> 
-  dplyr::select(query, given, mean, sd, starts_with("cred")) |>
-  knitr::kable(
-    digits = 2,
-    booktabs = TRUE,
-    align = "c",
-    escape = TRUE, 
-    linesep = "") |> 
-  kableExtra::kable_classic_2(latex_options = c("scale_down"))
 
-make_model("X -> M -> Y") |>
-  query_model("Y[X=1] > Y[X=0]", n_draws = 10000) |> 
-  dplyr::select(query, given, mean, sd, starts_with("cred")) |>
-  knitr::kable(
-    digits = 2,
-    booktabs = TRUE,
-    align = "c",
-    escape = TRUE, 
-    linesep = "") |> 
-  kableExtra::kable_classic_2(latex_options = c("scale_down"))
-```
 
 Caution regarding priors is particularly important when models are not identified, as is the case for many of the models considered here. In such cases, for some quantities, the marginal posterior distribution can be the same as the marginal prior distribution [@poirier1998revising].
 
@@ -931,27 +1133,42 @@ The logic for setting parameters is similar to that for setting priors: effectiv
 
 Consider the causal model below. It has two parameter sets, X and Y, with six nodal types, two corresponding to X and four corresponding to Y. The key feature of the parameters is that they must sum to 1 within each parameter set.
 
-```{r}
-#| label: get-parameters
-#| echo: true
-#| eval: true
 
-make_model("X -> Y") |> 
-  get_parameters()
+::: {.cell}
 
+```{.r .cell-code}
+R> make_model("X -> Y") |> 
++  get_parameters()
 ```
+
+::: {.cell-output .cell-output-stdout}
+```
+#>  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
+#> 0.50 0.50 0.25 0.25 0.25 0.25
+```
+:::
+:::
+
 
 The example below illustrates a change in the value of the parameter $Y$ in the case it is increasing in $X$. Here nodal type `Y.Y01` is set to be .5, while the other nodal types of this parameter set were renormalized so that the parameters in the set still sum to one.
 
-```{r}
-#| label: set-parameters
-#| echo: true
-#| eval: true
 
-make_model("X -> Y") |>
-  set_parameters(statement = "Y[X=1] > Y[X=0]", parameters = .5) |>
-  get_parameters()
+::: {.cell}
+
+```{.r .cell-code}
+R> make_model("X -> Y") |>
++  set_parameters(statement = "Y[X=1] > Y[X=0]", parameters = .5) |>
++  get_parameters()
 ```
+
+::: {.cell-output .cell-output-stdout}
+```
+#>       X.0       X.1      Y.00      Y.10      Y.01      Y.11 
+#> 0.5000000 0.5000000 0.1666667 0.1666667 0.5000000 0.1666667
+```
+:::
+:::
+
 
 <!-- # both setting priors and parameters offers a lot of options beyond causal statements now >> might be useful to show an example of a subset of those options at work for users to whom using causal statements is alien >> i.e. showcase the idea that under the hood a lot of this just comes down to filtering the parameters dataframe in various ways i.e. we have options: alter_at, node, nodal_type, param_set, given, statement, param_names -->
 
@@ -959,39 +1176,49 @@ make_model("X -> Y") |>
 
 Once a model has been defined it is possible to simulate data from the model using the `make_data` function. This can be useful for instance for assessing the expected performance of a model given data drawn from some speculated set of parameter values.
 
-```{r}
-#| label: make-data-model
-#| eval: true
 
-model <- make_model("X -> M -> Y") 
+::: {.cell}
 
+```{.r .cell-code}
+R> model <- make_model("X -> M -> Y") 
 ```
+:::
+
 
 #### Drawing data basics
 
 By default, the parameters used are taken from `model$parameters_df`.
 
-```{r}
-#| label: make-data
-#| echo: true
-#| eval: true
 
-sample_data_1 <- 
-  model |> 
-  make_data(n = 4)
+::: {.cell}
 
+```{.r .cell-code}
+R> sample_data_1 <- 
++  model |> 
++  make_data(n = 4)
 ```
+:::
+
 
 However you can also specify parameters directly or use parameter draws from a prior or posterior distribution. For instance:
 
-```{r}
-#| label: make-data-draw
-#| echo: true
-#| eval: true
 
-make_data(model, n = 3, param_type = "prior_draw")
+::: {.cell}
 
+```{.r .cell-code}
+R> make_data(model, n = 3, param_type = "prior_draw")
 ```
+
+::: {.cell-output .cell-output-stdout}
+```
+#>   X M Y
+#> 1 0 0 0
+#> 2 0 0 1
+#> 3 1 1 0
+```
+:::
+:::
+
 
 Note that the data is returned ordered by data type as in the example above.
 
@@ -1001,34 +1228,96 @@ Note that the data is returned ordered by data type as in the example above.
 
 The function `make_data` allows you to draw data like this if you specify a data strategy indicating the probabilities of observing data on different nodes, possibly as a function of prior nodes observed.
 
-```{r}
-#| label: make-data-incomplete
-#| echo: true
-#| eval: true
 
-sample_data_2 <-
-  make_data(model,
-            n = 8,
-            nodes = list(c("X", "Y"), "M"),
-            probs = list(1, .5),
-            subsets = list(TRUE, "X==1 & Y==0"))
+::: {.cell}
 
-sample_data_2
+```{.r .cell-code}
+R> sample_data_2 <-
++  make_data(model,
++            n = 8,
++            nodes = list(c("X", "Y"), "M"),
++            probs = list(1, .5),
++            subsets = list(TRUE, "X==1 & Y==0"))
 ```
+
+::: {.cell-output .cell-output-stdout}
+```
+#> # A tibble: 2 x 5
+#>   node_names nodes     n_steps probs subsets    
+#>   <chr>      <list>    <lgl>   <dbl> <chr>      
+#> 1 X, Y       <chr [2]> NA        1   TRUE       
+#> 2 M          <chr [1]> NA        0.5 X==1 & Y==0
+```
+:::
+
+```{.r .cell-code}
+R> sample_data_2
+```
+
+::: {.cell-output .cell-output-stdout}
+```
+#>   X  M Y
+#> 1 0 NA 0
+#> 2 0 NA 1
+#> 3 0 NA 1
+#> 4 0 NA 0
+#> 5 0 NA 1
+#> 6 1 NA 0
+#> 7 1  1 0
+#> 8 1 NA 1
+```
+:::
+:::
+
 
 #### Reshaping data
 
 Whereas data naturally comes in long form, with a row per observation, as in the examples above, the data passed to `stan` is in a compact form, which records only the number of units of each data type. `CausalQueries` includes functions that lets you move between these two forms in case of need.
 
-```{r}
-#| label: collapse-data
-#| echo: true
-#| eval: true
 
-sample_data_1 |> collapse_data(model)
+::: {.cell}
 
-sample_data_2 |> collapse_data(model)
+```{.r .cell-code}
+R> sample_data_1 |> collapse_data(model)
 ```
+
+::: {.cell-output .cell-output-stdout}
+```
+#>    event strategy count
+#> 1 X0M0Y0      XMY     0
+#> 2 X1M0Y0      XMY     0
+#> 3 X0M1Y0      XMY     1
+#> 4 X1M1Y0      XMY     2
+#> 5 X0M0Y1      XMY     0
+#> 6 X1M0Y1      XMY     0
+#> 7 X0M1Y1      XMY     0
+#> 8 X1M1Y1      XMY     1
+```
+:::
+
+```{.r .cell-code}
+R> sample_data_2 |> collapse_data(model)
+```
+
+::: {.cell-output .cell-output-stdout}
+```
+#>     event strategy count
+#> 1  X0M0Y0      XMY     0
+#> 2  X1M0Y0      XMY     0
+#> 3  X0M1Y0      XMY     0
+#> 4  X1M1Y0      XMY     1
+#> 5  X0M0Y1      XMY     0
+#> 6  X1M0Y1      XMY     0
+#> 7  X0M1Y1      XMY     0
+#> 8  X1M1Y1      XMY     0
+#> 9    X0Y0       XY     2
+#> 10   X1Y0       XY     1
+#> 11   X0Y1       XY     3
+#> 12   X1Y1       XY     1
+```
+:::
+:::
+
 
 In the same way it is possible to move from "compact data" to "long data" using `expand_data()`.
 
@@ -1082,13 +1371,14 @@ The `stan` model works as follows:
 
 To update a `CausalQueries` model with data use:
 
-```{r}
-#| label: update-model
-#| echo: true
-#| eval: false
 
-update_model(model, data)
+::: {.cell}
+
+```{.r .cell-code}
+R> update_model(model, data)
 ```
+:::
+
 
 where the data argument is a dataset containing some or all of the nodes in the model.
 
@@ -1101,46 +1391,50 @@ As `update_model()` calls `rstan::sampling` one can pass along all arguments in 
 
 If you have multiple cores you can do parallel processing by including this line before running `CausalQueries`:
 
-```{r, eval = FALSE}
-#| eval: false
 
-library(parallel)
+::: {.cell}
 
-options(mc.cores = parallel::detectCores())
-
+```{.r .cell-code}
+R> library(parallel)
+R> 
+R> options(mc.cores = parallel::detectCores())
 ```
+:::
+
 
 Additionally parallelizing across models or data while running MCMC chains in parallel can be achieved by setting up a nested parallel process. With 8 cores one can run 2 updating processes with 3 parallel chains each simultaneously. More generally the number of parallel processes at the upper level of the nested parallel structure are given by $\left \lfloor \cfrac{cores}{chains + 1} \right \rfloor$.
 
-```{r}
-#| eval: false
 
-library(future)
-library(future.apply)
+::: {.cell}
 
-chains <- 3
-cores <- 8
-
-future::plan(list(
-      future::tweak(future::multisession, 
-                    workers = floor(cores/(chains + 1))),
-      future::tweak(future::multisession, 
-                    workers = chains)
-    ))
-
-model <- make_model("X -> Y")
-data <- list(data_1, data_2)
-
-future.apply::future_lapply(data, function(d) {
-  update_model(
-    model = model,
-    data = d,
-    chains = chains,
-    refresh = 0
-  )
-})
-
+```{.r .cell-code}
+R> library(future)
+R> library(future.apply)
+R> 
+R> chains <- 3
+R> cores <- 8
+R> 
+R> future::plan(list(
++      future::tweak(future::multisession, 
++                    workers = floor(cores/(chains + 1))),
++      future::tweak(future::multisession, 
++                    workers = chains)
++    ))
+R> 
+R> model <- make_model("X -> Y")
+R> data <- list(data_1, data_2)
+R> 
+R> future.apply::future_lapply(data, function(d) {
++  update_model(
++    model = model,
++    data = d,
++    chains = chains,
++    refresh = 0
++  )
++})
 ```
+:::
+
 
 ### Incomplete and censored data
 
@@ -1150,18 +1444,35 @@ In addition it is possible to indicate when data has been censored and for the `
 
 To illustrate, in the example below we observe perfectly correlated data for $X$ and $Y$. If we are aware that data in which $X \neg Y$ has been censored then when we update we do not move towards a belief that $X$ causes $Y$.
 
-```{r}
-list(uncensored = make_model("X -> Y") %>%
-       update_model(data.frame(X=rep(0:1,5), Y=rep(0:1,5)),
-                    refresh = 0, iter = 3000),
-     censored = make_model("X -> Y") %>%
-       update_model(data.frame(X=rep(0:1,5), Y=rep(0:1,5)),
-                    censored_types = c("X1Y0",  "X0Y1"),
-                    refresh = 0, iter = 3000)) %>%
-  query_model(te("X", "Y"), using = "posteriors") |>
-  select(model, query, mean, sd) |>
-  kable(digits = 2)
+
+::: {.cell}
+
+```{.r .cell-code}
+R> list(uncensored = make_model("X -> Y") %>%
++       update_model(data.frame(X=rep(0:1,5), Y=rep(0:1,5)),
++                    refresh = 0, iter = 3000),
++     censored = make_model("X -> Y") %>%
++       update_model(data.frame(X=rep(0:1,5), Y=rep(0:1,5)),
++                    censored_types = c("X1Y0",  "X0Y1"),
++                    refresh = 0, iter = 3000)) %>%
++  query_model(te("X", "Y"), using = "posteriors") |>
++  select(model, query, mean, sd) |>
++  kable(digits = 2)
 ```
+
+::: {.cell-output-display}
+\begin{tabular}{l|l|r|r}
+\hline
+model & query & mean & sd\\
+\hline
+uncensored & (Y[X=1] - Y[X=0]) & 0.59 & 0.20\\
+\hline
+censored & (Y[X=1] - Y[X=0]) & 0.02 & 0.31\\
+\hline
+\end{tabular}
+:::
+:::
+
 
 ### Output
 
@@ -1187,14 +1498,32 @@ One way to develop a clearer understanding of what types are being targeted with
 
 In this case, the aim is to identify the types for which $Y$ equals zero when $X = 0$ and  $M = 0$, and $Y$ equals 1 when $X = 1$ and $M = 1$. The specific values that Y takes for other combinations of $X$ and $M$ are not relevant for this query. Therefore, the types targeted in this query have a zero as the first digit of the subscript i.e., when $X = 0$ and $ M = 0$, and a 1 as the last digit i.e., when $X = 1$ and $M = 1$, and any value in the second and third digits. The code and output below offer a more precise representation of this.
 
-```{r}
-#| eval: true
-#| echo: true
 
-make_model('X -> M -> Y <- X') |> 
-  get_query_types(query = "Y[X=1, M=1] > Y[X=0, M=0]", 
-                  map = "nodal_type")
+::: {.cell}
+
+```{.r .cell-code}
+R> make_model('X -> M -> Y <- X') |> 
++  get_query_types(query = "Y[X=1, M=1] > Y[X=0, M=0]", 
++                  map = "nodal_type")
 ```
+
+::: {.cell-output .cell-output-stdout}
+```
+#> 
+#> Nodal types adding weight to query
+#> 
+#>  query :  Y[X=1,M=1]>Y[X=0,M=0] 
+#> 
+#>  0001   0101
+#>  0011   0111
+#> 
+#> 
+#>  Number of nodal types that add weight to query = 4
+#>  Total number of nodal types related to Y = 16
+```
+:::
+:::
+
 
 
 
@@ -1219,47 +1548,30 @@ Queries can draw directly from the prior distribution of the posterior distribut
 
 <!-- GS: Can we avoid using fabricate here? -->
 
-```{r}
-#| eval: false
 
-library(DeclareDesign)
+::: {.cell}
 
-data  <- 
-  fabricate(N = 100, X = complete_ra(N), Y = X)
-
-model <- 
-  make_model("X -> Y") |>
-  update_model(data, iter  = 4000)
-
-model$posterior_distribution |> 
-  ggplot(aes(Y.01 - Y.10)) + geom_histogram()
-
+```{.r .cell-code}
+R> library(DeclareDesign)
+R> 
+R> data  <- 
++  fabricate(N = 100, X = complete_ra(N), Y = X)
+R> 
+R> model <- 
++  make_model("X -> Y") |>
++  update_model(data, iter  = 4000)
+R> 
+R> model$posterior_distribution |> 
++  ggplot(aes(Y.01 - Y.10)) + geom_histogram()
 ```
+:::
 
-```{r}
-#| label: fig-posterior-dist
-#| fig-cap: "Posterior on 'Probability $Y$ is increasing in $X$'"
-#| fig-pos: "t"
-#| fig-align: center
-#| out-width: "60%"
-#| echo: false
+::: {.cell layout-align="center"}
+::: {.cell-output-display}
+![Posterior on 'Probability $Y$ is increasing in $X$'](paper_files/figure-pdf/fig-posterior-dist-1.pdf){#fig-posterior-dist fig-align='center' fig-pos='t' width=60%}
+:::
+:::
 
-if (params$run) {
-
-  data  <- fabricate(N = 100, X = complete_ra(N), Y = X)
-
-  make_model("X -> Y") |>
-    update_model(data, iter  = 4000, refresh = 0) |>
-    write_rds("saved/app_2_illus.rds")
-
-}
-
-model <- read_rds("saved/app_2_illus.rds")
-
-model$posterior_distribution |> 
-  ggplot(aes(Y.01 - Y.10)) + geom_histogram() + theme_bw()
-
-```
 
 \FloatBarrier
 
@@ -1267,56 +1579,54 @@ model$posterior_distribution |>
 
 `query_distribution` works similarly except that distributions over queries are returned:
 
-```{r}
-#| label: fig-query-dist
-#| fig-cap: "Prior on 'Probability $Y$ is increasing in $X$'"
-#| fig-pos: "t"
-#| fig-align: center
-#| out-width: "60%"
-#| external: true
 
-make_model("X -> Y") |> 
-  query_distribution(
-    query = list(increasing = "(Y[X=1] > Y[X=0])"), 
-    using = "priors") |>
-  ggplot(aes(increasing)) + geom_histogram() + theme_bw()
+::: {.cell layout-align="center"}
 
+```{.r .cell-code}
+R> make_model("X -> Y") |> 
++  query_distribution(
++    query = list(increasing = "(Y[X=1] > Y[X=0])"), 
++    using = "priors") |>
++  ggplot(aes(increasing)) + geom_histogram() + theme_bw()
 ```
+
+::: {.cell-output-display}
+![Prior on 'Probability $Y$ is increasing in $X$'](paper_files/figure-pdf/fig-query-dist-1.pdf){#fig-query-dist fig-align='center' fig-pos='t' width=60%}
+:::
+:::
+
 
 ### Case level queries
 
 Sometimes one is interested in assessing the value of a query for a *particular case*. In a sense this is equivalent to posing a conditional query, querying conditional on values in a case. For instance we might consult our posterior lipds model and ask about the effect of $X$ on $Y$ for a case in which $Z=1, X=1$ and $Y=1$.
 
-```{r}
-#| label: case-level-query
-#| echo: true
-#| eval: false
 
-lipids_model |>
-    query_model(query = "Y[X=1] - Y[X=0]",
-              given = c("X==1 & Y==1 & Z==1"),
-              using = "posteriors")
+::: {.cell}
+
+```{.r .cell-code}
+R> lipids_model |>
++    query_model(query = "Y[X=1] - Y[X=0]",
++              given = c("X==1 & Y==1 & Z==1"),
++              using = "posteriors")
 ```
+:::
 
-```{r}
-#| label: tbl-case-level-query
-#| tbl-cap: "Case Level Quiry Example."
-#| echo: false
-#| eval: true
+::: {#tbl-case-level-query .cell tbl-cap='Case Level Quiry Example.'}
+::: {.cell-output-display}
+\begin{table}[!h]
+\centering
+\resizebox{\linewidth}{!}{
+\begin{tabular}{cccccc}
+\toprule
+query & given & mean & sd & cred.low.2.5\% & cred.high.97.5\%\\
+\midrule
+Y[X=1] - Y[X=0] & X==1 \& Y==1 \& Z==1 & 0.95 & 0.04 & 0.87 & 1\\
+\bottomrule
+\end{tabular}}
+\end{table}
+:::
+:::
 
-lipids_model |>
-  query_model(query = "Y[X=1] - Y[X=0]",
-              given = c("X==1 & Y==1 & Z==1"),
-              using = "posteriors") |> 
-  dplyr::select(query, given, mean, sd, starts_with("cred")) |>
-  knitr::kable(
-    digits = 2,
-    booktabs = TRUE,
-    align = "c",
-    escape = TRUE, 
-    linesep = "") |> 
-  kableExtra::kable_classic_2(latex_options = c("scale_down", "hold_position"))
-```
 
 The answer we get in @tbl-case-level-query is what we now believe for all cases in which $Z=1, X=1$ and $Y=1$. It is in fact the expected average effect among cases with this data type and so this expectation has an uncertainty attached to it.
 
@@ -1326,96 +1636,111 @@ To illustrate, consider a model for which we are quite sure that $X$ causes $Y$ 
 
 Thus we do not know if M=0 would suggest an effect or no effect. If asked what we would infer for a case that had $M=0$ we would not know whether $M=0$ information is consistent with a positive effect or not. However if provided with a randomly case and learn that it has $M=0$, then we update about the causal model and infer that there is an effect in this case (but that there wouldn't be were $M=1$).
 
-```{r}
-#| echo: true
-#| eval: false
 
-# DO ALL THIS IN ONE TABLE
+::: {.cell}
 
-set.seed(1)
- model <-
-   make_model("X -> M -> Y") |>
-   update_model(data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)), iter = 10000)
-
- Q <- "Y[X=1] > Y[X=0]"
- G <- "X==1 & Y==1 & M==1"
- QG <- "(Y[X=1] > Y[X=0]) & (X==1 & Y==1 & M==1)"
-
- # In this case these are very different:
- query_distribution(model, Q, given = G, using = "posteriors")[[1]] |> mean()
- query_distribution(model, Q, given = G, using = "posteriors",
-   case_level = TRUE)
-
- # These are equivalent:
- # 1. Case level query via function
- query_distribution(model, Q, given = G,
-    using = "posteriors", case_level = TRUE)
-
- # 2. Case level query by hand using Bayes
- distribution <- query_distribution(
-    model, list(QG = QG, G = G), using = "posteriors")
-
- mean(distribution$QG)/mean(distribution$G)
+```{.r .cell-code}
+R> # DO ALL THIS IN ONE TABLE
+R> 
+R> set.seed(1)
+R>  model <-
++   make_model("X -> M -> Y") |>
++   update_model(data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)), iter = 10000)
+R> 
+R>  Q <- "Y[X=1] > Y[X=0]"
+R>  G <- "X==1 & Y==1 & M==1"
+R>  QG <- "(Y[X=1] > Y[X=0]) & (X==1 & Y==1 & M==1)"
+R> 
+R>  # In this case these are very different:
+R>  query_distribution(model, Q, given = G, using = "posteriors")[[1]] |> mean()
+R>  query_distribution(model, Q, given = G, using = "posteriors",
++   case_level = TRUE)
+R> 
+R>  # These are equivalent:
+R>  # 1. Case level query via function
+R>  query_distribution(model, Q, given = G,
++    using = "posteriors", case_level = TRUE)
+R> 
+R>  # 2. Case level query by hand using Bayes
+R>  distribution <- query_distribution(
++    model, list(QG = QG, G = G), using = "posteriors")
+R> 
+R>  mean(distribution$QG)/mean(distribution$G)
 ```
+:::
+
 
 ### Batch queries
 
 The `query_model()` function takes causal queries and conditions (`given`) and specifies the parameters to be used. The result is a data frame which can be displayed as a table.
 
-```{r}
-#| label: batch-query
-#| echo: true
-#| eval: false
 
-models <- list(
- `1` = make_model("X -> Y"),
- `2` = make_model("X -> Y") |> set_restrictions("Y[X=1] < Y[X=0]")
- )
+::: {.cell}
 
-query_model(
-  models,
-  query = list(ATE = "Y[X=1] - Y[X=0]", 
-               POS = "Y[X=1] > Y[X=0]"),
-  given = c(TRUE,  "Y==1 & X==1"),
-  case_level = c(FALSE, TRUE),
-  using = c("parameters", "priors"),
-  expand_grid = TRUE)
+```{.r .cell-code}
+R> models <- list(
++ `1` = make_model("X -> Y"),
++ `2` = make_model("X -> Y") |> set_restrictions("Y[X=1] < Y[X=0]")
++ )
+R> 
+R> query_model(
++  models,
++  query = list(ATE = "Y[X=1] - Y[X=0]", 
++               POS = "Y[X=1] > Y[X=0]"),
++  given = c(TRUE,  "Y==1 & X==1"),
++  case_level = c(FALSE, TRUE),
++  using = c("parameters", "priors"),
++  expand_grid = TRUE)
 ```
+:::
 
-```{r}
-#| label: tbl-batch-query
-#| tbl-cap: "Results for Two Queries on Two Models."
-#| echo: false
-#| eval: true
-
-models <- list(
- `1` = make_model("X -> Y"),
- `2` = make_model("X -> Y") |> set_restrictions("Y[X=1] < Y[X=0]")
- )
-
-query_model(
-  models,
-  query = list(ATE = "Y[X=1] - Y[X=0]", 
-               POS = "Y[X=1] > Y[X=0]"),
-  given = c(TRUE,  "Y==1 & X==1"),
-  case_level = c(FALSE, TRUE),
-  using = c("parameters", "priors"),
-  expand_grid = TRUE) |>
-  dplyr::select(-starts_with("cred")) |> 
-  knitr::kable(
-    digits = 2,
-    booktabs = TRUE,
-    align = "c",
-    escape = TRUE,
-    longtable = TRUE,
-    linesep = "") |> 
-  kableExtra::kable_classic_2(latex_options = c("hold_position"))
-
-```
+::: {#tbl-batch-query .cell tbl-cap='Results for Two Queries on Two Models.'}
+::: {.cell-output-display}
+\begin{longtable}{ccccccc}
+\toprule
+model & query & given & using & case\_level & mean & sd\\
+\midrule
+1 & ATE & - & parameters & FALSE & 0.00 & NA\\
+2 & ATE & - & parameters & FALSE & 0.33 & NA\\
+1 & ATE & - & priors & FALSE & 0.00 & 0.32\\
+2 & ATE & - & priors & FALSE & 0.33 & 0.23\\
+1 & ATE & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA\\
+2 & ATE & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA\\
+1 & ATE & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29\\
+2 & ATE & Y==1 \& X==1 & priors & FALSE & 0.49 & 0.29\\
+1 & POS & - & parameters & FALSE & 0.25 & NA\\
+2 & POS & - & parameters & FALSE & 0.33 & NA\\
+1 & POS & - & priors & FALSE & 0.25 & 0.20\\
+2 & POS & - & priors & FALSE & 0.33 & 0.23\\
+1 & POS & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA\\
+2 & POS & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA\\
+1 & POS & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29\\
+2 & POS & Y==1 \& X==1 & priors & FALSE & 0.49 & 0.29\\
+1 & ATE & - & parameters & TRUE & 0.00 & NA\\
+2 & ATE & - & parameters & TRUE & 0.33 & NA\\
+1 & ATE & - & priors & TRUE & 0.00 & NA\\
+2 & ATE & - & priors & TRUE & 0.33 & NA\\
+1 & ATE & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA\\
+2 & ATE & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA\\
+1 & ATE & Y==1 \& X==1 & priors & TRUE & 0.50 & NA\\
+2 & ATE & Y==1 \& X==1 & priors & TRUE & 0.49 & NA\\
+1 & POS & - & parameters & TRUE & 0.25 & NA\\
+2 & POS & - & parameters & TRUE & 0.33 & NA\\
+1 & POS & - & priors & TRUE & 0.25 & NA\\
+2 & POS & - & priors & TRUE & 0.33 & NA\\
+1 & POS & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA\\
+2 & POS & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA\\
+1 & POS & Y==1 \& X==1 & priors & TRUE & 0.50 & NA\\
+2 & POS & Y==1 \& X==1 & priors & TRUE & 0.49 & NA\\
+\bottomrule
+\end{longtable}
+:::
+:::
 
 ```{=tex}
 \FloatBarrier
 ```
+
 
 ## Computational details and software requirements {.unnumbered}
 
@@ -1487,7 +1812,10 @@ The approach to generating a generic stan function that can take data from arbit
 ::: {#refs}
 :::
 
+
 {{< pagebreak >}}
+
+
 
 ## More technical details {#sec-techdetails .unnumbered}
 
@@ -1522,38 +1850,127 @@ Cleaning up {{< bibtex >}} files is a somewhat tedious task -- especially when a
 
 `prep_stan_data` then returns a list of objects that `stan` expects to receive. These include indicators to figure out where a parameter set starts (`l_starts`, `l_ends`) and ends and where a data strategy starts and ends (`strategy_starts`, `strategy_ends`), as well as the matrices described above.
 
-```{r ch2prep, comment = "", include = FALSE}
 
-#CausalQueries:::prep_stan_data(model, compact_data)
 
-```
+
 
 MOVE TO APPENDIX? ADD DISCUSSION OF PARMAP
 
 Below we show the `stan` code. This starts off with a block saying what input data is to be expected. Then there is a characterization of parameters and the transformed parameters. Then the likelihoods and priors are provided. `stan` takes it from there and generates a posterior distribution.
 
-```{r}
-#| echo: false
-#| results: markup
 
-if (params$run) {
-  
-  make_model("X -> Y") |> 
-    update_model(
-      data = data,
-      keep_fit = TRUE, 
-      refresh = 0) |> 
-    (\(.) .$stan_objects$stan_fit)() |>
-    write_rds("saved/fit.rds")
-  
-}
-
-cat(rstan::get_stancode(read_rds("saved/fit.rds")))
-
+::: {.cell}
+::: {.cell-output .cell-output-stdout}
 ```
+#> functions{
+#>   row_vector col_sums(matrix X) {
+#>     row_vector[cols(X)] s ;
+#>     s = rep_row_vector(1, rows(X)) * X ;
+#>     return s ;
+#>   }
+#> }
+#> data {
+#> int<lower=1> n_params;
+#> int<lower=1> n_paths;
+#> int<lower=1> n_types;
+#> int<lower=1> n_param_sets;
+#> int<lower=1> n_nodes;
+#> array[n_param_sets] int<lower=1> n_param_each;
+#> int<lower=1> n_data;
+#> int<lower=1> n_events;
+#> int<lower=1> n_strategies;
+#> int<lower=0, upper=1> keep_transformed;
+#> vector<lower=0>[n_params] lambdas_prior;
+#> array[n_param_sets] int<lower=1> l_starts;
+#> array[n_param_sets] int<lower=1> l_ends;
+#> array[n_nodes] int<lower=1> node_starts;
+#> array[n_nodes] int<lower=1> node_ends;
+#> array[n_strategies] int<lower=1> strategy_starts;
+#> array[n_strategies] int<lower=1> strategy_ends;
+#> matrix[n_params, n_types] P;
+#> matrix[n_params, n_paths] parmap;
+#> matrix[n_paths, n_data] map;
+#> matrix<lower=0,upper=1>[n_events,n_data] E;
+#> array[n_events] int<lower=0> Y;
+#> }
+#> parameters {
+#> vector<lower=0>[n_params - n_param_sets] gamma;
+#> }
+#> transformed parameters {
+#> vector<lower=0, upper=1>[n_params] lambdas;
+#> vector<lower=1>[n_param_sets] sum_gammas;
+#> matrix[n_params, n_paths] parlam;
+#> matrix[n_nodes, n_paths] parlam2;
+#> vector<lower=0, upper=1>[n_paths] w_0;
+#> vector<lower=0, upper=1>[n_data] w;
+#> vector<lower=0, upper=1>[n_events] w_full;
+#> // Cases in which a parameter set has only one value need special handling
+#> // they have no gamma components and sum_gamma needs to be made manually
+#> for (i in 1:n_param_sets) {
+#>   if (l_starts[i] >= l_ends[i]) {
+#>     sum_gammas[i] = 1;
+#>     // syntax here to return unity as a vector
+#>     lambdas[l_starts[i]] = lambdas_prior[1]/lambdas_prior[1];
+#>     }
+#>   else if (l_starts[i] < l_ends[i]) {
+#>     sum_gammas[i] =
+#>     1 + sum(gamma[(l_starts[i] - (i-1)):(l_ends[i] - i)]);
+#>     lambdas[l_starts[i]:l_ends[i]] =
+#>     append_row(1, gamma[(l_starts[i] - (i-1)):(l_ends[i] - i)]) /
+#>       sum_gammas[i];
+#>     }
+#>   }
+#> // Mapping from parameters to data types
+#> // (usual case): [n_par * n_data] * [n_par * n_data]
+#> parlam  = rep_matrix(lambdas, n_paths) .* parmap;
+#> // Sum probability over nodes on each path
+#> for (i in 1:n_nodes) {
+#>  parlam2[i,] = col_sums(parlam[(node_starts[i]):(node_ends[i]),]);
+#>  }
+#> // then take product  to get probability of data type on path
+#> for (i in 1:n_paths) {
+#>   w_0[i] = prod(parlam2[,i]);
+#>  }
+#>  // last (if confounding): map to n_data columns instead of n_paths
+#>  w = map'*w_0;
+#>   // Extend/reduce to cover all observed data types
+#>  w_full = E * w;
+#> }
+#> model {
+#> // Dirichlet distributions (earlier versions used gamma)
+#> for (i in 1:n_param_sets) {
+#>   target += dirichlet_lpdf(lambdas[l_starts[i]:l_ends[i]]  |
+#>     lambdas_prior[l_starts[i] :l_ends[i]]);
+#>   target += -n_param_each[i] * log(sum_gammas[i]);
+#>  }
+#> // Multinomials
+#> // Note with censoring event_probabilities might not sum to 1
+#> for (i in 1:n_strategies) {
+#>   target += multinomial_lpmf(
+#>   Y[strategy_starts[i]:strategy_ends[i]] |
+#>     w_full[strategy_starts[i]:strategy_ends[i]]/
+#>      sum(w_full[strategy_starts[i]:strategy_ends[i]]));
+#>  }
+#> }
+#> // Option to export distribution of causal types
+#> generated quantities{
+#> vector[n_types] prob_of_types;
+#> if (keep_transformed == 1){
+#> for (i in 1:n_types) {
+#>    prob_of_types[i] = prod(P[, i].*lambdas + 1 - P[,i]);
+#> }}
+#>  if (keep_transformed == 0){
+#>     prob_of_types = rep_vector(1, n_types);
+#>  }
+#> }
+```
+:::
+:::
+
 
 [^1]: `CausalQueries` can be used also to analyse non binary data though with a cost of greatly increased complexity. See section 9.4.1 of @ii2023 for an approach that codes non binary data as a profile of outcomes on multiple binary nodes.
 
 [^2]: See (Using BibTeX)\[#sec-bibtex\] for more details.
 
 [^3]: See `?set_priors` and `?make_priors` for many more examples.
+
