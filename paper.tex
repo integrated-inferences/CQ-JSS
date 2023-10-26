@@ -168,7 +168,7 @@
 \urlstyle{same} % disable monospaced font for URLs
 \hypersetup{
   pdftitle={Making, Updating, and Querying Causal Models using CausalQueries},
-  pdfauthor={Till Tietz; Lily Medina; Macartan Humphreys; Georgiy Syunyaev},
+  pdfauthor={Till Tietz; Lily Medina; Georgiy Syunyaev; Macartan Humphreys},
   colorlinks=true,
   linkcolor={blue},
   filecolor={Maroon},
@@ -180,11 +180,11 @@
 
 %% Author information
 \author{Till Tietz~\orcidlink{0000-0002-2916-9059}\\WZB \And Lily
-Medina\\UC Berkeley \AND Macartan
-Humphreys~\orcidlink{0000-0001-7029-2326}\\WZB \And Georgiy
-Syunyaev~\orcidlink{0000-0002-4391-6313}\\Vanderbilt University}
-\Plainauthor{Till Tietz, Lily Medina, Macartan Humphreys, Georgiy
-Syunyaev} %% comma-separated
+Medina\\UC Berkeley \AND Georgiy
+Syunyaev~\orcidlink{0000-0002-4391-6313}\\Vanderbilt
+University \And Macartan Humphreys~\orcidlink{0000-0001-7029-2326}\\WZB}
+\Plainauthor{Till Tietz, Lily Medina, Georgiy Syunyaev, Macartan
+Humphreys} %% comma-separated
 
 \title{Making, Updating, and Querying Causal Models using
 \texttt{CausalQueries}}
@@ -223,13 +223,13 @@ Lily Medina\\
 E-mail: \email{lily.medina@berkeley.edu}\\
 URL: \url{https:/lilymedina.github.io/}\\
 \\~
-Macartan Humphreys\\
-E-mail: \email{macartan.humphreys@wzb.eu}\\
-URL: \url{https://macartan.github.io/}\\
-\\~
 Georgiy Syunyaev\\
 E-mail: \email{g.syunyaev@vanderbilt.edu}\\
 URL: \url{https://gsyunyaev.com/}\\
+\\~
+Macartan Humphreys\\
+E-mail: \email{macartan.humphreys@wzb.eu}\\
+URL: \url{https://macartan.github.io/}\\
 \\~
 
 }
@@ -239,38 +239,46 @@ URL: \url{https://gsyunyaev.com/}\\
 \hypertarget{sec-intro}{%
 \section{Introduction: Causal models}\label{sec-intro}}
 
-\hypertarget{what-causalqueries-does}{%
-\subsection{What CausalQueries does}\label{what-causalqueries-does}}
-
 \texttt{CausalQueries} is an \proglang{R} package that lets users make,
-update, and query causal models. The base specification asks users to
-provide a statement that reports a set of binary variables and the
-relations of causal ancestry between them: which variables are direct
-causes of other variables, given the other variables in the model. Once
-provided to \texttt{make\_model()}, \texttt{CausalQueries} generates a
-set of parameters that fully describe all possible types of causal
-relations between variables (``causal types''), given the causal
-structure. Given a prior over distributions over causal types and data
-over some or all nodes, \texttt{update\_model()} deploys a \texttt{stan}
-model in order to generate a posterior distribution over parameters. The
-function \texttt{query\_model()} can then be used to ask any causal
-query of the model, using either the prior distribution, the posterior
-distribution, or a user specified candidate vector of parameters.
+update, and query causal models. Users provide a statement that reports
+a set of binary variables and the relations of causal ancestry between
+them: which variables are direct causes of other variables, given the
+other variables in the model. Once provided to \texttt{make\_model()},
+\texttt{CausalQueries} generates a parameter vector that fully describes
+a probability distribution over all possible types of causal relations
+between variables (``causal types''), given the causal structure. Given
+a prior over parameters and data over some or all nodes,
+\texttt{update\_model()} deploys a \texttt{stan} model in order to
+generate a posterior distribution over causal models. The function
+\texttt{query\_model()} can then be used to ask any causal query of the
+model, using either the prior distribution, the posterior distribution,
+or a user-specified candidate vector of parameters.
 
-We illustrate these three core functions by showing how to use
-\texttt{CuasalQueries} to replicate the analysis in
-\citet{chickering1996clinician} (see also \citet{ii2023}).
-\citet{chickering1996clinician} seek to draw inference on causal effects
-in the presence of imperfect compliance. We have access to an instrument
-\(Z\) (a randomly assigned prescription for cholesterol medication),
-which is a cause of \(X\) (treatment uptake) but otherwise unrelated to
-\(Y\) (cholesterol). We imagine we are interested in three specific
-queries. The first is the average causal effect of \(X\) on \(Y\). The
-second is the average effect for units for which \(X=0\) and \(Y=0\).
-The last is the average treatment effect \emph{for} ``compliers'': units
-for which \(X\) responds positively to \(Z\). Thus two of these queries
-are conditional queries, with one conditional on a counterfactual
-quantity.
+In the next section we provide a short motivating example. We then
+describe how the package relates to existing available software. Section
+Section~\ref{sec-theory} gives an overview of the statistical model
+behind the package. Sections Section~\ref{sec-make},
+Section~\ref{sec-update}, and Section~\ref{sec-query} then describe the
+main functionality for the major operations using the package. We
+provide further computation details in the final section.
+
+\hypertarget{motivating-example}{%
+\section{Motivating example}\label{motivating-example}}
+
+Before providing details on package functionality we illustrate these
+three core functions by showing how to use \texttt{CuasalQueries} to
+replicate the analysis in \citet{chickering1996clinician} (see also
+\citet{ii2023}). \citet{chickering1996clinician} seek to draw inference
+on causal effects in the presence of imperfect compliance. We have
+access to an instrument \(Z\) (a randomly assigned prescription for
+cholesterol medication), which is a cause of \(X\) (treatment uptake)
+but otherwise unrelated to \(Y\) (cholesterol). We imagine we are
+interested in three specific queries. The first is the average causal
+effect of \(X\) on \(Y\). The second is the average effect for units for
+which \(X=0\) and \(Y=0\). The last is the average treatment effect
+\emph{for} ``compliers'': units for which \(X\) responds positively to
+\(Z\). Thus two of these queries are conditional queries, with one
+conditional on a counterfactual quantity.
 
 Our data on \(Z\), \(X\), and \(Y\) is complete for all units and looks,
 in compact form, as follows:
@@ -337,7 +345,7 @@ arbitrary causal models, for different types of data structures, and for
 all causal queries that can be posed of the causal model.
 
 \hypertarget{connections-to-existing-packages}{%
-\subsection{Connections to existing
+\section{Connections to existing
 packages}\label{connections-to-existing-packages}}
 
 \begin{itemize}
@@ -347,10 +355,57 @@ packages}\label{connections-to-existing-packages}}
   compare with bareinboim package
 \item
   knox bounds package
+\item
+  For the latter both competing and complementary software should be
+  discussed (within the same software environment and beyond), bringing
+  out relative (dis)advantages. All software mentioned should be
+  properly \texttt{@cited}'d.\footnote{See (Using
+    BibTeX){[}\#sec-bibtex{]} for more details.}
 \end{itemize}
 
-\hypertarget{statistical-model}{%
-\section{Statistical model}\label{statistical-model}}
+The particular strength of \texttt{CausalQueries} is to allow users to
+specify arbitrary DAGs, arbitrary queries over nodes in those DAGs, and
+use the same canonical procedure to learn about those queries whether or
+not the queries are identified. Thus is principle if researchers are
+interest in learning about a quantity like the local average treatment
+effect and their model in fact satisfies the conditions in
+\citet{angrist1996identification}, then updating will recover valid
+estimates even if researchers are unaware that the local average
+treatment effect is identified and are ignorant of the estimation
+procedure proposed by \citet{angrist1996identification}.
+
+There are two broad limitation on the sets of models handled natively by
+\texttt{CausalQueries}. First \texttt{CausalQueries} is designed for
+models with a relatively small number over binary nodes. Because there
+is no compromise made on the space of possible causal relations implied
+by a given model, the parameter space grows very rapidly with the
+complexity of the causal model. The complexity also depends on the
+causal structure and grows rapidly with the number of parents affecting
+a given child. A chain model of the form
+\(A \rightarrow B \rightarrow C \rightarrow D \rightarrow E\) has just
+40 parameters. A model in which \(A, B, C, D\) are all direct of \(E\)
+has 65544 parameters. Moving from binary to non binary nodes has similar
+effects. The restriction to binary nodes is for computational and not
+conceptual reasons. In fact it is possible to employ
+\texttt{CausalQueries} to answer queries from models with nonbinary
+nodes but in general the computational costs make analysis of these
+model prohibitive.\footnote{For more on computation constraints and
+  strategies to update and query large models see the associated package
+  \texttt{CausalQueriesTools}. The core approach used here is to divde
+  large causal models into modules, update on modules and reassemble to
+  pose queries.}
+
+Second, the package is geared for learning about populations from
+samples of units that are independent of each other and are
+independently randomly sampled from populations. Thus the basic set up
+does not address problems of sampling, clustering, hierarchical
+structures, or purposive sampling, for example. The broader framework
+can however be used for these purposes (see section 9.4 of
+\citet{ii2023}). The target of inference is usually case level
+quantities or population quantities and not sample quantities.
+
+\hypertarget{sec-theory}{%
+\section{Statistical model}\label{sec-theory}}
 
 The core conceptual framework is described in Pearl's \emph{Causality}
 \citep{pearl2009causality} but can be summarized as follows (using the
@@ -386,7 +441,7 @@ for instance, in the study of instrumental variables
 
 If node \(Y_i\) can take on \(k_i\) possible values then the set of
 possible values that can be taken on by parents of \(j\) is
-\(m :=\prod_{i\in PA_j}k_i\), then there are \(k_j^{m}\) different ways
+\(m :=\prod_{i\in PA_j}k_i\). Then there are \(k_j^{m}\) different ways
 that a node might respond to its parents. In the case of binary nodes
 this becomes \(2^{\left(2^{|PA_j|}\right)}\). Thus for an endogenous
 node with no parents there are 2 nodal types, for a binary node with one
@@ -420,9 +475,9 @@ In cases in which there is confounding, the logic is essentially the
 same except that we need to specify enough parameters to capture the
 joint distribution over nodal types for different nodes.
 
-Again we make use of the causal structure to simplify. As an example,
-for the lipids model, the the full joint distribution of nodal types can
-be simplified as in Equation~\ref{eq-join}.
+We make use of the causal structure to simplify. As an example, for the
+lipids model, the full joint distribution of nodal types can be
+simplified as in Equation~\ref{eq-join}.
 
 \begin{equation}\protect\hypertarget{eq-join}{}{
 \Pr(\theta^Z = \theta^Z_1, \theta^X = \theta^X_{10}, \theta^Y = \theta^Y_{11}) = 
@@ -452,16 +507,17 @@ Updating is then done with respect to beliefs over \(\lambda\). In the
 Bayesian approach we have simply:
 
 \[p(\lambda'|D) = \frac{p(D|\lambda')p(\lambda')}{\int_{\lambda^{''}} p(D|\lambda'')p(\lambda'')}\]
+
 \(p(D|\lambda')\) is calculated under the assumption that units are
-exchangeable and independently drawn, and of course, under the model. In
-practice this means that the probability that two units have causal
-types \(\theta_i\) and \(\theta_j\) is simply \(\lambda'_i\lambda'_j\).
-Since a causal type fully determines an outcome vector
-\(d = \{y_1, y_2,\dots,y_n\}\), the probability of a given outcome
-(``event''), \(w_d\), is given simply by the probability that the causal
-type is among those that yield outcome \(d\). Thus from \(\lambda'\) we
-can calculate a vector of event probabilities, \(w(\lambda)\), for each
-vector of outcomes, and under independence we have:
+exchangeable and independently drawn, and of course. In practice this
+means that the probability that two units have causal types \(\theta_i\)
+and \(\theta_j\) is simply \(\lambda'_i\lambda'_j\). Since a causal type
+fully determines an outcome vector \(d = \{y_1, y_2,\dots,y_n\}\), the
+probability of a given outcome (``event''), \(w_d\), is given simply by
+the probability that the causal type is among those that yield outcome
+\(d\). Thus from \(\lambda'\) we can calculate a vector of event
+probabilities, \(w(\lambda)\), for each vector of outcomes, and under
+independence we have:
 
 \[D \sim \text{Mulitinomial}(w(\lambda), N)\]
 
@@ -542,62 +598,15 @@ the values of estimands of interest that a re function of the values or
 counterfactual values of nodes conditional on values or counterfactual
 values of nodes.
 
-\hypertarget{related-software}{%
-\subsection{Related software}\label{related-software}}
+In the next sections we review key functionality for making, updating
+and querying causal models.
 
-\textbf{TILL}
+\hypertarget{sec-make}{%
+\section{Making models}\label{sec-make}}
 
-\begin{itemize}
-\item
-  Embed the \emph{software} into the respective relevant literature.
-\item
-  For the latter both competing and complementary software should be
-  discussed (within the same software environment and beyond), bringing
-  out relative (dis)advantages. All software mentioned should be
-  properly \texttt{@cited}'d.\footnote{See (Using
-    BibTeX){[}\#sec-bibtex{]} for more details.}
-\end{itemize}
-
-The particular strength of \texttt{CausalQueries} is to allow users to
-specify arbitrary DAGs, arbitrary queries over nodes in those DAGs, and
-use the same canonical procedure to learn about those queries whether or
-not the queries are identified. Thus is principle if researchers are
-interest in learning about a quantity like the local average treatment
-effect and their model in fact satisfies the conditions in
-\citet{angrist1996identification}, then updating will recover valid
-estimates even if researchers are unaware that the local average
-treatment effect is identified and are ignorant of the estimation
-procedure proposed by \citet{angrist1996identification}.
-
-There are two broad limitation on the sets of models handled natively by
-\texttt{CausalQueries}. First \texttt{CausalQueries} is designed for
-models with a relatively small number over binary nodes. Because there
-is no compromise made on the space of possible causal relations implied
-by a given model, the parameter space grows very rapidly with the
-complexity of the causal model. The complexity also depends on the
-causal structure and grows rapidly with the number of parents affecting
-a given child. A chain model of the form
-\(A \rightarrow B \rightarrow C \rightarrow D \rightarrow E\) has just
-40 parameters. A model in which \(A, B, C, D\) are all direct of \(E\)
-has 65544 parameters. Moving from binary to non binary nodes has similar
-effects. The restriction to binary nodes is for computational and not
-conceptual reasons. In fact there are ways to employ
-\texttt{CausalQueries} to answer queries from models with nonbinary
-nodes but in general the computational costs make analysis of these
-model prohibitive.
-
-Second the package is geared for learning about populations from samples
-of units that are independent of each other and are independently
-randomly sampled from populations. This the basic set up does not
-address problems of sampling, clustering, hierarchical structures, or
-purposive sampling, for example. In section X we provide pointers to how
-all of these can be addressed.
-
-\hypertarget{sec-models}{%
-\section{Making models}\label{sec-models}}
-
-A model is defined in one step using a \texttt{dagitty} syntax in which
-the structure of the model is provided as a statement.
+A model is defined in one step in \texttt{CausalQUeries} using a
+\texttt{dagitty} syntax in which the structure of the model is provided
+as a statement.
 
 For instance:
 
@@ -650,13 +659,13 @@ where function \(f\) maps from the set of possible values of the parents
 of \(i\) to values of node \(i\) given \(\theta^i\) as described above.
 
 In addition, as we did in the \citet{chickering1996clinician} example,
-it is also possible to use two headed arrows
+it is possible to use two headed arrows
 (\texttt{\textless{}-\textgreater{}}) to indicate ``unobserved
 confounding'', that is, the presence of an unobserved variable that
 might influence observed variables. In this case condition 3 above is
 relaxed and the exogeneous nodes associated with confounded variables
 have a joint distribution. We describe how this is done in greater
-detail in section \citet{confounding}.
+detail in section \textbf{?@sec-confounding}.
 
 \hypertarget{graphing}{%
 \subsection{Graphing}\label{graphing}}
@@ -741,11 +750,12 @@ for each one.
 
 The first element is a \texttt{statement} which defines how the nodes in
 the model are related, specified by the user using \texttt{dagitty}
-syntax. The second element, \texttt{dag}, is a data frame that outlines
-the parent-child relationships within the model. \texttt{nodes} is
-simply a list of the node names in the model. Lastly,
+syntax. The second element, \texttt{dag}, is a dataframe that outlines
+the implied parent-child relationships within the model. \texttt{nodes}
+is simply a list of the names of the implied nodes in the model. Lastly,
 \texttt{parents\_df,} is a table listing the nodes, indicating if they
-are root nodes, and showing how many parents each node has.
+are ``root'' nodes (notes with no parents among the set of specified
+nodes), and showing how many parents each node has.
 
 The model includes additional elements, \texttt{nodal\_types,}
 \texttt{parameters\_df,} and \texttt{causal\_types,} which we explain
@@ -788,7 +798,6 @@ with the nodal types of the model, as well as the family to which they
 belong. See Section~\ref{sec-param-df} for more details. \\
 \texttt{causal\_types} & A data frame listing causal types and the nodal
 types that produce them. (See Causal Types Section) \\
-\texttt{P}: parameter matrix & Should I include it? \\
 \end{longtable}
 
 After updating a model, two additional components are attached to it:
@@ -857,7 +866,7 @@ together in a family, and how they relate to causal types. This becomes
 especially important for more complex models with confounding that might
 involve more complicated mappings between parameters and nodal types. In
 the case with no confounding the nodal types \emph{are} the parameters;
-in cases with confounding you generally have more parameters than nodal
+in cases with confounding there are generally more parameters than nodal
 types.
 
 For instance:
@@ -939,38 +948,20 @@ model.
 \hypertarget{sec-nodal-types}{%
 \subsubsection{Nodal types}\label{sec-nodal-types}}
 
-Two units have the same \emph{nodal type} at node \(Y\), \(\theta^Y\),
-if their outcome at \(Y\) responds in the same ways to parents of \(Y\).
+As described above, two units have the same \emph{nodal type} at node
+\(Y\), \(\theta^Y\), if their outcome at \(Y\) responds in the same ways
+to parents of \(Y\).
 
-A node with \(k\) parents has \(2^{2^k}\) nodal types. The reason is
-that with \(k\) parents, there are \(2^k\) possible values of the
-parents and so \(2^{2^k}\) ways to respond to these possible parental
-values. As a convention we say that a node with no parents has two nodal
-types (0 or 1).
+A binary node with \(k\) binary parents has \(2^{2^k}\) nodal types. The
+reason is that with \(k\) parents, there are \(2^k\) possible values of
+the parents and so \(2^{2^k}\) ways to respond to these possible
+parental values. As a convention we say that a node with no parents has
+two nodal types (0 or 1).
 
-When a model is created the full set of ``nodal types'' is identified.
-These are stored in the model. The subscripts become very long and hard
-to parse for more complex models so the model object also includes a
-guide to interpreting nodal type values. You can see them like this.
+When a model is created the full set of nodal types is identified. These
+are stored in the model. The labels for these nodal types indicate how
+the unit responds to values of parents.
 
-\begin{verbatim}
-R> make_model("X -> Y")$nodal_types
-\end{verbatim}
-
-\begin{verbatim}
-#> $X
-#> [1] "0" "1"
-#> 
-#> $Y
-#> [1] "00" "10" "01" "11"
-\end{verbatim}
-
-Note that we use \(\theta^j\) to indicate nodal types because for
-qualitative analysis the nodal types are often the parameters of
-interest.
-
-Alternatively, the \texttt{interpret\_type} function can be used to
-obtain interpretations for the nodal types of each node in the model.
 For instance, consider the model with two parents
 \(X \rightarrow Y \leftarrow M.\) In such a case, the nodal types of
 \(Y\) will have subscripts with four digits, with each digit
@@ -997,6 +988,35 @@ associated with the value that \(Y\) would take for each combination of
 the three parents. The \texttt{interpret\_type} function provides a
 clear map to identify what each digit in the subscript represents. See
 the examples below for models with two and three parents.
+
+Interpretations are autimatically provided as part of the model object.
+A user can see them like this.
+
+\begin{verbatim}
+R> make_model("X -> Y")$nodal_types
+\end{verbatim}
+
+\begin{verbatim}
+#> $X
+#> [1] "0" "1"
+#> 
+#> $Y
+#> [1] "00" "10" "01" "11"
+#> 
+#> attr(,"interpret")
+#> attr(,"interpret")$X
+#>   node position display interpretation
+#> 1    X       NA      X0          X = 0
+#> 2    X       NA      X1          X = 1
+#> 
+#> attr(,"interpret")$Y
+#>   node position display interpretation
+#> 1    Y        1   Y[*]*      Y | X = 0
+#> 2    Y        2   Y*[*]      Y | X = 1
+\end{verbatim}
+
+The \texttt{interpret\_type} function can also be called by the user to
+obtain interpretations for the nodal types of each node in the model.
 
 \begin{verbatim}
 R> interpretations <- 
@@ -1034,9 +1054,6 @@ R> interpretations$Y
 #> 8    Y        8 Y*******[*] Y | M = 1 & W = 1 & X = 1
 \end{verbatim}
 
-\textbf{LM: section on lookup types; \texttt{interpret\_type} EXAMPLE
-with maybe 2 parents}
-
 \hypertarget{causal-types}{%
 \subsubsection{Causal types}\label{causal-types}}
 
@@ -1051,104 +1068,33 @@ When a model is created, the full set of causal types is identified.
 These are stored in the model object:
 
 \begin{verbatim}
-R> make_model("X -> Y")$causal_types
+R> lipids_model$causal_types |> head()
 \end{verbatim}
 
 \begin{verbatim}
-#>        X  Y
-#> X0.Y00 0 00
-#> X1.Y00 1 00
-#> X0.Y10 0 10
-#> X1.Y10 1 10
-#> X0.Y01 0 01
-#> X1.Y01 1 01
-#> X0.Y11 0 11
-#> X1.Y11 1 11
+#>            Z  X  Y
+#> Z0.X00.Y00 0 00 00
+#> Z1.X00.Y00 1 00 00
+#> Z0.X10.Y00 0 10 00
+#> Z1.X10.Y00 1 10 00
+#> Z0.X01.Y00 0 01 00
+#> Z1.X01.Y00 1 01 00
 \end{verbatim}
 
-A model with \(n_j\) nodal types at node \(j\) has \(\prod_jn_j\) causal
-types. Thus the set of causal types can be large. In the model
-\((X\rightarrow M \rightarrow Y \leftarrow X)\) there are
-\(2\times 4\times 16 = 128\) causal types.
+In the lipids model there are \(2\times 4\times 4 = 32\) causal types. A
+model with \(n_j\) nodal types at node \(j\) has \(\prod_jn_j\) causal
+types. Thus the set of causal types can be large.
 
 Knowledge of a causal type tells you what values a unit would take, on
-all nodes, absent an intervention. For example for a model
-\(X \rightarrow M \rightarrow Y\) a type
+all nodes, whether or not there are interventions. For example for a
+model \(X \rightarrow M \rightarrow Y\) a type
 \(\theta = (\theta^X_0, \theta^M_{01}, \theta^Y_{10})\) would imply data
-\((X=0, M=0, Y=1)\). (The converse of this, of course, is the key to
-updating: observation of data \((X=0, M=0, Y=1)\) result in more weight
-placed on \(\theta^X_0\), \(\theta^M_{01}\), and \(\theta^Y_{10})\).)
-
-\textbf{TILL: Show how realise\_outcomes connects causal types with data
-types: Show for something with a do operation and without a do
-operation; point out causal types on left}
-
-In effect; we can map from causal types to data types by propagating
-realized values on nodes forward in the DAG, moving from exogenous or
-intervened upon nodes to their descendants in generational order. The
-\texttt{realise\_outcomes} functions achieves this by traversing the
-DAG, while recording for each node's nodal types, the values implied by
-realizations on the node's parents. By way of example, consider the
-first causal type of the \(X \rightarrow Y\) model above:
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  \(X\) is exogenous and has a realized value of \(0\)
-\item
-  We substitute for \(Y\) the value implied by the \(00\) nodal type
-  given a \(0\) value on \(X\), which in turn is \(0\) (see nodal types)
-\end{enumerate}
-
-Recovering implied values on complex nodal types given parent
-realizations efficiently at scale, exploits the fact that nodal types
-are the Cartesian Product of possible parent realizations. Finding the
-index of a Node's realized value given parent realizations in a nodal
-type is equivalent to finding the row index in the Cartesian Product
-matrix corresponding to those parent realizations. By definition of the
-Cartesian product, the number of consecutive 0 or 1 elements in a given
-column is \(2^{columnindex}\), when indexing columns from 0. Given a set
-of parent realizations \(R\) indexed from 0, the corresponding row index
-in the Cartesian Product Matrix indexed from 0 can thus be computed via:
-\(row = (\sum_{i = 0}^{|R| - 1} (2^{i} \times R_i))\).
-
-Calling \texttt{realise\_outcomes} on the above model thus yields:
-
-\begin{verbatim}
-R> make_model("X -> Y") |> realise_outcomes()
-\end{verbatim}
-
-\begin{verbatim}
-#>      X Y
-#> 0.00 0 0
-#> 1.00 1 0
-#> 0.10 0 1
-#> 1.10 1 0
-#> 0.01 0 0
-#> 1.01 1 1
-#> 0.11 0 1
-#> 1.11 1 1
-\end{verbatim}
-
-with row names indicating nodal types and columns realized values.
-Intervening on \(X\) with \(do(X=1)\) yields:
-
-\begin{verbatim}
-R> make_model("X -> Y") |> realise_outcomes(dos = list(X = 1))
-\end{verbatim}
-
-\begin{verbatim}
-#>      X Y
-#> 0.00 1 0
-#> 1.00 1 0
-#> 0.10 1 0
-#> 1.10 1 0
-#> 0.01 1 1
-#> 1.01 1 1
-#> 0.11 1 1
-#> 1.11 1 1
-\end{verbatim}
+\((X=0, M=0, Y=1)\) absent any intervention. (The converse of this, of
+course, is the key to updating: observation of data \((X=0, M=0, Y=1)\)
+result in more weight placed on \(\theta^X_0\), \(\theta^M_{01}\), and
+\(\theta^Y_{10})\).) The general approach used by \texttt{CausalQueries}
+for calculating outcomes from causal types is given insection
+\#propogation.
 
 \hypertarget{parameter-matrix}{%
 \subsubsection{Parameter matrix}\label{parameter-matrix}}
@@ -1262,8 +1208,8 @@ R> get_parameter_matrix(model)
 \end{verbatim}
 
 Here and in general, setting restrictions typically involves using
-causal syntax; see Section @ref(syntax) for a guide the syntax used by
-\texttt{CausalQueries}.
+causal syntax; see Section @ref(sec-syntax) for a guide the syntax used
+by \texttt{CausalQueries}.
 
 Note:
 
@@ -1896,8 +1842,8 @@ R> sample_data_2 |> collapse_data(model)
 In the same way it is possible to move from ``compact data'' to ``long
 data'' using \texttt{expand\_data()}.
 
-\hypertarget{updating-models}{%
-\section{Updating models}\label{updating-models}}
+\hypertarget{sec-update}{%
+\section{Updating models}\label{sec-update}}
 
 The approach used by the \texttt{CausalQueries} package to updating
 parameter values given observed data uses \texttt{stan} and involves the
@@ -2157,11 +2103,82 @@ a full distribution of draws from the distribution of the estimand
 (prior or posterior); \texttt{query\_model} takes a collection of
 queries and returns a dataframe with summary statistics on the queries.
 
-\hypertarget{queries}{%
-\section{Queries}\label{queries}}
+\hypertarget{sec-query}{%
+\section{Queries}\label{sec-query}}
 
-\hypertarget{causal-syntax}{%
-\subsection{Causal Syntax}\label{causal-syntax}}
+\hypertarget{calcuating-factual-and-counterfactual-quantities}{%
+\subsection{Calcuating factual and counterfactual
+quantities}\label{calcuating-factual-and-counterfactual-quantities}}
+
+We can map from causal types to data types by propagating realized
+values on nodes forward in the DAG, moving from exogenous or intervened
+upon nodes to their descendants in generational order. The
+\texttt{realise\_outcomes} functions achieves this by traversing the
+DAG, while recording for each node's nodal types, the values implied by
+realizations on the node's parents. By way of example, consider the
+first causal type of the \(X \rightarrow Y\) model above:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \(X\) is exogenous and has a realized value of \(0\)
+\item
+  We substitute for \(Y\) the value implied by the \(00\) nodal type
+  given a \(0\) value on \(X\), which in turn is \(0\) (see nodal types)
+\end{enumerate}
+
+Recovering implied values on complex nodal types given parent
+realizations efficiently at scale, exploits the fact that nodal types
+are the Cartesian Product of possible parent realizations. Finding the
+index of a Node's realized value given parent realizations in a nodal
+type is equivalent to finding the row index in the Cartesian Product
+matrix corresponding to those parent realizations. By definition of the
+Cartesian product, the number of consecutive 0 or 1 elements in a given
+column is \(2^{columnindex}\), when indexing columns from 0. Given a set
+of parent realizations \(R\) indexed from 0, the corresponding row index
+in the Cartesian Product Matrix indexed from 0 can thus be computed via:
+\(row = (\sum_{i = 0}^{|R| - 1} (2^{i} \times R_i))\).
+
+Calling \texttt{realise\_outcomes} on the above model thus yields:
+
+\begin{verbatim}
+R> make_model("X -> Y") |> realise_outcomes()
+\end{verbatim}
+
+\begin{verbatim}
+#>      X Y
+#> 0.00 0 0
+#> 1.00 1 0
+#> 0.10 0 1
+#> 1.10 1 0
+#> 0.01 0 0
+#> 1.01 1 1
+#> 0.11 0 1
+#> 1.11 1 1
+\end{verbatim}
+
+with row names indicating nodal types and columns realized values.
+Intervening on \(X\) with \(do(X=1)\) yields:
+
+\begin{verbatim}
+R> make_model("X -> Y") |> realise_outcomes(dos = list(X = 1))
+\end{verbatim}
+
+\begin{verbatim}
+#>      X Y
+#> 0.00 1 0
+#> 1.00 1 0
+#> 0.10 1 0
+#> 1.10 1 0
+#> 0.01 1 1
+#> 1.01 1 1
+#> 0.11 1 1
+#> 1.11 1 1
+\end{verbatim}
+
+\hypertarget{sec-syntax}{%
+\subsection{Causal Syntax}\label{sec-syntax}}
 
 Scholars typically explore a broad range of causal questions.
 \texttt{CausalQueries} provides syntax for the formulation of various
@@ -2629,7 +2646,7 @@ Network (CRAN) at {[}https://CRAN.R-project.org/{]}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, rightrule=.15mm, bottomrule=.15mm, toprule=.15mm, opacityback=0, breakable, colback=white, arc=.35mm, leftrule=.75mm, left=2mm]
+\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, left=2mm, breakable, rightrule=.15mm, toprule=.15mm, bottomrule=.15mm, leftrule=.75mm, colback=white, opacityback=0]
 
 The approach to generating a generic stan function that can take data
 from arbitrary models was developed in key contributions by
@@ -2659,7 +2676,7 @@ improved every part of it.
 \section*{More technical details}\label{sec-techdetails}}
 \addcontentsline{toc}{section}{More technical details}
 
-\begin{tcolorbox}[enhanced jigsaw, rightrule=.15mm, bottomrule=.15mm, toprule=.15mm, opacityback=0, breakable, colback=white, arc=.35mm, leftrule=.75mm, left=2mm]
+\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, left=2mm, breakable, rightrule=.15mm, toprule=.15mm, bottomrule=.15mm, leftrule=.75mm, colback=white, opacityback=0]
 
 Appendices can be included after the bibliography (with a page break).
 Each section within the appendix should have a proper section title
@@ -2691,7 +2708,7 @@ which includes the following topics:
 \section*{Using BibTeX}\label{sec-bibtex}}
 \addcontentsline{toc}{section}{Using BibTeX}
 
-\begin{tcolorbox}[enhanced jigsaw, rightrule=.15mm, bottomrule=.15mm, toprule=.15mm, opacityback=0, breakable, colback=white, arc=.35mm, leftrule=.75mm, left=2mm]
+\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, left=2mm, breakable, rightrule=.15mm, toprule=.15mm, bottomrule=.15mm, leftrule=.75mm, colback=white, opacityback=0]
 
 References need to be provided in a \textsc{Bib}{\TeX} file
 (\texttt{.bib}). All references should be made with \texttt{@cite}
