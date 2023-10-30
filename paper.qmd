@@ -144,7 +144,7 @@ results |>
     linesep = "") |> 
   kableExtra::kable_classic_2(latex_options = c("scale_down")) |> 
   kableExtra::footnote(
-    general = "Rows 1 and 2 replicate results in \\\\citet{chickering1996clinician}; row 3 returns inferences for complier average effects.",
+    general = "Rows 1 and 2 replicate results in Chickering and Pearl (1996); row 3 returns inferences for complier average effects.",
     escape = FALSE, fixed_small_size = TRUE, threeparttable = TRUE, general_title = ""
   )
 
@@ -190,15 +190,15 @@ The core conceptual framework is described in Pearl's *Causality* [@pearl2009cau
   
   A ``\textbf{causal model}'' is:
   \begin{enumerate}
-    \item an ordered collection of "endogenous nodes" $Y = \{Y_1, Y_2, \dots, Y_n\}$
-    \item an ordered collection of "exogenous nodes" $\Theta = \{\theta^{Y_1}, \theta^{Y_1}, \dots, \theta^{Y_n}\}$
-    \item a collection of functions $F = \{f_{Y_1}, f_{Y_2}, \dots, f_{Y_n}\}$ specifying, for each node $j$, how outcome $y_j$ depends on $\theta_j$ and realizations of endogenous nodes prior to $j$.
-    \item a probability distribution over $\Theta$, $\lambda$
+    \item an ordered collection of ``endogenous nodes" $Y = \{Y_1, Y_2, \dots, Y_n\}$
+    \item an ordered collection of ``exogenous nodes" $\Theta = \{\theta^{Y_1}, \theta^{Y_1}, \dots, \theta^{Y_n}\}$
+    \item a collection of functions $F = \{f_{Y_1}, f_{Y_2}, \dots, f_{Y_n}\}$ specifying, for each $j$, how outcome $y_j$ depends on $\theta_j$ and realizations of endogenous nodes prior to $j$.
+    \item a probability distribution over $\Theta$, $\lambda$.
   \end{enumerate}
   
 \end{definition}
 ```
-In the usual case we take the endogenous nodes to be binary.[^1] When we specify a causal structure we specify which endogenous nodes are (possibly) direct causes of a node, $Y_j$, given other nodes in the model. These nodes are called the parents of $Y_j$, $PA_j$ (we use upper case $PA_j$ to indicate the collection of nodes and lower case $pa_j$ to indicate a particular set of values that these nodes might take on). With discrete valued nodes, it is possible to identify all possible ways that a node might respond to its parents.  We refer to the ways that a node responds and the nodes  "nodal type." The set of nodal types  corresponds to principal strata familiar, for instance, in the study of instrumental variables [@frangakis2002principal].    
+In the usual case `CausalQUery`  takes  endogenous nodes to be binary.[^1] When we specify a causal structure we specify which endogenous nodes are (possibly) direct causes of a node, $Y_j$, given other nodes in the model. These nodes are called the parents of $Y_j$, $PA_j$ (we use upper case $PA_j$ to indicate the collection of nodes and lower case $pa_j$ to indicate a particular set of values that these nodes might take on). With discrete valued nodes, it is possible to identify all possible ways that a node might respond to its parents.  We refer to the ways that a node responds and the nodes  "nodal type." The set of nodal types  corresponds to principal strata familiar, for instance, in the study of instrumental variables [@frangakis2002principal].    
 
 If node $Y_i$ can take on $k_i$ possible values then the set of possible values that can be taken on by parents of $j$ is $m :=\prod_{i\in PA_j}k_i$. Then there are $k_j^{m}$ different ways that a node might respond to its parents.  In the case of binary nodes this becomes $2^{\left(2^{|PA_j|}\right)}$. Thus for an endogenous node with no parents there are 2 nodal types, for a binary node with one binary parent there are four types, for a binary node with 2 parents there are 16, and so on.
 
@@ -439,6 +439,7 @@ For instance:
 ```{r}
 #| label: params-df
 #| echo: true
+#| eval: false
 
 make_model("X -> Y")$parameters_df
 ```
@@ -458,7 +459,7 @@ make_model("X -> Y")$parameters_df |>
   kableExtra::kable_classic_2(latex_options = c("scale_down"))
 ```
 
-Produces parameters data frame shown in @tbl-params-df. Each row in the data frame corresponds to a single parameter.
+prints the parameters data frame shown in @tbl-params-df. Each row in the data frame corresponds to a single parameter.
 
 The columns of the parameters data frame are understood as follows:
 
@@ -579,50 +580,81 @@ To speed up different operations it is sometimes useful to have P added to the m
 
 #### Setting restrictions {#restrictions}
 
-**TILL: READ THROUGH**
-
 When a model is defined, the complete set of possible causal relations are worked out. This set can be very large.
 
 Sometimes for theoretical or practical reasons it is useful to constrain the set of types. In `CausalQueries` this is done at the level of nodal types, with restrictions on causal types following from restrictions on nodal types.
 
-For instance to impose an assumption that $Y$ is not decreasing in $X$ we generate a restricted model as follows:
+To illustrate, in analyses of data with imperfect compliance, like we saw in our motivating  `lipids` model example, it is common to impose a monotonicity  assumption: that $X$ does not respond negatively to $Y$. This is one of the conditions needed to interpret instrumental variables estimates as (consistent) estimates of the complier average treatment effect. 
 
-```{r}
-#| echo: true
-#| eval: false
-
-model <- make_model("X -> Y") |> set_restrictions("Y[X=1] < Y[X=0]")
-```
-
-or
+In `CausalQueries` we impose this assumption thus
 
 ```{r}
 #| echo: true
 #| eval: true
 
-model <- make_model("X -> Y") |> set_restrictions(decreasing("X", "Y"))
+model_restricted <- 
+  make_model("Z -> X -> Y; X <-> Y")   |> 
+  set_restrictions("X[Z=1] < X[Z=0]")
+
 ```
 
-Viewing the resulting parameter matrix we see that both the set of parameters and the set of causal types are now restricted:
+in words: we restrict by removing types for which $X$ is decreasing in $Z$.
+
+
+```{r}
+#| label: tbl-lipids2
+#| tbl-cap: "Monotonic model."
+#| echo: false
+#| eval: false
+
+if (params$run) {
+ 
+  model_restricted |>
+  update_model(lipids_data, refresh = 0) |>
+    readr::write_rds(file = "saved/lipids_model_list.rds")
+}
+  
+readr::read_rds(file = "saved/lipids_model_list.rds") |>
+  query_model(query = "Y[X=1] - Y[X=0]",
+              given = "X[Z=1] > X[Z=0]",
+              using = "posteriors")  |> 
+  dplyr::select(query, given, mean, sd, starts_with("cred")) |>
+  knitr::kable(
+    digits = 2,
+    booktabs = TRUE,
+    align = "c",
+    escape = TRUE, 
+    linesep = "") |> 
+  kableExtra::kable_classic_2(latex_options = c("scale_down")) |> 
+  kableExtra::footnote(
+    general = "Estimates of complier average effects for model with  monotonicity restrictions.",
+    escape = FALSE, fixed_small_size = TRUE, threeparttable = TRUE, general_title = ""
+  )
+
+```
+
+We can use `get_parameter_matrix(model)` to view the resulting parameter matrix in which both the set of parameters and the set of causal types are restricted.
 
 ```{r}
 #| label: get-param-matrix-restrict
 #| echo: true
+#| eval: false
 
 get_parameter_matrix(model)
 
 ```
 
-Here and in general, setting restrictions typically involves using causal syntax; see Section \@ref(sec-syntax) for a guide the syntax used by `CausalQueries`.
+Here and in general, setting restrictions typically involves using causal syntax; see Section @sec-syntax for a guide the syntax used by `CausalQueries`.
 
 <!-- GS: Do we need to add this section? -->
 
 Note:
 
--   Restrictions have to operate on nodal types: restrictions on *levels* of endogenous nodes aren't allowed. This, for example, will fail: `make_model("X -> Y") |> set_restrictions(statement =  "(Y == 1)")`. The reason is that it requests a correlated restriction on nodal types for `X` and `Y` which involves undeclared confounding.
+-   Restrictions have to operate on nodal types: restrictions on *levels* of endogenous nodes arenot allowed. This, for example, will fail: `make_model("X -> Y") |> set_restrictions(statement =  "(Y == 1)")`. The reason is that it requests a correlated restriction on nodal types for `X` and `Y` which involves undeclared confounding.
 -   Restrictions implicitly assume fixed values for *all* parents of a node. For instance: `make_model("A -> B <- C") |> set_restrictions("(B[C=1]==1)")` is interpreted as shorthand for the restriction `"B[C = 1, A = 0]==1 | B[C = 1, A = 1]==1"`.
 -   To place restrictions on multiple nodes at the same time, provide these as a vector of restrictions. This is not permitted: `set_restrictions("Y[X=1]==1 & X==1")`, since it requests correlated restrictions. This however is allowed: `set_restrictions(c("Y[X=1]==1", "X==1"))`.\
 -   Use the `keep` argument to indicate whether nodal types should be dropped (default) or retained.
+-  Restrictions based on causal statements can use helpers, `decreasing()`, `increasing()`, 'complements()' and similar. For instance  `set_restrictions(decreasing("X", "Y")`
 -   Restrictions can be set using nodal type labels.
 
 ```{r}
@@ -652,7 +684,13 @@ make_model("X -> Y") |>
 
 <!--   set_restrictions(list(decreasing('X','Y'), decreasing('Y','Z')), given = c(NA,'X.0')) -->
 
--   adding "given" for restrictions with models with confounding
+-  in models with confounding restrictions can be added to nodaly types conditional on the values of other nodal types; this is done using a "given" argument.
+
+```{r}
+model <- make_model("X -> Y; X <-> Y") %>%
+ set_restrictions(labels = list(X = '0', Y = '00'), given = c(NA,'X.0'))
+get_parameter_matrix(model) |> kable()
+```
 
 #### Allowing confounding {#confounding}
 
@@ -1014,6 +1052,7 @@ The function `make_data` allows you to draw data like this if you specify a data
 #| label: make-data-incomplete
 #| echo: true
 #| eval: true
+set.seed(1)
 
 sample_data_2 <-
   make_data(model,
@@ -1110,7 +1149,7 @@ As `update_model()` calls `rstan::sampling` one can pass along all arguments in 
 
 If you have multiple cores you can do parallel processing by including this line before running `CausalQueries`:
 
-```{r, eval = FALSE}
+```{r}
 #| eval: false
 
 library(parallel)
