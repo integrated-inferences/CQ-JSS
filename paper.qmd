@@ -1252,25 +1252,18 @@ make_model("X -> Y") |> realise_outcomes(dos = list(X = 1))
 
 ### Causal Syntax {#sec-syntax}
 
-**LM: REVIEW AND FIX SECTION**
 
-WRITE SECTION DESCRIBING FACTUAL AND COUNTERFACTULA QUERIES AND THE SYNTAX INCLUDING Role of \[\] AND OF GIVEN
-
-`get_query_types`
-
-return sets; discuss how all queries related to these sets
+WRITE SECTION DESCRIBING FACTUAL AND COUNTERFACTULA QUERIES AND THE SYNTAX INCLUDING Role of \[\] AND OF GIVEN `get_query_types` return sets; discuss how all queries related to these sets
 
 
-
-start off with query Y==1 then Y\[X=1\] ==1 then Y\[X=1\] \>= Y\[X=0\] then show linear functions possible Y\[X=1\] - Y\[X=0\]
-
-
- `CausalQueries` provides syntax for the formulation of various causal queries, ranging from relatively straightforward queries, such as  the proportion of units where $Y$ equals 1 (expressed as `"Y == 1"`), to more detailed ones, such as  questions about the types for which $Y$ is greater when $X$ equals 1 than when $X$ equals 0 (expressed as `"Y[X=1] > Y[X=0]"`). 
+`CausalQueries` provides syntax for the formulation of various causal queries including queries on all runds of the "causal ladder" [@pearl2018book]: prediction, such as  the proportion of units where $Y$ equals 1; intervention, such as  the probability that $Y$ = 1 when $X$ is *set* to 1; counterfactuals, such as the probability that $Y$ would be 1 were $X=1$ given we know $Y$ is 0 when $X$ was observed to be 0. Queries can be posed at the population level or case level and can be unconditional (e.g. what is the effect of $X$ on $Y$ for all units) or conditional (for example, the effect f $X$ on $Y$ for units for whom $Z$ affects $X$). 
 
 
 This syntax enables users to write arbitrary causal queries to interrogate their models. For factual queries, users may employ logical statements to ask questions about observed conditions, without any intervention. Take, for example, the query mentioned above about the proportion of units where $Y$ equals 1, expressed as `"Y == 1"`.  In this case the logical operator  ==  indicates that `CausalQueries` should consider units that fulfill the condition of strict equality where $Y$ equals 1.^[`CausalQueries` also accepts = as a shorthand for ==. However, == is preferred as it is the conventional logical operator to express a condition of strict equality.]
 
-Counterfactual queries can be expressed in `CausalQueries` by using square brackets \[\]. Inside the brackets, variables that are to be intervened are specified. For instance, consider the counterfactual query that asks about the types for which $Y$ equals 1 when $X$ is _set to_ 0. In this case, since $X$ is being intervened to be zero, $X$ is placed inside the brackets. Given that $Y$ equaling 1 is a condition about potentially observed values, it is expressed as in the paragraph above using the logical operator `==`. More precisely, such query can be written as `"Y[X=0] == 1"`.
+The key to posing causal queries is being able to ask about values of variables given that the values of some other variables are "controlled". This corresponds to appliaction of the `do` operator in @pearl2009causality. In `CausalQueries` this is done by using square brackets \[\]. Inside the brackets, variables that are to be intervened upon are specified. 
+
+For instance, consider the counterfactual query that asks about the types for which $Y$ equals 1 when $X$ is _set to_ 0. In this case, since $X$ is being intervened to be zero, $X$ is placed inside the brackets. Given that $Y$ equaling 1 is a condition about potentially observed values, it is expressed as using the logical operator `==`. More precisely, such query can be written as `"Y[X=0] == 1"`.
 
 
 With the aid of logical operators such as `==`, `!=`, `>`, `>=` `<`,`<=` , and the use of square brackets, users can formulate a broad range of queries. For example, they can make queries about cases where $X$ has a positive effect on $Y$, i.e., whether $Y$ is greater when $X$ is set to 1 compared to when $X$ is set to 0, expressed as `"Y[X=1] > Y[X=0]"`. Alternatively, they can explore complex counterfactuals like `"Y[M=M[X=0], X=1]==1"`. In this case, `CausalQueries` looks for the types for which $Y$ equals 1 when $X$ is set to 1, while keeping $M$ constant at the value it would take if $X$ were 0.

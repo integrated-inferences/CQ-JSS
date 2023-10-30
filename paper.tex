@@ -330,7 +330,7 @@ Y[X=1] - Y[X=0] & X[Z=1] > X[Z=0] & 0.70 & 0.05 & 0.60 & 0.80\\
 \end{tabular}
 \begin{tablenotes}
 \small
-\item Rows 1 and 2 replicate results in \citet{chickering1996clinician}; row 3 returns inferences for complier average effects.
+\item Rows 1 and 2 replicate results in Chickering and Pearl (1996); row 3 returns inferences for complier average effects.
 \end{tablenotes}
 \end{threeparttable}}
 \end{table}
@@ -415,29 +415,29 @@ notation used in \citet{ii2023}):
   
   A ``\textbf{causal model}'' is:
   \begin{enumerate}
-    \item an ordered collection of "endogenous nodes" $Y = \{Y_1, Y_2, \dots, Y_n\}$
-    \item an ordered collection of "exogenous nodes" $\Theta = \{\theta^{Y_1}, \theta^{Y_1}, \dots, \theta^{Y_n}\}$
-    \item a collection of functions $F = \{f_{Y_1}, f_{Y_2}, \dots, f_{Y_n}\}$ specifying, for each node $j$, how outcome $y_j$ depends on $\theta_j$ and realizations of endogenous nodes prior to $j$.
-    \item a probability distribution over $\Theta$, $\lambda$
+    \item an ordered collection of ``endogenous nodes" $Y = \{Y_1, Y_2, \dots, Y_n\}$
+    \item an ordered collection of ``exogenous nodes" $\Theta = \{\theta^{Y_1}, \theta^{Y_1}, \dots, \theta^{Y_n}\}$
+    \item a collection of functions $F = \{f_{Y_1}, f_{Y_2}, \dots, f_{Y_n}\}$ specifying, for each $j$, how outcome $y_j$ depends on $\theta_j$ and realizations of endogenous nodes prior to $j$.
+    \item a probability distribution over $\Theta$, $\lambda$.
   \end{enumerate}
   
 \end{definition}
 
-In the usual case we take the endogenous nodes to be binary.\footnote{\texttt{CausalQueries}
-  can be used also to analyse non binary data though with a cost of
-  greatly increased complexity. See section 9.4.1 of \citet{ii2023} for
-  an approach that codes non binary data as a profile of outcomes on
-  multiple binary nodes.} When we specify a causal structure we specify
-which endogenous nodes are (possibly) direct causes of a node, \(Y_j\),
-given other nodes in the model. These nodes are called the parents of
-\(Y_j\), \(PA_j\) (we use upper case \(PA_j\) to indicate the collection
-of nodes and lower case \(pa_j\) to indicate a particular set of values
-that these nodes might take on). With discrete valued nodes, it is
-possible to identify all possible ways that a node might respond to its
-parents. We refer to the ways that a node responds and the nodes ``nodal
-type.'' The set of nodal types corresponds to principal strata familiar,
-for instance, in the study of instrumental variables
-\citep{frangakis2002principal}.
+In the usual case \texttt{CausalQUery} takes endogenous nodes to be
+binary.\footnote{\texttt{CausalQueries} can be used also to analyse non
+  binary data though with a cost of greatly increased complexity. See
+  section 9.4.1 of \citet{ii2023} for an approach that codes non binary
+  data as a profile of outcomes on multiple binary nodes.} When we
+specify a causal structure we specify which endogenous nodes are
+(possibly) direct causes of a node, \(Y_j\), given other nodes in the
+model. These nodes are called the parents of \(Y_j\), \(PA_j\) (we use
+upper case \(PA_j\) to indicate the collection of nodes and lower case
+\(pa_j\) to indicate a particular set of values that these nodes might
+take on). With discrete valued nodes, it is possible to identify all
+possible ways that a node might respond to its parents. We refer to the
+ways that a node responds and the nodes ``nodal type.'' The set of nodal
+types corresponds to principal strata familiar, for instance, in the
+study of instrumental variables \citep{frangakis2002principal}.
 
 If node \(Y_i\) can take on \(k_i\) possible values then the set of
 possible values that can be taken on by parents of \(j\) is
@@ -876,18 +876,6 @@ For instance:
 R> make_model("X -> Y")$parameters_df
 \end{verbatim}
 
-\begin{verbatim}
-#> # A tibble: 6 x 8
-#>   param_names node    gen param_set nodal_type given param_value priors
-#>   <chr>       <chr> <int> <chr>     <chr>      <chr>       <dbl>  <dbl>
-#> 1 X.0         X         1 X         0          ""           0.5       1
-#> 2 X.1         X         1 X         1          ""           0.5       1
-#> 3 Y.00        Y         2 Y         00         ""           0.25      1
-#> 4 Y.10        Y         2 Y         10         ""           0.25      1
-#> 5 Y.01        Y         2 Y         01         ""           0.25      1
-#> 6 Y.11        Y         2 Y         11         ""           0.25      1
-\end{verbatim}
-
 \hypertarget{tbl-params-df}{}
 \begin{table}
 \caption{\label{tbl-params-df}Example of Parameters Data Frame }\tabularnewline
@@ -908,8 +896,8 @@ Y.11 & Y & 2 & Y & 11 &  & 0.25 & 1\\
 \end{tabular}}
 \end{table}
 
-Produces parameters data frame shown in Table~\ref{tbl-params-df}. Each
-row in the data frame corresponds to a single parameter.
+prints the parameters data frame shown in Table~\ref{tbl-params-df}.
+Each row in the data frame corresponds to a single parameter.
 
 The columns of the parameters data frame are understood as follows:
 
@@ -1157,8 +1145,6 @@ to the model:
 \hypertarget{restrictions}{%
 \subsubsection{Setting restrictions}\label{restrictions}}
 
-\textbf{TILL: READ THROUGH}
-
 When a model is defined, the complete set of possible causal relations
 are worked out. This set can be very large.
 
@@ -1167,50 +1153,39 @@ the set of types. In \texttt{CausalQueries} this is done at the level of
 nodal types, with restrictions on causal types following from
 restrictions on nodal types.
 
-For instance to impose an assumption that \(Y\) is not decreasing in
-\(X\) we generate a restricted model as follows:
+To illustrate, in analyses of data with imperfect compliance, like we
+saw in our motivating \texttt{lipids} model example, it is common to
+impose a monotonicity assumption: that \(X\) does not respond negatively
+to \(Y\). This is one of the conditions needed to interpret instrumental
+variables estimates as (consistent) estimates of the complier average
+treatment effect.
+
+In \texttt{CausalQueries} we impose this assumption thus
 
 \begin{verbatim}
-R> model <- make_model("X -> Y") |> set_restrictions("Y[X=1] < Y[X=0]")
+R> model_restricted <- 
++  make_model("Z -> X -> Y; X <-> Y")   |> 
++  set_restrictions("X[Z=1] < X[Z=0]")
 \end{verbatim}
 
-or
+in words: we restrict by removing types for which \(X\) is decreasing in
+\(Z\).
 
-\begin{verbatim}
-R> model <- make_model("X -> Y") |> set_restrictions(decreasing("X", "Y"))
-\end{verbatim}
+\begin{table}
 
-Viewing the resulting parameter matrix we see that both the set of
-parameters and the set of causal types are now restricted:
+\end{table}
+
+We can use \texttt{get\_parameter\_matrix(model)} to view the resulting
+parameter matrix in which both the set of parameters and the set of
+causal types are restricted.
 
 \begin{verbatim}
 R> get_parameter_matrix(model)
 \end{verbatim}
 
-\begin{verbatim}
-#> 
-#> Rows are parameters, grouped in parameter sets
-#> 
-#> Columns are causal types
-#> 
-#> Cell entries indicate whether a parameter probability is used
-#> in the calculation of causal type probability
-#> 
-#>      X0.Y00 X1.Y00 X0.Y01 X1.Y01 X0.Y11 X1.Y11
-#> X.0       1      0      1      0      1      0
-#> X.1       0      1      0      1      0      1
-#> Y.00      1      1      0      0      0      0
-#> Y.01      0      0      1      1      0      0
-#> Y.11      0      0      0      0      1      1
-#> 
-#>  
-#>  param_set  (P)
-#> 
-\end{verbatim}
-
 Here and in general, setting restrictions typically involves using
-causal syntax; see Section @ref(sec-syntax) for a guide the syntax used
-by \texttt{CausalQueries}.
+causal syntax; see Section Section~\ref{sec-syntax} for a guide the
+syntax used by \texttt{CausalQueries}.
 
 Note:
 
@@ -1218,7 +1193,7 @@ Note:
 \tightlist
 \item
   Restrictions have to operate on nodal types: restrictions on
-  \emph{levels} of endogenous nodes aren't allowed. This, for example,
+  \emph{levels} of endogenous nodes arenot allowed. This, for example,
   will fail:
   \texttt{make\_model("X\ -\textgreater{}\ Y")\ \textbar{}\textgreater{}\ set\_restrictions(statement\ =\ \ "(Y\ ==\ 1)")}.
   The reason is that it requests a correlated restriction on nodal types
@@ -1238,6 +1213,10 @@ Note:
 \item
   Use the \texttt{keep} argument to indicate whether nodal types should
   be dropped (default) or retained.
+\item
+  Restrictions based on causal statements can use helpers,
+  \texttt{decreasing()}, \texttt{increasing()}, `complements()' and
+  similar. For instance \texttt{set\_restrictions(decreasing("X",\ "Y")}
 \item
   Restrictions can be set using nodal type labels.
 \end{itemize}
@@ -1262,8 +1241,32 @@ R> make_model("X -> Y") |>
 \begin{itemize}
 \tightlist
 \item
-  adding ``given'' for restrictions with models with confounding
+  in models with confounding restrictions can be added to nodaly types
+  conditional on the values of other nodal types; this is done using a
+  ``given'' argument.
 \end{itemize}
+
+\begin{verbatim}
+R> model <- make_model("X -> Y; X <-> Y") %>%
++ set_restrictions(labels = list(X = '0', Y = '00'), given = c(NA,'X.0'))
+R> get_parameter_matrix(model) |> kable()
+\end{verbatim}
+
+\begin{tabular}{l|r|r|r|r}
+\hline
+  & X1.Y00 & X1.Y10 & X1.Y01 & X1.Y11\\
+\hline
+X.1 & 1 & 1 & 1 & 1\\
+\hline
+Y.00\_X.1 & 1 & 0 & 0 & 0\\
+\hline
+Y.10\_X.1 & 0 & 1 & 0 & 0\\
+\hline
+Y.01\_X.1 & 0 & 0 & 1 & 0\\
+\hline
+Y.11\_X.1 & 0 & 0 & 0 & 1\\
+\hline
+\end{tabular}
 
 \hypertarget{confounding}{%
 \subsubsection{Allowing confounding}\label{confounding}}
@@ -1771,6 +1774,8 @@ you specify a data strategy indicating the probabilities of observing
 data on different nodes, possibly as a function of prior nodes observed.
 
 \begin{verbatim}
+R> set.seed(1)
+R> 
 R> sample_data_2 <-
 +  make_data(model,
 +            n = 8,
@@ -1794,13 +1799,13 @@ R> sample_data_2
 \begin{verbatim}
 #>   X  M Y
 #> 1 0 NA 0
-#> 2 0 NA 0
-#> 3 0 NA 1
-#> 4 0 NA 1
-#> 5 0 NA 1
-#> 6 0 NA 1
-#> 7 0 NA 1
-#> 8 1 NA 1
+#> 2 0 NA 1
+#> 3 1 NA 0
+#> 4 1 NA 1
+#> 5 1 NA 1
+#> 6 1  1 0
+#> 7 1 NA 0
+#> 8 1  1 0
 \end{verbatim}
 
 \hypertarget{reshaping-data}{%
@@ -1833,11 +1838,19 @@ R> sample_data_2 |> collapse_data(model)
 \end{verbatim}
 
 \begin{verbatim}
-#>   event strategy count
-#> 1  X0Y0       XY     2
-#> 2  X1Y0       XY     0
-#> 3  X0Y1       XY     5
-#> 4  X1Y1       XY     1
+#>     event strategy count
+#> 1  X0M0Y0      XMY     0
+#> 2  X1M0Y0      XMY     0
+#> 3  X0M1Y0      XMY     0
+#> 4  X1M1Y0      XMY     2
+#> 5  X0M0Y1      XMY     0
+#> 6  X1M0Y1      XMY     0
+#> 7  X0M1Y1      XMY     0
+#> 8  X1M1Y1      XMY     0
+#> 9    X0Y0       XY     1
+#> 10   X1Y0       XY     2
+#> 11   X0Y1       XY     1
+#> 12   X1Y1       XY     2
 \end{verbatim}
 
 In the same way it is possible to move from ``compact data'' to ``long
@@ -2085,7 +2098,7 @@ model & query & mean & sd\\
 \hline
 uncensored & (Y[X=1] - Y[X=0]) & 0.59 & 0.20\\
 \hline
-censored & (Y[X=1] - Y[X=0]) & 0.02 & 0.32\\
+censored & (Y[X=1] - Y[X=0]) & 0.01 & 0.31\\
 \hline
 \end{tabular}
 
@@ -2181,26 +2194,20 @@ R> make_model("X -> Y") |> realise_outcomes(dos = list(X = 1))
 \hypertarget{sec-syntax}{%
 \subsection{Causal Syntax}\label{sec-syntax}}
 
-\textbf{LM: REVIEW AND FIX SECTION}
-
 WRITE SECTION DESCRIBING FACTUAL AND COUNTERFACTULA QUERIES AND THE
-SYNTAX INCLUDING Role of {[}{]} AND OF GIVEN
-
-\texttt{get\_query\_types}
-
+SYNTAX INCLUDING Role of {[}{]} AND OF GIVEN \texttt{get\_query\_types}
 return sets; discuss how all queries related to these sets
 
-start off with query Y==1 then Y{[}X=1{]} ==1 then Y{[}X=1{]}
-\textgreater= Y{[}X=0{]} then show linear functions possible Y{[}X=1{]}
-- Y{[}X=0{]}
-
 \texttt{CausalQueries} provides syntax for the formulation of various
-causal queries, ranging from relatively straightforward queries, such as
-the proportion of units where \(Y\) equals 1 (expressed as
-\texttt{"Y\ ==\ 1"}), to more detailed ones, such as questions about the
-types for which \(Y\) is greater when \(X\) equals 1 than when \(X\)
-equals 0 (expressed as
-\texttt{"Y{[}X=1{]}\ \textgreater{}\ Y{[}X=0{]}"}).
+causal queries including queries on all runds of the ``causal ladder''
+\citep{pearl2018book}: prediction, such as the proportion of units where
+\(Y\) equals 1; intervention, such as the probability that \(Y\) = 1
+when \(X\) is \emph{set} to 1; counterfactuals, such as the probability
+that \(Y\) would be 1 were \(X=1\) given we know \(Y\) is 0 when \(X\)
+was observed to be 0. Queries can be posed at the population level or
+case level and can be unconditional (e.g.~what is the effect of \(X\) on
+\(Y\) for all units) or conditional (for example, the effect f \(X\) on
+\(Y\) for units for whom \(Z\) affects \(X\)).
 
 This syntax enables users to write arbitrary causal queries to
 interrogate their models. For factual queries, users may employ logical
@@ -2214,15 +2221,20 @@ of strict equality where \(Y\) equals 1.\footnote{\texttt{CausalQueries}
   is the conventional logical operator to express a condition of strict
   equality.}
 
-Counterfactual queries can be expressed in \texttt{CausalQueries} by
-using square brackets {[}{]}. Inside the brackets, variables that are to
-be intervened are specified. For instance, consider the counterfactual
-query that asks about the types for which \(Y\) equals 1 when \(X\) is
-\emph{set to} 0. In this case, since \(X\) is being intervened to be
-zero, \(X\) is placed inside the brackets. Given that \(Y\) equaling 1
-is a condition about potentially observed values, it is expressed as in
-the paragraph above using the logical operator \texttt{==}. More
-precisely, such query can be written as \texttt{"Y{[}X=0{]}\ ==\ 1"}.
+The key to posing causal queries is being able to ask about values of
+variables given that the values of some other variables are
+``controlled''. This corresponds to appliaction of the \texttt{do}
+operator in \citet{pearl2009causality}. In \texttt{CausalQueries} this
+is done by using square brackets {[}{]}. Inside the brackets, variables
+that are to be intervened upon are specified.
+
+For instance, consider the counterfactual query that asks about the
+types for which \(Y\) equals 1 when \(X\) is \emph{set to} 0. In this
+case, since \(X\) is being intervened to be zero, \(X\) is placed inside
+the brackets. Given that \(Y\) equaling 1 is a condition about
+potentially observed values, it is expressed as using the logical
+operator \texttt{==}. More precisely, such query can be written as
+\texttt{"Y{[}X=0{]}\ ==\ 1"}.
 
 With the aid of logical operators such as \texttt{==}, \texttt{!=},
 \texttt{\textgreater{}}, \texttt{\textgreater{}=}
@@ -2462,36 +2474,36 @@ model & query & given & using & case\_level & mean & sd\\
 \midrule
 1 & ATE & - & parameters & FALSE & 0.00 & NA\\
 2 & ATE & - & parameters & FALSE & 0.33 & NA\\
-1 & ATE & - & priors & FALSE & 0.00 & 0.32\\
-2 & ATE & - & priors & FALSE & 0.33 & 0.23\\
+1 & ATE & - & priors & FALSE & -0.01 & 0.32\\
+2 & ATE & - & priors & FALSE & 0.33 & 0.24\\
 1 & ATE & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA\\
 2 & ATE & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA\\
 1 & ATE & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29\\
-2 & ATE & Y==1 \& X==1 & priors & FALSE & 0.49 & 0.29\\
+2 & ATE & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29\\
 1 & POS & - & parameters & FALSE & 0.25 & NA\\
 2 & POS & - & parameters & FALSE & 0.33 & NA\\
 1 & POS & - & priors & FALSE & 0.25 & 0.20\\
-2 & POS & - & priors & FALSE & 0.33 & 0.23\\
+2 & POS & - & priors & FALSE & 0.33 & 0.24\\
 1 & POS & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA\\
 2 & POS & Y==1 \& X==1 & parameters & FALSE & 0.50 & NA\\
 1 & POS & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29\\
-2 & POS & Y==1 \& X==1 & priors & FALSE & 0.49 & 0.29\\
+2 & POS & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29\\
 1 & ATE & - & parameters & TRUE & 0.00 & NA\\
 2 & ATE & - & parameters & TRUE & 0.33 & NA\\
-1 & ATE & - & priors & TRUE & 0.00 & NA\\
+1 & ATE & - & priors & TRUE & -0.01 & NA\\
 2 & ATE & - & priors & TRUE & 0.33 & NA\\
 1 & ATE & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA\\
 2 & ATE & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA\\
-1 & ATE & Y==1 \& X==1 & priors & TRUE & 0.50 & NA\\
-2 & ATE & Y==1 \& X==1 & priors & TRUE & 0.49 & NA\\
+1 & ATE & Y==1 \& X==1 & priors & TRUE & 0.51 & NA\\
+2 & ATE & Y==1 \& X==1 & priors & TRUE & 0.50 & NA\\
 1 & POS & - & parameters & TRUE & 0.25 & NA\\
 2 & POS & - & parameters & TRUE & 0.33 & NA\\
 1 & POS & - & priors & TRUE & 0.25 & NA\\
 2 & POS & - & priors & TRUE & 0.33 & NA\\
 1 & POS & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA\\
 2 & POS & Y==1 \& X==1 & parameters & TRUE & 0.50 & NA\\
-1 & POS & Y==1 \& X==1 & priors & TRUE & 0.50 & NA\\
-2 & POS & Y==1 \& X==1 & priors & TRUE & 0.49 & NA\\
+1 & POS & Y==1 \& X==1 & priors & TRUE & 0.51 & NA\\
+2 & POS & Y==1 \& X==1 & priors & TRUE & 0.50 & NA\\
 \bottomrule
 \end{longtable}
 
@@ -2659,7 +2671,7 @@ Network (CRAN) at {[}https://CRAN.R-project.org/{]}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, toprule=.15mm, arc=.35mm, colback=white, opacityback=0, rightrule=.15mm, breakable, bottomrule=.15mm, left=2mm]
+\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, rightrule=.15mm, colback=white, arc=.35mm, leftrule=.75mm, left=2mm, breakable, toprule=.15mm, opacityback=0]
 
 The approach to generating a generic stan function that can take data
 from arbitrary models was developed in key contributions by
@@ -2689,7 +2701,7 @@ improved every part of it.
 \section*{More technical details}\label{sec-techdetails}}
 \addcontentsline{toc}{section}{More technical details}
 
-\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, toprule=.15mm, arc=.35mm, colback=white, opacityback=0, rightrule=.15mm, breakable, bottomrule=.15mm, left=2mm]
+\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, rightrule=.15mm, colback=white, arc=.35mm, leftrule=.75mm, left=2mm, breakable, toprule=.15mm, opacityback=0]
 
 Appendices can be included after the bibliography (with a page break).
 Each section within the appendix should have a proper section title
@@ -2721,7 +2733,7 @@ which includes the following topics:
 \section*{Using BibTeX}\label{sec-bibtex}}
 \addcontentsline{toc}{section}{Using BibTeX}
 
-\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, toprule=.15mm, arc=.35mm, colback=white, opacityback=0, rightrule=.15mm, breakable, bottomrule=.15mm, left=2mm]
+\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, rightrule=.15mm, colback=white, arc=.35mm, leftrule=.75mm, left=2mm, breakable, toprule=.15mm, opacityback=0]
 
 References need to be provided in a \textsc{Bib}{\TeX} file
 (\texttt{.bib}). All references should be made with \texttt{@cite}
