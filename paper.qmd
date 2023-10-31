@@ -83,7 +83,7 @@ In the next section we provide a short motivating example. We then describe how 
 
 Before providing details on package functionality we illustrate these three core functions by showing how to use `CuasalQueries` to replicate the analysis in @chickering1996clinician (see also @ii2023). @chickering1996clinician seek to draw inference on causal effects in the presence of imperfect compliance. We have access to an instrument $Z$ (a randomly assigned prescription for cholesterol medication), which is a cause of $X$ (treatment uptake) but otherwise unrelated to $Y$ (cholesterol). We imagine we are interested in three specific queries. The first is the average causal effect of $X$ on $Y$. The second is the average effect for units for which $X=0$ and $Y=0$. The last is the average treatment effect *for* "compliers": units for which $X$ responds positively to $Z$. Thus two of these queries are conditional queries, with one conditional on a counterfactual quantity.
 
-Our data on $Z$, $X$, and $Y$ is complete for all units and looks, in compact form, as follows:
+Our data on $Z$, $X$, and $Y$ is complete for all units and looks, in "compact form", as follows:
 
 ```{r}
 #| echo: true
@@ -93,6 +93,8 @@ data("lipids_data")
 lipids_data
 
 ```
+
+Note that in compact form we simply record the number of units ("count") that display each possible pattern of outcomes on variables ("event").^[The "strategy" column records the set of variables for which data has been recorded.]
 
 With `CausalQueries`, you can create the model, input data to update it, and then query the model for results.
 
@@ -581,7 +583,7 @@ To speed up different operations it is sometimes useful to have P added to the m
 
 #### Setting restrictions {#restrictions}
 
-When a model is defined, the complete set of possible causal relations are worked out. This set can be very large.
+When a model is defined, the complete set of possible causal relations is worked out. This set can be very large.
 
 Sometimes for theoretical or practical reasons it is useful to constrain the set of types. In `CausalQueries` this is done at the level of nodal types, with restrictions on causal types following from restrictions on nodal types.
 
@@ -1083,11 +1085,7 @@ In the same way it is possible to move from "compact data" to "long data" using 
 
 ## Updating models {#sec-update}
 
-The approach used by the `CausalQueries` package to updating parameter values given observed data uses Stan [@carpenter2017stan] and involves the following elements:
-
--   Dirichlet priors over parameters, $\lambda$ (which, in cases without confounding, correspond to nodal types)
--   A mapping from parameters to event probabilities, $w$
--   A likelihood function that assumes events are distributed according to a multinomial distribution given event probabilities.
+The approach used by the `CausalQueries` package to updating parameter values given observed data uses Stan [@carpenter2017stan]. 
 
 Below we explain the data required by the generic Stan program implemented in the package, the structure of that program, and then show how to use the package to produce posterior draws of parameters.
 
@@ -1098,7 +1096,6 @@ We use a generic Stan program that works for all binary causal models. The main 
 The data required by the Stan program includes vectors of observed data (`Y`) and priors on parameters (`lambdas_prior`) as well as a set of matrices required for the mapping between events, data types, causal types and parameters. The latter includes:
 
 -   A parameter matrix (`P`) that tells Stan how many parameters there are, and how they map into causal types,
--   An ambiguity matrix (`A`) that tells Stan how causal types map into data types,
 -   A matrix that maps parameters to data types (`parmap`), and
 -   An event matrix (`E`) that relates data types into patterns of observed data (events) in cases where there are incomplete observations.
 
@@ -1119,7 +1116,11 @@ sample_data_2 |>
 
 ### How the Stan program works
 
-The `stan` model works as follows.
+The `stan` model involves the following elements:
+
+-   A specification of priors over sets of parameters
+-   A mapping from parameters to event probabilities, $w$
+-   A likelihood function.
 
 #### Probability distributions over parameter sets
 
@@ -1143,8 +1144,6 @@ For example  in table REF the probability of data type `X0Y0`, $w_{00}$ is $\lam
 In cases with confounding the approach is similar except that the `parmap` matrix can contain multiple columns for each data type to capture non-independence between nodes.  
 
  
-#### Incomplete data
-
 In the case of incomplete data we first identify the set of "data strategies", where a collection of a data strategy might be of the form "gather data on $X$ and $M$, but not $Y$, for $n_1$ cases and gather data on $X$ and $Y$, but not $M$, for $n_2$ cases. The probability of an observed event, within a data strategy, is given by summing the probabilities of the types that could give rise to the incomplete data. For example $X$ is observed, but $Y$ is not, then the probability of $X=0, Y = \text{NA}$ is $w_{00} +w_{01}$. The matrix $E$ is passed to `stan` to figure out which event probabilities need to be combined for events with missing data.
 
 #### Data probability
@@ -1276,7 +1275,7 @@ make_model("X -> Y") |> realise_outcomes(dos = list(X = 1))
 ### Causal Syntax {#sec-syntax}
 
 
-WRITE SECTION DESCRIBING FACTUAL AND COUNTERFACTULA QUERIES AND THE SYNTAX INCLUDING Role of \[\] AND OF GIVEN `get_query_types` return sets; discuss how all queries related to these sets
+<!-- WRITE SECTION DESCRIBING FACTUAL AND COUNTERFACTULA QUERIES AND THE SYNTAX INCLUDING Role of \[\] AND OF GIVEN `get_query_types` return sets; discuss how all queries related to these sets -->
 
 
 `CausalQueries` provides syntax for the formulation of various causal queries including queries on all runds of the "causal ladder" [@pearl2018book]: prediction, such as  the proportion of units where $Y$ equals 1; intervention, such as  the probability that $Y$ = 1 when $X$ is *set* to 1; counterfactuals, such as the probability that $Y$ would be 1 were $X=1$ given we know $Y$ is 0 when $X$ was observed to be 0. Queries can be posed at the population level or case level and can be unconditional (e.g. what is the effect of $X$ on $Y$ for all units) or conditional (for example, the effect f $X$ on $Y$ for units for whom $Z$ affects $X$). 

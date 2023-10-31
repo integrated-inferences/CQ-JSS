@@ -281,7 +281,7 @@ which \(X=0\) and \(Y=0\). The last is the average treatment effect
 conditional on a counterfactual quantity.
 
 Our data on \(Z\), \(X\), and \(Y\) is complete for all units and looks,
-in compact form, as follows:
+in ``compact form'', as follows:
 
 \begin{verbatim}
 R> data("lipids_data")
@@ -300,6 +300,11 @@ R> lipids_data
 #> 7 Z0X1Y1      ZXY     0
 #> 8 Z1X1Y1      ZXY    78
 \end{verbatim}
+
+Note that in compact form we simply record the number of units
+(``count'') that display each possible pattern of outcomes on variables
+(``event'').\footnote{The ``strategy'' column records the set of
+  variables for which data has been recorded.}
 
 With \texttt{CausalQueries}, you can create the model, input data to
 update it, and then query the model for results.
@@ -1147,7 +1152,7 @@ to the model:
 \subsubsection{Setting restrictions}\label{restrictions}}
 
 When a model is defined, the complete set of possible causal relations
-are worked out. This set can be very large.
+is worked out. This set can be very large.
 
 Sometimes for theoretical or practical reasons it is useful to constrain
 the set of types. In \texttt{CausalQueries} this is done at the level of
@@ -1865,20 +1870,8 @@ data on \(Y\) and \(X\) only was sought in six cases.
 \section{Updating models}\label{sec-update}}
 
 The approach used by the \texttt{CausalQueries} package to updating
-parameter values given observed data uses Stan \citep{carpenter2017stan}
-and involves the following elements:
-
-\begin{itemize}
-\tightlist
-\item
-  Dirichlet priors over parameters, \(\lambda\) (which, in cases without
-  confounding, correspond to nodal types)
-\item
-  A mapping from parameters to event probabilities, \(w\)
-\item
-  A likelihood function that assumes events are distributed according to
-  a multinomial distribution given event probabilities.
-\end{itemize}
+parameter values given observed data uses Stan
+\citep{carpenter2017stan}.
 
 Below we explain the data required by the generic Stan program
 implemented in the package, the structure of that program, and then show
@@ -1902,9 +1895,6 @@ types, causal types and parameters. The latter includes:
 \item
   A parameter matrix (\texttt{P}) that tells Stan how many parameters
   there are, and how they map into causal types,
-\item
-  An ambiguity matrix (\texttt{A}) that tells Stan how causal types map
-  into data types,
 \item
   A matrix that maps parameters to data types (\texttt{parmap}), and
 \item
@@ -1934,7 +1924,17 @@ R> sample_data_2 |>
 \subsection{How the Stan program
 works}\label{how-the-stan-program-works}}
 
-The \texttt{stan} model works as follows.
+The \texttt{stan} model involves the following elements:
+
+\begin{itemize}
+\tightlist
+\item
+  A specification of priors over sets of parameters
+\item
+  A mapping from parameters to event probabilities, \(w\)
+\item
+  A likelihood function.
+\end{itemize}
 
 \hypertarget{probability-distributions-over-parameter-sets}{%
 \subsubsection{Probability distributions over parameter
@@ -2016,9 +2016,6 @@ and the \emph{sum} of the probabilities for \texttt{Y.00} and
 In cases with confounding the approach is similar except that the
 \texttt{parmap} matrix can contain multiple columns for each data type
 to capture non-independence between nodes.
-
-\hypertarget{incomplete-data}{%
-\subsubsection{Incomplete data}\label{incomplete-data}}
 
 In the case of incomplete data we first identify the set of ``data
 strategies'', where a collection of a data strategy might be of the form
@@ -2246,10 +2243,6 @@ R> make_model("X -> Y") |> realise_outcomes(dos = list(X = 1))
 
 \hypertarget{sec-syntax}{%
 \subsection{Causal Syntax}\label{sec-syntax}}
-
-WRITE SECTION DESCRIBING FACTUAL AND COUNTERFACTULA QUERIES AND THE
-SYNTAX INCLUDING Role of {[}{]} AND OF GIVEN \texttt{get\_query\_types}
-return sets; discuss how all queries related to these sets
 
 \texttt{CausalQueries} provides syntax for the formulation of various
 causal queries including queries on all runds of the ``causal ladder''
@@ -2724,7 +2717,7 @@ Network (CRAN) at {[}https://CRAN.R-project.org/{]}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, opacityback=0, breakable, left=2mm, toprule=.15mm, colback=white, rightrule=.15mm, bottomrule=.15mm, leftrule=.75mm]
+\begin{tcolorbox}[enhanced jigsaw, opacityback=0, leftrule=.75mm, breakable, arc=.35mm, toprule=.15mm, bottomrule=.15mm, rightrule=.15mm, left=2mm, colback=white]
 
 The approach to generating a generic stan function that can take data
 from arbitrary models was developed in key contributions by
@@ -2754,7 +2747,7 @@ improved every part of it.
 \section*{More technical details}\label{sec-techdetails}}
 \addcontentsline{toc}{section}{More technical details}
 
-\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, opacityback=0, breakable, left=2mm, toprule=.15mm, colback=white, rightrule=.15mm, bottomrule=.15mm, leftrule=.75mm]
+\begin{tcolorbox}[enhanced jigsaw, opacityback=0, leftrule=.75mm, breakable, arc=.35mm, toprule=.15mm, bottomrule=.15mm, rightrule=.15mm, left=2mm, colback=white]
 
 Appendices can be included after the bibliography (with a page break).
 Each section within the appendix should have a proper section title
@@ -2786,7 +2779,7 @@ which includes the following topics:
 \section*{Using BibTeX}\label{sec-bibtex}}
 \addcontentsline{toc}{section}{Using BibTeX}
 
-\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, opacityback=0, breakable, left=2mm, toprule=.15mm, colback=white, rightrule=.15mm, bottomrule=.15mm, leftrule=.75mm]
+\begin{tcolorbox}[enhanced jigsaw, opacityback=0, leftrule=.75mm, breakable, arc=.35mm, toprule=.15mm, bottomrule=.15mm, rightrule=.15mm, left=2mm, colback=white]
 
 References need to be provided in a \textsc{Bib}{\TeX} file
 (\texttt{.bib}). All references should be made with \texttt{@cite}
