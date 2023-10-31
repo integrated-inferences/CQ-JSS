@@ -179,7 +179,7 @@ make_model("A -> E <- B; C->E<-D")$parameters_df |> nrow()
 
 The particular strength of `CausalQueries` is to allow users to specify arbitrary DAGs, arbitrary queries over nodes in those DAGs, and use the same canonical procedure to learn about those queries whether or not the queries are identified. Thus is principle if researchers are interest in learning about a quantity like the local average treatment effect and their model in fact satisfies the conditions in @angrist1996identification, then updating will recover valid estimates even if researchers are unaware that the local average treatment effect is identified and are ignorant of the estimation procedure proposed by @angrist1996identification.
 
-There are two broad limitation on the sets of models handled natively by `CausalQueries`. First `CausalQueries` is designed for models with a relatively small number over binary nodes. Because there is no compromise made on the space of possible causal relations implied by a given model, the parameter space grows very rapidly with the complexity of the causal model. The complexity also depends on the causal structure and grows rapidly with the number of parents affecting a given child. A chain model of the form $A \rightarrow B \rightarrow C \rightarrow D \rightarrow E$ has just 40 parameters. A model in which $A, B, C, D$ are all direct of $E$ has 65544 parameters. Moving from binary to non binary nodes has similar effects. The restriction to binary nodes is for computational and not conceptual reasons. In fact it is possible to employ `CausalQueries` to answer queries from models with nonbinary nodes but in general the computational costs make analysis of these model prohibitive.^[For more on computation constraints and strategies to update and query large models see the associated package `CausalQueriesTools`. The core approach used here is to divde large causal models into modules, update on modules and reassemble to pose queries.] <!-- # should we mention computational constraints more explicitly here? >> i.e. constraints on memory as calculated in the CausalQueriesTools documentation. Could also be a place to mention the package + frankensteining methods though that might better be placed in the updating models section -->
+There are two broad limitation on the sets of models handled natively by `CausalQueries`. First `CausalQueries` is designed for models with a relatively small number of binary nodes. Because there is no compromise made on the space of possible causal relations implied by a given model, the parameter space grows very rapidly with the complexity of the causal model. The complexity also depends on the causal structure and grows rapidly with the number of parents affecting a given child. A chain model of the form $A \rightarrow B \rightarrow C \rightarrow D \rightarrow E$ has just 40 parameters. A model in which $A, B, C, D$ are all direct of $E$ has 65544 parameters. Moving from binary to non binary nodes has similar effects. The restriction to binary nodes is for computational and not conceptual reasons. In fact it is possible to employ `CausalQueries` to answer queries from models with nonbinary nodes but in general the computational costs make analysis of these model prohibitive.^[For more on computation constraints and strategies to update and query large models see the associated package `CausalQueriesTools`. The core approach used here is to divide large causal models into modules, update on modules and reassemble to pose queries.] <!-- # should we mention computational constraints more explicitly here? >> i.e. constraints on memory as calculated in the CausalQueriesTools documentation. Could also be a place to mention the package + frankensteining methods though that might better be placed in the updating models section -->
 
 Second, the package is geared for learning about populations from samples of units that are independent of each other and are independently randomly sampled from populations. Thus the basic set up does not address problems of sampling, clustering, hierarchical structures, or purposive sampling, for example. The broader framework can however be used for these purposes (see section 9.4 of @ii2023). The target of inference is usually case level quantities or population quantities and not sample quantities.  
 
@@ -200,7 +200,7 @@ The core conceptual framework is described in Pearl's *Causality* [@pearl2009cau
   
 \end{definition}
 ```
-In the usual case `CausalQUery`  takes  endogenous nodes to be binary.[^1] When we specify a causal structure we specify which endogenous nodes are (possibly) direct causes of a node, $Y_j$, given other nodes in the model. These nodes are called the parents of $Y_j$, $PA_j$ (we use upper case $PA_j$ to indicate the collection of nodes and lower case $pa_j$ to indicate a particular set of values that these nodes might take on). With discrete valued nodes, it is possible to identify all possible ways that a node might respond to its parents.  We refer to the ways that a node responds and the nodes  "nodal type." The set of nodal types  corresponds to principal strata familiar, for instance, in the study of instrumental variables [@frangakis2002principal].    
+In the usual case `CausalQueries`  takes  endogenous nodes to be binary.[^1] When we specify a causal structure we specify which endogenous nodes are (possibly) direct causes of a node, $Y_j$, given other nodes in the model. These nodes are called the parents of $Y_j$, $PA_j$ (we use upper case $PA_j$ to indicate the collection of nodes and lower case $pa_j$ to indicate a particular set of values that these nodes might take on). With discrete valued nodes, it is possible to identify all possible ways that a node might respond to its parents.  We refer to the ways that a node responds and the nodes  "nodal type." The set of nodal types  corresponds to principal strata familiar, for instance, in the study of instrumental variables [@frangakis2002principal].    
 
 If node $Y_i$ can take on $k_i$ possible values then the set of possible values that can be taken on by parents of $j$ is $m :=\prod_{i\in PA_j}k_i$. Then there are $k_j^{m}$ different ways that a node might respond to its parents.  In the case of binary nodes this becomes $2^{\left(2^{|PA_j|}\right)}$. Thus for an endogenous node with no parents there are 2 nodal types, for a binary node with one binary parent there are four types, for a binary node with 2 parents there are 16, and so on.
 
@@ -286,7 +286,7 @@ In the next sections we review key functionality for making, updating and queryi
 
 ## Making models {#sec-make}
 
-A model is defined in one step in `CausalQUeries` using a `dagitty` syntax in which the structure of the model is provided as a statement.
+A model is defined in one step in `CausalQueries` using a `dagitty` syntax in which the structure of the model is provided as a statement.
 
 For instance:
 
@@ -317,7 +317,7 @@ Formally a statement like this is interpreted as:
 
 where function $f$ maps from the set of possible values of the parents of $i$ to values of node $i$ given $\theta^i$ as described above.
 
-In addition, as we did in the @chickering1996clinician example, it is  possible to use two headed arrows (`<->`) to indicate "unobserved confounding", that is, the presence of an unobserved variable that might influence observed variables. In this case condition 3 above is relaxed and the exogeneous nodes associated with confounded variables have a joint distribution. We describe how this is done in greater detail in section @sec-confounding.
+In addition, as we did in the @chickering1996clinician example, it is  possible to use two headed arrows (`<->`) to indicate "unobserved confounding", that is, the presence of an unobserved variable that might influence observed variables. In this case condition 3 above is relaxed and the exogenous nodes associated with confounded variables have a joint distribution. We describe how this is done in greater detail in section @sec-confounding.
 
 ### Graphing
 
@@ -418,7 +418,7 @@ The table below summarizes the objects attached to the model after updating.
 +--------------------------+------------------------------------------------------------------------------------------+
 | Element                  | Description                                                                              |
 +==========================+==========================================================================================+
-| `posterior_distribution` | The posterir distribution of the updated parameters generated by stan.                   |
+| `posterior_distribution` | The posterior distribution of the updated parameters generated by stan.                   |
 +--------------------------+------------------------------------------------------------------------------------------+
 | `stan_objects`           | A list of objects, including, at a minimum, `type_distribution` and `data`.              |
 +--------------------------+------------------------------------------------------------------------------------------+
@@ -493,7 +493,7 @@ For instance, consider the model with two parents $X \rightarrow Y \leftarrow M.
 
 As the number of parents increases, keeping track of what each digit represents becomes more difficult. For instance, if $Y$ had three parents, its nodal types would have subscripts of eight digits, each associated with the value that $Y$ would take for each combination of the three parents. The `interpret_type` function provides a clear map to identify what each digit in the subscript represents. See the examples below for models with two and three parents.
 
-Interpretations are autimatically provided as part of the model object. A user can  see them like this.
+Interpretations are automatically provided as part of the model object. A user can  see them like this.
 
 ```{r}
 #| label: nodal-types
@@ -653,7 +653,7 @@ Here and in general, setting restrictions typically involves using causal syntax
 
 Note:
 
--   Restrictions have to operate on nodal types: restrictions on *levels* of endogenous nodes arenot allowed. This, for example, will fail: `make_model("X -> Y") |> set_restrictions(statement =  "(Y == 1)")`. The reason is that it requests a correlated restriction on nodal types for `X` and `Y` which involves undeclared confounding.
+-   Restrictions have to operate on nodal types: restrictions on *levels* of endogenous nodes are not allowed. This, for example, will fail: `make_model("X -> Y") |> set_restrictions(statement =  "(Y == 1)")`. The reason is that it requests a correlated restriction on nodal types for `X` and `Y` which involves undeclared confounding.
 -   Restrictions implicitly assume fixed values for *all* parents of a node. For instance: `make_model("A -> B <- C") |> set_restrictions("(B[C=1]==1)")` is interpreted as shorthand for the restriction `"B[C = 1, A = 0]==1 | B[C = 1, A = 1]==1"`.
 -   To place restrictions on multiple nodes at the same time, provide these as a vector of restrictions. This is not permitted: `set_restrictions("Y[X=1]==1 & X==1")`, since it requests correlated restrictions. This however is allowed: `set_restrictions(c("Y[X=1]==1", "X==1"))`.\
 -   Use the `keep` argument to indicate whether nodal types should be dropped (default) or retained.
@@ -687,7 +687,7 @@ make_model("X -> Y") |>
 
 <!--   set_restrictions(list(decreasing('X','Y'), decreasing('Y','Z')), given = c(NA,'X.0')) -->
 
--  in models with confounding restrictions can be added to nodaly types conditional on the values of other nodal types; this is done using a "given" argument.
+-  in models with confounding restrictions can be added to nodal types conditional on the values of other nodal types; this is done using a "given" argument.
 
 ```{r}
 model <- make_model("X -> Y; X <-> Y") %>%
@@ -1128,7 +1128,7 @@ We are interested in "sets" of parameters. In the case without confounding these
 
 We express priors over these parameter sets using multiple Dirichlet distributions. In practice because we are dealing with multiple simplices of varying length, it is easier to express priors over gamma distributions with a unit scale parameter and shape parameter corresponding to the Dirichlet priors, $\alpha$. We make use of the fact that $\lambda^X_0 \sim Gamma(\alpha^X_0,1)$ and $\lambda^X_1 \sim Gamma(\alpha^X_1,1)$ then $\frac{1}{\lambda^X_0 +\lambda^X_1}(\lambda^X_0, \lambda^X_1) \sim Dirichlet(\alpha^X_0, \alpha^X_1)$^[For a discussion of implementation of this approach in `stan` see discussion (here)[https://discourse.mc-stan.org/t/ragged-array-of-simplexes/1382].]
 
-TO illustrate, in the $X \rightarrow Y$ model we have two parameter sets (`param_sets`). The first is $\lambda^X \in \{\lambda^X_0, \lambda^X_1\}$ whose elements give the probability that $X$ is 0 or 1. These two probabilities sum to one. The second parameter set is $\lambda^Y \in \{\lambda^Y_{00}, \lambda^Y_{10}, \lambda^Y_{01} \lambda^Y_{11}\}$. These are also probabilities and their values sum to one. Note in all that we have 6 parameters but just 1 + 3 = 4 degrees of freedom. We have a 2 dimensional Dirichlet distribution over the $X$ nodal types (qquivalently, a Beta distribution) and a 4 dimensional Dirichlet over the $Y$ nodal types. 
+TO illustrate, in the $X \rightarrow Y$ model we have two parameter sets (`param_sets`). The first is $\lambda^X \in \{\lambda^X_0, \lambda^X_1\}$ whose elements give the probability that $X$ is 0 or 1. These two probabilities sum to one. The second parameter set is $\lambda^Y \in \{\lambda^Y_{00}, \lambda^Y_{10}, \lambda^Y_{01} \lambda^Y_{11}\}$. These are also probabilities and their values sum to one. Note in all that we have 6 parameters but just 1 + 3 = 4 degrees of freedom. We have a 2 dimensional Dirichlet distribution over the $X$ nodal types (equivalently, a Beta distribution) and a 4 dimensional Dirichlet over the $Y$ nodal types. 
 
 #### Event probabilities
 
@@ -1218,7 +1218,7 @@ future.apply::future_lapply(data, function(d) {
 
 In addition it is possible to indicate when data has been censored and for the `stan` model to take this into account also. Say for instance that we only get to observe $X$ in cases where $X=1$ and not when $X=0$. This kind of sampling is non random conditional on observables. It is taken account however by indicating to `stan` that the probability of observing a particular data type is 0, regardless of parameter values. This is done using the `censored_types` argument in `update_model()`.
 
-To illustrate, in the example below we observe perfectly correlated data for $X$ and $Y$. If we are aware that data in which $X \neg Y$ has been censored then when we update we do not move towards a belief that $X$ causes $Y$.
+To illustrate, in the example below we observe perfectly correlated data for $X$ and $Y$. If we are aware that data in which $X \neq Y$ has been censored then when we update we do not move towards a belief that $X$ causes $Y$.
 
 ```{r}
 list(uncensored = make_model("X -> Y") %>%
@@ -1235,9 +1235,8 @@ list(uncensored = make_model("X -> Y") %>%
 
 ### Output
 
-The primary output from `update_model()` is a posterior distribution over model parameters, stored as a dataframe in `model$posterior_distribution`. However another of other objects are also optionally stored:
+The primary output from `update_model()` is a model with an attached posterior distribution over model parameters, stored as a dataframe in `model$posterior_distribution`. In addition, a distribution of causal types is stored by default and the `stanfit` object and a distribution over event probabilities are optionally saved.  
 
-Models can be queried using the `query_distribution` and `query_model` functions. The difference between these functions is that `query_distribution` examines a single query and returns a full distribution of draws from the distribution of the estimand (prior or posterior); `query_model` takes a collection of queries and returns a dataframe with summary statistics on the queries.
 
 ## Queries  {#sec-query}
 
@@ -1342,14 +1341,16 @@ make_model("X -> Y")  |>
 
 #### Nested queries
 
-`CausalQueries` lets uses pose nested "complex counterfactual" queries. For instance `"Y[M=M[X=0], X=1]==1"` queries the types for which $Y$ equals 1 when $X$ is set to 1, while keeping $M$ constant at the value it would take if $X$ were 0.
+`CausalQueries` lets users pose nested "complex counterfactual" queries. For instance `"Y[M=M[X=0], X=1]==1"` queries the types for which $Y$ equals 1 when $X$ is set to 1, while keeping $M$ constant at the value it would take if $X$ were 0.
 
-
-### Queries by hand
+### Quantifying queries
 
 Giving a *quantitative* answer to a query requires placing probabilities over the causal types that correspond to a query. 
 
-SUch answers  can draw directly from the prior distribution of the posterior distribution provided by `stan`.
+#### Queries by hand
+
+
+Queries can be calculated directly from the prior distribution of the posterior distribution provided by `stan`.
 
 
 ```{r}
@@ -1393,9 +1394,11 @@ model$posterior_distribution |>
 
 \FloatBarrier
 
-### Query distribution
+#### Query distribution
 
-`query_distribution` works similarly except that distributions over queries are returned:
+It is generally useful to use causal syntax to define the query and calculate the query with respect to the prior or posterior probability distributions.
+
+This can be done for a list of queries using `query_distribution`:
 
 ```{r}
 #| label: fig-query-dist
@@ -1413,9 +1416,7 @@ make_model("X -> Y") |>
 
 ```
 
-### Case level queries
-
-Sometimes one is interested in assessing the value of a query for a *particular case*. In a sense this is equivalent to posing a conditional query, querying conditional on values in a case. For instance we might consult our posterior lipds model and ask about the effect of $X$ on $Y$ for a case in which $Z=1, X=1$ and $Y=1$.
+`query_distribution` can also be used when one is interested in assessing the value of a query for a *particular case*. In a sense this is equivalent to posing a conditional query, querying conditional on values in a case. For instance we might consult our posterior lipids model and ask about the effect of $X$ on $Y$ for a case in which $Z=1, X=1$ and $Y=1$.
 
 ```{r}
 #| label: case-level-query
@@ -1430,7 +1431,7 @@ lipids_model |>
 
 ```{r}
 #| label: tbl-case-level-query
-#| tbl-cap: "Case Level Quiry Example."
+#| tbl-cap: "Case Level Query Example."
 #| echo: false
 #| eval: true
 
@@ -1450,7 +1451,7 @@ lipids_model |>
 
 The answer we get in @tbl-case-level-query is what we now believe for all cases in which $Z=1, X=1$ and $Y=1$. It is in fact the expected average effect among cases with this data type and so this expectation has an uncertainty attached to it.
 
-Subtly though this is, in principle, different to what we would infer for a "new case" that we wonder about. When inquirying about a new case, the case level query *updates* on the given information observed in the new case. The resulting inference is different to the inference that would be made from the posterior *given* the features of the case.
+Subtly though this is, in principle, different to what we would infer for a "new case" that we wonder about. When inquiring about a new case, the case level query *updates* on the given information observed in the new case. The resulting inference is different to the inference that would be made from the posterior *given* the features of the case.
 
 To illustrate, consider a model for which we are quite sure that $X$ causes $Y$ but we do not know whether it works through two positive effects or two negative effects.
 
@@ -1488,7 +1489,7 @@ set.seed(1)
  mean(distribution$QG)/mean(distribution$G)
 ```
 
-### Batch queries
+#### Batch queries
 
 The `query_model()` function takes causal queries and conditions (`given`) and specifies the parameters to be used. The result is a data frame which can be displayed as a table.
 
@@ -1609,7 +1610,7 @@ The results in this paper were obtained using [R]{.proglang}\~3.4.1 with the [MA
 ## Acknowledgments {.unnumbered}
 
 ::: callout
-The approach to generating a generic stan function that can take data from arbitrary models was developed in key contributions by [Jasper Cooper](http://jasper-cooper.com/) and [Georgiy Syunyaev](http://gsyunyaev.com/). [Lily Medina](https://lilymedina.github.io/) did magical work pulling it all together and developing approaches to characterizing confounding and defining estimands. Clara Bicalho helped figure out the syntax for causal statements. Julio Solis made many key contributions figuring out how to simplify the specification of priors. Merlin Heidemanns figured out the `rstantools` integration and made myriad code improvements. Till Tietz revamped the entire package and improved every part of it.
+The approach to generating a generic `stan` function that can take data from arbitrary models was developed in key contributions by [Jasper Cooper](http://jasper-cooper.com/) and [Georgiy Syunyaev](http://gsyunyaev.com/). [Lily Medina](https://lilymedina.github.io/) did magical work pulling it all together and developing approaches to characterizing confounding and defining estimands. Clara Bicalho helped figure out the syntax for causal statements. Julio Solis made many key contributions figuring out how to simplify the specification of priors. Merlin Heidemanns figured out the `rstantools` integration and made myriad code improvements. Till Tietz revamped the entire package and improved every part of it.
 :::
 
 ## References {.unnumbered}
