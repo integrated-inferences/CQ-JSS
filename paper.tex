@@ -2245,7 +2245,7 @@ R> make_model("X -> Y") |> realise_outcomes(dos = list(X = 1))
 \subsection{Causal Syntax}\label{sec-syntax}}
 
 \texttt{CausalQueries} provides syntax for the formulation of various
-causal queries including queries on all runds of the ``causal ladder''
+causal queries including queries on all rungs of the ``causal ladder''
 \citep{pearl2018book}: prediction, such as the proportion of units where
 \(Y\) equals 1; intervention, such as the probability that \(Y\) = 1
 when \(X\) is \emph{set} to 1; counterfactuals, such as the probability
@@ -2256,60 +2256,108 @@ case level and can be unconditional (e.g.~what is the effect of \(X\) on
 \(Y\) for units for whom \(Z\) affects \(X\)).
 
 This syntax enables users to write arbitrary causal queries to
-interrogate their models. For factual queries, users may employ logical
-statements to ask questions about observed conditions, without any
-intervention. Take, for example, the query mentioned above about the
-proportion of units where \(Y\) equals 1, expressed as
-\texttt{"Y\ ==\ 1"}. In this case the logical operator == indicates that
-\texttt{CausalQueries} should consider units that fulfill the condition
-of strict equality where \(Y\) equals 1.\footnote{\texttt{CausalQueries}
-  also accepts = as a shorthand for ==. However, == is preferred as it
-  is the conventional logical operator to express a condition of strict
-  equality.}
+interrogate their models. The heart of querying is figuring out which
+causal types correspond to particular queries.
+
+For factual queries, users may employ logical statements to ask
+questions about observed conditions, without any intervention. Take, for
+example, the query mentioned above about the proportion of units where
+\(Y\) equals 1, expressed as \texttt{"Y\ ==\ 1"}. In this case the
+logical operator == indicates that \texttt{CausalQueries} should
+consider units that fulfill the condition of strict equality where \(Y\)
+equals 1.\footnote{\texttt{CausalQueries} also accepts = as a shorthand
+  for ==. However, == is preferred as it is the conventional logical
+  operator to express a condition of strict equality.} When this query
+is posed, the \texttt{get\_query\_types} function identifies all types
+that give rise to \(Y=1\), absent any interventions.
+
+\begin{verbatim}
+R> make_model("X -> Y")  |>
++  get_query_types("Y==1")
+\end{verbatim}
+
+\begin{verbatim}
+#> 
+#> Causal types satisfying query's condition(s)  
+#> 
+#>  query =  Y==1 
+#> 
+#> X0.Y10  X1.Y01
+#> X0.Y11  X1.Y11
+#> 
+#> 
+#>  Number of causal types that meet condition(s) =  4
+#>  Total number of causal types in model =  8
+\end{verbatim}
 
 The key to posing causal queries is being able to ask about values of
 variables given that the values of some other variables are
-``controlled''. This corresponds to appliaction of the \texttt{do}
+``controlled''. This corresponds to application of the \texttt{do}
 operator in \citet{pearl2009causality}. In \texttt{CausalQueries} this
 is done by using square brackets {[}{]}. Inside the brackets, variables
 that are to be intervened upon are specified.
 
-For instance, consider the counterfactual query that asks about the
-types for which \(Y\) equals 1 when \(X\) is \emph{set to} 0. In this
-case, since \(X\) is being intervened to be zero, \(X\) is placed inside
-the brackets. Given that \(Y\) equaling 1 is a condition about
-potentially observed values, it is expressed as using the logical
-operator \texttt{==}. More precisely, such query can be written as
-\texttt{"Y{[}X=0{]}\ ==\ 1"}.
+For instance, consider the query \texttt{Y{[}X=0{]}==1}. This query that
+asks about the types for which \(Y\) equals 1 when \(X\) is \emph{set
+to} 0. In this case, since \(X\) is being intervened to be zero, \(X\)
+is placed inside the brackets. Given that \(Y\) equaling 1 is a
+condition about potentially observed values, it is expressed as using
+the logical operator \texttt{==}.
 
-With the aid of logical operators such as \texttt{==}, \texttt{!=},
-\texttt{\textgreater{}}, \texttt{\textgreater{}=}
-\texttt{\textless{}},\texttt{\textless{}=} , and the use of square
-brackets, users can formulate a broad range of queries. For example,
-they can make queries about cases where \(X\) has a positive effect on
-\(Y\), i.e., whether \(Y\) is greater when \(X\) is set to 1 compared to
-when \(X\) is set to 0, expressed as
-\texttt{"Y{[}X=1{]}\ \textgreater{}\ Y{[}X=0{]}"}. Alternatively, they
-can explore complex counterfactuals like
-\texttt{"Y{[}M=M{[}X=0{]},\ X=1{]}==1"}. In this case,
-\texttt{CausalQueries} looks for the types for which \(Y\) equals 1 when
-\(X\) is set to 1, while keeping \(M\) constant at the value it would
-take if \(X\) were 0.
+The set of causal types that meets this query is quite different:
 
-One way to develop a clearer understanding of what types are being
-targeted with each query is using the function
-\texttt{get\_query\_types}. For instance, consider the model
-\(X \rightarrow Y \leftarrow M\) and the query
-\texttt{"Y{[}X=1,\ M=1{]}\ \textgreater{}\ Y{[}X=0,\ M=0{]}"}.
+\begin{verbatim}
+R> make_model("X -> Y")  |>
++  get_query_types("Y[X=1]==1")
+\end{verbatim}
 
-In this case, the aim is to identify the types for which \(Y\) equals
-zero when \(X = 0\) and \(M = 0\), and \(Y\) equals 1 when \(X = 1\) and
-\(M = 1\). The specific values that Y takes for other combinations of
-\(X\) and \(M\) are not relevant for this query. Therefore, the types
-targeted in this query have a zero as the first digit of the subscript
-i.e., when \(X = 0\) and \(M = 0\), and a 1 as the last digit i.e., when
-\(X = 1\) and \(M = 1\), and any value in the second and third digits.
-The code and output below offer a more precise representation of this.
+\begin{verbatim}
+#> 
+#> Causal types satisfying query's condition(s)  
+#> 
+#>  query =  Y[X=1]==1 
+#> 
+#> X0.Y01  X1.Y01
+#> X0.Y11  X1.Y11
+#> 
+#> 
+#>  Number of causal types that meet condition(s) =  4
+#>  Total number of causal types in model =  8
+\end{verbatim}
+
+When a node has multiple parents it is possible to set the value of non
+of the parents, of some of the parents, or of all of the parents. For
+instance if \texttt{X1} and \texttt{X2} are parents of \texttt{Y} then
+\texttt{Y==1}, \texttt{Y{[}X1\ =\ 1{]}==1}, and
+\texttt{Y{[}X1\ =\ 1,\ X2\ =\ 1{]}==1} queries cases for which \(Y=1\)
+when, respectively, neither parents values are controlled, when
+\texttt{X1} is set to 1 but \texttt{X2} is not controlled, and when both
+\texttt{X1} and \texttt{X2} are set to 1.
+
+As an example we have:
+
+\begin{verbatim}
+R> make_model("X1 -> Y <- X2")  |>
++  get_query_types("X1 ==1 & X2 == 1 & (Y[X1=1, X2=1] > Y[X1=0, X2=0])")
+\end{verbatim}
+
+\begin{verbatim}
+#> 
+#> Causal types satisfying query's condition(s)  
+#> 
+#>  query =  X1==1&X2==1&(Y[X1=1,X2=1]>Y[X1=0,X2=0]) 
+#> 
+#> X11.X21.Y0001  X11.X21.Y0101
+#> X11.X21.Y0011  X11.X21.Y0111
+#> 
+#> 
+#>  Number of causal types that meet condition(s) =  4
+#>  Total number of causal types in model =  64
+\end{verbatim}
+
+In this case, the aim is to identify the types for which \(X1=X2=1\)
+\emph{and} \(Y\) equals zero when \(X1 = 0\) and \(X2 = 0\), and \(Y\)
+equals 1 when \(X1 = 1\) and \(X2 = 1\).
 
 \begin{verbatim}
 R> make_model('X -> M -> Y <- X') |> 
@@ -2336,28 +2384,62 @@ experiment, are placed inside square brackets, followed by an equal sign
 and the value to which we want to set them, either 1 or 0, as \(X\) in
 the case of \texttt{"Y{[}X=1{]}"}. The variable whose value is to be
 observed, as \(Y\) in the same example, should be placed before the
-square brackets. In this case, we are indicating that we want to
-``observe the value that \(Y\) would take when \(X\) is set to one.''
-Finally, conditions related to observed or potentially observed values,
-in the context of an intervention, are expressed outside the brackets,
-along with the logical condition that defines the observed values, as in
-\texttt{"Y\ ==\ 1"} or
+square brackets. Finally, conditions related to observed or potentially
+observed values, in the context of an intervention, are expressed
+outside the brackets, along with the logical condition that defines the
+observed values, as in \texttt{"Y\ ==\ 1"} or
 \texttt{"Y{[}X=1{]}\ \textgreater{}\ Y{[}X=0{]}"}.
 
-\hypertarget{query-implementation}{%
-\subsection{Query implementation}\label{query-implementation}}
+\hypertarget{complex-expressions}{%
+\subsubsection{Complex expressions}\label{complex-expressions}}
+
+Many queries involve complex statements over multiple sets of types.
+These can be formed with the aid of logical operators such as
+\texttt{==}, \texttt{!=}, \texttt{\textgreater{}},
+\texttt{\textgreater{}=} \texttt{\textless{}},\texttt{\textless{}=}. For
+example, they can make queries about cases where \(X\) has a positive
+effect on \(Y\), i.e., whether \(Y\) is greater when \(X\) is set to 1
+compared to when \(X\) is set to 0, expressed as
+\texttt{"Y{[}X=1{]}\ \textgreater{}\ Y{[}X=0{]}"}. The query ``\(X\) has
+some effect on \(Y\)'' is given by
+\texttt{"Y{[}X=1{]}\ !=\ Y{[}X=0{]}"}.
+
+Linear operators can also be used over set of simple statements. Thus
+```Y{[}X=1{]} - Y{[}X=0{]}'' returns the share of units the average
+treatment effect. In essence rather than returning a TRUE or FALSE for
+the two parts of the query, the case memberships are forced to numeric
+values (1 or 0) and the differences taken, which can be a 1, 0 or -1
+depending on the causal type.
+
+\begin{verbatim}
+R> make_model("X -> Y")  |>
++  get_query_types("Y[X=1]- Y[X=0]")
+\end{verbatim}
+
+\begin{verbatim}
+#> X0.Y00 X1.Y00 X0.Y10 X1.Y10 X0.Y01 X1.Y01 X0.Y11 X1.Y11 
+#>      0      0     -1     -1      1      1      0      0
+\end{verbatim}
+
+\hypertarget{nested-queries}{%
+\subsubsection{Nested queries}\label{nested-queries}}
+
+\texttt{CausalQueries} lets uses pose nested ``complex counterfactual''
+queries. For instance \texttt{"Y{[}M=M{[}X=0{]},\ X=1{]}==1"} queries
+the types for which \(Y\) equals 1 when \(X\) is set to 1, while keeping
+\(M\) constant at the value it would take if \(X\) were 0.
 
 \hypertarget{queries-by-hand}{%
 \subsection{Queries by hand}\label{queries-by-hand}}
 
-Queries can draw directly from the prior distribution of the posterior
-distribution provided by \texttt{stan}.
+Giving a \emph{quantitative} answer to a query requires placing
+probabilities over the causal types that correspond to a query.
+
+SUch answers can draw directly from the prior distribution of the
+posterior distribution provided by \texttt{stan}.
 
 \begin{verbatim}
-R> library(DeclareDesign)
-R> 
-R> data  <- 
-+  fabricate(N = 100, X = complete_ra(N), Y = X)
+R> data  <- data.frame(X = rep(0:1, 50), Y = rep(0:1, 50))
 R> 
 R> model <- 
 +  make_model("X -> Y") |>
@@ -2717,7 +2799,7 @@ Network (CRAN) at {[}https://CRAN.R-project.org/{]}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, opacityback=0, leftrule=.75mm, breakable, arc=.35mm, toprule=.15mm, bottomrule=.15mm, rightrule=.15mm, left=2mm, colback=white]
+\begin{tcolorbox}[enhanced jigsaw, rightrule=.15mm, bottomrule=.15mm, opacityback=0, colback=white, breakable, leftrule=.75mm, left=2mm, toprule=.15mm, arc=.35mm]
 
 The approach to generating a generic stan function that can take data
 from arbitrary models was developed in key contributions by
@@ -2747,7 +2829,7 @@ improved every part of it.
 \section*{More technical details}\label{sec-techdetails}}
 \addcontentsline{toc}{section}{More technical details}
 
-\begin{tcolorbox}[enhanced jigsaw, opacityback=0, leftrule=.75mm, breakable, arc=.35mm, toprule=.15mm, bottomrule=.15mm, rightrule=.15mm, left=2mm, colback=white]
+\begin{tcolorbox}[enhanced jigsaw, rightrule=.15mm, bottomrule=.15mm, opacityback=0, colback=white, breakable, leftrule=.75mm, left=2mm, toprule=.15mm, arc=.35mm]
 
 Appendices can be included after the bibliography (with a page break).
 Each section within the appendix should have a proper section title
@@ -2779,7 +2861,7 @@ which includes the following topics:
 \section*{Using BibTeX}\label{sec-bibtex}}
 \addcontentsline{toc}{section}{Using BibTeX}
 
-\begin{tcolorbox}[enhanced jigsaw, opacityback=0, leftrule=.75mm, breakable, arc=.35mm, toprule=.15mm, bottomrule=.15mm, rightrule=.15mm, left=2mm, colback=white]
+\begin{tcolorbox}[enhanced jigsaw, rightrule=.15mm, bottomrule=.15mm, opacityback=0, colback=white, breakable, leftrule=.75mm, left=2mm, toprule=.15mm, arc=.35mm]
 
 References need to be provided in a \textsc{Bib}{\TeX} file
 (\texttt{.bib}). All references should be made with \texttt{@cite}

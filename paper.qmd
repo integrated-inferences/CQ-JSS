@@ -1278,20 +1278,41 @@ make_model("X -> Y") |> realise_outcomes(dos = list(X = 1))
 <!-- WRITE SECTION DESCRIBING FACTUAL AND COUNTERFACTULA QUERIES AND THE SYNTAX INCLUDING Role of \[\] AND OF GIVEN `get_query_types` return sets; discuss how all queries related to these sets -->
 
 
-`CausalQueries` provides syntax for the formulation of various causal queries including queries on all runds of the "causal ladder" [@pearl2018book]: prediction, such as  the proportion of units where $Y$ equals 1; intervention, such as  the probability that $Y$ = 1 when $X$ is *set* to 1; counterfactuals, such as the probability that $Y$ would be 1 were $X=1$ given we know $Y$ is 0 when $X$ was observed to be 0. Queries can be posed at the population level or case level and can be unconditional (e.g. what is the effect of $X$ on $Y$ for all units) or conditional (for example, the effect f $X$ on $Y$ for units for whom $Z$ affects $X$). 
+`CausalQueries` provides syntax for the formulation of various causal queries including queries on all rungs of the "causal ladder" [@pearl2018book]: prediction, such as  the proportion of units where $Y$ equals 1; intervention, such as  the probability that $Y$ = 1 when $X$ is *set* to 1; counterfactuals, such as the probability that $Y$ would be 1 were $X=1$ given we know $Y$ is 0 when $X$ was observed to be 0. Queries can be posed at the population level or case level and can be unconditional (e.g. what is the effect of $X$ on $Y$ for all units) or conditional (for example, the effect f $X$ on $Y$ for units for whom $Z$ affects $X$). 
 
 
-This syntax enables users to write arbitrary causal queries to interrogate their models. For factual queries, users may employ logical statements to ask questions about observed conditions, without any intervention. Take, for example, the query mentioned above about the proportion of units where $Y$ equals 1, expressed as `"Y == 1"`.  In this case the logical operator  ==  indicates that `CausalQueries` should consider units that fulfill the condition of strict equality where $Y$ equals 1.^[`CausalQueries` also accepts = as a shorthand for ==. However, == is preferred as it is the conventional logical operator to express a condition of strict equality.]
+This syntax enables users to write arbitrary causal queries to interrogate their models.  The heart of querying is figuring out which causal types correspond to particular queries.
 
-The key to posing causal queries is being able to ask about values of variables given that the values of some other variables are "controlled". This corresponds to appliaction of the `do` operator in @pearl2009causality. In `CausalQueries` this is done by using square brackets \[\]. Inside the brackets, variables that are to be intervened upon are specified. 
+For factual queries, users may employ logical statements to ask questions about observed conditions, without any intervention. Take, for example, the query mentioned above about the proportion of units where $Y$ equals 1, expressed as `"Y == 1"`.  In this case the logical operator  ==  indicates that `CausalQueries` should consider units that fulfill the condition of strict equality where $Y$ equals 1.^[`CausalQueries` also accepts = as a shorthand for ==. However, == is preferred as it is the conventional logical operator to express a condition of strict equality.]  When this query is posed, the `get_query_types` function identifies all types that give rise to $Y=1$, absent any interventions.
+
+```{r}
+make_model("X -> Y")  |>
+  get_query_types("Y==1")
+```
+
+The key to posing causal queries is being able to ask about values of variables given that the values of some other variables are "controlled". This corresponds to application of the `do` operator in @pearl2009causality. In `CausalQueries` this is done by using square brackets \[\]. Inside the brackets, variables that are to be intervened upon are specified. 
 
 For instance, consider the query `Y[X=0]==1`. This query that asks about the types for which $Y$ equals 1 when $X$ is _set to_ 0. In this case, since $X$ is being intervened to be zero, $X$ is placed inside the brackets. Given that $Y$ equaling 1 is a condition about potentially observed values, it is expressed as using the logical operator `==`. 
 
+The set of causal types that meets this query is quite different:
+
+```{r}
+make_model("X -> Y")  |>
+  get_query_types("Y[X=1]==1")
+```
+
 When a node has multiple parents it is possible to set the value of non of the parents, of some of the parents, or of all of the parents. For instance if `X1` and `X2` are parents of `Y` then `Y==1`, `Y[X1 = 1]==1`, and `Y[X1 = 1, X2 = 1]==1` queries cases for which $Y=1$ when, respectively, neither parents values are controlled, when `X1` is set to 1 but `X2` is not controlled, and when both `X1` and `X2` are set to 1.  
 
-One way to develop a clearer understanding of what types are being targeted with each query is using the function  `get_query_types`. For instance, consider the model $X \rightarrow Y \leftarrow M$ and the query `"Y[X=1, M=1] > Y[X=0, M=0]"`.
+As an example we have:
 
-In this case, the aim is to identify the types for which $Y$ equals zero when $X = 0$ and  $M = 0$, and $Y$ equals 1 when $X = 1$ and $M = 1$. The specific values that $Y$ takes for other combinations of $X$ and $M$ are not relevant for this query.   The code and output below offer a more precise representation of this.
+
+```{r}
+make_model("X1 -> Y <- X2")  |>
+  get_query_types("X1 ==1 & X2 == 1 & (Y[X1=1, X2=1] > Y[X1=0, X2=0])")
+```
+
+
+In this case, the aim is to identify the types for which $X1=X2=1$ *and* $Y$ equals zero when $X1 = 0$ and  $X2 = 0$, and $Y$ equals 1 when $X1 = 1$ and $X2 = 1$. 
 
 ```{r}
 #| eval: true
@@ -1303,15 +1324,18 @@ make_model('X -> M -> Y <- X') |>
 ```
 
 
-In summary, the variables to be intervened, as if conducting an experiment, are placed inside square brackets, followed by an equal sign and the value to which we want to set them, either 1 or 0, as $X$ in the case of `"Y[X=1]"`. The variable whose value is to be observed, as  $Y$ in the same example, should be placed before the square brackets. In this case, we are indicating that we want to "observe the value that $Y$ would take when $X$ is set to one." Finally, conditions related to observed or potentially observed values, in the context of an intervention, are expressed outside the brackets, along with the logical condition that defines the observed values, as in `"Y == 1"` or `"Y[X=1] > Y[X=0]"`.
+In summary, the variables to be intervened, as if conducting an experiment, are placed inside square brackets, followed by an equal sign and the value to which we want to set them, either 1 or 0, as $X$ in the case of `"Y[X=1]"`. The variable whose value is to be observed, as  $Y$ in the same example, should be placed before the square brackets. Finally, conditions related to observed or potentially observed values, in the context of an intervention, are expressed outside the brackets, along with the logical condition that defines the observed values, as in `"Y == 1"` or `"Y[X=1] > Y[X=0]"`.
 
 #### Complex expressions
 
 Many queries involve complex statements over multiple sets of types. These can be formed with  the aid of logical operators such as `==`, `!=`, `>`, `>=` `<`,`<=`. For example, they can make queries about cases where $X$ has a positive effect on $Y$, i.e., whether $Y$ is greater when $X$ is set to 1 compared to when $X$ is set to 0, expressed as `"Y[X=1] > Y[X=0]"`. The query "$X$ has some effect on $Y$" is given by `"Y[X=1] != Y[X=0]"`.
 
-Linear operators can also be used over set of simple statements. Thus `"Y[X=1] - Y[X=0]" returns the share of units the average treatment effect. IN essence rather than returning a TRUE or FALSE for the two parts of the query, the case memberships are forced to numeric values (1 or 0) and the differences taken, which can be a 1, 0 or -1 depending on the causal type.
+Linear operators can also be used over set of simple statements. Thus `"Y[X=1] - Y[X=0]" returns the share of units the average treatment effect. In essence rather than returning a TRUE or FALSE for the two parts of the query, the case memberships are forced to numeric values (1 or 0) and the differences taken, which can be a 1, 0 or -1 depending on the causal type.
 
-CLEAN UP
+```{r}
+make_model("X -> Y")  |>
+  get_query_types("Y[X=1]- Y[X=0]")
+```
 
 
 #### Nested queries
@@ -1321,17 +1345,15 @@ CLEAN UP
 
 ### Queries by hand
 
-Queries can draw directly from the prior distribution of the posterior distribution provided by `stan`.
+Giving a *quantitative* answer to a query requires placing probabilities over the causal types that correspond to a query. 
 
-<!-- GS: Can we avoid using fabricate here? -->
+SUch answers  can draw directly from the prior distribution of the posterior distribution provided by `stan`.
+
 
 ```{r}
 #| eval: false
 
-library(DeclareDesign)
-
-data  <- 
-  fabricate(N = 100, X = complete_ra(N), Y = X)
+data  <- data.frame(X = rep(0:1, 50), Y = rep(0:1, 50))
 
 model <- 
   make_model("X -> Y") |>
@@ -1352,7 +1374,7 @@ model$posterior_distribution |>
 
 if (params$run) {
 
-  data  <- fabricate(N = 100, X = complete_ra(N), Y = X)
+  data  <- data.frame(X = rep(0:1, 50), Y = rep(0:1, 50))
 
   make_model("X -> Y") |>
     update_model(data, iter  = 4000, refresh = 0) |>
