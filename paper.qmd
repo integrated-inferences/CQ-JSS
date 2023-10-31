@@ -1285,14 +1285,13 @@ This syntax enables users to write arbitrary causal queries to interrogate their
 
 The key to posing causal queries is being able to ask about values of variables given that the values of some other variables are "controlled". This corresponds to appliaction of the `do` operator in @pearl2009causality. In `CausalQueries` this is done by using square brackets \[\]. Inside the brackets, variables that are to be intervened upon are specified. 
 
-For instance, consider the counterfactual query that asks about the types for which $Y$ equals 1 when $X$ is _set to_ 0. In this case, since $X$ is being intervened to be zero, $X$ is placed inside the brackets. Given that $Y$ equaling 1 is a condition about potentially observed values, it is expressed as using the logical operator `==`. More precisely, such query can be written as `"Y[X=0] == 1"`.
+For instance, consider the query `Y[X=0]==1`. This query that asks about the types for which $Y$ equals 1 when $X$ is _set to_ 0. In this case, since $X$ is being intervened to be zero, $X$ is placed inside the brackets. Given that $Y$ equaling 1 is a condition about potentially observed values, it is expressed as using the logical operator `==`. 
 
-
-With the aid of logical operators such as `==`, `!=`, `>`, `>=` `<`,`<=` , and the use of square brackets, users can formulate a broad range of queries. For example, they can make queries about cases where $X$ has a positive effect on $Y$, i.e., whether $Y$ is greater when $X$ is set to 1 compared to when $X$ is set to 0, expressed as `"Y[X=1] > Y[X=0]"`. Alternatively, they can explore complex counterfactuals like `"Y[M=M[X=0], X=1]==1"`. In this case, `CausalQueries` looks for the types for which $Y$ equals 1 when $X$ is set to 1, while keeping $M$ constant at the value it would take if $X$ were 0.
+When a node has multiple parents it is possible to set the value of non of the parents, of some of the parents, or of all of the parents. For instance if `X1` and `X2` are parents of `Y` then `Y==1`, `Y[X1 = 1]==1`, and `Y[X1 = 1, X2 = 1]==1` queries cases for which $Y=1$ when, respectively, neither parents values are controlled, when `X1` is set to 1 but `X2` is not controlled, and when both `X1` and `X2` are set to 1.  
 
 One way to develop a clearer understanding of what types are being targeted with each query is using the function  `get_query_types`. For instance, consider the model $X \rightarrow Y \leftarrow M$ and the query `"Y[X=1, M=1] > Y[X=0, M=0]"`.
 
-In this case, the aim is to identify the types for which $Y$ equals zero when $X = 0$ and  $M = 0$, and $Y$ equals 1 when $X = 1$ and $M = 1$. The specific values that Y takes for other combinations of $X$ and $M$ are not relevant for this query. Therefore, the types targeted in this query have a zero as the first digit of the subscript i.e., when $X = 0$ and $M = 0$, and a 1 as the last digit i.e., when $X = 1$ and $M = 1$, and any value in the second and third digits. The code and output below offer a more precise representation of this.
+In this case, the aim is to identify the types for which $Y$ equals zero when $X = 0$ and  $M = 0$, and $Y$ equals 1 when $X = 1$ and $M = 1$. The specific values that $Y$ takes for other combinations of $X$ and $M$ are not relevant for this query.   The code and output below offer a more precise representation of this.
 
 ```{r}
 #| eval: true
@@ -1306,10 +1305,19 @@ make_model('X -> M -> Y <- X') |>
 
 In summary, the variables to be intervened, as if conducting an experiment, are placed inside square brackets, followed by an equal sign and the value to which we want to set them, either 1 or 0, as $X$ in the case of `"Y[X=1]"`. The variable whose value is to be observed, as  $Y$ in the same example, should be placed before the square brackets. In this case, we are indicating that we want to "observe the value that $Y$ would take when $X$ is set to one." Finally, conditions related to observed or potentially observed values, in the context of an intervention, are expressed outside the brackets, along with the logical condition that defines the observed values, as in `"Y == 1"` or `"Y[X=1] > Y[X=0]"`.
 
+#### Complex expressions
+
+Many queries involve complex statements over multiple sets of types. These can be formed with  the aid of logical operators such as `==`, `!=`, `>`, `>=` `<`,`<=`. For example, they can make queries about cases where $X$ has a positive effect on $Y$, i.e., whether $Y$ is greater when $X$ is set to 1 compared to when $X$ is set to 0, expressed as `"Y[X=1] > Y[X=0]"`. The query "$X$ has some effect on $Y$" is given by `"Y[X=1] != Y[X=0]"`.
+
+Linear operators can also be used over set of simple statements. Thus `"Y[X=1] - Y[X=0]" returns the share of units the average treatment effect. IN essence rather than returning a TRUE or FALSE for the two parts of the query, the case memberships are forced to numeric values (1 or 0) and the differences taken, which can be a 1, 0 or -1 depending on the causal type.
+
+CLEAN UP
 
 
+#### Nested queries
 
-### Query implementation
+`CausalQueries` lets uses pose nested "complex counterfactual" queries. For instance `"Y[M=M[X=0], X=1]==1"` queries the types for which $Y$ equals 1 when $X$ is set to 1, while keeping $M$ constant at the value it would take if $X$ were 0.
+
 
 ### Queries by hand
 
