@@ -585,6 +585,7 @@ From these we can calculate the probability of each data type. For
 instance the probability of data type \(Z=0, X=0, Y=0\) is:
 
 \[w_{000}=\Pr(Z=0, X=0, Y=0) = \lambda^Z_0\left(\lambda^X_{00}(\lambda^{Y|\lambda^X_{00}}_{00}+\lambda^{Y|\lambda^X_{00}}_{01}) + \lambda^X_{01}(\lambda^{Y|\lambda^X_{01}}_{00}+\lambda^{Y|\lambda^X_{01}}_{01})\right)\]
+
 In practice \texttt{CausalQueries} uses a matrix \texttt{parmap} that
 maps from parameters into data types.
 
@@ -1933,73 +1934,112 @@ R> sample_data_2 |>
 \subsection{How the Stan program
 works}\label{how-the-stan-program-works}}
 
-THIS DISCUSSION IS OUT OF DATE:
+The \texttt{stan} model works as follows.
 
-The \texttt{stan} model works as follows:
+\hypertarget{probability-distributions-over-parameter-sets}{%
+\subsubsection{Probability distributions over parameter
+sets}\label{probability-distributions-over-parameter-sets}}
 
-\textbf{MH: ADD DISCUSSION OF parmap;}
+We are interested in ``sets'' of parameters. In the case without
+confounding these sets correspond to the nodal types for each node: we
+have a probability distribution over the set of nodal types. In cases
+with confounding these are sets of nodal types for a give node
+\emph{given} values of other nodes: we have characterize the probability
+of each nodal type in a set given the values of nodal types for other
+nodes.
 
-\begin{itemize}
-\item
-  We are interested in ``sets'' of parameters. For example in the
-  \(X \rightarrow Y\) model we have two parameter sets
-  (\texttt{param\_sets}). The first is
-  \(\lambda^X \in \{\lambda^X_0, \lambda^X_1\}\) whose elements give the
-  probability that \(X\) is 0 or 1. These two probabilities sum to one.
-  The second parameter set is
-  \(\lambda^Y \in \{\lambda^Y_{00}, \lambda^Y_{10}, \lambda^Y_{01} \lambda^Y_{11}\}\).
-  These are also probabilities and their values sum to one. Note in all
-  that we have 6 parameters but just 1 + 3 = 4 degrees of freedom.
-\item
-  We would like to express priors over these parameters using multiple
-  Dirichlet distributions (two in this case). In practice because we are
-  dealing with multiple simplices of varying length, it is easier to
-  express priors over gamma distributions with a unit scale parameter
-  and shape parameter corresponding to the Dirichlet priors, \(\alpha\).
-  We make use of the fact that \(\lambda^X_0 \sim Gamma(\alpha^X_0,1)\)
-  and \(\lambda^X_1 \sim Gamma(\alpha^X_1,1)\) then
-  \(\frac{1}{\lambda^X_0 +\lambda^X_1}(\lambda^X_0, \lambda^X_1) \sim Dirichlet(\alpha^X_0, \alpha^X_1)\)\footnote{For
-    a discussion of implementation of this approach in \texttt{stan} see
-    discussion
-    (here){[}https://discourse.mc-stan.org/t/ragged-array-of-simplexes/1382{]}.}
-\item
-  For any candidate parameter vector \(\lambda\) we calculate the
-  probability of \emph{causal} types (\texttt{prob\_of\_types}) by
-  taking, for each type \(i\), the product of the probabilities of all
-  parameters (\(\lambda_j\)) that appear in column \(i\) of the
-  parameter matrix \(P\). Thus the probability of a \((X_0,Y_{00})\)
-  case is just \(\lambda^X_0 \times \lambda^Y_{00}\). The
-  implementations in \texttt{stan} uses
-  \texttt{prob\_of\_types\_{[}i{]}}
-  \(= \prod_j \left(P_{j,i} \lambda_j + (1-P_{j,i})\right)\): this
-  multiplies the probability of all parameters involved in the causal
-  type (and substitutes 1s for parameters that are not). (\texttt{P} and
-  \texttt{not\_P} (1-\(P\)) are provided as data to \texttt{stan}).
-\item
-  The probability of data types, \texttt{w}, is given by summing up the
-  probabilities of all causal types that produce a given data type. For
-  example, the probability of a \(X=0,Y=0\) case, \(w_{00}\) is
-  \(\lambda^X_0\times \lambda^Y_{00} + \lambda^X_0\times \lambda^Y_{01}\).
-  The ambiguity matrix \(A\) is provided to \texttt{stan} to indicate
-  which probabilities need to be summed.
-\item
-  In the case of incomplete data we first identify the set of ``data
-  strategies'', where a collection of a data strategy might be of the
-  form ``gather data on \(X\) and \(M\), but not \(Y\), for \(n_1\)
-  cases and gather data on \(X\) and \(Y\), but not \(M\), for \(n_2\)
-  cases. The probability of an observed event, within a data strategy,
-  is given by summing the probabilities of the types that could give
-  rise to the incomplete data. For example \(X\) is observed, but \(Y\)
-  is not, then the probability of \(X=0, Y = \text{NA}\) is
-  \(w_{00} +w_{01}\). The matrix \(E\) is passed to \texttt{stan} to
-  figure out which event probabilities need to be combined for events
-  with missing data.
-\item
-  The probability of a dataset is then given by a multinomial
-  distribution with these event probabilities (or, in the case of
-  incomplete data, the product of multinomials, one for each data
-  strategy).
-\end{itemize}
+We express priors over these parameter sets using multiple Dirichlet
+distributions. In practice because we are dealing with multiple
+simplices of varying length, it is easier to express priors over gamma
+distributions with a unit scale parameter and shape parameter
+corresponding to the Dirichlet priors, \(\alpha\). We make use of the
+fact that \(\lambda^X_0 \sim Gamma(\alpha^X_0,1)\) and
+\(\lambda^X_1 \sim Gamma(\alpha^X_1,1)\) then
+\(\frac{1}{\lambda^X_0 +\lambda^X_1}(\lambda^X_0, \lambda^X_1) \sim Dirichlet(\alpha^X_0, \alpha^X_1)\)\footnote{For
+  a discussion of implementation of this approach in \texttt{stan} see
+  discussion
+  (here){[}https://discourse.mc-stan.org/t/ragged-array-of-simplexes/1382{]}.}
+
+TO illustrate, in the \(X \rightarrow Y\) model we have two parameter
+sets (\texttt{param\_sets}). The first is
+\(\lambda^X \in \{\lambda^X_0, \lambda^X_1\}\) whose elements give the
+probability that \(X\) is 0 or 1. These two probabilities sum to one.
+The second parameter set is
+\(\lambda^Y \in \{\lambda^Y_{00}, \lambda^Y_{10}, \lambda^Y_{01} \lambda^Y_{11}\}\).
+These are also probabilities and their values sum to one. Note in all
+that we have 6 parameters but just 1 + 3 = 4 degrees of freedom. We have
+a 2 dimensional Dirichlet distribution over the \(X\) nodal types
+(qquivalently, a Beta distribution) and a 4 dimensional Dirichlet over
+the \(Y\) nodal types.
+
+\hypertarget{event-probabilities}{%
+\subsubsection{Event probabilities}\label{event-probabilities}}
+
+For any candidate parameter vector \(\lambda\) we calculate the
+probability of \emph{data} types. This is done using a matrix that maps
+from parameters into data types, \texttt{parmap}. In cases without
+confounding there is a column for each data type; the matrix indicates
+which nodes in each set ``contribute'' to the data type, and the
+probability of the data type is found by summing within sets and taking
+the product over sets.
+
+\begin{verbatim}
+R> make_model("X -> Y") |> get_parmap() |> kable()
+\end{verbatim}
+
+\begin{tabular}{l|r|r|r|r}
+\hline
+  & X0Y0 & X1Y0 & X0Y1 & X1Y1\\
+\hline
+X.0 & 1 & 0 & 1 & 0\\
+\hline
+X.1 & 0 & 1 & 0 & 1\\
+\hline
+Y.00 & 1 & 1 & 0 & 0\\
+\hline
+Y.10 & 0 & 1 & 1 & 0\\
+\hline
+Y.01 & 1 & 0 & 0 & 1\\
+\hline
+Y.11 & 0 & 0 & 1 & 1\\
+\hline
+\end{tabular}
+
+For example in table REF the probability of data type \texttt{X0Y0},
+\(w_{00}\) is
+\(\lambda^X_0\times \lambda^Y_{00} + \lambda^X_0\times \lambda^Y_{01}\).
+This is found by combining a parameter vector with the first column of
+\texttt{parmap}, taking the product of the probability of \texttt{X.0}
+and the \emph{sum} of the probabilities for \texttt{Y.00} and
+\texttt{Y.01}.
+
+In cases with confounding the approach is similar except that the
+\texttt{parmap} matrix can contain multiple columns for each data type
+to capture non-independence between nodes.
+
+\hypertarget{incomplete-data}{%
+\subsubsection{Incomplete data}\label{incomplete-data}}
+
+In the case of incomplete data we first identify the set of ``data
+strategies'', where a collection of a data strategy might be of the form
+``gather data on \(X\) and \(M\), but not \(Y\), for \(n_1\) cases and
+gather data on \(X\) and \(Y\), but not \(M\), for \(n_2\) cases. The
+probability of an observed event, within a data strategy, is given by
+summing the probabilities of the types that could give rise to the
+incomplete data. For example \(X\) is observed, but \(Y\) is not, then
+the probability of \(X=0, Y = \text{NA}\) is \(w_{00} +w_{01}\). The
+matrix \(E\) is passed to \texttt{stan} to figure out which event
+probabilities need to be combined for events with missing data.
+
+\hypertarget{data-probability}{%
+\subsubsection{Data probability}\label{data-probability}}
+
+Once we have the event probabilities in hand for each data strategy we
+are ready to calculate the probability of the data. For a given data
+strategy this is given by a multinomial distribution with these event
+probabilities. When there is incomplete data, and so multiple data
+strategies, this is given by the the product of the multinomial
+probabilities for each strategy.
 
 \hypertarget{implementation}{%
 \subsection{Implementation}\label{implementation}}
@@ -2396,7 +2436,7 @@ R> lipids_model |>
 \resizebox{\linewidth}{!}{
 \begin{tabular}{cccccc}
 \toprule
-query & given & mean & sd & cred.low & cred.high\\
+query & given & mean & sd & cred.low.2.5\% & cred.high.97.5\%\\
 \midrule
 Y[X=1] - Y[X=0] & X==1 \& Y==1 \& Z==1 & 0.95 & 0.04 & 0.87 & 1\\
 \bottomrule
@@ -2684,7 +2724,7 @@ Network (CRAN) at {[}https://CRAN.R-project.org/{]}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, colback=white, toprule=.15mm, breakable, left=2mm, arc=.35mm, rightrule=.15mm, bottomrule=.15mm, opacityback=0]
+\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, opacityback=0, breakable, left=2mm, toprule=.15mm, colback=white, rightrule=.15mm, bottomrule=.15mm, leftrule=.75mm]
 
 The approach to generating a generic stan function that can take data
 from arbitrary models was developed in key contributions by
@@ -2714,7 +2754,7 @@ improved every part of it.
 \section*{More technical details}\label{sec-techdetails}}
 \addcontentsline{toc}{section}{More technical details}
 
-\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, colback=white, toprule=.15mm, breakable, left=2mm, arc=.35mm, rightrule=.15mm, bottomrule=.15mm, opacityback=0]
+\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, opacityback=0, breakable, left=2mm, toprule=.15mm, colback=white, rightrule=.15mm, bottomrule=.15mm, leftrule=.75mm]
 
 Appendices can be included after the bibliography (with a page break).
 Each section within the appendix should have a proper section title
@@ -2746,7 +2786,7 @@ which includes the following topics:
 \section*{Using BibTeX}\label{sec-bibtex}}
 \addcontentsline{toc}{section}{Using BibTeX}
 
-\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, colback=white, toprule=.15mm, breakable, left=2mm, arc=.35mm, rightrule=.15mm, bottomrule=.15mm, opacityback=0]
+\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, opacityback=0, breakable, left=2mm, toprule=.15mm, colback=white, rightrule=.15mm, bottomrule=.15mm, leftrule=.75mm]
 
 References need to be provided in a \textsc{Bib}{\TeX} file
 (\texttt{.bib}). All references should be made with \texttt{@cite}
@@ -2790,8 +2830,6 @@ where a parameter set starts (\texttt{l\_starts}, \texttt{l\_ends}) and
 ends and where a data strategy starts and ends
 (\texttt{strategy\_starts}, \texttt{strategy\_ends}), as well as the
 matrices described above.
-
-MOVE TO APPENDIX? ADD DISCUSSION OF PARMAP
 
 Below we show the \texttt{stan} code. This starts off with a block
 saying what input data is to be expected. Then there is a

@@ -272,6 +272,7 @@ The final column shows a sample set of parameter values.  Together  the paramete
 From these we can calculate the probability of each data type. For instance the probability of data type $Z=0, X=0, Y=0$ is: 
 
 $$w_{000}=\Pr(Z=0, X=0, Y=0) = \lambda^Z_0\left(\lambda^X_{00}(\lambda^{Y|\lambda^X_{00}}_{00}+\lambda^{Y|\lambda^X_{00}}_{01}) + \lambda^X_{01}(\lambda^{Y|\lambda^X_{01}}_{00}+\lambda^{Y|\lambda^X_{01}}_{01})\right)$$
+
 In practice `CausalQueries` uses a matrix `parmap` that maps from parameters into data types.  
 
 
@@ -1118,23 +1119,38 @@ sample_data_2 |>
 
 ### How the Stan program works
 
-THIS DISCUSSION IS OUT OF DATE:
+The `stan` model works as follows.
 
-The `stan` model works as follows:
+#### Probability distributions over parameter sets
 
-**MH: ADD DISCUSSION OF parmap;**
+We are interested in "sets" of parameters. In the case without confounding these sets correspond to the nodal types for each node: we have a probability distribution over the set of nodal types. In cases with confounding these are sets of nodal types for a give node *given* values of other nodes: we have characterize the probability of each nodal type in a set  given the values of  nodal types for other nodes. 
 
--   We are interested in "sets" of parameters. For example in the $X \rightarrow Y$ model we have two parameter sets (`param_sets`). The first is $\lambda^X \in \{\lambda^X_0, \lambda^X_1\}$ whose elements give the probability that $X$ is 0 or 1. These two probabilities sum to one. The second parameter set is $\lambda^Y \in \{\lambda^Y_{00}, \lambda^Y_{10}, \lambda^Y_{01} \lambda^Y_{11}\}$. These are also probabilities and their values sum to one. Note in all that we have 6 parameters but just 1 + 3 = 4 degrees of freedom.
+We express priors over these parameter sets using multiple Dirichlet distributions. In practice because we are dealing with multiple simplices of varying length, it is easier to express priors over gamma distributions with a unit scale parameter and shape parameter corresponding to the Dirichlet priors, $\alpha$. We make use of the fact that $\lambda^X_0 \sim Gamma(\alpha^X_0,1)$ and $\lambda^X_1 \sim Gamma(\alpha^X_1,1)$ then $\frac{1}{\lambda^X_0 +\lambda^X_1}(\lambda^X_0, \lambda^X_1) \sim Dirichlet(\alpha^X_0, \alpha^X_1)$^[For a discussion of implementation of this approach in `stan` see discussion (here)[https://discourse.mc-stan.org/t/ragged-array-of-simplexes/1382].]
 
--   We would like to express priors over these parameters using multiple Dirichlet distributions (two in this case). In practice because we are dealing with multiple simplices of varying length, it is easier to express priors over gamma distributions with a unit scale parameter and shape parameter corresponding to the Dirichlet priors, $\alpha$. We make use of the fact that $\lambda^X_0 \sim Gamma(\alpha^X_0,1)$ and $\lambda^X_1 \sim Gamma(\alpha^X_1,1)$ then $\frac{1}{\lambda^X_0 +\lambda^X_1}(\lambda^X_0, \lambda^X_1) \sim Dirichlet(\alpha^X_0, \alpha^X_1)$^[For a discussion of implementation of this approach in `stan` see discussion (here)[https://discourse.mc-stan.org/t/ragged-array-of-simplexes/1382].]
+TO illustrate, in the $X \rightarrow Y$ model we have two parameter sets (`param_sets`). The first is $\lambda^X \in \{\lambda^X_0, \lambda^X_1\}$ whose elements give the probability that $X$ is 0 or 1. These two probabilities sum to one. The second parameter set is $\lambda^Y \in \{\lambda^Y_{00}, \lambda^Y_{10}, \lambda^Y_{01} \lambda^Y_{11}\}$. These are also probabilities and their values sum to one. Note in all that we have 6 parameters but just 1 + 3 = 4 degrees of freedom. We have a 2 dimensional Dirichlet distribution over the $X$ nodal types (qquivalently, a Beta distribution) and a 4 dimensional Dirichlet over the $Y$ nodal types. 
 
--   For any candidate parameter vector $\lambda$ we calculate the probability of *causal* types (`prob_of_types`) by taking, for each type $i$, the product of the probabilities of all parameters ($\lambda_j$) that appear in column $i$ of the parameter matrix $P$. Thus the probability of a $(X_0,Y_{00})$ case is just $\lambda^X_0 \times \lambda^Y_{00}$. The implementations in `stan` uses `prob_of_types_[i]` $= \prod_j \left(P_{j,i} \lambda_j + (1-P_{j,i})\right)$: this multiplies the probability of all parameters involved in the causal type (and substitutes 1s for parameters that are not). (`P` and `not_P` (1-$P$) are provided as data to `stan`).
+#### Event probabilities
 
--   The probability of data types, `w`, is given by summing up the probabilities of all causal types that produce a given data type. For example, the probability of a $X=0,Y=0$ case, $w_{00}$ is $\lambda^X_0\times \lambda^Y_{00} + \lambda^X_0\times \lambda^Y_{01}$. The ambiguity matrix $A$ is provided to `stan` to indicate which probabilities need to be summed.
+For any candidate parameter vector $\lambda$ we calculate the probability of *data* types. This is done using a matrix that maps from parameters into data types, `parmap`. In cases without confounding there is a column for each data type; the matrix indicates which nodes in each set "contribute" to the data type, and the probability of the data type is found by summing within sets and taking the product over sets. 
 
--   In the case of incomplete data we first identify the set of "data strategies", where a collection of a data strategy might be of the form "gather data on $X$ and $M$, but not $Y$, for $n_1$ cases and gather data on $X$ and $Y$, but not $M$, for $n_2$ cases. The probability of an observed event, within a data strategy, is given by summing the probabilities of the types that could give rise to the incomplete data. For example $X$ is observed, but $Y$ is not, then the probability of $X=0, Y = \text{NA}$ is $w_{00} +w_{01}$. The matrix $E$ is passed to `stan` to figure out which event probabilities need to be combined for events with missing data.
+```{r}
+make_model("X -> Y") |> get_parmap() |> kable()
+```
 
--   The probability of a dataset is then given by a multinomial distribution with these event probabilities (or, in the case of incomplete data, the product of multinomials, one for each data strategy).
+For example  in table REF the probability of data type `X0Y0`, $w_{00}$ is $\lambda^X_0\times \lambda^Y_{00} + \lambda^X_0\times \lambda^Y_{01}$. This is found by combining a parameter vector with the first column of `parmap`, taking the product of the probability of `X.0` and the *sum* of the probabilities for `Y.00` and `Y.01`.   
+
+
+In cases with confounding the approach is similar except that the `parmap` matrix can contain multiple columns for each data type to capture non-independence between nodes.  
+
+ 
+#### Incomplete data
+
+In the case of incomplete data we first identify the set of "data strategies", where a collection of a data strategy might be of the form "gather data on $X$ and $M$, but not $Y$, for $n_1$ cases and gather data on $X$ and $Y$, but not $M$, for $n_2$ cases. The probability of an observed event, within a data strategy, is given by summing the probabilities of the types that could give rise to the incomplete data. For example $X$ is observed, but $Y$ is not, then the probability of $X=0, Y = \text{NA}$ is $w_{00} +w_{01}$. The matrix $E$ is passed to `stan` to figure out which event probabilities need to be combined for events with missing data.
+
+#### Data probability
+
+Once we have the event probabilities in hand for each data strategy we are ready to calculate the probability of the data. For a given data strategy this is given by a multinomial distribution with these event probabilities. When there is incomplete data, and so multiple data strategies, this is given by the the product of the multinomial probabilities for each strategy.
+
 
 ### Implementation
 
@@ -1610,8 +1626,6 @@ Cleaning up {{< bibtex >}} files is a somewhat tedious task -- especially when a
 #CausalQueries:::prep_stan_data(model, compact_data)
 
 ```
-
-MOVE TO APPENDIX? ADD DISCUSSION OF PARMAP
 
 Below we show the `stan` code. This starts off with a block saying what input data is to be expected. Then there is a characterization of parameters and the transformed parameters. Then the likelihoods and priors are provided. `stan` takes it from there and generates a posterior distribution.
 
