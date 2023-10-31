@@ -554,7 +554,7 @@ lipids_model$causal_types |> head()
 
 In the lipids model there are $2\times 4\times 4 = 32$ causal types. A model with $n_j$ nodal types at node $j$ has $\prod_jn_j$ causal types. Thus the set of causal types can be large. 
 
-Knowledge of a causal type tells you what values a unit would take, on all nodes, whether or not there are  interventions. For example for a model $X \rightarrow M \rightarrow Y$ a type $\theta = (\theta^X_0, \theta^M_{01}, \theta^Y_{10})$ would imply data $(X=0, M=0, Y=1)$ absent any intervention. (The converse of this, of course, is the key to updating: observation of data $(X=0, M=0, Y=1)$ result in more weight placed on $\theta^X_0$, $\theta^M_{01}$, and $\theta^Y_{10})$.) The general approach used by `CausalQueries` for calculating outcomes from causal types is given insection #propogation.
+Knowledge of a causal type tells you what values a unit would take, on all nodes, whether or not there are  interventions. For example for a model $X \rightarrow M \rightarrow Y$ a type $\theta = (\theta^X_0, \theta^M_{01}, \theta^Y_{10})$ would imply data $(X=0, M=0, Y=1)$ absent any intervention. (The converse of this, of course, is the key to updating: observation of data $(X=0, M=0, Y=1)$ result in more weight placed on $\theta^X_0$, $\theta^M_{01}$, and $\theta^Y_{10})$.) The general approach used by `CausalQueries` for calculating outcomes from causal types is given in section #sec-propagation.
 
 
 #### Parameter matrix
@@ -1241,9 +1241,11 @@ Models can be queried using the `query_distribution` and `query_model` functions
 
 ## Queries  {#sec-query}
 
-### Calcuating factual and counterfactual quantities
+### Calcuating factual and counterfactual quantities {#sec-propagation}
 
-We can map from causal types to data types by propagating realized values on nodes forward in the DAG, moving from exogenous or intervened upon nodes to their descendants in generational order. The `realise_outcomes` functions achieves this by traversing the DAG, while recording for each node's nodal types, the values implied by realizations on the node's parents. By way of example, consider the first causal type of the $X \rightarrow Y$ model above:
+We can map from causal types to data types by propagating realized values on nodes forward in the DAG, moving from exogenous or intervened upon nodes to their descendants in generational order. The `realise_outcomes` functions achieves this by traversing the DAG, while recording for each node's nodal types, the values implied by realizations on the node's parents or by controlled values of a node's parents. 
+
+By way of example, consider the first causal type of the $X \rightarrow Y$ model above:
 
 1.  $X$ is exogenous and has a realized value of $0$
 2.  We substitute for $Y$ the value implied by the $00$ nodal type given a $0$ value on $X$, which in turn is $0$ (see nodal types)

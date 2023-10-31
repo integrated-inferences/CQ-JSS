@@ -1088,8 +1088,8 @@ model \(X \rightarrow M \rightarrow Y\) a type
 course, is the key to updating: observation of data \((X=0, M=0, Y=1)\)
 result in more weight placed on \(\theta^X_0\), \(\theta^M_{01}\), and
 \(\theta^Y_{10})\).) The general approach used by \texttt{CausalQueries}
-for calculating outcomes from causal types is given insection
-\#propogation.
+for calculating outcomes from causal types is given in section
+\#sec-propagation.
 
 \hypertarget{parameter-matrix}{%
 \subsubsection{Parameter matrix}\label{parameter-matrix}}
@@ -2170,17 +2170,20 @@ queries and returns a dataframe with summary statistics on the queries.
 \hypertarget{sec-query}{%
 \section{Queries}\label{sec-query}}
 
-\hypertarget{calcuating-factual-and-counterfactual-quantities}{%
+\hypertarget{sec-propagation}{%
 \subsection{Calcuating factual and counterfactual
-quantities}\label{calcuating-factual-and-counterfactual-quantities}}
+quantities}\label{sec-propagation}}
 
 We can map from causal types to data types by propagating realized
 values on nodes forward in the DAG, moving from exogenous or intervened
 upon nodes to their descendants in generational order. The
 \texttt{realise\_outcomes} functions achieves this by traversing the
 DAG, while recording for each node's nodal types, the values implied by
-realizations on the node's parents. By way of example, consider the
-first causal type of the \(X \rightarrow Y\) model above:
+realizations on the node's parents or by controlled values of a node's
+parents.
+
+By way of example, consider the first causal type of the
+\(X \rightarrow Y\) model above:
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
@@ -2799,7 +2802,7 @@ Network (CRAN) at {[}https://CRAN.R-project.org/{]}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, rightrule=.15mm, bottomrule=.15mm, opacityback=0, colback=white, breakable, leftrule=.75mm, left=2mm, toprule=.15mm, arc=.35mm]
+\begin{tcolorbox}[enhanced jigsaw, opacityback=0, breakable, left=2mm, rightrule=.15mm, bottomrule=.15mm, colback=white, arc=.35mm, toprule=.15mm, leftrule=.75mm]
 
 The approach to generating a generic stan function that can take data
 from arbitrary models was developed in key contributions by
@@ -2829,7 +2832,7 @@ improved every part of it.
 \section*{More technical details}\label{sec-techdetails}}
 \addcontentsline{toc}{section}{More technical details}
 
-\begin{tcolorbox}[enhanced jigsaw, rightrule=.15mm, bottomrule=.15mm, opacityback=0, colback=white, breakable, leftrule=.75mm, left=2mm, toprule=.15mm, arc=.35mm]
+\begin{tcolorbox}[enhanced jigsaw, opacityback=0, breakable, left=2mm, rightrule=.15mm, bottomrule=.15mm, colback=white, arc=.35mm, toprule=.15mm, leftrule=.75mm]
 
 Appendices can be included after the bibliography (with a page break).
 Each section within the appendix should have a proper section title
@@ -2861,7 +2864,7 @@ which includes the following topics:
 \section*{Using BibTeX}\label{sec-bibtex}}
 \addcontentsline{toc}{section}{Using BibTeX}
 
-\begin{tcolorbox}[enhanced jigsaw, rightrule=.15mm, bottomrule=.15mm, opacityback=0, colback=white, breakable, leftrule=.75mm, left=2mm, toprule=.15mm, arc=.35mm]
+\begin{tcolorbox}[enhanced jigsaw, opacityback=0, breakable, left=2mm, rightrule=.15mm, bottomrule=.15mm, colback=white, arc=.35mm, toprule=.15mm, leftrule=.75mm]
 
 References need to be provided in a \textsc{Bib}{\TeX} file
 (\texttt{.bib}). All references should be made with \texttt{@cite}
