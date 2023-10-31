@@ -692,7 +692,7 @@ model <- make_model("X -> Y; X <-> Y") %>%
 get_parameter_matrix(model) |> kable()
 ```
 
-#### Allowing confounding {#confounding}
+#### Allowing confounding {#sec-confounding}
 
 (Unobserved) confounding between two nodes arises when the nodal types for the nodes are not independently distributed.
 
@@ -1078,33 +1078,45 @@ sample_data_1 |> collapse_data(model)
 sample_data_2 |> collapse_data(model)
 ```
 
-In the same way it is possible to move from "compact data" to "long data" using `expand_data()`.
+In the same way it is possible to move from "compact data" to "long data" using `expand_data()`. Note that `NA`'s are interpreted as data not having been sought. So in the case of `sample_data_2` the interpretation is that there are two data strategies: data on $Y$, $M$ and $X$ was sought in two cases only; data on $Y$ and $X$ only was sought in six cases.
 
 ## Updating models {#sec-update}
 
-The approach used by the `CausalQueries` package to updating parameter values given observed data uses `stan` and involves the following elements:
+The approach used by the `CausalQueries` package to updating parameter values given observed data uses Stan [@carpenter2017stan] and involves the following elements:
 
 -   Dirichlet priors over parameters, $\lambda$ (which, in cases without confounding, correspond to nodal types)
 -   A mapping from parameters to event probabilities, $w$
 -   A likelihood function that assumes events are distributed according to a multinomial distribution given event probabilities.
 
-We provide further details below.
+Below we explain the data required by the generic Stan program implemented in the package, the structure of that program, and then show how to use the package to produce posterior draws of parameters.
 
 ### Data for stan
 
-**GS: general edit to this section**
+We use a generic Stan program that works for all binary causal models. The main advantage of the generic program we implement is that it allows us to pass the details of causal model as data inputs to Stan instead of generating individual Stan program for each causal model.
 
-We use a generic `stan` model that works for all binary causal models. Rather than writing a new `stan` model for each causal model we send `stan` details of each particular causal model as data inputs.
+The data required by the Stan program includes vectors of observed data (`Y`) and priors on parameters (`lambdas_prior`) as well as a set of matrices required for the mapping between events, data types, causal types and parameters. The latter includes:
 
-In particular we provide a set of matrices that `stan` tailor itself to particular models: the parameter matrix ($P$ ) tells `stan` how many parameters there are, and how they map into causal types; an ambiguity matrix $A$ tells `stan` how causal types map into data types; and an event matrix $E$ relates data types into patterns of observed data (in cases where there are incomplete observations).
+-   A parameter matrix (`P`) that tells Stan how many parameters there are, and how they map into causal types,
+-   An ambiguity matrix (`A`) that tells Stan how causal types map into data types,
+-   A matrix that maps parameters to data types (`parmap`), and
+-   An event matrix (`E`) that relates data types into patterns of observed data (events) in cases where there are incomplete observations.
 
-The internal function `prep_stan_data` prepares data for `stan`. You generally don't need to use this manually, but we show here a sample of what it produces as input for `stan`.
+In addition data includes counts of all relevant quantities as well as start and end positions of parameters pertaining to specific nodes and of distinct data strategies.
 
-Note that NAs are interpreted as data not having been sought. So in this case the interpretation is that there are two data strategies: data on $Y$ and $X$ was sought in three cases; data on $Y$ only was sought in just one case.
+The internal function `prep_stan_data()` takes model and data as arguments and produces a list with all objects described above that are required by the generic Stan program. Generally, package users do not need to call the `prep_stan_data()` function directly to update the model. If further inspection of the data required by the Stan program is required, you can do so using the code below
 
-<!-- # is it useful to touch on the possibility to update submodels when there is no confounding and no missing data here? -->
+```{r}
+#| label: prep-stan-data
+#| echo: true
+#| eval: false
 
-### How the stan model works
+sample_data_2 |> 
+  collapse_data(model = model) |> 
+  CausalQueries:::prep_stan_data(model = model)
+
+```
+
+### How the Stan program works
 
 THIS DISCUSSION IS OUT OF DATE:
 
@@ -1124,8 +1136,6 @@ The `stan` model works as follows:
 
 -   The probability of a dataset is then given by a multinomial distribution with these event probabilities (or, in the case of incomplete data, the product of multinomials, one for each data strategy).
 
-**GS: TO CHECK THE PATHS FUNCTIONALITY**
-
 ### Implementation
 
 To update a `CausalQueries` model with data use:
@@ -1138,12 +1148,9 @@ To update a `CausalQueries` model with data use:
 update_model(model, data)
 ```
 
-where the data argument is a dataset containing some or all of the nodes in the model.
+where the data argument is a dataset containing some or all of the nodes in the model. `update_model()` relies on `rstan::sampling()` to draw from posterior distribution and one can pass any additional arguments accepted by `rstan::sampling()` in `...`.
 
-As `update_model()` calls `rstan::sampling` one can pass along all arguments in `...` to `rstan::sampling`. For instance:
-
--   `iter` sets the number of iterations and ultimately the number of draws in the posterior
--   `chains` sets the number of chains; doing multiple chains in parallel speeds things up
+<!-- # is it useful to touch on the possibility to update submodels when there is no confounding and no missing data here? -->
 
 ### Parallelization
 

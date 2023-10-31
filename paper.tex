@@ -665,7 +665,7 @@ confounding'', that is, the presence of an unobserved variable that
 might influence observed variables. In this case condition 3 above is
 relaxed and the exogeneous nodes associated with confounded variables
 have a joint distribution. We describe how this is done in greater
-detail in section \textbf{?@sec-confounding}.
+detail in section Section~\ref{sec-confounding}.
 
 \hypertarget{graphing}{%
 \subsection{Graphing}\label{graphing}}
@@ -1268,8 +1268,8 @@ Y.11\_X.1 & 0 & 0 & 0 & 1\\
 \hline
 \end{tabular}
 
-\hypertarget{confounding}{%
-\subsubsection{Allowing confounding}\label{confounding}}
+\hypertarget{sec-confounding}{%
+\subsubsection{Allowing confounding}\label{sec-confounding}}
 
 (Unobserved) confounding between two nodes arises when the nodal types
 for the nodes are not independently distributed.
@@ -1854,14 +1854,18 @@ R> sample_data_2 |> collapse_data(model)
 \end{verbatim}
 
 In the same way it is possible to move from ``compact data'' to ``long
-data'' using \texttt{expand\_data()}.
+data'' using \texttt{expand\_data()}. Note that \texttt{NA}'s are
+interpreted as data not having been sought. So in the case of
+\texttt{sample\_data\_2} the interpretation is that there are two data
+strategies: data on \(Y\), \(M\) and \(X\) was sought in two cases only;
+data on \(Y\) and \(X\) only was sought in six cases.
 
 \hypertarget{sec-update}{%
 \section{Updating models}\label{sec-update}}
 
 The approach used by the \texttt{CausalQueries} package to updating
-parameter values given observed data uses \texttt{stan} and involves the
-following elements:
+parameter values given observed data uses Stan \citep{carpenter2017stan}
+and involves the following elements:
 
 \begin{itemize}
 \tightlist
@@ -1875,37 +1879,59 @@ following elements:
   a multinomial distribution given event probabilities.
 \end{itemize}
 
-We provide further details below.
+Below we explain the data required by the generic Stan program
+implemented in the package, the structure of that program, and then show
+how to use the package to produce posterior draws of parameters.
 
 \hypertarget{data-for-stan}{%
 \subsection{Data for stan}\label{data-for-stan}}
 
-\textbf{GS: general edit to this section}
+We use a generic Stan program that works for all binary causal models.
+The main advantage of the generic program we implement is that it allows
+us to pass the details of causal model as data inputs to Stan instead of
+generating individual Stan program for each causal model.
 
-We use a generic \texttt{stan} model that works for all binary causal
-models. Rather than writing a new \texttt{stan} model for each causal
-model we send \texttt{stan} details of each particular causal model as
-data inputs.
+The data required by the Stan program includes vectors of observed data
+(\texttt{Y}) and priors on parameters (\texttt{lambdas\_prior}) as well
+as a set of matrices required for the mapping between events, data
+types, causal types and parameters. The latter includes:
 
-In particular we provide a set of matrices that \texttt{stan} tailor
-itself to particular models: the parameter matrix (\(P\) ) tells
-\texttt{stan} how many parameters there are, and how they map into
-causal types; an ambiguity matrix \(A\) tells \texttt{stan} how causal
-types map into data types; and an event matrix \(E\) relates data types
-into patterns of observed data (in cases where there are incomplete
-observations).
+\begin{itemize}
+\tightlist
+\item
+  A parameter matrix (\texttt{P}) that tells Stan how many parameters
+  there are, and how they map into causal types,
+\item
+  An ambiguity matrix (\texttt{A}) that tells Stan how causal types map
+  into data types,
+\item
+  A matrix that maps parameters to data types (\texttt{parmap}), and
+\item
+  An event matrix (\texttt{E}) that relates data types into patterns of
+  observed data (events) in cases where there are incomplete
+  observations.
+\end{itemize}
 
-The internal function \texttt{prep\_stan\_data} prepares data for
-\texttt{stan}. You generally don't need to use this manually, but we
-show here a sample of what it produces as input for \texttt{stan}.
+In addition data includes counts of all relevant quantities as well as
+start and end positions of parameters pertaining to specific nodes and
+of distinct data strategies.
 
-Note that NAs are interpreted as data not having been sought. So in this
-case the interpretation is that there are two data strategies: data on
-\(Y\) and \(X\) was sought in three cases; data on \(Y\) only was sought
-in just one case.
+The internal function \texttt{prep\_stan\_data()} takes model and data
+as arguments and produces a list with all objects described above that
+are required by the generic Stan program. Generally, package users do
+not need to call the \texttt{prep\_stan\_data()} function directly to
+update the model. If further inspection of the data required by the Stan
+program is required, you can do so using the code below
 
-\hypertarget{how-the-stan-model-works}{%
-\subsection{How the stan model works}\label{how-the-stan-model-works}}
+\begin{verbatim}
+R> sample_data_2 |> 
++  collapse_data(model = model) |> 
++  CausalQueries:::prep_stan_data(model = model)
+\end{verbatim}
+
+\hypertarget{how-the-stan-program-works}{%
+\subsection{How the Stan program
+works}\label{how-the-stan-program-works}}
 
 THIS DISCUSSION IS OUT OF DATE:
 
@@ -1975,8 +2001,6 @@ The \texttt{stan} model works as follows:
   strategy).
 \end{itemize}
 
-\textbf{GS: TO CHECK THE PATHS FUNCTIONALITY}
-
 \hypertarget{implementation}{%
 \subsection{Implementation}\label{implementation}}
 
@@ -1987,21 +2011,10 @@ R> update_model(model, data)
 \end{verbatim}
 
 where the data argument is a dataset containing some or all of the nodes
-in the model.
-
-As \texttt{update\_model()} calls \texttt{rstan::sampling} one can pass
-along all arguments in \texttt{...} to \texttt{rstan::sampling}. For
-instance:
-
-\begin{itemize}
-\tightlist
-\item
-  \texttt{iter} sets the number of iterations and ultimately the number
-  of draws in the posterior
-\item
-  \texttt{chains} sets the number of chains; doing multiple chains in
-  parallel speeds things up
-\end{itemize}
+in the model. \texttt{update\_model()} relies on
+\texttt{rstan::sampling()} to draw from posterior distribution and one
+can pass any additional arguments accepted by \texttt{rstan::sampling()}
+in \texttt{...}.
 
 \hypertarget{parallelization}{%
 \subsection{Parallelization}\label{parallelization}}
@@ -2383,7 +2396,7 @@ R> lipids_model |>
 \resizebox{\linewidth}{!}{
 \begin{tabular}{cccccc}
 \toprule
-query & given & mean & sd & cred.low.2.5\% & cred.high.97.5\%\\
+query & given & mean & sd & cred.low & cred.high\\
 \midrule
 Y[X=1] - Y[X=0] & X==1 \& Y==1 \& Z==1 & 0.95 & 0.04 & 0.87 & 1\\
 \bottomrule
@@ -2671,7 +2684,7 @@ Network (CRAN) at {[}https://CRAN.R-project.org/{]}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, rightrule=.15mm, colback=white, arc=.35mm, leftrule=.75mm, left=2mm, breakable, toprule=.15mm, opacityback=0]
+\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, colback=white, toprule=.15mm, breakable, left=2mm, arc=.35mm, rightrule=.15mm, bottomrule=.15mm, opacityback=0]
 
 The approach to generating a generic stan function that can take data
 from arbitrary models was developed in key contributions by
@@ -2701,7 +2714,7 @@ improved every part of it.
 \section*{More technical details}\label{sec-techdetails}}
 \addcontentsline{toc}{section}{More technical details}
 
-\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, rightrule=.15mm, colback=white, arc=.35mm, leftrule=.75mm, left=2mm, breakable, toprule=.15mm, opacityback=0]
+\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, colback=white, toprule=.15mm, breakable, left=2mm, arc=.35mm, rightrule=.15mm, bottomrule=.15mm, opacityback=0]
 
 Appendices can be included after the bibliography (with a page break).
 Each section within the appendix should have a proper section title
@@ -2733,7 +2746,7 @@ which includes the following topics:
 \section*{Using BibTeX}\label{sec-bibtex}}
 \addcontentsline{toc}{section}{Using BibTeX}
 
-\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, rightrule=.15mm, colback=white, arc=.35mm, leftrule=.75mm, left=2mm, breakable, toprule=.15mm, opacityback=0]
+\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, colback=white, toprule=.15mm, breakable, left=2mm, arc=.35mm, rightrule=.15mm, bottomrule=.15mm, opacityback=0]
 
 References need to be provided in a \textsc{Bib}{\TeX} file
 (\texttt{.bib}). All references should be made with \texttt{@cite}
