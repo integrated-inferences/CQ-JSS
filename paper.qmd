@@ -184,7 +184,7 @@ The literature on causal inference and its software ecosystem are rich and expan
 
 One of the most comprehensive pieces of software in the causal modeling domain is `causalnex`. It provides a feature-rich and highly optimized set of tools to learn, update and query causal models using discrete data. While avoiding the rich model parameterization via principal strata (nodal types) employed by `CausalQueries`, allows `causalnex` to easily handle non-binary data and scale to large causal models; it substantially restricts the set of possible queries that can be evaluated and prior knowledge that can be specified on models. `causalnex` is in this sense akin to machine learning approaches to causal inference, focusing on causal structure learning in variable rich but potentially domain knowledge poor settings and the evaluation of simple queries over marginal distributions on learned DAGs. The rich model structure employed by `CausalQueries` by contrast makes it highly suited to problems where answers to complex causal queries are sought in relatively more domain knowledge abundant settings. 
 
-Like `causalnex`, `pclag` places particular emphasis on causal structure learning, utilizing the resultant DAGs to recover ATEs across all learned markov-equivalent classes implied by observed data that satisfy linearity of conditional expectations. This approach again is  more restrictive than `CausalQueries` in the the DAGs and particularly the queries it allows. 
+Like `causalnex`, `pclag` places particular emphasis on causal structure learning, utilizing the resultant DAGs to recover ATEs across all learned markov-equivalent classes implied by observed data that satisfy linearity of conditional expectations. This approach again is  more restrictive than `CausalQueries` in the DAGs and particularly the queries it allows. 
 
 The software bearing the highest resemblance to `CausalQueries` with respect to model definition are `autobounds` and `causaloptim`. Dealing with binary causal models, their definitions of principal strata (nodal types) and the resultant set of causal relations on the DAG (causal types) are very close to those of `CausalQueries`. Differences in model definition arise  with respect to disturbance terms and confounding being defined implicitly via main nodes and edges in `CausalQueries` vs explicitly via separate disturbance nodes in `autobounds` and `causaloptim`. While `CausalQueries` assumes canonical form for input DAGs, `autobounds` and `causaloptim` facilitate cannonicalization. The essential difference between the methods; however, lies in their approach to evaluating queries. 
 
@@ -204,11 +204,11 @@ make_model("A -> B -> C -> D -> E")$parameters_df |> nrow()
 make_model("A -> E <- B; C->E<-D")$parameters_df |> nrow()
 ```
 
-Summarizing, the particular strength of `CausalQueries` is to allow users to specify arbitrary DAGs, arbitrary queries over nodes in those DAGs, and use the same canonical procedure to form Bayesian posterios over those queries whether or not the queries are identified. Thus in principle if researchers are interest in learning about a quantity like the local average treatment effect and their model in fact satisfies the conditions in @angrist1996identification, then updating will recover valid estimates even if researchers are unaware that the local average treatment effect is identified and are ignorant of the estimation procedure proposed by @angrist1996identification.
+Summarizing, the particular strength of `CausalQueries` is to allow users to specify arbitrary DAGs, arbitrary queries over nodes in those DAGs, and use the same canonical procedure to form Bayesian posteriors over those queries whether or not the queries are identified. Thus in principle if researchers are interested in learning about a quantity like the local average treatment effect and their model in fact satisfies the conditions in @angrist1996identification, then updating will recover valid estimates even if researchers are unaware that the local average treatment effect is identified and are ignorant of the estimation procedure proposed by @angrist1996identification.
 
-There are two broad limitation on the sets of models handled natively by `CausalQueries`. First `CausalQueries` is designed for models with a relatively small number of binary nodes. Because there is no compromise made on the space of possible causal relations implied by a given model, the parameter space grows very rapidly with the complexity of the causal model. The complexity also depends on the causal structure and grows rapidly with the number of parents affecting a given child. A chain model of the form $A \rightarrow B \rightarrow C \rightarrow D \rightarrow E$ has just 40 parameters. A model in which $A, B, C, D$ are all direct of $E$ has 65544 parameters. Moving from binary to non binary nodes has similar effects. The restriction to binary nodes is for computational and not conceptual reasons. In fact it is possible to employ `CausalQueries` to answer queries from models with nonbinary nodes but in general the computational costs make analysis of these model prohibitive.^[For more on computation constraints and strategies to update and query large models see the associated package `CausalQueriesTools`. The core approach used here is to divide large causal models into modules, update on modules and reassemble to pose queries.] <!-- # should we mention computational constraints more explicitly here? >> i.e. constraints on memory as calculated in the CausalQueriesTools documentation. Could also be a place to mention the package + frankensteining methods though that might better be placed in the updating models section -->
+There are two broad limitations on the sets of models handled natively by `CausalQueries`. First `CausalQueries` is designed for models with a relatively small number of binary nodes. Because there is no compromise made on the space of possible causal relations implied by a given model, the parameter space grows very rapidly with the complexity of the causal model. The complexity also depends on the causal structure and grows rapidly with the number of parents affecting a given child. A chain model of the form $A \rightarrow B \rightarrow C \rightarrow D \rightarrow E$ has just 40 parameters. A model in which $A, B, C, D$ are all direct ancestors of $E$ has 65544 parameters. Moving from binary to non binary nodes has similar effects. The restriction to binary nodes is for computational and not conceptual reasons. In fact it is possible to employ `CausalQueries` to answer queries from models with non binary nodes but in general the computational costs make analysis of these models prohibitive.^[For more on computation constraints and strategies to update and query large models see the associated package `CausalQueriesTools`. The core approach used here is to divide large causal models into modules, update on modules and reassemble to pose queries.] 
 
-Second, the package is geared for learning about populations from samples of units that are independent of each other and are independently randomly sampled from populations. Thus the basic set up does not address problems of sampling, clustering, hierarchical structures, or purposive sampling, for example. The broader framework can however be used for these purposes (see section 9.4 of @ii2023). The target of inference is usually case level quantities or population quantities and `CausalQueries` is not well suited for estimating  sample quantities.  
+Second, the package is geared towards learning about populations from samples of units that are independent of each other and are independently randomly sampled from populations. Thus the basic set up does not address problems of sampling, clustering, hierarchical structures, or purposive sampling. The broader framework can however be used for these purposes (see section 9.4 of @ii2023). The targets of inference are usually case level quantities or population quantities and `CausalQueries` is not well suited for estimating  sample quantities.  
 
 ## Statistical model {#sec-theory}
 
@@ -227,7 +227,7 @@ The core conceptual framework is described in Pearl's *Causality* [@pearl2009cau
   
 \end{definition}
 ```
-In the usual case `CausalQueries`  takes  endogenous nodes to be binary.[^1] When we specify a causal structure we specify which endogenous nodes are (possibly) direct causes of a node, $Y_j$, given other nodes in the model. These nodes are called the parents of $Y_j$, $PA_j$ (we use upper case $PA_j$ to indicate the collection of nodes and lower case $pa_j$ to indicate a particular set of values that these nodes might take on). With discrete valued nodes, it is possible to identify all possible ways that a node might respond to its parents.  We refer to the ways that a node responds and the nodes  "nodal type." The set of nodal types  corresponds to principal strata familiar, for instance, in the study of instrumental variables [@frangakis2002principal].    
+In the usual case `CausalQueries`  takes  endogenous nodes to be binary.[^1] When we specify a causal structure we specify which endogenous nodes are (possibly) direct causes of a node, $Y_j$, given other nodes in the model. These nodes are called the parents of $Y_j$, $PA_j$ (we use upper case $PA_j$ to indicate the collection of nodes and lower case $pa_j$ to indicate a particular set of values that these nodes might take on). With discrete valued nodes, it is possible to identify all possible ways that a node might respond to its parents.  We refer to the ways that a node responds as "nodal type." The set of nodal types  corresponds to principal strata familiar, for instance, in the study of instrumental variables [@frangakis2002principal].    
 
 If node $Y_i$ can take on $k_i$ possible values then the set of possible values that can be taken on by parents of $j$ is $m :=\prod_{i\in PA_j}k_i$. Then there are $k_j^{m}$ different ways that a node might respond to its parents.  In the case of binary nodes this becomes $2^{\left(2^{|PA_j|}\right)}$. Thus for an endogenous node with no parents there are 2 nodal types, for a binary node with one binary parent there are four types, for a binary node with 2 parents there are 16, and so on.
 
@@ -261,7 +261,7 @@ Updating is then done with respect to beliefs over $\lambda$. In the Bayesian ap
 
 $$p(\lambda'|D) = \frac{p(D|\lambda')p(\lambda')}{\int_{\lambda^{''}} p(D|\lambda'')p(\lambda'')}$$ 
 
-$p(D|\lambda')$ is calculated under the assumption that units are exchangeable and independently drawn, and of course. In practice this means that the probability that two units have causal types $\theta_i$ and $\theta_j$ is simply $\lambda'_i\lambda'_j$. Since a causal type fully determines an outcome vector $d = \{y_1, y_2,\dots,y_n\}$, the probability of a given outcome ("event"), $w_d$, is given simply by the probability that the causal type is among those that yield outcome $d$. Thus from $\lambda'$ we can calculate a vector of event probabilities, $w(\lambda)$, for each vector of outcomes, and under independence we have:
+$p(D|\lambda')$ is calculated under the assumption that units are exchangeable and independently drawn. In practice this means that the probability that two units have causal types $\theta_i$ and $\theta_j$ is simply $\lambda'_i\lambda'_j$. Since a causal type fully determines an outcome vector $d = \{y_1, y_2,\dots,y_n\}$, the probability of a given outcome ("event"), $w_d$, is given simply by the probability that the causal type is among those that yield outcome $d$. Thus from $\lambda'$ we can calculate a vector of event probabilities, $w(\lambda)$, for each vector of outcomes, and under independence we have:
 
 $$D \sim \text{Mulitinomial}(w(\lambda), N)$$
 
@@ -380,7 +380,7 @@ make_model("X -> M -> Y <- X; Z -> Y") |>
 
 ```
 
-The graphs produced by the two calls above are shown in @fig-plots. In both cases the resulting plot will have class `c("gg", "ggplot")` and so will accept any additional modifications available via `ggplot2` package.
+The graphs produced by the two calls above are shown in @fig-plots. In both cases the resulting plot will have class `c("gg", "ggplot")` and so will accept any additional modifications available via the `ggplot2` package.
 
 ```{r}
 #| label: fig-plots
@@ -410,9 +410,9 @@ make_model("X -> M -> Y <- X; Z -> Y") |>
 
 When a model is defined, a set of objects is generated. These are the key quantities that are used for all inference. The table below summarizes the core components of a model, providing a brief explanation for each one.
 
-The first element is a `statement` which defines how the nodes in the model are related, specified by the user using `dagitty` syntax. The second element, `dag`, is a dataframe that outlines the parent-child relationships within the model. The element `nodes` is simply a list of the names of the nodes in the model. Lastly, `parents_df,` is a table listing the nodes, indicating if they are "root" nodes (notes with no parents among the set of specified nodes), and showing how many parents each node has.
+The first element is a `statement` which defines how the nodes in the model are related, specified by the user using `dagitty` syntax. The second element, `dag`, is a dataframe that outlines the parent-child relationships within the model. The element `nodes` is simply a list of the names of the nodes in the model. Lastly, `parents_df,` is a table listing the nodes, indicating if they are "root" nodes (nodes with no parents among the set of specified nodes), and showing how many parents each node has.
 
-The model includes additional elements, `nodal_types,` `parameters_df,` and `causal_types,` which we explain later in detail.
+The model includes additional elements, `nodal_types,` `parameters_df,` and `causal_types,` which we explain in detail later.
 
 +-----------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Element               | Description                                                                                                                                                         |
@@ -501,7 +501,7 @@ The columns of the parameters data frame are understood as follows:
 -   `gen` indicates the place in the partial causal ordering (generation) of the node associated with the parameter
 -   `priors` gives (possibly default) Dirichlet priors arguments for parameters in a set. Values of 1 (.5) for all parameters in a set implies uniform (Jeffrey's) priors over this set.
 
-Below we will see examples where the parameter data frame helps keep track of parameters that are created when confounding is added to a model.
+Below we will see examples where the parameters data frame helps keep track of parameters that are created when confounding is added to a model.
 
 #### Nodal types {#sec-nodal-types}
 
@@ -581,7 +581,7 @@ lipids_model$causal_types |> head()
 
 In the lipids model there are $2\times 4\times 4 = 32$ causal types. A model with $n_j$ nodal types at node $j$ has $\prod_jn_j$ causal types. Thus the set of causal types can be large. 
 
-Knowledge of a causal type tells you what values a unit would take, on all nodes, whether or not there are  interventions. For example for a model $X \rightarrow M \rightarrow Y$ a type $\theta = (\theta^X_0, \theta^M_{01}, \theta^Y_{10})$ would imply data $(X=0, M=0, Y=1)$ absent any intervention. (The converse of this, of course, is the key to updating: observation of data $(X=0, M=0, Y=1)$ result in more weight placed on $\theta^X_0$, $\theta^M_{01}$, and $\theta^Y_{10})$.) The general approach used by `CausalQueries` for calculating outcomes from causal types is given in section #sec-propagation.
+Knowledge of a causal type tells us what values a unit would take, on all nodes, whether or not there are  interventions. For example for a model $X \rightarrow M \rightarrow Y$ a type $\theta = (\theta^X_0, \theta^M_{01}, \theta^Y_{10})$ would imply data $(X=0, M=0, Y=1)$ absent any intervention. (The converse of this, of course, is the key to updating: observation of data $(X=0, M=0, Y=1)$ result in more weight placed on $\theta^X_0$, $\theta^M_{01}$, and $\theta^Y_{10})$.) The general approach used by `CausalQueries` for calculating outcomes from causal types is given in section #sec-propagation.
 
 
 #### Parameter matrix
@@ -598,11 +598,11 @@ make_model("X -> Y") |> get_parameter_matrix()
 
 ```
 
-The probability of a causal type is given by the product of the parameters values for parameters whose row in the $P$ matrix contains a 1.
+The probability of a causal type is given by the product of the parameter values for parameters whose row in the $P$ matrix contains a 1.
 
 Below we will see examples where the $P$ matrix helps keep track of parameters that are created when confounding is added to a model. CROSS REFERENCE
 
-To speed up different operations it is sometimes useful to have P added to the model:
+To speed up different operations it is sometimes useful to have the $P$ matrix added to the model:
 
 -   `set_parameter_matrix`...
 
@@ -614,7 +614,7 @@ When a model is defined, the complete set of possible causal relations is worked
 
 Sometimes for theoretical or practical reasons it is useful to constrain the set of types. In `CausalQueries` this is done at the level of nodal types, with restrictions on causal types following from restrictions on nodal types.
 
-To illustrate, in analyses of data with imperfect compliance, like we saw in our motivating  `lipids` model example, it is common to impose a monotonicity  assumption: that $X$ does not respond negatively to $Y$. This is one of the conditions needed to interpret instrumental variables estimates as (consistent) estimates of the complier average treatment effect. 
+To illustrate, in analyses of data with imperfect compliance, like we saw in our motivating  `lipids` model example, it is common to impose a monotonicity  assumption: that $X$ does not respond negatively to $Z$. This is one of the conditions needed to interpret instrumental variables estimates as (consistent) estimates of the complier average treatment effect. 
 
 In `CausalQueries` we impose this assumption thus
 
@@ -684,7 +684,7 @@ Note:
 -   Restrictions implicitly assume fixed values for *all* parents of a node. For instance: `make_model("A -> B <- C") |> set_restrictions("(B[C=1]==1)")` is interpreted as shorthand for the restriction `"B[C = 1, A = 0]==1 | B[C = 1, A = 1]==1"`.
 -   To place restrictions on multiple nodes at the same time, provide these as a vector of restrictions. This is not permitted: `set_restrictions("Y[X=1]==1 & X==1")`, since it requests correlated restrictions. This however is allowed: `set_restrictions(c("Y[X=1]==1", "X==1"))`.\
 -   Use the `keep` argument to indicate whether nodal types should be dropped (default) or retained.
--  Restrictions based on causal statements can use helpers, `decreasing()`, `increasing()`, 'complements()' and similar. For instance  `set_restrictions(decreasing("X", "Y")`
+-  Restrictions based on causal statements can use helpers, `decreasing()`, `increasing()`, 'complements()' and similar. For instance  `set_restrictions(decreasing("X", "Y"))`
 -   Restrictions can be set using nodal type labels.
 
 ```{r}
@@ -708,11 +708,6 @@ make_model("X -> Y") |>
   set_restrictions(labels = list(Y = "?0"))
 ```
 
-<!-- # you can also specify a given when setting restrictions e.g.  -->
-
-<!-- model <- make_model("X -> Y -> Z; X <-> Z") %>% -->
-
-<!--   set_restrictions(list(decreasing('X','Y'), decreasing('Y','Z')), given = c(NA,'X.0')) -->
 
 -  in models with confounding restrictions can be added to nodal types conditional on the values of other nodal types; this is done using a "given" argument.
 
@@ -823,7 +818,7 @@ make_model("A <- X -> B; A <-> X; B <-> X") |>
 
 #### Setting Priors {#priors}
 
-Priors on model parameters can be added to the parameters data frame. The priors are interpreted as "alpha" arguments for a Dirichlet distribution. The Dirichlet distribution is a probability distribution over an $n-1$ dimensional unit simplex. It can be thought of as a generalization of the Beta distribution and is parameterized by an $n$-dimensional vector positive vector $\alpha$. Thus for example a Dirichlet with $\alpha = (1, 1, 1, 1, 1)$ gives a probability distribution over all non negative $5$-dimensional vectors that sum to $1$, e.g. $(0.1, 0.1, 0.1, 0.1, 0.6)$ or $(0.1, 0.2, 0.3, 0.3, 0.1)$. This particular value for $\alpha$ implies that all such vectors are equally likely. Other values for $\alpha$ can be used to control the expectation for each dimension as well as certainty. Thus for instance the vector $\alpha = (100, 1, 1, 1, 100)$ would result in more weight on distributions that are close to $(.5, 0, 0, 0. .5)$.
+Priors on model parameters can be added to the parameters data frame. The priors are interpreted as "alpha" arguments for a Dirichlet distribution. The Dirichlet distribution is a probability distribution over an $n-1$ dimensional unit simplex. It can be thought of as a generalization of the Beta distribution and is parameterized by an $n$-dimensional positive vector $\alpha$. Thus for example a Dirichlet with $\alpha = (1, 1, 1, 1, 1)$ gives a probability distribution over all non negative $5$-dimensional vectors that sum to $1$, e.g. $(0.1, 0.1, 0.1, 0.1, 0.6)$ or $(0.1, 0.2, 0.3, 0.3, 0.1)$. This particular value for $\alpha$ implies that all such vectors are equally likely. Other values for $\alpha$ can be used to control the expectation for each dimension as well as certainty. Thus for instance the vector $\alpha = (100, 1, 1, 1, 100)$ would result in more weight on distributions that are close to $(.5, 0, 0, 0. .5)$.
 
 In `CausalQueries` priors are generally specified over the distribution of nodal types (or over the conditional distribution of nodal types, when there is confounding). Thus for instance in an $X \rightarrow Y$ model we have one Dirichlet distribution over the two types for $\theta^X$ and one Dirichlet distribution over the four types for $\theta^Y$.
 
@@ -882,7 +877,7 @@ make_model("X -> Y") |>
 
 As setting priors simply requires mapping alpha values to parameters, the process boils down to selecting rows of the `parmeters_df` data frame, at which to alter values. When specifying a causal statement as above, `CausalQueries` internally identifies nodal types that are consistent with the statement, which in turn identify parameters to alter priors for. 
 
-Note that there is nothing particularly unique about setting priors via causal syntax, as it is simply an abstract way of specifying how to subset the `parameters_df` data frame. We can achieve the same result as above by specifying nodal type for which we would like to adjust the priors:
+Note that there is nothing particularly unique about setting priors via causal syntax, as it is simply an abstract way of specifying how to subset the `parameters_df` data frame. We can achieve the same result as above by specifying nodal types for which we would like to adjust the priors:
 
 ```{r}
 #| label: set-priors-nodal-type
@@ -894,7 +889,7 @@ make_model("X -> Y") |>
   get_priors()
 ```
 
-or even parameter names
+or even parameter names 
 
 ```{r}
 #| label: set-priors-param-names
@@ -906,7 +901,7 @@ make_model("X -> Y") |>
   get_priors()
 ```
 
-As such `set_priors` allows for the specification of any non-redundant combination of arguments on the `param_names`, `node`, `nodal_type`, `param_set` and `given` columns of `parameters_df` to uniquely identify parameters to set priors for. Alternatively a fully formed subsetting statement may be supplied to `alter_at`. Since all these arguments get mapped to the parameters the identify internally they may be used interchangeably.[^3]
+As such `set_priors` allows for the specification of any non-redundant combination of arguments on the `param_names`, `node`, `nodal_type`, `param_set` and `given` columns of `parameters_df` to uniquely identify parameters to set priors for. Alternatively a fully formed subsetting statement may be supplied to `alter_at`. Since all these arguments get mapped to the parameters they identify internally they may be used interchangeably.[^3]
 
 ```{r}
 #| label: set-priors-other
