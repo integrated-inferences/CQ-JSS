@@ -180,7 +180,7 @@ The literature on causal inference and its software ecosystem are rich and expan
 |                              |                                  |                      |                         | - binary data                                                                |
 +------------------------------+----------------------------------+----------------------+-------------------------+------------------------------------------------------------------------------+
 
-: Related software.{#tbl-software} 
+: Related software. {#tbl-software} 
 
 One of the most comprehensive pieces of software in the causal modeling domain is `causalnex`. It provides a feature-rich and highly optimized set of tools to learn, update and query causal models using discrete data. While avoiding the rich model parameterization via principal strata (nodal types) employed by `CausalQueries`, allows `causalnex` to easily handle non-binary data and scale to large causal models; it substantially restricts the set of possible queries that can be evaluated and prior knowledge that can be specified on models. `causalnex` is in this sense akin to machine learning approaches to causal inference, focusing on causal structure learning in variable rich but potentially domain knowledge poor settings and the evaluation of simple queries over marginal distributions on learned DAGs. The rich model structure employed by `CausalQueries` by contrast makes it highly suited to problems where answers to complex causal queries are sought in relatively more domain knowledge abundant settings. 
 
@@ -278,21 +278,23 @@ For concreteness: table @tbl-lipidspar illustrates key  values for the lipids mo
 
 
 
-```{r lipidspar, echo = FALSE}
+```{r}
+#| label: tbl-lipidspar
+#| tbl-cap: "Nodal types and parameters for Lipids model"
+#| echo: false
+
 with_pars <- 
   lipids_model |>
   set_parameters(param_type = "prior_draw") 
 
 with_pars$parameters_df |>
-  
-  select(node,  nodal_type, param_set, param_names, param_value) |> 
+  dplyr::select(node,  nodal_type, param_set, param_names, param_value) |> 
   knitr::kable(
     digits = 2,
     booktabs = TRUE,
     align = "c",
     escape = TRUE, 
-    linesep = "",
-    caption = "Nodal types and parameters for Lipids model") 
+    linesep = "") 
 
 ```
 
