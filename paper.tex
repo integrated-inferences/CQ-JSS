@@ -361,17 +361,18 @@ thus briefly contextualize \texttt{CausalQueries\textquotesingle{}}
 scope and functionality within the subset of the causal inference domain
 addressing the evaluation of causal queries on causal models encoded as
 directed acyclic graphs (DAGs) or structural equation models (SEMs).
-Table \textbf{?@tbl-software} provides an overview of relevant software
+Table Table~\ref{tbl-software} provides an overview of relevant software
 and discusses key connections, advantages and disadvantages with respect
 to \texttt{CausalQueries}.
 
+\hypertarget{tbl-software}{}
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1574}}
   >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1777}}
   >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1168}}
   >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1320}}
   >{\centering\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.4010}}@{}}
-\caption{Related software.\{\#tbl-software\}}\tabularnewline
+\caption{\label{tbl-software}Related software.}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 Software
@@ -473,7 +474,7 @@ Like \texttt{causalnex}, \texttt{pclag} places particular emphasis on
 causal structure learning, utilizing the resultant DAGs to recover ATEs
 across all learned markov-equivalent classes implied by observed data
 that satisfy linearity of conditional expectations. This approach again
-is more restrictive than \texttt{CausalQueries} in the the DAGs and
+is more restrictive than \texttt{CausalQueries} in the DAGs and
 particularly the queries it allows.
 
 The software bearing the highest resemblance to \texttt{CausalQueries}
@@ -510,8 +511,8 @@ are required for each separate query in \texttt{autobounds} and
 Summarizing, the particular strength of \texttt{CausalQueries} is to
 allow users to specify arbitrary DAGs, arbitrary queries over nodes in
 those DAGs, and use the same canonical procedure to form Bayesian
-posterios over those queries whether or not the queries are identified.
-Thus in principle if researchers are interest in learning about a
+posteriors over those queries whether or not the queries are identified.
+Thus in principle if researchers are interested in learning about a
 quantity like the local average treatment effect and their model in fact
 satisfies the conditions in \citet{angrist1996identification}, then
 updating will recover valid estimates even if researchers are unaware
@@ -519,8 +520,8 @@ that the local average treatment effect is identified and are ignorant
 of the estimation procedure proposed by
 \citet{angrist1996identification}.
 
-There are two broad limitation on the sets of models handled natively by
-\texttt{CausalQueries}. First \texttt{CausalQueries} is designed for
+There are two broad limitations on the sets of models handled natively
+by \texttt{CausalQueries}. First \texttt{CausalQueries} is designed for
 models with a relatively small number of binary nodes. Because there is
 no compromise made on the space of possible causal relations implied by
 a given model, the parameter space grows very rapidly with the
@@ -528,27 +529,27 @@ complexity of the causal model. The complexity also depends on the
 causal structure and grows rapidly with the number of parents affecting
 a given child. A chain model of the form
 \(A \rightarrow B \rightarrow C \rightarrow D \rightarrow E\) has just
-40 parameters. A model in which \(A, B, C, D\) are all direct of \(E\)
-has 65544 parameters. Moving from binary to non binary nodes has similar
-effects. The restriction to binary nodes is for computational and not
-conceptual reasons. In fact it is possible to employ
-\texttt{CausalQueries} to answer queries from models with nonbinary
-nodes but in general the computational costs make analysis of these
-model prohibitive.\footnote{For more on computation constraints and
-  strategies to update and query large models see the associated package
-  \texttt{CausalQueriesTools}. The core approach used here is to divide
-  large causal models into modules, update on modules and reassemble to
-  pose queries.}
+40 parameters. A model in which \(A, B, C, D\) are all direct ancestors
+of \(E\) has 65544 parameters. Moving from binary to non binary nodes
+has similar effects. The restriction to binary nodes is for
+computational and not conceptual reasons. In fact it is possible to
+employ \texttt{CausalQueries} to answer queries from models with non
+binary nodes but in general the computational costs make analysis of
+these models prohibitive.\footnote{For more on computation constraints
+  and strategies to update and query large models see the associated
+  package \texttt{CausalQueriesTools}. The core approach used here is to
+  divide large causal models into modules, update on modules and
+  reassemble to pose queries.}
 
-Second, the package is geared for learning about populations from
+Second, the package is geared towards learning about populations from
 samples of units that are independent of each other and are
 independently randomly sampled from populations. Thus the basic set up
 does not address problems of sampling, clustering, hierarchical
-structures, or purposive sampling, for example. The broader framework
-can however be used for these purposes (see section 9.4 of
-\citet{ii2023}). The target of inference is usually case level
-quantities or population quantities and \texttt{CausalQueries} is not
-well suited for estimating sample quantities.
+structures, or purposive sampling. The broader framework can however be
+used for these purposes (see section 9.4 of \citet{ii2023}). The targets
+of inference are usually case level quantities or population quantities
+and \texttt{CausalQueries} is not well suited for estimating sample
+quantities.
 
 \hypertarget{sec-theory}{%
 \section{Statistical model}\label{sec-theory}}
@@ -581,9 +582,9 @@ upper case \(PA_j\) to indicate the collection of nodes and lower case
 \(pa_j\) to indicate a particular set of values that these nodes might
 take on). With discrete valued nodes, it is possible to identify all
 possible ways that a node might respond to its parents. We refer to the
-ways that a node responds and the nodes ``nodal type.'' The set of nodal
-types corresponds to principal strata familiar, for instance, in the
-study of instrumental variables \citep{frangakis2002principal}.
+ways that a node responds as ``nodal type.'' The set of nodal types
+corresponds to principal strata familiar, for instance, in the study of
+instrumental variables \citep{frangakis2002principal}.
 
 If node \(Y_i\) can take on \(k_i\) possible values then the set of
 possible values that can be taken on by parents of \(j\) is
@@ -655,9 +656,9 @@ Bayesian approach we have simply:
 \[p(\lambda'|D) = \frac{p(D|\lambda')p(\lambda')}{\int_{\lambda^{''}} p(D|\lambda'')p(\lambda'')}\]
 
 \(p(D|\lambda')\) is calculated under the assumption that units are
-exchangeable and independently drawn, and of course. In practice this
-means that the probability that two units have causal types \(\theta_i\)
-and \(\theta_j\) is simply \(\lambda'_i\lambda'_j\). Since a causal type
+exchangeable and independently drawn. In practice this means that the
+probability that two units have causal types \(\theta_i\) and
+\(\theta_j\) is simply \(\lambda'_i\lambda'_j\). Since a causal type
 fully determines an outcome vector \(d = \{y_1, y_2,\dots,y_n\}\), the
 probability of a given outcome (``event''), \(w_d\), is given simply by
 the probability that the causal type is among those that yield outcome
@@ -850,7 +851,7 @@ R> make_model("X -> M -> Y <- X; Z -> Y") |>
 The graphs produced by the two calls above are shown in
 Figure~\ref{fig-plots}. In both cases the resulting plot will have class
 \texttt{c("gg",\ "ggplot")} and so will accept any additional
-modifications available via \texttt{ggplot2} package.
+modifications available via the \texttt{ggplot2} package.
 
 \begin{figure}
 
@@ -902,12 +903,12 @@ syntax. The second element, \texttt{dag}, is a dataframe that outlines
 the parent-child relationships within the model. The element
 \texttt{nodes} is simply a list of the names of the nodes in the model.
 Lastly, \texttt{parents\_df,} is a table listing the nodes, indicating
-if they are ``root'' nodes (notes with no parents among the set of
+if they are ``root'' nodes (nodes with no parents among the set of
 specified nodes), and showing how many parents each node has.
 
 The model includes additional elements, \texttt{nodal\_types,}
-\texttt{parameters\_df,} and \texttt{causal\_types,} which we explain
-later in detail.
+\texttt{parameters\_df,} and \texttt{causal\_types,} which we explain in
+detail later.
 
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.3000}}
@@ -1076,7 +1077,7 @@ The columns of the parameters data frame are understood as follows:
   implies uniform (Jeffrey's) priors over this set.
 \end{itemize}
 
-Below we will see examples where the parameter data frame helps keep
+Below we will see examples where the parameters data frame helps keep
 track of parameters that are created when confounding is added to a
 model.
 
@@ -1220,7 +1221,7 @@ In the lipids model there are \(2\times 4\times 4 = 32\) causal types. A
 model with \(n_j\) nodal types at node \(j\) has \(\prod_jn_j\) causal
 types. Thus the set of causal types can be large.
 
-Knowledge of a causal type tells you what values a unit would take, on
+Knowledge of a causal type tells us what values a unit would take, on
 all nodes, whether or not there are interventions. For example for a
 model \(X \rightarrow M \rightarrow Y\) a type
 \(\theta = (\theta^X_0, \theta^M_{01}, \theta^Y_{10})\) would imply data
@@ -1269,15 +1270,15 @@ R> make_model("X -> Y") |> get_parameter_matrix()
 \end{verbatim}
 
 The probability of a causal type is given by the product of the
-parameters values for parameters whose row in the \(P\) matrix contains
-a 1.
+parameter values for parameters whose row in the \(P\) matrix contains a
+1.
 
 Below we will see examples where the \(P\) matrix helps keep track of
 parameters that are created when confounding is added to a model. CROSS
 REFERENCE
 
-To speed up different operations it is sometimes useful to have P added
-to the model:
+To speed up different operations it is sometimes useful to have the
+\(P\) matrix added to the model:
 
 \begin{itemize}
 \tightlist
@@ -1302,7 +1303,7 @@ restrictions on nodal types.
 To illustrate, in analyses of data with imperfect compliance, like we
 saw in our motivating \texttt{lipids} model example, it is common to
 impose a monotonicity assumption: that \(X\) does not respond negatively
-to \(Y\). This is one of the conditions needed to interpret instrumental
+to \(Z\). This is one of the conditions needed to interpret instrumental
 variables estimates as (consistent) estimates of the complier average
 treatment effect.
 
@@ -1362,7 +1363,8 @@ Note:
 \item
   Restrictions based on causal statements can use helpers,
   \texttt{decreasing()}, \texttt{increasing()}, `complements()' and
-  similar. For instance \texttt{set\_restrictions(decreasing("X",\ "Y")}
+  similar. For instance
+  \texttt{set\_restrictions(decreasing("X",\ "Y"))}
 \item
   Restrictions can be set using nodal type labels.
 \end{itemize}
@@ -1594,7 +1596,7 @@ The priors are interpreted as ``alpha'' arguments for a Dirichlet
 distribution. The Dirichlet distribution is a probability distribution
 over an \(n-1\) dimensional unit simplex. It can be thought of as a
 generalization of the Beta distribution and is parameterized by an
-\(n\)-dimensional vector positive vector \(\alpha\). Thus for example a
+\(n\)-dimensional positive vector \(\alpha\). Thus for example a
 Dirichlet with \(\alpha = (1, 1, 1, 1, 1)\) gives a probability
 distribution over all non negative \(5\)-dimensional vectors that sum to
 \(1\), e.g.~\((0.1, 0.1, 0.1, 0.1, 0.6)\) or
@@ -1691,7 +1693,7 @@ alter priors for.
 Note that there is nothing particularly unique about setting priors via
 causal syntax, as it is simply an abstract way of specifying how to
 subset the \texttt{parameters\_df} data frame. We can achieve the same
-result as above by specifying nodal type for which we would like to
+result as above by specifying nodal types for which we would like to
 adjust the priors:
 
 \begin{verbatim}
@@ -1724,7 +1726,7 @@ non-redundant combination of arguments on the \texttt{param\_names},
 \texttt{given} columns of \texttt{parameters\_df} to uniquely identify
 parameters to set priors for. Alternatively a fully formed subsetting
 statement may be supplied to \texttt{alter\_at}. Since all these
-arguments get mapped to the parameters the identify internally they may
+arguments get mapped to the parameters they identify internally they may
 be used interchangeably.\footnote{See \texttt{?set\_priors} and
   \texttt{?make\_priors} for many more examples.}
 
@@ -2945,7 +2947,7 @@ Network (CRAN) at {[}https://CRAN.R-project.org/{]}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, left=2mm, opacityback=0, breakable, bottomrule=.15mm, colback=white, arc=.35mm, rightrule=.15mm, toprule=.15mm]
+\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, toprule=.15mm, colback=white, opacityback=0, left=2mm, arc=.35mm, bottomrule=.15mm, breakable, rightrule=.15mm]
 
 The approach to generating a generic \texttt{stan} function that can
 take data from arbitrary models was developed in key contributions by
@@ -2975,7 +2977,7 @@ improved every part of it.
 \section*{More technical details}\label{sec-techdetails}}
 \addcontentsline{toc}{section}{More technical details}
 
-\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, left=2mm, opacityback=0, breakable, bottomrule=.15mm, colback=white, arc=.35mm, rightrule=.15mm, toprule=.15mm]
+\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, toprule=.15mm, colback=white, opacityback=0, left=2mm, arc=.35mm, bottomrule=.15mm, breakable, rightrule=.15mm]
 
 Appendices can be included after the bibliography (with a page break).
 Each section within the appendix should have a proper section title
@@ -3007,7 +3009,7 @@ which includes the following topics:
 \section*{Using BibTeX}\label{sec-bibtex}}
 \addcontentsline{toc}{section}{Using BibTeX}
 
-\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, left=2mm, opacityback=0, breakable, bottomrule=.15mm, colback=white, arc=.35mm, rightrule=.15mm, toprule=.15mm]
+\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, toprule=.15mm, colback=white, opacityback=0, left=2mm, arc=.35mm, bottomrule=.15mm, breakable, rightrule=.15mm]
 
 References need to be provided in a \textsc{Bib}{\TeX} file
 (\texttt{.bib}). All references should be made with \texttt{@cite}
