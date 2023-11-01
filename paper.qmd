@@ -596,8 +596,6 @@ To speed up different operations it is sometimes useful to have P added to the m
 
 #### Setting restrictions {#restrictions}
 
-**TILL: READ THROUGH**
-
 When a model is defined, the complete set of possible causal relations are worked out. This set can be very large.
 
 Sometimes for theoretical or practical reasons it is useful to constrain the set of types. In `CausalQueries` this is done at the level of nodal types, with restrictions on causal types following from restrictions on nodal types.
@@ -1199,12 +1197,12 @@ Models can be queried using the `query_distribution` and `query_model` functions
 
 ### Calcuating factual and counterfactual quantities
 
-We can map from causal types to data types by propagating realized values on nodes forward in the DAG, moving from exogenous or intervened upon nodes to their descendants in generational order. The `realise_outcomes` functions achieves this by traversing the DAG, while recording for each node's nodal types, the values implied by realizations on the node's parents. By way of example, consider the first causal type of the $X \rightarrow Y$ model above:
+We can map from causal types to data types by propagating realized values on nodes forward in the DAG, moving from exogenous or intervened upon nodes to their descendants in generational order. The `realise_outcomes` function achieves this by traversing the DAG, while recording for each node's nodal types, the values implied by realizations on the node's parents. By way of example, consider the first causal type of a $X \rightarrow Y$ model:
 
 1.  $X$ is exogenous and has a realized value of $0$
 2.  We substitute for $Y$ the value implied by the $00$ nodal type given a $0$ value on $X$, which in turn is $0$ (see nodal types)
 
-Recovering implied values on complex nodal types given parent realizations efficiently at scale, exploits the fact that nodal types are the Cartesian Product of possible parent realizations. Finding the index of a Node's realized value given parent realizations in a nodal type is equivalent to finding the row index in the Cartesian Product matrix corresponding to those parent realizations. By definition of the Cartesian product, the number of consecutive 0 or 1 elements in a given column is $2^{columnindex}$, when indexing columns from 0. Given a set of parent realizations $R$ indexed from 0, the corresponding row index in the Cartesian Product Matrix indexed from 0 can thus be computed via: $row = (\sum_{i = 0}^{|R| - 1} (2^{i} \times R_i))$.
+Recovering implied values on complex nodal types efficiently at scale, exploits the fact that nodal types are the Cartesian Product of possible parent realizations. Finding the index of a Node's realized value in a nodal type given parent realizations is equivalent to finding the row index in the Cartesian Product matrix corresponding to those parent realizations. By definition of the Cartesian product, the number of consecutive 0 or 1 elements in a given column is $2^{columnindex}$, when indexing columns from 0. Given a set of parent realizations $R$ indexed from 0, the corresponding row index in the Cartesian Product Matrix indexed from 0 can thus be computed via: $row = (\sum_{i = 0}^{|R| - 1} (2^{i} \times R_i))$.
 
 Calling `realise_outcomes` on the above model thus yields:
 
