@@ -158,16 +158,11 @@ As we describe below the same basic procedure of making, updating, and querying 
 
 ## Connections to existing packages
 
-The literature on causal inference and its software ecosystem are rich and expansive; spanning the social and natural sciences as well as computer science and applied mathematics. In the interest of clarity we thus briefly contextualize `CausalQueries'` scope and functionality within the subset of the causal inference domain addressing the evaluation of causal queries on causal models encoded as directed acyclic graphs (DAGs) or structural equation models (SEMs). We provide a brief tabular overview of relevant software and discuss key connections, advantages and disadvantages with respect to `CausalQueries` in turn. 
+The literature on causal inference and its software ecosystem are rich and expansive; spanning the social and natural sciences as well as computer science and applied mathematics. In the interest of clarity we thus briefly contextualize `CausalQueries'` scope and functionality within the subset of the causal inference domain addressing the evaluation of causal queries on causal models encoded as directed acyclic graphs (DAGs) or structural equation models (SEMs). Table @tbl-software provides an overview of relevant software and discusses key connections, advantages and disadvantages with respect to `CausalQueries`. 
 
 +------------------------------+----------------------------------+----------------------+-------------------------+------------------------------------------------------------------------------+
 | Software                     | Source                           | Language             | Availability            | Scope                                                                        |
 +:=============================+:=================================+:=====================+:========================+:============================================================================:+
-| **autobounds**               | @Duarte2023autobounds            | **Python**           | not readily installable | - bounding causal effects                                                    |
-|                              |                                  |                      |                         | - partial identification                                                     |
-|                              |                                  |                      |                         | - DAG canonicalization                                                       |
-|                              |                                  |                      |                         | - binary data                                                                |
-+------------------------------+----------------------------------+----------------------+-------------------------+------------------------------------------------------------------------------+
 | **causalnex**                | @Beaumont2021causalnex           | **Python**           | pip installable         | - causal structure learning                                                  | 
 |                              |                                  |                      |                         | - querying marginal distributions                                            |
 |                              |                                  |                      |                         | - discrete data                                                              |
@@ -179,8 +174,23 @@ The literature on causal inference and its software ecosystem are rich and expan
 | **pclag**                    | @kalisch2012pclag                | **R**                | CRAN                    | - causal structure learning                                                  |
 |                              |                                  |                      |                         | - ATEs under linear conditional expectations and no hidden selection         |
 +------------------------------+----------------------------------+----------------------+-------------------------+------------------------------------------------------------------------------+
+| **autobounds**               | @Duarte2023autobounds            | **Python**           | not readily installable | - bounding causal effects                                                    |
+|                              |                                  |                      |                         | - partial identification                                                     |
+|                              |                                  |                      |                         | - DAG canonicalization                                                       |
+|                              |                                  |                      |                         | - binary data                                                                |
++------------------------------+----------------------------------+----------------------+-------------------------+------------------------------------------------------------------------------+
 
-One of the most comprehensive pieces of software in the causal modeling domain is `causalnex`. It provides a feature rich and highly optimized set of tools to learn, update and query causal models using discrete data. While avoiding the rich model parameterization via principal strata (nodal types) employed by `CausalQueries`, allows `causalnex` to easily handle non-binary data and scale to large causal models; it substantially restricts the set of possible queries that can be evaluated and prior knowledge that can be specified on models. `causalnex` is in this sense akin to machine learning approaches to causal inference, focusing on causal structure learning in variable rich but potentially domain knowledge poor settings and the evaluation of simple queries over marginal distributions on learned DAGs. The rich model structure employed by `CausalQueries` by contrast makes it highly suited to problems where answers to complex causal queries are sought in relatively more domain knowledge abundant settings. Like `causalnex` `pclag` places particular emphasis on causal structure learning, utilizing the resultant DAGs to recover ATEs across all learned markov-equivalent classes implied by observed data that satisfy linearity of conditional expectations. This approach again is far more restrictive than `CausalQueries` in the the DAGs and queries it allows. The methods bearing the highest resemblance to `CausalQueries` with respect to model definition are `autobounds` and `causaloptim`. Dealing with binary causal models, their definitions of principal strata (nodal types) and the resultant set of causal relations on the DAG (causal types) are identical to those of `CausalQueries`. Differences in model definition arise only with respect to disturbance terms and confounding being defined implicitly via main nodes and edges in `CausalQueries` vs explicitly via separate disturbance nodes in `autobounds` and `causaloptim`. A key consequence of this is that while `CausalQueries` assumes canonical form for input DAGs, `autobounds` and `causaloptim` facilitate cannonicalization. The essential difference between the methods; however, lies in their approach to evaluating queries. While `autobounds` and `causaloptim` conceptualize query evaluation as constrained polynomial and linear optimization problems respectively, `CausalQueries` utilizes Bayesian inference to generate a posterior over the causal model (@zhang2022pci propose a Bayesian model similar to `CausalQueries` but provide no software implementation). The polynomial and linear programming approach to querying is in principle suited to handling somewhat larger causal models, though given their similarity in model parameterization `autobounds`, `causaloptim` and `CausalQueries` face similar constraints induced by parameter spaces expanding rapidly with model size. The Bayesian approach to model updating and querying holds the major efficiency advantage that a model can be updated once and queried infinitely, while expensive optimization runs are required for each separate query in `autobounds` and `causaloptim`. This in addition to allowing for full Bayesian inference and the ablity to generate complete posteriors over causal queries instead of bounds is a major advantage of `CausalQueries`. It is further unclear whether polynomial and linear optimization can effectively handle complex causal queries with nested do operations. `CausalQueries` fundamentally combines the feature richness of more general causal inference software with the modeling and querying flexibility afforded by rich model parameterizations and fully Bayesian inference.  
+: Related software.{#tbl-software} 
+
+One of the most comprehensive pieces of software in the causal modeling domain is `causalnex`. It provides a feature-rich and highly optimized set of tools to learn, update and query causal models using discrete data. While avoiding the rich model parameterization via principal strata (nodal types) employed by `CausalQueries`, allows `causalnex` to easily handle non-binary data and scale to large causal models; it substantially restricts the set of possible queries that can be evaluated and prior knowledge that can be specified on models. `causalnex` is in this sense akin to machine learning approaches to causal inference, focusing on causal structure learning in variable rich but potentially domain knowledge poor settings and the evaluation of simple queries over marginal distributions on learned DAGs. The rich model structure employed by `CausalQueries` by contrast makes it highly suited to problems where answers to complex causal queries are sought in relatively more domain knowledge abundant settings. 
+
+Like `causalnex`, `pclag` places particular emphasis on causal structure learning, utilizing the resultant DAGs to recover ATEs across all learned markov-equivalent classes implied by observed data that satisfy linearity of conditional expectations. This approach again is  more restrictive than `CausalQueries` in the the DAGs and particularly the queries it allows. 
+
+The software bearing the highest resemblance to `CausalQueries` with respect to model definition are `autobounds` and `causaloptim`. Dealing with binary causal models, their definitions of principal strata (nodal types) and the resultant set of causal relations on the DAG (causal types) are very close to those of `CausalQueries`. Differences in model definition arise  with respect to disturbance terms and confounding being defined implicitly via main nodes and edges in `CausalQueries` vs explicitly via separate disturbance nodes in `autobounds` and `causaloptim`. While `CausalQueries` assumes canonical form for input DAGs, `autobounds` and `causaloptim` facilitate cannonicalization. The essential difference between the methods; however, lies in their approach to evaluating queries. 
+
+Both  `autobounds` and `causaloptim` build on seminal approaches in @balke1997bounds to construct bounds of queries, using  constrained polynomial and linear optimization  respectively. In contrast, `CausalQueries` utilizes Bayesian inference to generate a posterior over the causal model which is then queried (consistent with @chickering1996clinician and @zhang2022pci). A key difference then is the target of inference. The polynomial and linear programming approach to querying is in principle suited to handling  larger causal models, though given their similarity in model parameterization, `autobounds`, `causaloptim` and `CausalQueries` face similar constraints induced by parameter spaces expanding rapidly with model size. The Bayesian approach to model updating and querying holds the  efficiency advantage that a model can be updated once and queried infinitely, while expensive optimization runs are required for each separate query in `autobounds` and `causaloptim`. 
+<!-- This, in addition to allowing for full Bayesian inference and the ability to generate complete posteriors over causal queries instead of bounds, is a key advantage of `CausalQueries`.  -->
+<!-- It is further unclear whether polynomial and linear optimization can effectively handle complex causal queries with nested do operations. `CausalQueries` fundamentally combines the feature richness of more general causal inference software with the modeling and querying flexibility afforded by rich model parameterizations and fully Bayesian inference.   -->
 
 
 ```{r}
@@ -194,11 +204,11 @@ make_model("A -> B -> C -> D -> E")$parameters_df |> nrow()
 make_model("A -> E <- B; C->E<-D")$parameters_df |> nrow()
 ```
 
-The particular strength of `CausalQueries` is to allow users to specify arbitrary DAGs, arbitrary queries over nodes in those DAGs, and use the same canonical procedure to learn about those queries whether or not the queries are identified. Thus in principle if researchers are interest in learning about a quantity like the local average treatment effect and their model in fact satisfies the conditions in @angrist1996identification, then updating will recover valid estimates even if researchers are unaware that the local average treatment effect is identified and are ignorant of the estimation procedure proposed by @angrist1996identification.
+Summarizing, the particular strength of `CausalQueries` is to allow users to specify arbitrary DAGs, arbitrary queries over nodes in those DAGs, and use the same canonical procedure to form Bayesian posterios over those queries whether or not the queries are identified. Thus in principle if researchers are interest in learning about a quantity like the local average treatment effect and their model in fact satisfies the conditions in @angrist1996identification, then updating will recover valid estimates even if researchers are unaware that the local average treatment effect is identified and are ignorant of the estimation procedure proposed by @angrist1996identification.
 
 There are two broad limitation on the sets of models handled natively by `CausalQueries`. First `CausalQueries` is designed for models with a relatively small number of binary nodes. Because there is no compromise made on the space of possible causal relations implied by a given model, the parameter space grows very rapidly with the complexity of the causal model. The complexity also depends on the causal structure and grows rapidly with the number of parents affecting a given child. A chain model of the form $A \rightarrow B \rightarrow C \rightarrow D \rightarrow E$ has just 40 parameters. A model in which $A, B, C, D$ are all direct of $E$ has 65544 parameters. Moving from binary to non binary nodes has similar effects. The restriction to binary nodes is for computational and not conceptual reasons. In fact it is possible to employ `CausalQueries` to answer queries from models with nonbinary nodes but in general the computational costs make analysis of these model prohibitive.^[For more on computation constraints and strategies to update and query large models see the associated package `CausalQueriesTools`. The core approach used here is to divide large causal models into modules, update on modules and reassemble to pose queries.] <!-- # should we mention computational constraints more explicitly here? >> i.e. constraints on memory as calculated in the CausalQueriesTools documentation. Could also be a place to mention the package + frankensteining methods though that might better be placed in the updating models section -->
 
-Second, the package is geared for learning about populations from samples of units that are independent of each other and are independently randomly sampled from populations. Thus the basic set up does not address problems of sampling, clustering, hierarchical structures, or purposive sampling, for example. The broader framework can however be used for these purposes (see section 9.4 of @ii2023). The target of inference is usually case level quantities or population quantities and not sample quantities.  
+Second, the package is geared for learning about populations from samples of units that are independent of each other and are independently randomly sampled from populations. Thus the basic set up does not address problems of sampling, clustering, hierarchical structures, or purposive sampling, for example. The broader framework can however be used for these purposes (see section 9.4 of @ii2023). The target of inference is usually case level quantities or population quantities and `CausalQueries` is not well suited for estimating  sample quantities.  
 
 ## Statistical model {#sec-theory}
 
@@ -263,7 +273,7 @@ w_{10} & = & \lambda^X_1(\lambda^Y_{00} + \lambda^Y_{10})\\
 w_{11} & = & \lambda^X_1(\lambda^Y_{11} + \lambda^Y_{01})\end{array} \right.$$
 
 
-For concreteness: table @lipidspar illustrates key  values for the lipids model. We see here that we have two types for node $Z$,  four for $X$ (representing the strata familiar from instrumental variables analysis: never takers, always takers, defiers, and compliers)  and 4 for $Y$. For $Z$ and $X$ we have parameters corresponding to probability of these nodal types. For instance `Z.0` is the probability that $Z=1$. `Z.1` is the complementary probability that $Z=1$.  Things are little more complicated for distributions on nodal types for $Y$ however: because of confounding between $X$ and $Y$ we have parameters that capture the conditional probability of the nodal types for $Y$ *given* the nodal types for $X$.  We see there are four sets of these parameters. 
+For concreteness: table @tbl-lipidspar illustrates key  values for the lipids model. We see here that we have two types for node $Z$,  four for $X$ (representing the strata familiar from instrumental variables analysis: never takers, always takers, defiers, and compliers)  and 4 for $Y$. For $Z$ and $X$ we have parameters corresponding to probability of these nodal types. For instance `Z.0` is the probability that $Z=1$. `Z.1` is the complementary probability that $Z=1$.  Things are little more complicated for distributions on nodal types for $Y$ however: because of confounding between $X$ and $Y$ we have parameters that capture the conditional probability of the nodal types for $Y$ *given* the nodal types for $X$.  We see there are four sets of these parameters. 
 
 
 
@@ -426,9 +436,7 @@ After updating a model, two additional components are attached to it:
 
 -   A posterior distribution of the parameters in the model, generated by `stan`. This distribution reflects the updated parameter values.
 
--   A list of objects, which we refer to as `stan_objects`. The `stan_objects` will, at a minimum, include the distribution of nodal types and the data used for updating the model
-
-Optionally, users can choose whether to keep and append additional elements to `stan_objects.` For instance, they can specify whether to include `w`, which maps parameters to event probabilities, as well as the `stanfit` object, the output generated by stan
+-   A list of other optional objects,  `stan_objects`. The `stan_objects` can  include the `stanfit` object and  distributions over nodal types and event probabilities (`w`).
 
 The table below summarizes the objects attached to the model after updating.
 
@@ -437,18 +445,18 @@ The table below summarizes the objects attached to the model after updating.
 +==========================+==========================================================================================+
 | `posterior_distribution` | The posterior distribution of the updated parameters generated by stan.                   |
 +--------------------------+------------------------------------------------------------------------------------------+
-| `stan_objects`           | A list of objects, including, at a minimum, `type_distribution` and `data`.              |
+| `stan_objects`           | A list of additional objects, including, the data used, the `stanfit` object and distributions over transformed parameters (event probabilities and causal types).              |
 +--------------------------+------------------------------------------------------------------------------------------+
-| `data`                   | The data used for updating the model, appended to `stan_objects.`                        |
+| `data`                   | The data used for updating the model, always included in `stan_objects.`                        |
 +--------------------------+------------------------------------------------------------------------------------------+
-| `type_distribution`      | The updated distribution of the nodal types, appended to `stan_objects.`                 |
+| `type_distribution`      | The updated distribution of the nodal types, appended to `stan_objects` by default.                 |
 +--------------------------+------------------------------------------------------------------------------------------+
 | `w`                      | A mapping from parameters to event probabilities, optionally appended to `stan_objects.` |
 +--------------------------+------------------------------------------------------------------------------------------+
-| `stan_fit`               | The `stanfit` object generated by stan. This is optionally appended to `stan_objects.`   |
+| `stan_fit`               | The `stanfit` object generated by stan,optionally appended to `stan_objects.`   |
 +--------------------------+------------------------------------------------------------------------------------------+
 
-: Additional Elements. {tbl-colwidths="\[30,70\]"}
+: Additional Elements.
 
 #### Parameters data frame {#sec-param-df}
 
@@ -1506,7 +1514,7 @@ set.seed(1)
 
 #### Batch queries
 
-The `query_model()` function takes causal queries and conditions (`given`) and specifies the parameters to be used. The result is a data frame which can be displayed as a table.
+The `query_model()` function takes list of models, causal queries, and conditions (`given`), calculates estimands given prior or posterior distributions  and reports summaries of these distributions. The result is a data frame which can be displayed as a table.
 
 ```{r}
 #| label: batch-query
@@ -1558,6 +1566,9 @@ query_model(
   kableExtra::kable_classic_2(latex_options = c("hold_position"))
 
 ```
+
+The `stats` argument let users specify alternative summary statistics and indicate. The `expand_grid` argument lets users specify whether all combinations of list elements should be generated.
+
 
 ```{=tex}
 \FloatBarrier
