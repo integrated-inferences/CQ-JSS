@@ -590,9 +590,9 @@ make_model("X -> Y") |> get_parameter_matrix()
 
 The probability of a causal type is given by the product of the parameter values for parameters whose row in the $P$ matrix contains a 1.
 
-Below we will see examples where the $P$ matrix helps keep track of parameters that are created when confounding is added to a model. CROSS REFERENCE
+Later (e.g. @tbl-confound-params-mat) we will see examples where the $P$ matrix helps keep track of parameters that are created when confounding is added to a model. 
 
-To speed up different operations it is sometimes useful to have the $P$ matrix added to the model:
+The parameter matrix is generated on the fly as needed, but it can also be added to the model using `set_parameter_matrix()`, which can sometimes be useful to speed up operations:
 
 ```{r}
 #| echo: true
@@ -711,12 +711,12 @@ make_model("X -> Y") |>
 #| eval: false
 make_model("X -> Y; X <-> Y") |>
   set_restrictions(labels = list(X = '0', Y = '00'), 
-                   given = c(NA,'X.0')) |>
+                   given = c(NA,'X.1')) |>
   get_parameter_matrix() 
 ```
 
 ```{r}
-#| label: confound-params-mat
+#| label: tbl-confound-params-mat
 #| echo: false
 #| eval: true
 model <- make_model("X -> Y; X <-> Y") %>%
@@ -751,7 +751,7 @@ In the $X \rightarrow Y$ graph, for instance, there are 2 nodal types for $X$ an
 
 : Nodal Types in $X \rightarrow Y$ Model. {tbl-colwidths="\[25,25,25,25\]"}
 
-This table has 8 interior elements and so an unconstrained joint distribution would have $7$ degrees of freedom. A no confounding assumption means that $\Pr(\theta^X | \theta^Y) = \Pr(\theta^X)$, or $\Pr(\theta^X, \theta^Y) = \Pr(\theta^X)\Pr(\theta^Y)$. In this case we just put a distribution on the marginals and there would be $3$ degrees of freedom for $Y$ and $1$ for $X$, totaling $4$ rather than $7$.
+This table has eight interior elements and so an unconstrained joint distribution would have $7$ degrees of freedom. A no confounding assumption means that $\Pr(\theta^X | \theta^Y) = \Pr(\theta^X)$, or $\Pr(\theta^X, \theta^Y) = \Pr(\theta^X)\Pr(\theta^Y)$. In this case we just put a distribution on the marginals and there would be $3$ degrees of freedom for $Y$ and $1$ for $X$, totaling $4$ rather than $7$.
 
 ```{r}
 #| label: confound-params-df
@@ -811,10 +811,6 @@ get_parameter_matrix(confounded) |>
 
 The output is shown in @tbl-confound-param-matrix. Importantly, the $P$ matrix works as before, despite confounding. We can assess the probability of causal types by multiplying the probabilities of the constituent parameters.
 
--   Unlike nodal restrictions, a confounding relation can involve multiple nodal types simultaneously. For instance `make_model("X -> M -> Y") |> set_confound(list(X = "Y[X=1] > Y[X=0]"))` allows for a parameter that renders $X$ more or less likely depending on whether $X$ has a positive effect on $Y$ whether it runs through a positive or a negative effect on $M$.
--   The parameters needed to capture confounding relations depend on the direction of causal arrows. For example compare:
-    -   `make_model("A -> W <- B ; A <-> W; B <-> W")$parameters_df |> dim` In this case we can decompose shocks on $A, B, W$ via: $\Pr(\theta^A, \theta^B, \theta^W) = \Pr(\theta^W | \theta^A, \theta^A)\Pr(\theta^A)\Pr(\theta^B)$, and we have 68 parameters.
-    -   `make_model("A <- W -> B ; A <-> W; B <-> W")$parameters_df |> dim` In this case we have $\Pr(\theta^A, \theta^B, \theta^W) = \Pr(\theta^A | \theta^W)\Pr(\theta^B|\theta^W)\Pr(\theta^W)$ and just has just 18 parameters.
 
 ```{r}
 #| label: fig-confound
@@ -1013,7 +1009,7 @@ By default, models have a vector of parameter values included in the `parameters
 
 The logic for setting parameters is similar to that for setting priors: effectively we need to place values on the probability of nodal types. The key difference is that whereas the $alpha$ value placed on a nodal types can be any positive number---capturing our certainty over the parameter value---the parameter values must lie in the unit interval, $[0,1]$. In general if parameter values are passed that do not lie in the unit interval, these are normalized so that they do.
 
-Consider the causal model below. It has two parameter sets, X and Y, with six nodal types, two corresponding to X and four corresponding to Y. The key feature of the parameters is that they must sum to 1 within each parameter set.
+Consider the causal model below. It has two parameter sets, one for $X$ and one for $Y$, with six nodal types, two corresponding to $X$ and four corresponding to $Y$. The key feature of the parameters is that they must sum to 1 within each parameter set.
 
 ```{r}
 #| label: get-parameters
@@ -1025,7 +1021,7 @@ make_model("X -> Y") |>
 
 ```
 
-The example below illustrates a change in the value of the parameter $Y$ in the case it is increasing in $X$. Here nodal type `Y.Y01` is set to be .5, while the other nodal types of this parameter set were renormalized so that the parameters in the set still sum to one.
+The example below illustrates a change in the value of the parameter $Y$ in the case it is increasing in $X$. Here nodal type `Y.Y01` is set to be 0.5, while the other nodal types of this parameter set were renormalized so that the parameters in the set still sum to one.
 
 ```{r}
 #| label: set-parameters
@@ -1270,6 +1266,29 @@ In addition it is possible to indicate when data has been censored and for the `
 To illustrate, in the example below we observe perfectly correlated data for $X$ and $Y$. If we are aware that data in which $X \neq Y$ has been censored then when we update we do not move towards a belief that $X$ causes $Y$.
 
 ```{r}
+#| label: tbl-censored0
+#| echo: true
+#| eval: false
+
+data <- data.frame(X = rep(0:1, 5), Y = rep(0:1, 5))
+
+list(
+  uncensored = make_model("X -> Y") |>
+    update_model(data),
+  
+  censored = make_model("X -> Y") |>
+    update_model(data, censored_types = c("X1Y0",  "X0Y1"))
+) %>%
+  query_model(te("X", "Y"), using = "posteriors") 
+```
+
+
+```{r}
+#| label: tbl-censored
+#| tbl-cap: "Posterior inferences taking account of censoring and not."
+#| echo: false
+#| eval: true
+
 list(uncensored = make_model("X -> Y") %>%
        update_model(data.frame(X=rep(0:1,5), Y=rep(0:1,5)),
                     refresh = 0, iter = 3000),
@@ -1279,7 +1298,12 @@ list(uncensored = make_model("X -> Y") %>%
                     refresh = 0, iter = 3000)) %>%
   query_model(te("X", "Y"), using = "posteriors") |>
   select(model, query, mean, sd) |>
-  kable(digits = 2)
+  knitr::kable(
+    digits = 2,
+    booktabs = TRUE,
+    align = "c",
+    escape = TRUE, 
+    linesep = "")
 ```
 
 ### Output
@@ -1288,6 +1312,8 @@ The primary output from `update_model()` is a model with an attached posterior d
 
 
 ## Queries  {#sec-query}
+
+Queries are posed and answered in `CausalQueries`  by ... TEXT HERE
 
 ### Calcuating factual and counterfactual quantities {#sec-propagation}
 

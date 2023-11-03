@@ -360,9 +360,9 @@ thus briefly contextualize \texttt{CausalQueries\textquotesingle{}}
 scope and functionality within the subset of the causal inference domain
 addressing the evaluation of causal queries on causal models encoded as
 directed acyclic graphs (DAGs) or structural equation models (SEMs).
-Table Table~\ref{tbl-software} provides an overview of relevant software
-and discusses key connections, advantages and disadvantages with respect
-to \texttt{CausalQueries}.
+Table~\ref{tbl-software} provides an overview of relevant software and
+discusses key connections, advantages and disadvantages with respect to
+\texttt{CausalQueries}.
 
 \hypertarget{tbl-software}{}
 \begin{longtable}[]{@{}
@@ -676,8 +676,8 @@ w_{01} & = & \lambda^X_0(\lambda^Y_{11} + \lambda^Y_{10})\\
 w_{10} & = & \lambda^X_1(\lambda^Y_{00} + \lambda^Y_{10})\\
 w_{11} & = & \lambda^X_1(\lambda^Y_{11} + \lambda^Y_{01})\end{array} \right.\]
 
-For concreteness: table Table~\ref{tbl-lipidspar} illustrates key values
-for the lipids model. We see here that we have two types for node \(Z\),
+For concreteness: Table~\ref{tbl-lipidspar} illustrates key values for
+the lipids model. We see here that we have two types for node \(Z\),
 four for \(X\) (representing the strata familiar from instrumental
 variables analysis: never takers, always takers, defiers, and compliers)
 and 4 for \(Y\). For \(Z\) and \(X\) we have parameters corresponding to
@@ -965,8 +965,8 @@ The table below summarizes the objects attached to the model after
 updating.
 
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.2288}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.7712}}@{}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.3000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.7000}}@{}}
 \caption{Additional Elements.}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
@@ -1049,17 +1049,16 @@ The columns of the parameters data frame are understood as follows:
   \texttt{param\_names} gives the name of the parameter, in shorthand.
   For instance the parameter
   \(\lambda^X_0 = \Pr(\theta^X = \theta^X_0)\) has \texttt{par\_name}
-  \texttt{X.0}. See section @ref(notation) for a summary of notation.
+  \texttt{X.0}.
 \item
-  \texttt{param\_value} gives the (possibly default) parameter values.
-  These are probabilities.\\
+  \texttt{param\_value} gives the (possibly default) parameter values
+  (probabilities).
 \item
   \texttt{param\_set} indicates which parameters group together to form
   a simplex. The parameters in a set have parameter values that sum to
   1. In this example \(\lambda^X_0 + \lambda^X_1 = 1\).
 \item
-  \texttt{node} indicates the node associated with the parameter. For
-  parameter \texttt{\textbackslash{}lambda\^{}X\_0} this is \(X\).
+  \texttt{node} indicates the node associated with the parameter.
 \item
   \texttt{nodal\_type} indicates the nodal types associated with the
   parameter.
@@ -1148,22 +1147,6 @@ R> make_model("X -> Y")$nodal_types
 
 The \texttt{interpret\_type} function can also be called by the user to
 obtain interpretations for the nodal types of each node in the model.
-
-\begin{verbatim}
-R> interpretations <- 
-+  make_model("X -> Y <- M ") |> 
-+  interpret_type()
-R> 
-R> interpretations$Y
-\end{verbatim}
-
-\begin{verbatim}
-#>   node position display    interpretation
-#> 1    Y        1 Y[*]*** Y | M = 0 & X = 0
-#> 2    Y        2 Y*[*]** Y | M = 1 & X = 0
-#> 3    Y        3 Y**[*]* Y | M = 0 & X = 1
-#> 4    Y        4 Y***[*] Y | M = 1 & X = 1
-\end{verbatim}
 
 \begin{verbatim}
 R> interpretations <- 
@@ -1268,18 +1251,17 @@ The probability of a causal type is given by the product of the
 parameter values for parameters whose row in the \(P\) matrix contains a
 1.
 
-Below we will see examples where the \(P\) matrix helps keep track of
-parameters that are created when confounding is added to a model. CROSS
-REFERENCE
+Later (e.g. \textbf{?@tbl-confound-params-mat}) we will see examples
+where the \(P\) matrix helps keep track of parameters that are created
+when confounding is added to a model.
 
-To speed up different operations it is sometimes useful to have the
-\(P\) matrix added to the model:
+The parameter matrix is generated on the fly as needed, but it can also
+be added to the model using \texttt{set\_parameter\_matrix()}, which can
+sometimes be useful to speed up operations:
 
-\begin{itemize}
-\tightlist
-\item
-  \texttt{set\_parameter\_matrix}\ldots{}
-\end{itemize}
+\begin{verbatim}
+R> model <- model |> set_parameter_matrix()
+\end{verbatim}
 
 \hypertarget{tailoring-models}{%
 \subsection{Tailoring models}\label{tailoring-models}}
@@ -1392,7 +1374,7 @@ R> make_model("X -> Y") |>
 \begin{verbatim}
 R> make_model("X -> Y; X <-> Y") |>
 +  set_restrictions(labels = list(X = '0', Y = '00'), 
-+                   given = c(NA,'X.0')) |>
++                   given = c(NA,'X.1')) |>
 +  get_parameter_matrix() 
 \end{verbatim}
 
@@ -1461,7 +1443,7 @@ types):
 \(\sum\) & \(\Pr(\theta^X_0)\) & \(\Pr(\theta^X_1)\) & 1 \\
 \end{longtable}
 
-This table has 8 interior elements and so an unconstrained joint
+This table has eight interior elements and so an unconstrained joint
 distribution would have \(7\) degrees of freedom. A no confounding
 assumption means that \(\Pr(\theta^X | \theta^Y) = \Pr(\theta^X)\), or
 \(\Pr(\theta^X, \theta^Y) = \Pr(\theta^X)\Pr(\theta^Y)\). In this case
@@ -1541,34 +1523,6 @@ The output is shown in Table~\ref{tbl-confound-param-matrix}.
 Importantly, the \(P\) matrix works as before, despite confounding. We
 can assess the probability of causal types by multiplying the
 probabilities of the constituent parameters.
-
-\begin{itemize}
-\tightlist
-\item
-  Unlike nodal restrictions, a confounding relation can involve multiple
-  nodal types simultaneously. For instance
-  \texttt{make\_model("X\ -\textgreater{}\ M\ -\textgreater{}\ Y")\ \textbar{}\textgreater{}\ set\_confound(list(X\ =\ "Y{[}X=1{]}\ \textgreater{}\ Y{[}X=0{]}"))}
-  allows for a parameter that renders \(X\) more or less likely
-  depending on whether \(X\) has a positive effect on \(Y\) whether it
-  runs through a positive or a negative effect on \(M\).
-\item
-  The parameters needed to capture confounding relations depend on the
-  direction of causal arrows. For example compare:
-
-  \begin{itemize}
-  \tightlist
-  \item
-    \texttt{make\_model("A\ -\textgreater{}\ W\ \textless{}-\ B\ ;\ A\ \textless{}-\textgreater{}\ W;\ B\ \textless{}-\textgreater{}\ W")\$parameters\_df\ \textbar{}\textgreater{}\ dim}
-    In this case we can decompose shocks on \(A, B, W\) via:
-    \(\Pr(\theta^A, \theta^B, \theta^W) = \Pr(\theta^W | \theta^A, \theta^A)\Pr(\theta^A)\Pr(\theta^B)\),
-    and we have 68 parameters.
-  \item
-    \texttt{make\_model("A\ \textless{}-\ W\ -\textgreater{}\ B\ ;\ A\ \textless{}-\textgreater{}\ W;\ B\ \textless{}-\textgreater{}\ W")\$parameters\_df\ \textbar{}\textgreater{}\ dim}
-    In this case we have
-    \(\Pr(\theta^A, \theta^B, \theta^W) = \Pr(\theta^A | \theta^W)\Pr(\theta^B|\theta^W)\Pr(\theta^W)\)
-    and just has just 18 parameters.
-  \end{itemize}
-\end{itemize}
 
 \begin{figure}[t]
 
@@ -1827,10 +1781,10 @@ parameter value---the parameter values must lie in the unit interval,
 \([0,1]\). In general if parameter values are passed that do not lie in
 the unit interval, these are normalized so that they do.
 
-Consider the causal model below. It has two parameter sets, X and Y,
-with six nodal types, two corresponding to X and four corresponding to
-Y. The key feature of the parameters is that they must sum to 1 within
-each parameter set.
+Consider the causal model below. It has two parameter sets, one for
+\(X\) and one for \(Y\), with six nodal types, two corresponding to
+\(X\) and four corresponding to \(Y\). The key feature of the parameters
+is that they must sum to 1 within each parameter set.
 
 \begin{verbatim}
 R> make_model("X -> Y") |> 
@@ -1844,7 +1798,7 @@ R> make_model("X -> Y") |>
 
 The example below illustrates a change in the value of the parameter
 \(Y\) in the case it is increasing in \(X\). Here nodal type
-\texttt{Y.Y01} is set to be .5, while the other nodal types of this
+\texttt{Y.Y01} is set to be 0.5, while the other nodal types of this
 parameter set were renormalized so that the parameters in the set still
 sum to one.
 
@@ -2270,27 +2224,38 @@ been censored then when we update we do not move towards a belief that
 \(X\) causes \(Y\).
 
 \begin{verbatim}
-R> list(uncensored = make_model("X -> Y") %>%
-+       update_model(data.frame(X=rep(0:1,5), Y=rep(0:1,5)),
-+                    refresh = 0, iter = 3000),
-+     censored = make_model("X -> Y") %>%
-+       update_model(data.frame(X=rep(0:1,5), Y=rep(0:1,5)),
-+                    censored_types = c("X1Y0",  "X0Y1"),
-+                    refresh = 0, iter = 3000)) %>%
-+  query_model(te("X", "Y"), using = "posteriors") |>
-+  select(model, query, mean, sd) |>
-+  kable(digits = 2)
+R> data <- data.frame(X = rep(0:1, 5), Y = rep(0:1, 5))
+R> 
+R> list(
++  uncensored = make_model("X -> Y") |>
++    update_model(data),
++  
++  censored = make_model("X -> Y") |>
++    update_model(data, censored_types = c("X1Y0",  "X0Y1"))
++) %>%
++  query_model(te("X", "Y"), using = "posteriors") 
 \end{verbatim}
 
-\begin{tabular}{l|l|r|r}
-\hline
+\begin{table}
+
+\caption{\textbf{?(caption)}}
+
+\end{table}
+
+\hypertarget{tbl-censored}{}
+\begin{table}
+\caption{\label{tbl-censored}Posterior inferences taking account of censoring and not. }\tabularnewline
+
+\centering
+\begin{tabular}{cccc}
+\toprule
 model & query & mean & sd\\
-\hline
+\midrule
 uncensored & (Y[X=1] - Y[X=0]) & 0.59 & 0.20\\
-\hline
 censored & (Y[X=1] - Y[X=0]) & 0.01 & 0.31\\
-\hline
+\bottomrule
 \end{tabular}
+\end{table}
 
 \hypertarget{output}{%
 \subsection{Output}\label{output}}
@@ -2945,7 +2910,7 @@ Network (CRAN) at {[}https://CRAN.R-project.org/{]}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, breakable, leftrule=.75mm, left=2mm, colback=white, toprule=.15mm, arc=.35mm, bottomrule=.15mm, rightrule=.15mm, opacityback=0]
+\begin{tcolorbox}[enhanced jigsaw, colback=white, bottomrule=.15mm, leftrule=.75mm, rightrule=.15mm, breakable, opacityback=0, arc=.35mm, toprule=.15mm, left=2mm]
 
 The approach to generating a generic \texttt{stan} function that can
 take data from arbitrary models was developed in key contributions by
@@ -2975,7 +2940,7 @@ improved every part of it.
 \section*{More technical details}\label{sec-techdetails}}
 \addcontentsline{toc}{section}{More technical details}
 
-\begin{tcolorbox}[enhanced jigsaw, breakable, leftrule=.75mm, left=2mm, colback=white, toprule=.15mm, arc=.35mm, bottomrule=.15mm, rightrule=.15mm, opacityback=0]
+\begin{tcolorbox}[enhanced jigsaw, colback=white, bottomrule=.15mm, leftrule=.75mm, rightrule=.15mm, breakable, opacityback=0, arc=.35mm, toprule=.15mm, left=2mm]
 
 Appendices can be included after the bibliography (with a page break).
 Each section within the appendix should have a proper section title
@@ -3007,7 +2972,7 @@ which includes the following topics:
 \section*{Using BibTeX}\label{sec-bibtex}}
 \addcontentsline{toc}{section}{Using BibTeX}
 
-\begin{tcolorbox}[enhanced jigsaw, breakable, leftrule=.75mm, left=2mm, colback=white, toprule=.15mm, arc=.35mm, bottomrule=.15mm, rightrule=.15mm, opacityback=0]
+\begin{tcolorbox}[enhanced jigsaw, colback=white, bottomrule=.15mm, leftrule=.75mm, rightrule=.15mm, breakable, opacityback=0, arc=.35mm, toprule=.15mm, left=2mm]
 
 References need to be provided in a \textsc{Bib}{\TeX} file
 (\texttt{.bib}). All references should be made with \texttt{@cite}
