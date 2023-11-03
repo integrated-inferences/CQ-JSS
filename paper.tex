@@ -694,32 +694,32 @@ there are four sets of these parameters.
 \caption{\label{tbl-lipidspar}Nodal types and parameters for Lipids model }\tabularnewline
 
 \centering
-\begin{tabular}{ccccc}
+\begin{tabular}{cccccc}
 \toprule
-node & nodal\_type & param\_set & param\_names & param\_value\\
+node & nodal\_type & param\_set & param\_names & param\_value & priors\\
 \midrule
-Z & 0 & Z & Z.0 & 0.71\\
-Z & 1 & Z & Z.1 & 0.29\\
-X & 00 & X & X.00 & 0.36\\
-X & 10 & X & X.10 & 0.03\\
-X & 01 & X & X.01 & 0.51\\
-X & 11 & X & X.11 & 0.10\\
-Y & 00 & Y.X.00 & Y.00\_X.00 & 0.43\\
-Y & 10 & Y.X.00 & Y.10\_X.00 & 0.08\\
-Y & 01 & Y.X.00 & Y.01\_X.00 & 0.34\\
-Y & 11 & Y.X.00 & Y.11\_X.00 & 0.15\\
-Y & 00 & Y.X.01 & Y.00\_X.01 & 0.43\\
-Y & 10 & Y.X.01 & Y.10\_X.01 & 0.05\\
-Y & 01 & Y.X.01 & Y.01\_X.01 & 0.39\\
-Y & 11 & Y.X.01 & Y.11\_X.01 & 0.13\\
-Y & 00 & Y.X.10 & Y.00\_X.10 & 0.24\\
-Y & 10 & Y.X.10 & Y.10\_X.10 & 0.45\\
-Y & 01 & Y.X.10 & Y.01\_X.10 & 0.12\\
-Y & 11 & Y.X.10 & Y.11\_X.10 & 0.19\\
-Y & 00 & Y.X.11 & Y.00\_X.11 & 0.61\\
-Y & 10 & Y.X.11 & Y.10\_X.11 & 0.11\\
-Y & 01 & Y.X.11 & Y.01\_X.11 & 0.03\\
-Y & 11 & Y.X.11 & Y.11\_X.11 & 0.25\\
+Z & 0 & Z & Z.0 & 0.71 & 1\\
+Z & 1 & Z & Z.1 & 0.29 & 1\\
+X & 00 & X & X.00 & 0.36 & 1\\
+X & 10 & X & X.10 & 0.03 & 1\\
+X & 01 & X & X.01 & 0.51 & 1\\
+X & 11 & X & X.11 & 0.10 & 1\\
+Y & 00 & Y.X.00 & Y.00\_X.00 & 0.43 & 1\\
+Y & 10 & Y.X.00 & Y.10\_X.00 & 0.08 & 1\\
+Y & 01 & Y.X.00 & Y.01\_X.00 & 0.34 & 1\\
+Y & 11 & Y.X.00 & Y.11\_X.00 & 0.15 & 1\\
+Y & 00 & Y.X.01 & Y.00\_X.01 & 0.43 & 1\\
+Y & 10 & Y.X.01 & Y.10\_X.01 & 0.05 & 1\\
+Y & 01 & Y.X.01 & Y.01\_X.01 & 0.39 & 1\\
+Y & 11 & Y.X.01 & Y.11\_X.01 & 0.13 & 1\\
+Y & 00 & Y.X.10 & Y.00\_X.10 & 0.24 & 1\\
+Y & 10 & Y.X.10 & Y.10\_X.10 & 0.45 & 1\\
+Y & 01 & Y.X.10 & Y.01\_X.10 & 0.12 & 1\\
+Y & 11 & Y.X.10 & Y.11\_X.10 & 0.19 & 1\\
+Y & 00 & Y.X.11 & Y.00\_X.11 & 0.61 & 1\\
+Y & 10 & Y.X.11 & Y.10\_X.11 & 0.11 & 1\\
+Y & 01 & Y.X.11 & Y.01\_X.11 & 0.03 & 1\\
+Y & 11 & Y.X.11 & Y.11\_X.11 & 0.25 & 1\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1038,8 +1038,8 @@ Y.11 & Y & 2 & Y & 11 &  & 0.25 & 1\\
 \end{tabular}}
 \end{table}
 
-prints the parameters data frame shown in Table~\ref{tbl-params-df}.
-Each row in the data frame corresponds to a single parameter.
+prints the parameters data frame (see Table~\ref{tbl-lipidspar} for an
+example). Each row in the data frame corresponds to a single parameter.
 
 The columns of the parameters data frame are understood as follows:
 
@@ -1119,33 +1119,7 @@ the three parents. The \texttt{interpret\_type} function provides a
 clear map to identify what each digit in the subscript represents. See
 the examples below for models with two and three parents.
 
-Interpretations are automatically provided as part of the model object.
-A user can see them like this.
-
-\begin{verbatim}
-R> make_model("X -> Y")$nodal_types
-\end{verbatim}
-
-\begin{verbatim}
-#> $X
-#> [1] "0" "1"
-#> 
-#> $Y
-#> [1] "00" "10" "01" "11"
-#> 
-#> attr(,"interpret")
-#> attr(,"interpret")$X
-#>   node position display interpretation
-#> 1    X       NA      X0          X = 0
-#> 2    X       NA      X1          X = 1
-#> 
-#> attr(,"interpret")$Y
-#>   node position display interpretation
-#> 1    Y        1   Y[*]*      Y | X = 0
-#> 2    Y        2   Y*[*]      Y | X = 1
-\end{verbatim}
-
-The \texttt{interpret\_type} function can also be called by the user to
+The \texttt{interpret\_type} function can be called by the user to
 obtain interpretations for the nodal types of each node in the model.
 
 \begin{verbatim}
@@ -1166,6 +1140,13 @@ R> interpretations$Y
 #> 6    Y        6 Y*****[*]** Y | M = 1 & W = 0 & X = 1
 #> 7    Y        7 Y******[*]* Y | M = 0 & W = 1 & X = 1
 #> 8    Y        8 Y*******[*] Y | M = 1 & W = 1 & X = 1
+\end{verbatim}
+
+Interpretations are automatically provided as part of the model object.
+A user can see them like this.
+
+\begin{verbatim}
+R> make_model("X -> Y")$nodal_types
 \end{verbatim}
 
 \hypertarget{causal-types}{%
@@ -1217,9 +1198,9 @@ The parameters data frame keeps track of parameter values and priors for
 parameters but it does not provide a mapping between parameters and the
 probability of causal types.
 
-The parameter matrix (\(P\) matrix) can be added to the model to provide
-this mapping. The \(P\) matrix has a row for each parameter and a column
-for each causal type. For instance:
+The parameter matrix---the ``\(P\) matrix''---can be added to the model
+to provide this mapping. The \(P\) matrix has a row for each parameter
+and a column for each causal type. For instance:
 
 \begin{verbatim}
 R> make_model("X -> Y") |> get_parameter_matrix()
@@ -1494,15 +1475,16 @@ Y.11\_X.1 & Y & 2 & Y.X.1 & 11 & X.1 & 0.25 & 1\\
 \end{tabular}}
 \end{table}
 
-Table~\ref{tbl-confound-params-df} shows the parameters data frame
-produced by the code above. We see here that there are now two parameter
+The parameters dataframe for this model would have two parameter
 families for parameters associated with the node \(Y\). Each family
 captures the conditional distribution of \(Y\)'s nodal types, given
 \(X\). For instance the parameter \texttt{Y01\_X.1} can be interpreted
-as \(\Pr(\theta^Y = \theta^Y_{01} | X=1)\).
+as \(\Pr(\theta^Y = \theta^Y_{01} | X=1)\). See again
+Table~\ref{tbl-lipidspar} for an example of a parameters matrix with
+confounding.
 
 To see exactly how the parameters map to causal types we can view the
-parameter matrix:
+parameter matrix thus:
 
 \begin{verbatim}
 R> get_parameter_matrix(confounded)
@@ -1705,36 +1687,22 @@ arguments get mapped to the parameters they identify internally they may
 be used interchangeably.\footnote{See \texttt{?set\_priors} and
   \texttt{?make\_priors} for many more examples.}
 
+Thus the following two specifications of priors are equivalent:
+
 \begin{verbatim}
-R> make_model("X -> M -> Y; X <-> Y") |>
+R> model <- make_model("X -> M -> Y; X <-> Y")
+R> 
+R> model |>
 +  set_priors(node = "Y", 
 +             nodal_type = c("01","11"), 
 +             given = "X.1", 
-+             alphas = c(3,2)) |>
-+  get_priors()
-\end{verbatim}
-
-\begin{verbatim}
-#>      X.0      X.1     M.00     M.10     M.01     M.11 Y.00_X.0 Y.10_X.0 
-#>        1        1        1        1        1        1        1        1 
-#> Y.01_X.0 Y.11_X.0 Y.00_X.1 Y.10_X.1 Y.01_X.1 Y.11_X.1 
-#>        1        1        1        1        3        2
-\end{verbatim}
-
-\begin{verbatim}
-R> make_model("X -> M -> Y; X <-> Y") |>
++             alphas = c(3,2)) 
+R> 
+R> model |>
 +  set_priors(
 +    alter_at = 
 +      "node == 'Y' & nodal_type %in% c('01','11') & given == 'X.1'", 
-+    alphas = c(3,2)) |>
-+  get_priors()
-\end{verbatim}
-
-\begin{verbatim}
-#>      X.0      X.1     M.00     M.10     M.01     M.11 Y.00_X.0 Y.10_X.0 
-#>        1        1        1        1        1        1        1        1 
-#> Y.01_X.0 Y.11_X.0 Y.00_X.1 Y.10_X.1 Y.01_X.1 Y.11_X.1 
-#>        1        1        1        1        3        2
++    alphas = c(3,2)) 
 \end{verbatim}
 
 It should be noted that while highly targeted prior setting is
@@ -1936,25 +1904,10 @@ R> sample_data_2
 
 Whereas data naturally comes in long form, with a row per observation,
 as in the examples above, the data passed to \texttt{stan} is in a
-compact form, which records only the number of units of each data type.
-\texttt{CausalQueries} includes functions that lets you move between
-these two forms in case of need.
-
-\begin{verbatim}
-R> sample_data_1 |> collapse_data(model)
-\end{verbatim}
-
-\begin{verbatim}
-#>    event strategy count
-#> 1 X0M0Y0      XMY     0
-#> 2 X1M0Y0      XMY     0
-#> 3 X0M1Y0      XMY     1
-#> 4 X1M1Y0      XMY     0
-#> 5 X0M0Y1      XMY     0
-#> 6 X1M0Y1      XMY     0
-#> 7 X0M1Y1      XMY     3
-#> 8 X1M1Y1      XMY     0
-\end{verbatim}
+compact form, which records only the number of units of each data type,
+grouped by data ``strategy''---an indicator of the nodes for which data
+was gathered. \texttt{CausalQueries} includes functions that lets you
+move between these two forms in case of need.
 
 \begin{verbatim}
 R> sample_data_2 |> collapse_data(model)
@@ -2299,20 +2252,26 @@ optionally saved.
 \hypertarget{sec-query}{%
 \section{Queries}\label{sec-query}}
 
-Queries are posed and answered in \texttt{CausalQueries} by \ldots{}
-TEXT HERE
+\texttt{CausalQueries} provides functionality to pose and answer
+elaborate causal queries. The key approach is to code causal queries as
+functions of causal types and return a distribution over the queries
+that is implied by the distribution over causal types.
 
 \hypertarget{sec-propagation}{%
 \subsection{Calcuating factual and counterfactual
 quantities}\label{sec-propagation}}
 
-We can map from causal types to data types by propagating realized
-values on nodes forward in the DAG, moving from exogenous or intervened
-upon nodes to their descendants in generational order. The
-\texttt{realise\_outcomes} function achieves this by traversing the DAG,
-while recording for each node's nodal types, the values implied by
-realizations on the node's parents. By way of example, consider the
-first causal type of a \(X \rightarrow Y\) model:
+A key step in the calculation of most queries is the assessment of what
+outcomes will arise for causal types given different interventions on
+nodes. In practice, we map from causal types to data types by
+propagating realized values on nodes forward in the DAG, moving from
+exogenous or intervened upon nodes to their descendants in generational
+order. The \texttt{realise\_outcomes} function achieves this by
+traversing the DAG, while recording for each node's nodal types, the
+values implied by realizations on the node's parents.
+
+By way of example, consider the first causal type of a
+\(X \rightarrow Y\) model:
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
@@ -2355,7 +2314,8 @@ R> make_model("X -> Y") |> realise_outcomes()
 \end{verbatim}
 
 with row names indicating nodal types and columns realized values.
-Intervening on \(X\) with \(do(X=1)\) yields:
+Intervening on \(X\) (see \citet{pearl2009causality}) with \(do(X=1)\)
+yields:
 
 \begin{verbatim}
 R> make_model("X -> Y") |> realise_outcomes(dos = list(X = 1))
@@ -2372,6 +2332,9 @@ R> make_model("X -> Y") |> realise_outcomes(dos = list(X = 1))
 #> 0.11 1 1
 #> 1.11 1 1
 \end{verbatim}
+
+In the same way \texttt{realise\_outcomes} can return the realized
+values on all nodes for each causal type given arbitrary interventions.
 
 \hypertarget{sec-syntax}{%
 \subsection{Causal Syntax}\label{sec-syntax}}
@@ -2457,7 +2420,7 @@ R> make_model("X -> Y")  |>
 #>  Total number of causal types in model =  8
 \end{verbatim}
 
-When a node has multiple parents it is possible to set the value of non
+When a node has multiple parents it is possible to set the value of none
 of the parents, of some of the parents, or of all of the parents. For
 instance if \texttt{X1} and \texttt{X2} are parents of \texttt{Y} then
 \texttt{Y==1}, \texttt{Y{[}X1\ =\ 1{]}==1}, and
@@ -2521,6 +2484,24 @@ observed values, in the context of an intervention, are expressed
 outside the brackets, along with the logical condition that defines the
 observed values, as in \texttt{"Y\ ==\ 1"} or
 \texttt{"Y{[}X=1{]}\ \textgreater{}\ Y{[}X=0{]}"}.
+
+\hypertarget{conditional-queries}{%
+\subsubsection{Conditional queries}\label{conditional-queries}}
+
+Many queries of interest are ``conditional'' queries. For example the
+effect of \(X\) on \(Y\) for units for which \(W= 1\). Or the the effect
+of \(X\) on \(Y\) for units for which \(Z\) has a positive effect on
+\(X\). Such conditional queries are posed in \texttt{CausalQueries} by
+providing a \texttt{given} statement in addition to the \texttt{query}
+statement. The full query then becomes: for what units does the
+\texttt{query} condition hold among those units for which the
+\texttt{given} condition holds. The two parts can each be calculated
+using \texttt{get\_query\_types}. Thus for instance in an
+\(X \rightarrow Y\) model the probability that \(X\) causes \(Y\) given
+\(X=1 \& Y=1\) is the probability of causal \texttt{X1.Y11} type divided
+by the sum of the probabilities of types \texttt{X1.Y11} and
+\texttt{X1.Y01}. In practice this is done automatically for users when
+they call \texttt{query\_model} or \texttt{query\_distribution}.
 
 \hypertarget{complex-expressions}{%
 \subsubsection{Complex expressions}\label{complex-expressions}}
@@ -2663,49 +2644,52 @@ expectation has an uncertainty attached to it.
 Subtly though this is, in principle, different to what we would infer
 for a ``new case'' that we wonder about. When inquiring about a new
 case, the case level query \emph{updates} on the given information
-observed in the new case. The resulting inference is different to the
-inference that would be made from the posterior \emph{given} the
-features of the case.
+observed in the new case. The resulting inference can be different to
+the inference that would be made from the posterior \emph{given} the
+features of the case. If \texttt{case\_level\ =\ TRUE} is specified,
+this new case level inference is calculated. For a query \(Q\) and given
+\(D\) this returns the value
+\(\frac{\int\pi(Q \& D | \lambda_i)p(\lambda_i)d\lambda_i}{\int\pi(D | \lambda_i)p(\lambda_i)d\lambda_i}\)
+which may differ from the mean of the distribution
+\(\frac{\pi(Q \& D | \lambda)}{\pi(D | \lambda)}\),
+\(\int \frac{\pi(Q \& D | \lambda_i)}{\pi(D | \lambda_i)} p(\lambda_i)d\lambda_i\).
 
 To illustrate, consider a model for which we are quite sure that \(X\)
 causes \(Y\) but we do not know whether it works through two positive
 effects or two negative effects.
 
-Thus we do not know if M=0 would suggest an effect or no effect. If
+Thus we do not know if \(M=0\) would suggest an effect or no effect. If
 asked what we would infer for a case that had \(M=0\) we would not know
 whether \(M=0\) information is consistent with a positive effect or not.
 However if provided with a randomly sampled case and learn that it has
 \(M=0\), then we update about the causal model and infer that there is
-an effect in this case (but that there wouldn't be were \(M=1\)).
+an effect in this case (but that there would not be were \(M=1\)). The
+results are in Table~\ref{tbl-case-level}. Note that the case level
+query returns a single number and no posterior standard deviation: this
+is the belief about the (new) case in question. The non case case level
+query summarizes the posterior distribution over cases with this data.
 
 \begin{verbatim}
-R> # DO ALL THIS IN ONE TABLE
-R> 
-R> set.seed(1)
-R>  model <-
-+   make_model("X -> M -> Y") |>
-+   update_model(data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)), iter = 10000)
-R> 
-R>  Q <- "Y[X=1] > Y[X=0]"
-R>  G <- "X==1 & Y==1 & M==1"
-R>  QG <- "(Y[X=1] > Y[X=0]) & (X==1 & Y==1 & M==1)"
-R> 
-R>  # In this case these are very different:
-R>  query_distribution(model, Q, given = G, using = "posteriors")[[1]] |> mean()
-R>  query_distribution(model, Q, given = G, using = "posteriors",
-+   case_level = TRUE)
-R> 
-R>  # These are equivalent:
-R>  # 1. Case level query via function
-R>  query_distribution(model, Q, given = G,
-+    using = "posteriors", case_level = TRUE)
-R> 
-R>  # 2. Case level query by hand using Bayes
-R>  distribution <- query_distribution(
-+    model, list(QG = QG, G = G), using = "posteriors")
-R> 
-R>  mean(distribution$QG)/mean(distribution$G)
+R>  make_model("X -> M -> Y") |>
++  update_model(data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)), iter = 10000) |> 
++  query_model(
++    query = "Y[X=1] > Y[X=0]",
++    given = "X==1 & Y==1 & M==1",
++    using = "posteriors",
++    case_level = c(TRUE, FALSE))
 \end{verbatim}
+
+\hypertarget{tbl-case-level}{}
+\begin{longtable}{ccccc}
+\caption{\label{tbl-case-level}Results for a case level query. }\tabularnewline
+
+\toprule
+query & given & case\_level & mean & sd\\
+\midrule
+Y[X=1] > Y[X=0] & X==1 \& Y==1 \& M==1 & TRUE & 0.67 & NA\\
+Y[X=1] > Y[X=0] & X==1 \& Y==1 \& M==1 & FALSE & 0.43 & 0.33\\
+\bottomrule
+\end{longtable}
 
 \hypertarget{batch-queries}{%
 \subsubsection{Batch queries}\label{batch-queries}}
@@ -2774,9 +2758,9 @@ model & query & given & using & case\_level & mean & sd\\
 \bottomrule
 \end{longtable}
 
-The \texttt{stats} argument let users specify alternative summary
-statistics and indicate. The \texttt{expand\_grid} argument lets users
-specify whether all combinations of list elements should be generated.
+The \texttt{stats} argument lets users specify alternative summary
+statistics. The \texttt{expand\_grid} argument lets users specify
+whether all combinations of list elements should be generated.
 
 \FloatBarrier
 
@@ -2942,7 +2926,7 @@ Network (CRAN) at {[}https://CRAN.R-project.org/{]}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, colback=white, opacityback=0, breakable, leftrule=.75mm, toprule=.15mm, bottomrule=.15mm, left=2mm, rightrule=.15mm, arc=.35mm]
+\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, left=2mm, rightrule=.15mm, toprule=.15mm, arc=.35mm, breakable, colback=white, bottomrule=.15mm, opacityback=0]
 
 The approach to generating a generic \texttt{stan} function that can
 take data from arbitrary models was developed in key contributions by
@@ -2972,7 +2956,7 @@ improved every part of it.
 \section*{More technical details}\label{sec-techdetails}}
 \addcontentsline{toc}{section}{More technical details}
 
-\begin{tcolorbox}[enhanced jigsaw, colback=white, opacityback=0, breakable, leftrule=.75mm, toprule=.15mm, bottomrule=.15mm, left=2mm, rightrule=.15mm, arc=.35mm]
+\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, left=2mm, rightrule=.15mm, toprule=.15mm, arc=.35mm, breakable, colback=white, bottomrule=.15mm, opacityback=0]
 
 Appendices can be included after the bibliography (with a page break).
 Each section within the appendix should have a proper section title
@@ -3004,7 +2988,7 @@ which includes the following topics:
 \section*{Using BibTeX}\label{sec-bibtex}}
 \addcontentsline{toc}{section}{Using BibTeX}
 
-\begin{tcolorbox}[enhanced jigsaw, colback=white, opacityback=0, breakable, leftrule=.75mm, toprule=.15mm, bottomrule=.15mm, left=2mm, rightrule=.15mm, arc=.35mm]
+\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, left=2mm, rightrule=.15mm, toprule=.15mm, arc=.35mm, breakable, colback=white, bottomrule=.15mm, opacityback=0]
 
 References need to be provided in a \textsc{Bib}{\TeX} file
 (\texttt{.bib}). All references should be made with \texttt{@cite}
