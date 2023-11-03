@@ -811,6 +811,7 @@ get_parameter_matrix(confounded) |>
 
 The output is shown in @tbl-confound-param-matrix. Importantly, the $P$ matrix works as before, despite confounding. We can assess the probability of causal types by multiplying the probabilities of the constituent parameters.
 
+@tbl-dof illustrates more generally how the number of independent parameters depends on the  nature of possible confounding.
 
 ```{r}
 #| label: fig-confound
@@ -824,13 +825,48 @@ make_model("A <- X -> B; A <-> X; B <-> X") |>
   plot()
 ```
 
+
+
+````{r}
+#| label: tbl-dof
+#| tbl-cap: "Number of different independent parameters (degrees of freedom) for different 3 node models."
+#| echo: false
+#| eval: true
+
+statements <- list("X -> Y <- W", 
+                   "X -> Y <- W; X <-> W", 
+                   "X -> Y <- W; X <-> Y; W <-> Y",
+                   "X -> Y <- W; X <-> Y; W <-> Y; X <->W", 
+                   "X -> W -> Y <- X",
+                   "X -> W -> Y <- X; W <-> Y",
+                   "X -> W -> Y <- X; X <-> W; W <-> Y", 
+                   "X -> W -> Y <- X; X <-> W; W <-> Y; X <-> Y")
+
+   dof <- function(statement)
+       make_model(statement, add_causal_types = FALSE)$parameters_df |>
+       group_by(param_set) |>
+       summarize(n  = n() -1) |>
+       pull(n) |>
+       sum()
+   
+data.frame(Model = statements |> unlist(),
+           dof = statements |> lapply(dof) |> unlist()) |>
+  knitr::kable(
+    digits = 2,
+    booktabs = TRUE,
+    align = c("l", "c"),
+    escape = TRUE, 
+    linesep = "") 
+
+```
+
 #### Setting Priors {#priors}
 
-Priors on model parameters can be added to the parameters data frame. The priors are interpreted as "alpha" arguments for a Dirichlet distribution. The Dirichlet distribution is a probability distribution over an $n-1$ dimensional unit simplex. It can be thought of as a generalization of the Beta distribution and is parameterized by an $n$-dimensional positive vector $\alpha$. Thus for example a Dirichlet with $\alpha = (1, 1, 1, 1, 1)$ gives a probability distribution over all non negative $5$-dimensional vectors that sum to $1$, e.g. $(0.1, 0.1, 0.1, 0.1, 0.6)$ or $(0.1, 0.2, 0.3, 0.3, 0.1)$. This particular value for $\alpha$ implies that all such vectors are equally likely. Other values for $\alpha$ can be used to control the expectation for each dimension as well as certainty. Thus for instance the vector $\alpha = (100, 1, 1, 1, 100)$ would result in more weight on distributions that are close to $(.5, 0, 0, 0. .5)$.
+Priors on model parameters can be added to the parameters data frame. The priors are interpreted as "alpha" arguments for a Dirichlet distribution. The Dirichlet distribution is a probability distribution over an $n-1$ dimensional unit simplex. It can be thought of as a generalization of the Beta distribution and is parameterized by an $n$-dimensional positive vector $\alpha$. Thus for example a Dirichlet with $\alpha = (1, 1, 1, 1, 1)$ gives a probability distribution over all non negative $5$-dimensional vectors that sum to $1$, e.g. $(0.1, 0.1, 0.1, 0.1, 0.6)$ or $(0.1, 0.2, 0.3, 0.3, 0.1)$. This particular value for $\alpha$ implies that all such vectors are equally likely. Other values for $\alpha$ can be used to control the expectation for each dimension as well as certainty. Thus for instance the vector $\alpha = (100, 1, 1, 1, 100)$ would result in more weight on distributions that are close to $(0.5, 0, 0, 0, 0.5)$.
 
-In `CausalQueries` priors are generally specified over the distribution of nodal types (or over the conditional distribution of nodal types, when there is confounding). Thus for instance in an $X \rightarrow Y$ model we have one Dirichlet distribution over the two types for $\theta^X$ and one Dirichlet distribution over the four types for $\theta^Y$.
+In `CausalQueries`, priors are generally specified over the distribution of nodal types (or over the conditional distribution of nodal types, when there is confounding). Thus for instance in an $X \rightarrow Y$ model we have one Dirichlet distribution over the two types for $\theta^X$ and one Dirichlet distribution over the four types for $\theta^Y$.
 
-To retrieve the model's priors we can run the following code:
+By default priors are set to unit vector, corresponding to uniform priors. To retrieve the model's priors we can run the following code:
 
 ```{r}
 #| label: get-priors
@@ -841,16 +877,15 @@ make_model("X -> Y") |> get_priors()
 
 ```
 
-Here the priors have not been specified and so they default to $1$, which corresponds to uniform priors. Alternatively you could set Jeffreys priors using `set_priors` as follows:
+Alternatively you could set Jeffreys priors using `set_priors` as follows:
 
 ```{r}
 #| label: set-priors
 #| echo: true
-#| eval: true
+#| eval: false
 
 make_model("X -> Y") |> 
-  set_priors(distribution = "jeffreys") |> 
-  get_priors()
+  set_priors(distribution = "jeffreys") 
 
 ```
 
@@ -883,9 +918,9 @@ make_model("X -> Y") |>
   get_priors()
 ```
 
-As setting priors simply requires mapping alpha values to parameters, the process boils down to selecting rows of the `parmeters_df` data frame, at which to alter values. When specifying a causal statement as above, `CausalQueries` internally identifies nodal types that are consistent with the statement, which in turn identify parameters to alter priors for. 
+As setting priors simply requires mapping alpha values to parameters, the process reduces to selecting rows of the `parmeters_df` data frame, at which to alter values. When specifying a causal statement as above, `CausalQueries` internally identifies nodal types that are consistent with the statement, which in turn identify parameters to alter priors for. 
 
-Note that there is nothing particularly unique about setting priors via causal syntax, as it is simply an abstract way of specifying how to subset the `parameters_df` data frame. We can achieve the same result as above by specifying nodal types for which we would like to adjust the priors:
+We can achieve the same result as above by specifying nodal types for which we would like to adjust the priors:
 
 ```{r}
 #| label: set-priors-nodal-type
@@ -909,7 +944,7 @@ make_model("X -> Y") |>
   get_priors()
 ```
 
-As such `set_priors` allows for the specification of any non-redundant combination of arguments on the `param_names`, `node`, `nodal_type`, `param_set` and `given` columns of `parameters_df` to uniquely identify parameters to set priors for. Alternatively a fully formed subsetting statement may be supplied to `alter_at`. Since all these arguments get mapped to the parameters they identify internally they may be used interchangeably.[^3]
+Indeed `set_priors` allows for the specification of any non-redundant combination of arguments on the `param_names`, `node`, `nodal_type`, `param_set` and `given` columns of `parameters_df` to uniquely identify parameters to set priors for. Alternatively a fully formed subsetting statement may be supplied to `alter_at`. Since all these arguments get mapped to the parameters they identify internally they may be used interchangeably.[^3]
 
 ```{r}
 #| label: set-priors-other
@@ -944,7 +979,7 @@ For instance in an $X \rightarrow Y$ model in which negative effects are ruled o
 
 make_model("X -> Y") |>
   set_restrictions(decreasing("X", "Y")) |>
-  query_model("Y[X=1] - Y[X=0]", n_draws = 10000)
+  query_model("Y[X=1] - Y[X=0]", using = "priors")
 
 ```
 
@@ -958,10 +993,10 @@ Again, you can use `query_model` to figure out what flat (or other) priors over 
 #| eval: false
 
 make_model("X -> Y") |>
-  query_model("Y[X=1] > Y[X=0]", n_draws = 10000)
+  query_model("Y[X=1] > Y[X=0]", using = "priors")
 
 make_model("X -> M -> Y") |>
-  query_model("Y[X=1] > Y[X=0]", n_draws = 10000)
+  query_model("Y[X=1] > Y[X=0]", using = "priors")
 
 ```
 
@@ -999,7 +1034,7 @@ make_model("X -> M -> Y") |>
   kableExtra::kable_classic_2(latex_options = c("scale_down"))
 ```
 
-Caution regarding priors is particularly important when models are not identified, as is the case for many of the models considered here. In such cases, for some quantities, the marginal posterior distribution can be the same as the marginal prior distribution [@poirier1998revising].
+Caution regarding priors is particularly important when models are not identified, as is the case for many of the models considered here. In such cases, for some quantities, the marginal posterior distribution simply reflects the marginal prior distribution [@poirier1998revising].
 
 The key point here is to make sure you do not fall into a trap of thinking that "uninformative" priors make no commitments regarding the values of causal quantities of interest. They do, and the implications of flat priors for causal quantities can depend on the structure of the model. Moreover for some inferences from causal models the priors can matter a lot even if you have a lot of data. In such cases it can be helpful to know what priors on parameters imply for priors on causal quantities of interest (by using `query_model`) and to assess how much conclusions depend on priors (by comparing results across models that vary in their priors).
 
@@ -1423,7 +1458,7 @@ Giving a *quantitative* answer to a query requires placing probabilities over th
 #### Queries by hand
 
 
-Queries can be calculated directly from the prior distribution of the posterior distribution provided by `stan`.
+Queries can be calculated directly from the prior distribution or the posterior distribution provided by `stan`.
 
 
 ```{r}
@@ -1442,7 +1477,7 @@ model$posterior_distribution |>
 
 ```{r}
 #| label: fig-posterior-dist
-#| fig-cap: "Posterior on 'Probability $Y$ is increasing in $X$'"
+#| fig-cap: "Posterior on `Probability $Y$ is increasing in $X$'"
 #| fig-pos: "t"
 #| fig-align: center
 #| out-width: "60%"
@@ -1528,7 +1563,7 @@ Subtly though this is, in principle, different to what we would infer for a "new
 
 To illustrate, consider a model for which we are quite sure that $X$ causes $Y$ but we do not know whether it works through two positive effects or two negative effects.
 
-Thus we do not know if M=0 would suggest an effect or no effect. If asked what we would infer for a case that had $M=0$ we would not know whether $M=0$ information is consistent with a positive effect or not. However if provided with a randomly case and learn that it has $M=0$, then we update about the causal model and infer that there is an effect in this case (but that there wouldn't be were $M=1$).
+Thus we do not know if M=0 would suggest an effect or no effect. If asked what we would infer for a case that had $M=0$ we would not know whether $M=0$ information is consistent with a positive effect or not. However if provided with a randomly sampled case and learn that it has $M=0$, then we update about the causal model and infer that there is an effect in this case (but that there wouldn't be were $M=1$).
 
 ```{r}
 #| echo: true
@@ -1564,7 +1599,7 @@ set.seed(1)
 
 #### Batch queries
 
-The `query_model()` function takes list of models, causal queries, and conditions (`given`), calculates estimands given prior or posterior distributions  and reports summaries of these distributions. The result is a data frame which can be displayed as a table.
+The `query_model()` function takes list of models, causal queries, and conditions (`given`), calculates estimands given prior or posterior distributions  and reports summaries of these distributions. The result is a data frame which can be displayed as a table or used for graphing.
 
 ```{r}
 #| label: batch-query
@@ -1727,20 +1762,26 @@ Cleaning up {{< bibtex >}} files is a somewhat tedious task -- especially when a
 
 ## Appendix: stan code
 
-`prep_stan_data` then returns a list of objects that `stan` expects to receive. These include indicators to figure out where a parameter set starts (`l_starts`, `l_ends`) and ends and where a data strategy starts and ends (`strategy_starts`, `strategy_ends`), as well as the matrices described above.
+Updating is implemented in `stan` using a single flexible `stan` model. 
 
-```{r ch2prep, comment = "", include = FALSE}
+The data provided to `stan` is generated by the internal function `prep_stan_data` which  returns a list of objects that `stan` expects to receive. These include indicators to figure out where a parameter set starts (`l_starts`, `l_ends`) and ends and where a data strategy starts and ends (`strategy_starts`, `strategy_ends`), as well as the matrices described above.
 
-#CausalQueries:::prep_stan_data(model, compact_data)
+One can examine the data passed to stan given a model and compact data thus:
+
+```{r ch2prep}
+#| echo: true
+#| eval: false
+
+CausalQueries:::prep_stan_data(model, compact_data)
 
 ```
 
-Below we show the `stan` code. This starts off with a block saying what input data is to be expected. Then there is a characterization of parameters and the transformed parameters. Then the likelihoods and priors are provided. `stan` takes it from there and generates a posterior distribution.
+The code for the `stan` model is show below. After defining a helper function the code  starts  with a block declaring what input data is to be expected. Then there is a characterization of parameters and the transformed parameters. Then the likelihoods and priors are provided. At the end there is a block for generated quantities which can be used to append a posterior distribution of causal types to the model.
 
 ```{r}
 #| echo: false
 #| results: markup
-
+#| comment: ""
 if (params$run) {
   
   make_model("X -> Y") |> 
