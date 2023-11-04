@@ -255,12 +255,12 @@ model, using either the prior distribution, the posterior distribution,
 or a user-specified candidate vector of parameters.
 
 In the next section we provide a short motivating example. We then
-describe how the package relates to existing available software. Section
+describe how the package relates to existing available software.
 Section~\ref{sec-theory} gives an overview of the statistical model
-behind the package. Sections Section~\ref{sec-make},
-Section~\ref{sec-update}, and Section~\ref{sec-query} then describe the
-main functionality for the major operations using the package. We
-provide further computation details in the final section.
+behind the package. Section~\ref{sec-make}, Section~\ref{sec-update},
+and Section~\ref{sec-query} then describe the main functionality for the
+major operations using the package. We provide further computation
+details in the final section.
 
 \hypertarget{motivating-example}{%
 \section{Motivating example}\label{motivating-example}}
@@ -344,7 +344,7 @@ The output is a data frame with estimates, posterior standard
 deviations, and credibility intervals. For example the data frame
 produced by the code above is shown in Table~\ref{tbl-lipids}.
 
-As we describe below the same basic procedure of making, updating, and
+As we describe below, the same basic procedure of making, updating, and
 querying models, can be used (up to computational constraints) for
 arbitrary causal models, for different types of data structures, and for
 all causal queries that can be posed of the causal model.
@@ -813,7 +813,7 @@ confounding'', that is, the presence of an unobserved variable that
 might influence observed variables. In this case condition 3 above is
 relaxed and the exogenous nodes associated with confounded variables
 have a joint distribution. We describe how this is done in greater
-detail in section Section~\ref{sec-confounding}.
+detail in Section~\ref{sec-confounding}.
 
 \hypertarget{graphing}{%
 \subsection{Graphing}\label{graphing}}
@@ -1265,7 +1265,7 @@ to \(Z\). This is one of the conditions needed to interpret instrumental
 variables estimates as (consistent) estimates of the complier average
 treatment effect.
 
-In \texttt{CausalQueries} we impose this assumption thus
+In \texttt{CausalQueries} we impose this assumption thus:
 
 \begin{verbatim}
 R> model_restricted <- 
@@ -1274,7 +1274,8 @@ R> model_restricted <-
 \end{verbatim}
 
 in words: we restrict by removing types for which \(X\) is decreasing in
-\(Z\).
+\(Z\). If we wanted to retain only this nodal type rather than remove it
+could do so by stipulating \texttt{keep\ =\ FALSE}.
 
 \begin{table}
 
@@ -1289,8 +1290,8 @@ R> get_parameter_matrix(model)
 \end{verbatim}
 
 Here and in general, setting restrictions typically involves using
-causal syntax; see Section Section~\ref{sec-syntax} for a guide the
-syntax used by \texttt{CausalQueries}.
+causal syntax; see Section~\ref{sec-syntax} for a guide the syntax used
+by \texttt{CausalQueries}.
 
 Note:
 
@@ -1309,19 +1310,21 @@ Note:
   \texttt{make\_model("A\ -\textgreater{}\ B\ \textless{}-\ C")\ \textbar{}\textgreater{}\ set\_restrictions("(B{[}C=1{]}==1)")}
   is interpreted as shorthand for the restriction
   \texttt{"B{[}C\ =\ 1,\ A\ =\ 0{]}==1\ \textbar{}\ B{[}C\ =\ 1,\ A\ =\ 1{]}==1"}.
+  The \texttt{join\_by} argument can be used to indicate ``and'' rather
+  than ``or'' relations on omitted parents.
 \item
   To place restrictions on multiple nodes at the same time, provide
   these as a vector of restrictions. This is not permitted:
   \texttt{set\_restrictions("Y{[}X=1{]}==1\ \&\ X==1")}, since it
   requests correlated restrictions. This however is allowed:
-  \texttt{set\_restrictions(c("Y{[}X=1{]}==1",\ "X==1"))}.\\
+  \texttt{set\_restrictions(c("Y{[}X=1{]}==1",\ "X==1"))}.
 \item
   Use the \texttt{keep} argument to indicate whether nodal types should
   be dropped (default) or retained.
 \item
   Restrictions based on causal statements can use helpers,
-  \texttt{decreasing()}, \texttt{increasing()}, `complements()' and
-  similar. For instance
+  \texttt{decreasing()}, \texttt{increasing()}, \texttt{complements()}
+  and similar. For instance
   \texttt{set\_restrictions(decreasing("X",\ "Y"))}
 \item
   Restrictions can be set using nodal type labels.
@@ -1353,35 +1356,29 @@ R> make_model("X -> Y") |>
 \end{itemize}
 
 \begin{verbatim}
-R> make_model("X -> Y; X <-> Y") |>
-+  set_restrictions(labels = list(X = '0', Y = '00'), 
-+                   given = c(NA,'X.1')) |>
+R> model <- make_model("X -> Y -> Z; X <-> Z") %>%
++ set_restrictions(labels = list(X = '0', Y = c('00', '11'), Z = '00'), 
++                  given = c(NA, NA, 'X.1')) |>
 +  get_parameter_matrix() 
 \end{verbatim}
 
+\hypertarget{tbl-confound-params-mat}{}
 \begin{table}
+\caption{\label{tbl-confound-params-mat}Restrictions on models with confounds. }\tabularnewline
 
-\caption{\label{tbl-confound-params-mat}\textbf{?(caption)}}\begin{minipage}[t]{\linewidth}
-\subcaption{\label{tbl-confound-params-mat-1}}
-
-{\centering 
-
-\begin{tabular}{lcccc}
+\centering
+\begin{tabular}{lcccccc}
 \toprule
-  & X1.Y00 & X1.Y10 & X1.Y01 & X1.Y11\\
+  & X1.Y10.Z10 & X1.Y01.Z10 & X1.Y10.Z01 & X1.Y01.Z01 & X1.Y10.Z11 & X1.Y01.Z11\\
 \midrule
-X.1 & 1 & 1 & 1 & 1\\
-Y.00\_X.1 & 1 & 0 & 0 & 0\\
-Y.10\_X.1 & 0 & 1 & 0 & 0\\
-Y.01\_X.1 & 0 & 0 & 1 & 0\\
-Y.11\_X.1 & 0 & 0 & 0 & 1\\
+X.1 & 1 & 1 & 1 & 1 & 1 & 1\\
+Y.10 & 1 & 0 & 1 & 0 & 1 & 0\\
+Y.01 & 0 & 1 & 0 & 1 & 0 & 1\\
+Z.10\_X.1 & 1 & 1 & 0 & 0 & 0 & 0\\
+Z.01\_X.1 & 0 & 0 & 1 & 1 & 0 & 0\\
+Z.11\_X.1 & 0 & 0 & 0 & 0 & 1 & 1\\
 \bottomrule
 \end{tabular}
-
-}
-
-\end{minipage}%
-
 \end{table}
 
 \hypertarget{sec-confounding}{%
@@ -2030,7 +2027,7 @@ fact that \(\lambda^X_0 \sim Gamma(\alpha^X_0,1)\) and
   discussion
   (here){[}https://discourse.mc-stan.org/t/ragged-array-of-simplexes/1382{]}.}
 
-TO illustrate, in the \(X \rightarrow Y\) model we have two parameter
+To illustrate, in the \(X \rightarrow Y\) model we have two parameter
 sets (\texttt{param\_sets}). The first is
 \(\lambda^X \in \{\lambda^X_0, \lambda^X_1\}\) whose elements give the
 probability that \(X\) is 0 or 1. These two probabilities sum to one.
@@ -2053,15 +2050,18 @@ which nodes in each set ``contribute'' to the data type, and the
 probability of the data type is found by summing within sets and taking
 the product over sets.
 
+The following code:
+
 \begin{verbatim}
-R> make_model("X -> Y") |> get_parmap() 
+R> make_model("X -> Y") |> 
++  get_parmap() 
 \end{verbatim}
 
-\begin{figure}
+\hypertarget{tbl-parmap}{}
+\begin{table}
+\caption{\label{tbl-parmap}Mapping from parameters to data types. }\tabularnewline
 
-{\centering 
-
-\hypertarget{fig-parmap-1}{}
+\centering
 \begin{tabular}{lcccc}
 \toprule
   & X0Y0 & X1Y0 & X0Y1 & X1Y1\\
@@ -2074,15 +2074,11 @@ Y.01 & 1 & 0 & 0 & 1\\
 Y.11 & 0 & 0 & 1 & 1\\
 \bottomrule
 \end{tabular}
+\end{table}
 
-}
-
-\caption{\label{fig-parmap}\textbf{?(caption)}}
-
-\end{figure}
-
-For example in table Figure~\ref{fig-parmap} the probability of data
-type \texttt{X0Y0}, \(w_{00}\) is
+yields Table~\ref{tbl-parmap}, which can be used to calculate event
+probabilities. For instance the probability of data type \texttt{X0Y0},
+\(w_{00}\) is
 \(\lambda^X_0\times \lambda^Y_{00} + \lambda^X_0\times \lambda^Y_{01}\).
 This is found by combining a parameter vector with the first column of
 \texttt{parmap}, taking the product of the probability of \texttt{X.0}
@@ -2926,7 +2922,7 @@ Network (CRAN) at {[}https://CRAN.R-project.org/{]}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, left=2mm, rightrule=.15mm, toprule=.15mm, arc=.35mm, breakable, colback=white, bottomrule=.15mm, opacityback=0]
+\begin{tcolorbox}[enhanced jigsaw, left=2mm, opacityback=0, leftrule=.75mm, colback=white, rightrule=.15mm, arc=.35mm, bottomrule=.15mm, toprule=.15mm, breakable]
 
 The approach to generating a generic \texttt{stan} function that can
 take data from arbitrary models was developed in key contributions by
@@ -2956,7 +2952,7 @@ improved every part of it.
 \section*{More technical details}\label{sec-techdetails}}
 \addcontentsline{toc}{section}{More technical details}
 
-\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, left=2mm, rightrule=.15mm, toprule=.15mm, arc=.35mm, breakable, colback=white, bottomrule=.15mm, opacityback=0]
+\begin{tcolorbox}[enhanced jigsaw, left=2mm, opacityback=0, leftrule=.75mm, colback=white, rightrule=.15mm, arc=.35mm, bottomrule=.15mm, toprule=.15mm, breakable]
 
 Appendices can be included after the bibliography (with a page break).
 Each section within the appendix should have a proper section title
@@ -2988,7 +2984,7 @@ which includes the following topics:
 \section*{Using BibTeX}\label{sec-bibtex}}
 \addcontentsline{toc}{section}{Using BibTeX}
 
-\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, left=2mm, rightrule=.15mm, toprule=.15mm, arc=.35mm, breakable, colback=white, bottomrule=.15mm, opacityback=0]
+\begin{tcolorbox}[enhanced jigsaw, left=2mm, opacityback=0, leftrule=.75mm, colback=white, rightrule=.15mm, arc=.35mm, bottomrule=.15mm, toprule=.15mm, breakable]
 
 References need to be provided in a \textsc{Bib}{\TeX} file
 (\texttt{.bib}). All references should be made with \texttt{@cite}

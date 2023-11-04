@@ -76,7 +76,7 @@ set.seed(20231018)
 
 `CausalQueries` is an [R]{.proglang} package that lets users make, update, and query causal models. Users  provide a statement that reports a set of binary variables and the relations of causal ancestry between them: which variables are direct causes of other variables, given the other variables in the model. Once provided to `make_model()`, `CausalQueries` generates a  parameter vector that fully describes a probability distribution over all possible types of causal relations between variables ("causal types"), given the causal structure. Given a prior over parameters and data over some or all nodes, `update_model()` deploys a `stan` model in order to generate a posterior distribution over causal models. The function `query_model()` can then be used to ask any causal query of the model, using either the prior distribution, the posterior distribution, or a user-specified candidate vector of parameters.
 
-In the next section we provide a short motivating example. We then describe how the package relates to existing available software. Section @sec-theory gives an overview of the statistical model behind the package. Sections @sec-make, @sec-update, and @sec-query then describe the main functionality for the major operations using the package. We provide further computation details in the final section.
+In the next section we provide a short motivating example. We then describe how the package relates to existing available software. @sec-theory gives an overview of the statistical model behind the package.  @sec-make, @sec-update, and @sec-query then describe the main functionality for the major operations using the package. We provide further computation details in the final section.
 
 
 ## Motivating example
@@ -154,7 +154,7 @@ results |>
 
 The output is a data frame with estimates, posterior standard deviations, and credibility intervals. For example the data frame produced by the code above is shown in @tbl-lipids.
 
-As we describe below the same basic procedure of making, updating, and querying models, can be used (up to computational constraints) for arbitrary causal models, for different types of data structures, and for all causal queries that can be posed of the causal model.
+As we describe below, the same basic procedure of making, updating, and querying models, can be used (up to computational constraints) for arbitrary causal models, for different types of data structures, and for all causal queries that can be posed of the causal model.
 
 ## Connections to existing packages
 
@@ -346,7 +346,7 @@ Formally a statement like this is interpreted as:
 
 where function $f$ maps from the set of possible values of the parents of $i$ to values of node $i$ given $\theta^i$ as described above.
 
-In addition, as we did in the @chickering1996clinician example, it is  possible to use two headed arrows (`<->`) to indicate "unobserved confounding", that is, the presence of an unobserved variable that might influence observed variables. In this case condition 3 above is relaxed and the exogenous nodes associated with confounded variables have a joint distribution. We describe how this is done in greater detail in section @sec-confounding.
+In addition, as we did in the @chickering1996clinician example, it is  possible to use two headed arrows (`<->`) to indicate "unobserved confounding", that is, the presence of an unobserved variable that might influence observed variables. In this case condition 3 above is relaxed and the exogenous nodes associated with confounded variables have a joint distribution. We describe how this is done in greater detail in @sec-confounding.
 
 ### Graphing
 
@@ -613,7 +613,7 @@ Sometimes for theoretical or practical reasons it is useful to constrain the set
 
 To illustrate, in analyses of data with imperfect compliance, like we saw in our motivating  `lipids` model example, it is common to impose a monotonicity  assumption: that $X$ does not respond negatively to $Z$. This is one of the conditions needed to interpret instrumental variables estimates as (consistent) estimates of the complier average treatment effect. 
 
-In `CausalQueries` we impose this assumption thus
+In `CausalQueries` we impose this assumption thus:
 
 ```{r}
 #| echo: true
@@ -625,7 +625,7 @@ model_restricted <-
 
 ```
 
-in words: we restrict by removing types for which $X$ is decreasing in $Z$.
+in words: we restrict by removing types for which $X$ is decreasing in $Z$. If we wanted to retain only this nodal type rather than remove it could do so by stipulating  `keep = FALSE`.
 
 
 ```{r}
@@ -671,18 +671,18 @@ get_parameter_matrix(model)
 
 ```
 
-Here and in general, setting restrictions typically involves using causal syntax; see Section @sec-syntax for a guide the syntax used by `CausalQueries`.
+Here and in general, setting restrictions typically involves using causal syntax; see @sec-syntax for a guide the syntax used by `CausalQueries`.
 
 <!-- GS: Do we need to add this section? -->
 
 Note:
 
 -   Restrictions have to operate on nodal types: restrictions on *levels* of endogenous nodes are not allowed. This, for example, will fail: `make_model("X -> Y") |> set_restrictions(statement =  "(Y == 1)")`. The reason is that it requests a correlated restriction on nodal types for `X` and `Y` which involves undeclared confounding.
--   Restrictions implicitly assume fixed values for *all* parents of a node. For instance: `make_model("A -> B <- C") |> set_restrictions("(B[C=1]==1)")` is interpreted as shorthand for the restriction `"B[C = 1, A = 0]==1 | B[C = 1, A = 1]==1"`.
--   To place restrictions on multiple nodes at the same time, provide these as a vector of restrictions. This is not permitted: `set_restrictions("Y[X=1]==1 & X==1")`, since it requests correlated restrictions. This however is allowed: `set_restrictions(c("Y[X=1]==1", "X==1"))`.\
--   Use the `keep` argument to indicate whether nodal types should be dropped (default) or retained.
--  Restrictions based on causal statements can use helpers, `decreasing()`, `increasing()`, 'complements()' and similar. For instance  `set_restrictions(decreasing("X", "Y"))`
--   Restrictions can be set using nodal type labels.
+-   Restrictions implicitly assume fixed values for *all* parents of a node. For instance: `make_model("A -> B <- C") |> set_restrictions("(B[C=1]==1)")` is interpreted as shorthand for the restriction `"B[C = 1, A = 0]==1 | B[C = 1, A = 1]==1"`. The `join_by` argument can be used to indicate "and" rather than "or" relations on omitted parents. 
+-   To place restrictions on multiple nodes at the same time, provide these as a vector of restrictions. This is not permitted: `set_restrictions("Y[X=1]==1 & X==1")`, since it requests correlated restrictions. This however is allowed: `set_restrictions(c("Y[X=1]==1", "X==1"))`.
+-  Use the `keep` argument to indicate whether nodal types should be dropped (default) or retained.
+-  Restrictions based on causal statements can use helpers, `decreasing()`, `increasing()`, `complements()` and similar. For instance  `set_restrictions(decreasing("X", "Y"))`
+-  Restrictions can be set using nodal type labels.
 
 ```{r}
 #| label: set-restrictions1
@@ -711,18 +711,22 @@ make_model("X -> Y") |>
 ```{r}
 #| echo: true
 #| eval: false
-make_model("X -> Y; X <-> Y") |>
-  set_restrictions(labels = list(X = '0', Y = '00'), 
-                   given = c(NA,'X.1')) |>
+model <- make_model("X -> Y -> Z; X <-> Z") %>%
+ set_restrictions(labels = list(X = '0', Y = c('00', '11'), Z = '00'), 
+                  given = c(NA, NA, 'X.1')) |>
   get_parameter_matrix() 
 ```
 
 ```{r}
 #| label: tbl-confound-params-mat
+#| tbl-cap: "Restrictions on models with confounds."
 #| echo: false
 #| eval: true
-model <- make_model("X -> Y; X <-> Y") %>%
- set_restrictions(labels = list(X = '0', Y = '00'), given = c(NA,'X.0'))
+model <- make_model("X -> Y -> Z; X <-> Z") %>%
+ set_restrictions(labels = list(X = '0', Y = c('00', '11'), Z = '00'), 
+                  given = c(NA, NA, 'X.1'))
+
+
 get_parameter_matrix(model) |>   knitr::kable(
     digits = 2,
     booktabs = TRUE,
@@ -1196,24 +1200,30 @@ We are interested in "sets" of parameters. In the case without confounding these
 
 We express priors over these parameter sets using multiple Dirichlet distributions. In practice because we are dealing with multiple simplices of varying length, it is easier to express priors over gamma distributions with a unit scale parameter and shape parameter corresponding to the Dirichlet priors, $\alpha$. We make use of the fact that $\lambda^X_0 \sim Gamma(\alpha^X_0,1)$ and $\lambda^X_1 \sim Gamma(\alpha^X_1,1)$ then $\frac{1}{\lambda^X_0 +\lambda^X_1}(\lambda^X_0, \lambda^X_1) \sim Dirichlet(\alpha^X_0, \alpha^X_1)$^[For a discussion of implementation of this approach in `stan` see discussion (here)[https://discourse.mc-stan.org/t/ragged-array-of-simplexes/1382].]
 
-TO illustrate, in the $X \rightarrow Y$ model we have two parameter sets (`param_sets`). The first is $\lambda^X \in \{\lambda^X_0, \lambda^X_1\}$ whose elements give the probability that $X$ is 0 or 1. These two probabilities sum to one. The second parameter set is $\lambda^Y \in \{\lambda^Y_{00}, \lambda^Y_{10}, \lambda^Y_{01} \lambda^Y_{11}\}$. These are also probabilities and their values sum to one. Note in all that we have 6 parameters but just 1 + 3 = 4 degrees of freedom. We have a 2 dimensional Dirichlet distribution over the $X$ nodal types (equivalently, a Beta distribution) and a 4 dimensional Dirichlet over the $Y$ nodal types. 
+To illustrate, in the $X \rightarrow Y$ model we have two parameter sets (`param_sets`). The first is $\lambda^X \in \{\lambda^X_0, \lambda^X_1\}$ whose elements give the probability that $X$ is 0 or 1. These two probabilities sum to one. The second parameter set is $\lambda^Y \in \{\lambda^Y_{00}, \lambda^Y_{10}, \lambda^Y_{01} \lambda^Y_{11}\}$. These are also probabilities and their values sum to one. Note in all that we have 6 parameters but just 1 + 3 = 4 degrees of freedom. We have a 2 dimensional Dirichlet distribution over the $X$ nodal types (equivalently, a Beta distribution) and a 4 dimensional Dirichlet over the $Y$ nodal types. 
 
 #### Event probabilities
 
 For any candidate parameter vector $\lambda$ we calculate the probability of *data* types. This is done using a matrix that maps from parameters into data types, `parmap`. In cases without confounding there is a column for each data type; the matrix indicates which nodes in each set "contribute" to the data type, and the probability of the data type is found by summing within sets and taking the product over sets. 
 
+The following code:
 
 ```{r}
 #| echo: true
 #| eval: false
-make_model("X -> Y") |> get_parmap() 
+make_model("X -> Y") |> 
+  get_parmap() 
 ```
 
 ```{r}
-#| label: fig-parmap
+#| label: tbl-parmap
+#| tbl-cap: "Mapping from parameters to data types."
 #| echo: false
 #| eval: true
-make_model("X -> Y") |> get_parmap() |>   knitr::kable(
+
+make_model("X -> Y") |> 
+  get_parmap() |>   
+  knitr::kable(
     digits = 2,
     booktabs = TRUE,
     align = "c",
@@ -1221,7 +1231,7 @@ make_model("X -> Y") |> get_parmap() |>   knitr::kable(
     linesep = "") 
 ```
 
-For example  in table @fig-parmap the probability of data type `X0Y0`, $w_{00}$ is $\lambda^X_0\times \lambda^Y_{00} + \lambda^X_0\times \lambda^Y_{01}$. This is found by combining a parameter vector with the first column of `parmap`, taking the product of the probability of `X.0` and the *sum* of the probabilities for `Y.00` and `Y.01`.   
+yields  @tbl-parmap, which can be used to calculate event probabilities. For instance the probability of data type `X0Y0`, $w_{00}$ is $\lambda^X_0\times \lambda^Y_{00} + \lambda^X_0\times \lambda^Y_{01}$. This is found by combining a parameter vector with the first column of `parmap`, taking the product of the probability of `X.0` and the *sum* of the probabilities for `Y.00` and `Y.01`.   
 
 
 In cases with confounding the approach is similar except that the `parmap` matrix can contain multiple columns for each data type to capture non-independence between nodes.  
