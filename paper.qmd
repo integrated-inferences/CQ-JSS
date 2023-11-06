@@ -81,9 +81,9 @@ In the next section we provide a short motivating example. We then describe how 
 
 ## Motivating example
 
-Before providing details on package functionality we illustrate these three core functions by showing how to use `CuasalQueries` to replicate the analysis in @chickering1996clinician (see also @ii2023). @chickering1996clinician seek to draw inference on causal effects in the presence of imperfect compliance. We have access to an instrument $Z$ (a randomly assigned prescription for cholesterol medication), which is a cause of $X$ (treatment uptake) but otherwise unrelated to $Y$ (cholesterol). We imagine we are interested in three specific queries. The first is the average causal effect of $X$ on $Y$. The second is the average effect for units for which $X=0$ and $Y=0$. The last is the average treatment effect *for* "compliers": units for which $X$ responds positively to $Z$. Thus two of these queries are conditional queries, with one conditional on a counterfactual quantity.
+Before providing details on package functionality we illustrate these three core functions by showing how to use `CuasalQueries` to replicate the analysis in @chickering1996clinician (see also @ii2023). @chickering1996clinician seek to draw inference on causal effects in the presence of imperfect compliance. We have access to an instrument $Z$ (a randomly assigned prescription for cholesterol medication), which is a cause of $X$ (treatment uptake) but otherwise unrelated to $Y$ (cholesterol). We imagine we are interested in three specific queries. The first is the average causal effect of $X$ on $Y$. The second is the average effect for units for which $X=0$ and $Y=0$. The last is the average treatment effect for "compliers": units for which $X$ responds positively to $Z$. Thus two of these queries are conditional queries, with one conditional on a counterfactual quantity.
 
-Our data on $Z$, $X$, and $Y$ is complete for all units and looks, in "compact form", as follows:
+Our data on $Z$, $X$, and $Y$ is complete for all units and looks, in "compact form," as follows:
 
 ```{r}
 #| echo: true
@@ -94,9 +94,9 @@ lipids_data
 
 ```
 
-Note that in compact form we simply record the number of units ("count") that display each possible pattern of outcomes on variables ("event").^[The "strategy" column records the set of variables for which data has been recorded.]
+Note that in compact form we simply record the number of units ("count") that display each possible pattern of outcomes on the three variables ("event").^[The "strategy" column records the set of variables for which data has been recorded.]
 
-With `CausalQueries`, you can create the model, input data to update it, and then query the model for results.
+With `CausalQueries`, you can create the model, input data to update it, and then query the model for results thus:
 
 ```{r}
 #| echo: true
@@ -227,7 +227,8 @@ The core conceptual framework is described in Pearl's *Causality* [@pearl2009cau
   
 \end{definition}
 ```
-In the usual case `CausalQueries`  takes  endogenous nodes to be binary.[^1] When we specify a causal structure we specify which endogenous nodes are (possibly) direct causes of a node, $Y_j$, given other nodes in the model. These nodes are called the parents of $Y_j$, $PA_j$ (we use upper case $PA_j$ to indicate the collection of nodes and lower case $pa_j$ to indicate a particular set of values that these nodes might take on). With discrete valued nodes, it is possible to identify all possible ways that a node might respond to its parents.  We refer to the ways that a node responds as "nodal type." The set of nodal types  corresponds to principal strata familiar, for instance, in the study of instrumental variables [@frangakis2002principal].    
+
+By default,`CausalQueries`  takes  endogenous nodes to be binary.[^1] When we specify a causal structure we specify which endogenous nodes are (possibly) direct causes of a node, $Y_j$, given other nodes in the model. These nodes are called the parents of $Y_j$, $PA_j$ (we use upper case $PA_j$ to indicate the collection of nodes and lower case $pa_j$ to indicate a particular set of values that these nodes might take on). With discrete valued nodes, it is possible to identify all possible ways that a node might respond to its parents.  We refer to the ways that a node responds as "nodal type." The set of nodal types  corresponds to principal strata familiar, for instance, in the study of instrumental variables [@frangakis2002principal].    
 
 If node $Y_i$ can take on $k_i$ possible values then the set of possible values that can be taken on by parents of $j$ is $m :=\prod_{i\in PA_j}k_i$. Then there are $k_j^{m}$ different ways that a node might respond to its parents.  In the case of binary nodes this becomes $2^{\left(2^{|PA_j|}\right)}$. Thus for an endogenous node with no parents there are 2 nodal types, for a binary node with one binary parent there are four types, for a binary node with 2 parents there are 16, and so on.
 
@@ -247,7 +248,7 @@ $$
 \Pr(\theta^Z = \theta^Z_1)\Pr(\theta^X = \theta^X_{10})\Pr(\theta^Y = \theta^Y_{11}|\theta^X = \theta^X_{10})
 $$ {#eq-join}
 
-And so for this model $\lambda$ would include  parameters that represent $\Pr(\theta^Z)$ and $\Pr(\theta^X)$ but also the conditional probability $\Pr(\theta^Y|\theta^X)$:
+And so, for this model, $\lambda$ would include  parameters that represent $\Pr(\theta^Z)$ and $\Pr(\theta^X)$ but also the conditional probability $\Pr(\theta^Y|\theta^X)$:
 
 $$
 \Pr(\theta^Z = \theta^Z_1, \theta^X = \theta^X_{10}, \theta^Y = \theta^Y_{11}) = 
@@ -315,7 +316,7 @@ In the next sections we review key functionality for making, updating and queryi
 
 ## Making models {#sec-make}
 
-A model is defined in one step in `CausalQueries` using a `dagitty` syntax in which the structure of the model is provided as a statement.
+A model is defined in one step in `CausalQueries` using a `dagitty` syntax [@dagitty] in which the structure of the model is provided as a statement.
 
 For instance:
 
@@ -346,7 +347,7 @@ Formally a statement like this is interpreted as:
 
 where function $f$ maps from the set of possible values of the parents of $i$ to values of node $i$ given $\theta^i$ as described above.
 
-In addition, as we did in the @chickering1996clinician example, it is  possible to use two headed arrows (`<->`) to indicate "unobserved confounding", that is, the presence of an unobserved variable that might influence observed variables. In this case condition 3 above is relaxed and the exogenous nodes associated with confounded variables have a joint distribution. We describe how this is done in greater detail in @sec-confounding.
+In addition, as we did in the @chickering1996clinician example, it is  possible to use two headed arrows (`<->`) to indicate "unobserved confounding", that is, the presence of an unobserved variable that might influence two or more observed variables. In this case condition 3 above is relaxed and the exogenous nodes associated with confounded variables have a joint distribution. We describe how this is done in greater detail in @sec-confounding.
 
 ### Graphing
 
@@ -432,7 +433,7 @@ The model includes additional elements, `nodal_types,` `parameters_df,` and `cau
 | `causal_types`        | A data frame listing causal types and the nodal types that produce them. (See Causal Types Section)                                                                 |
 +-----------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
-: Core Elements of a Causal Model. {tbl-colwidths="\[30,70\]"}
+: Core Elements of a Causal Model. {tbl-colwidths="\[30,70\]"} {#tbl-additional}
 
 After updating a model, two additional components are attached to it:
 
@@ -465,7 +466,9 @@ The table below summarizes the objects attached to the model after updating.
 
 When a model is created, `CausalQueries` attaches a "parameters data frame" which keeps track of model parameters, which belong together in a family, and how they relate to causal types. This becomes especially important for more complex models with confounding that might involve more complicated mappings between parameters and nodal types. In the case with no confounding the nodal types *are* the parameters; in cases with confounding there are generally  more parameters than nodal types.
 
-For instance:
+We already saw a segment of a parameters data frame for a model with confounding in  @tbl-lipidspar. 
+
+@tbl-params-df shows the full parameters data frame for a simple model, as generated by the following code:
 
 ```{r}
 #| label: params-df
@@ -478,7 +481,7 @@ make_model("X -> Y")$parameters_df
 ```{r}
 #| label: tbl-params-df
 #| echo: false
-#| eva: false
+#| eval: true
 #| tbl-cap: "Example of Parameters Data Frame"
 
 make_model("X -> Y")$parameters_df |>
@@ -491,7 +494,7 @@ make_model("X -> Y")$parameters_df |>
   kableExtra::kable_classic_2(latex_options = c("scale_down"))
 ```
 
-prints the parameters data frame (see @tbl-lipidspar for an example). Each row in the data frame corresponds to a single parameter.
+here, as in   @tbl-lipidspar, each row in the data frame corresponds to a single parameter.
 
 The columns of the parameters data frame are understood as follows:
 
@@ -503,7 +506,6 @@ The columns of the parameters data frame are understood as follows:
 -   `gen` indicates the place in the partial causal ordering (generation) of the node associated with the parameter
 -   `priors` gives (possibly default) Dirichlet priors arguments for parameters in a set. Values of 1 (.5) for all parameters in a set implies uniform (Jeffrey's) priors over this set.
 
-Below we will see examples where the parameters data frame helps keep track of parameters that are created when confounding is added to a model.
 
 #### Nodal types {#sec-nodal-types}
 
@@ -515,10 +517,10 @@ When a model is created the full set of nodal types is identified. These are sto
 
 For instance, consider the model with two parents $X \rightarrow Y \leftarrow M.$ In such a case, the nodal types of $Y$ will have subscripts with four digits, with each digit representing one of the possible combinations of values that $Y$ can take, given the values of its parents $X$ and $M.$ These combinations include the value of $Y$ when:
 
--   X = 0 and M = 0,
--   X = 0 and M = 1,
--   X = 1 and M = 0,
--   X = 1 and M = 1.
+-   $X = 0$ and $M = 0$,
+-   $X = 0$ and $M = 1$,
+-   $X = 1$ and $M = 0$,
+-   $X = 1$ and $M = 1$.
 
 As the number of parents increases, keeping track of what each digit represents becomes more difficult. For instance, if $Y$ had three parents, its nodal types would have subscripts of eight digits, each associated with the value that $Y$ would take for each combination of the three parents. The `interpret_type` function provides a clear map to identify what each digit in the subscript represents. See the examples below for models with two and three parents.
 
@@ -573,7 +575,7 @@ lipids_model$causal_types |> head()
 
 In the lipids model there are $2\times 4\times 4 = 32$ causal types. A model with $n_j$ nodal types at node $j$ has $\prod_jn_j$ causal types. Thus the set of causal types can be large. 
 
-Knowledge of a causal type tells us what values a unit would take, on all nodes, whether or not there are  interventions. For example for a model $X \rightarrow M \rightarrow Y$ a type $\theta = (\theta^X_0, \theta^M_{01}, \theta^Y_{10})$ would imply data $(X=0, M=0, Y=1)$ absent any intervention. (The converse of this, of course, is the key to updating: observation of data $(X=0, M=0, Y=1)$ result in more weight placed on $\theta^X_0$, $\theta^M_{01}$, and $\theta^Y_{10})$.) The general approach used by `CausalQueries` for calculating outcomes from causal types is given in section #sec-propagation.
+Knowledge of a causal type tells us what values a unit would take, on all nodes, whether or not there are  interventions. For example for a model $X \rightarrow M \rightarrow Y$ a type $\theta = (\theta^X_0, \theta^M_{01}, \theta^Y_{10})$ would imply data $(X=0, M=0, Y=1)$ absent any intervention. (The converse of this, of course, is the key to updating: observation of data $(X=0, M=0, Y=1)$ result in more weight placed on $\theta^X_0$, $\theta^M_{01}$, and $\theta^Y_{10})$.) The general approach used by `CausalQueries` for calculating outcomes from causal types is given in @sec-propagation.
 
 
 #### Parameter matrix
@@ -605,9 +607,9 @@ model <- model |> set_parameter_matrix()
 
 ### Tailoring models
 
-#### Setting restrictions {#restrictions}
+When a `dagitty` statement is provided to `make_data` a model is formed with a set of default assumptions: in particular there are no restrictions placed on nodal types and flat priors are assumed over all parameters. These are features that can be adjusted after a model is formed. 
 
-When a model is defined, the complete set of possible causal relations is worked out. This set can be very large.
+#### Setting restrictions {#restrictions}
 
 Sometimes for theoretical or practical reasons it is useful to constrain the set of types. In `CausalQueries` this is done at the level of nodal types, with restrictions on causal types following from restrictions on nodal types.
 
@@ -625,7 +627,7 @@ model_restricted <-
 
 ```
 
-in words: we restrict by removing types for which $X$ is decreasing in $Z$. If we wanted to retain only this nodal type rather than remove it could do so by stipulating  `keep = FALSE`.
+in words: we restrict by removing types for which $X$ is decreasing in $Z$. If we wanted to retain only this nodal type, rather than remove it, we could do so by stipulating  `keep = FALSE`.
 
 
 ```{r}
@@ -671,7 +673,7 @@ get_parameter_matrix(model)
 
 ```
 
-Here and in general, setting restrictions typically involves using causal syntax; see @sec-syntax for a guide the syntax used by `CausalQueries`.
+Setting restrictions sometimes involves using causal syntax; see @sec-syntax for a guide the syntax used by `CausalQueries`.
 
 <!-- GS: Do we need to add this section? -->
 
@@ -737,9 +739,9 @@ get_parameter_matrix(model) |>   knitr::kable(
 
 #### Allowing confounding {#sec-confounding}
 
-(Unobserved) confounding between two nodes arises when the nodal types for the nodes are not independently distributed.
+Unobserved confounding between two (or more) nodes arises when the nodal types for the nodes are not independent.
 
-In the $X \rightarrow Y$ graph, for instance, there are 2 nodal types for $X$ and 4 for $Y$. There are thus 8 joint nodal types (or causal types):
+In the $X \rightarrow Y$ graph, for instance, there are 2 nodal types for $X$ and 4 for $Y$. There are thus 8 joint nodal types (or causal types), as shown in @tbl-joint.
 
 +------------------------------+----------------------------------+----------------------------------+----------------------+
 | $\theta^Y$ **\\** $\theta^X$ | **0**                            | **1**                            | $\sum$               |
@@ -755,9 +757,9 @@ In the $X \rightarrow Y$ graph, for instance, there are 2 nodal types for $X$ an
 | $\sum$                       | $\Pr(\theta^X_0)$                | $\Pr(\theta^X_1)$                | 1                    |
 +------------------------------+----------------------------------+----------------------------------+----------------------+
 
-: Nodal Types in $X \rightarrow Y$ Model. {tbl-colwidths="\[25,25,25,25\]"}
+: Nodal Types in $X \rightarrow Y$ Model. {tbl-colwidths="\[25,25,25,25\]"} {#tbl-joint}
 
-This table has eight interior elements and so an unconstrained joint distribution would have $7$ degrees of freedom. A no confounding assumption means that $\Pr(\theta^X | \theta^Y) = \Pr(\theta^X)$, or $\Pr(\theta^X, \theta^Y) = \Pr(\theta^X)\Pr(\theta^Y)$. In this case we just put a distribution on the marginals and there would be $3$ degrees of freedom for $Y$ and $1$ for $X$, totaling $4$ rather than $7$.
+@tbl-joint has eight interior elements and so an unconstrained joint distribution would have $7$ degrees of freedom. A no confounding assumption means that $\Pr(\theta^X | \theta^Y) = \Pr(\theta^X)$, or $\Pr(\theta^X, \theta^Y) = \Pr(\theta^X)\Pr(\theta^Y)$. In this case we just put a distribution on the marginals and there would be $3$ degrees of freedom for $Y$ and $1$ for $X$, totaling $4$ rather than $7$.
 
 ```{r}
 #| label: confound-params-df
@@ -787,7 +789,7 @@ confounded$parameters_df |>
   kableExtra::kable_classic_2(latex_options = c("scale_down"))
 ```
 
-The parameters dataframe for this model would have two parameter families for parameters associated with the node $Y$. Each family captures the conditional distribution of $Y$'s nodal types, given $X$. For instance the parameter `Y01_X.1` can be interpreted as $\Pr(\theta^Y = \theta^Y_{01} | X=1)$. See again @tbl-lipidspar for an example of a parameters matrix with confounding. 
+The parameters data frame for this model would have two parameter families for parameters associated with the node $Y$. Each family captures the conditional distribution of $Y$'s nodal types, given $X$. For instance the parameter `Y01_X.1` can be interpreted as $\Pr(\theta^Y = \theta^Y_{01} | X=1)$. See again @tbl-lipidspar for an example of a parameters matrix with confounding. 
 
 To see exactly how the parameters map to causal types we can view the parameter matrix thus:
 
@@ -826,6 +828,7 @@ The output is shown in @tbl-confound-param-matrix. Importantly, the $P$ matrix w
 #| fig-pos: 't'
 #| fig-align: center
 #| out-width: "60%"
+#| eval: false
 
 make_model("A <- X -> B; A <-> X; B <-> X") |> 
   plot()
@@ -872,7 +875,7 @@ Priors on model parameters can be added to the parameters data frame. The priors
 
 In `CausalQueries`, priors are generally specified over the distribution of nodal types (or over the conditional distribution of nodal types, when there is confounding). Thus for instance in an $X \rightarrow Y$ model we have one Dirichlet distribution over the two types for $\theta^X$ and one Dirichlet distribution over the four types for $\theta^Y$.
 
-By default priors are set to unit vector, corresponding to uniform priors. To retrieve the model's priors we can run the following code:
+By default, priors are set to unity, corresponding to uniform priors. To retrieve the model's priors we can run the following code:
 
 ```{r}
 #| label: get-priors
@@ -905,6 +908,7 @@ You can also add custom priors. Custom priors are most simply specified by being
 make_model("X -> Y") |> 
   set_priors(1:6) |> 
   get_priors()
+
 ```
 
 The priors here should be interpreted as indicating:
@@ -1656,7 +1660,9 @@ read_rds("saved/caselevel.rds") |>
 
 #### Batch queries
 
-The `query_model()` function takes list of models, causal queries, and conditions (`given`), calculates estimands given prior or posterior distributions  and reports summaries of these distributions. The result is a data frame which can be displayed as a table or used for graphing.
+The function `query_model()` is perhaps the most important function for querying models. The function takes as input a list of models, causal queries, and conditions (`given`),  calculates population or case level estimands given prior or posterior distributions  and reports summaries of these distributions. The result is a data frame that  can be displayed as a table or used for graphing.
+
+Table @tbl-batch-query shows output from a single call to `query_model`.
 
 ```{r}
 #| label: batch-query
@@ -1790,32 +1796,6 @@ The approach to generating a generic `stan` function that can take data from arb
 
 ## More technical details {#sec-techdetails .unnumbered}
 
-::: callout
-Appendices can be included after the bibliography (with a page break). Each section within the appendix should have a proper section title (rather than just *Appendix*).
-
-For more technical style details, please check out JSS's style FAQ at \[https://www.jstatsoft.org/pages/view/style#frequently-asked-questions\] which includes the following topics:
-
--   Title vs. sentence case.
--   Graphics formatting.
--   Naming conventions.
--   Turning JSS manuscripts into [R]{.proglang} package vignettes.
--   Trouble shooting.
--   Many other potentially helpful details...
-:::
-
-## Using BibTeX {#sec-bibtex .unnumbered}
-
-::: callout
-References need to be provided in a {{< bibtex >}} file (`.bib`). All references should be made with `@cite` syntax. This commands yield different formats of author-year citations and allow to include additional details (e.g.,pages, chapters, \dots) in brackets. In case you are not familiar with these commands see the JSS style FAQ for details.
-
-Cleaning up {{< bibtex >}} files is a somewhat tedious task -- especially when acquiring the entries automatically from mixed online sources. However, it is important that informations are complete and presented in a consistent style to avoid confusions. JSS requires the following format.
-
--   item JSS-specific markup (`\proglang`, `\pkg`, `\code`) should be used in the references.
--   item Titles should be in title case.
--   item Journal titles should not be abbreviated and in title case.
--   item DOIs should be included where available.
--   item Software should be properly cited as well. For [R]{.proglang} packages `citation("pkgname")` typically provides a good starting point.
-:::
 
 ## Appendix: stan code
 
