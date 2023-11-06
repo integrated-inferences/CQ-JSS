@@ -569,7 +569,7 @@ notation used in \citet{ii2023}):
   
 \end{definition}
 
-By default,\texttt{CausalQueries} takes endogenous nodes to be
+By default, \texttt{CausalQueries} takes endogenous nodes to be
 binary.\footnote{\texttt{CausalQueries} can be used also to analyse non
   binary data though with a cost of greatly increased complexity. See
   section 9.4.1 of \citet{ii2023} for an approach that codes non binary
@@ -691,7 +691,7 @@ there are four sets of these parameters.
 
 \hypertarget{tbl-lipidspar}{}
 \begin{table}
-\caption{\label{tbl-lipidspar}Nodal types and parameters for Lipids model }\tabularnewline
+\caption{\label{tbl-lipidspar}Nodal types and parameters for Lipids model. }\tabularnewline
 
 \centering
 \begin{tabular}{cccccc}
@@ -892,7 +892,7 @@ modifications available via the \texttt{ggplot2} package.
 \subsection{Model characterization}\label{model-characterization}}
 
 When a model is defined, a set of objects is generated. These are the
-key quantities that are used for all inference. The table below
+key quantities that are used for all inference. Table~\ref{tbl-core}
 summarizes the core components of a model, providing a brief explanation
 for each one.
 
@@ -909,10 +909,12 @@ The model includes additional elements, \texttt{nodal\_types,}
 \texttt{parameters\_df,} and \texttt{causal\_types,} which we explain in
 detail later.
 
+\hypertarget{tbl-core}{}
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.1263}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.8737}}@{}}
-\caption{Core Elements of a Causal Model.}\tabularnewline
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.3000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.7000}}@{}}
+\caption{\label{tbl-core}Core Elements of a Causal
+Model.}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 Element
@@ -961,13 +963,14 @@ After updating a model, two additional components are attached to it:
   distributions over nodal types and event probabilities (\texttt{w}).
 \end{itemize}
 
-The table below summarizes the objects attached to the model after
-updating.
+Table~\ref{tbl-additional} summarizes the objects attached to the model
+after updating.
 
+\hypertarget{tbl-additional}{}
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.3000}}
   >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.7000}}@{}}
-\caption{Additional Elements.}\tabularnewline
+\caption{\label{tbl-additional}Additional Elements.}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 Element
@@ -1023,8 +1026,8 @@ R> make_model("X -> Y")$parameters_df
 \end{verbatim}
 
 \hypertarget{tbl-params-df}{}
-\begin{table}
-\caption{\label{tbl-params-df}Example of Parameters Data Frame }\tabularnewline
+\begin{table}[H]
+\caption{\label{tbl-params-df}Example of Parameters Data Frame. }\tabularnewline
 
 \centering
 \resizebox{\linewidth}{!}{
@@ -1392,14 +1395,16 @@ types for the nodes are not independent.
 
 In the \(X \rightarrow Y\) graph, for instance, there are 2 nodal types
 for \(X\) and 4 for \(Y\). There are thus 8 joint nodal types (or causal
-types), as shown in \textbf{?@tbl-joint}.
+types), as shown in Table~\ref{tbl-joint}.
 
+\hypertarget{tbl-joint}{}
 \begin{longtable}[]{@{}
-  >{\centering\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2460}}
-  >{\centering\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2778}}
-  >{\centering\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2778}}
-  >{\centering\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.1825}}@{}}
-\caption{Nodal Types in \(X \rightarrow Y\) Model.}\tabularnewline
+  >{\centering\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\centering\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\centering\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\centering\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}@{}}
+\caption{\label{tbl-joint}Nodal Types in \(X \rightarrow Y\)
+Model.}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\centering
 \(\theta^Y\) \textbf{\textbackslash{}} \(\theta^X\)
@@ -1437,9 +1442,10 @@ types), as shown in \textbf{?@tbl-joint}.
 \(\sum\) & \(\Pr(\theta^X_0)\) & \(\Pr(\theta^X_1)\) & 1 \\
 \end{longtable}
 
-\textbf{?@tbl-joint} has eight interior elements and so an unconstrained
-joint distribution would have \(7\) degrees of freedom. A no confounding
-assumption means that \(\Pr(\theta^X | \theta^Y) = \Pr(\theta^X)\), or
+Table~\ref{tbl-joint} has eight interior elements and so an
+unconstrained joint distribution would have \(7\) degrees of freedom. A
+no confounding assumption means that
+\(\Pr(\theta^X | \theta^Y) = \Pr(\theta^X)\), or
 \(\Pr(\theta^X, \theta^Y) = \Pr(\theta^X)\Pr(\theta^Y)\). In this case
 we just put a distribution on the marginals and there would be \(3\)
 degrees of freedom for \(Y\) and \(1\) for \(X\), totaling \(4\) rather
@@ -1452,7 +1458,7 @@ R> confounded$parameters_df
 \end{verbatim}
 
 \hypertarget{tbl-confound-params-df}{}
-\begin{table}
+\begin{table}[H]
 \caption{\label{tbl-confound-params-df}Parameters Data Frame for Model with Confounding. }\tabularnewline
 
 \centering
@@ -2429,7 +2435,7 @@ R> make_model("X1 -> Y <- X2")  |>
 #> 
 #> Causal types satisfying query's condition(s)  
 #> 
-#>  query =  X1 ==1 & X2 == 1 & (Y[X1=1, X2=1] > Y[X1=0, X2=0]) 
+#>  query =  X1==1&X2==1&(Y[X1=1,X2=1]>Y[X1=0,X2=0]) 
 #> 
 #> X11.X21.Y0001  X11.X21.Y0101
 #> X11.X21.Y0011  X11.X21.Y0111
@@ -2919,7 +2925,7 @@ Network (CRAN) at {[}https://CRAN.R-project.org/{]}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, opacityback=0, breakable, left=2mm, leftrule=.75mm, rightrule=.15mm, arc=.35mm, bottomrule=.15mm, toprule=.15mm, colback=white]
+\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, breakable, arc=.35mm, colback=white, rightrule=.15mm, opacityback=0, left=2mm, toprule=.15mm, bottomrule=.15mm]
 
 The approach to generating a generic \texttt{stan} function that can
 take data from arbitrary models was developed in key contributions by
