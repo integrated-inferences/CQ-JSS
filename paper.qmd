@@ -666,10 +666,12 @@ readr::read_rds(file = "saved/lipids_model_list.rds") |>
 
 We can use `get_parameter_matrix(model)` to view the resulting parameter matrix in which both the set of parameters and the set of causal types are restricted.
 
+<!-- LM: No need to include the code if the output is not displayed -->
 ```{r}
 #| label: get-param-matrix-restrict
 #| echo: true
 #| eval: false
+#| include: false
 
 get_parameter_matrix(model)
 
@@ -770,7 +772,6 @@ In the $X \rightarrow Y$ graph, for instance, there are 2 nodal types for $X$ an
 
 confounded <- make_model("X -> Y ; X <-> Y")
 
-confounded$parameters_df
 ```
 
 ```{r}
@@ -1282,8 +1283,12 @@ options(mc.cores = parallel::detectCores())
 
 Additionally parallelizing across models or data while running MCMC chains in parallel can be achieved by setting up a nested parallel process. With 8 cores one can run 2 updating processes with 3 parallel chains each simultaneously. More generally the number of parallel processes at the upper level of the nested parallel structure are given by $\left \lfloor \cfrac{cores}{chains + 1} \right \rfloor$.
 
+<!-- # LM: I don't quite understand why this produces an empty table -->
+
 ```{r}
 #| eval: false
+
+
 
 library(future)
 library(future.apply)
@@ -1665,7 +1670,7 @@ read_rds("saved/caselevel.rds") |>
 
 The function `query_model()` is perhaps the most important function for querying models. The function takes as input a list of models, causal queries, and conditions (`given`),  calculates population or case level estimands given prior or posterior distributions  and reports summaries of these distributions. The result is a data frame that  can be displayed as a table or used for graphing.
 
-Table @tbl-batch-query shows output from a single call to `query_model`.
+ @tbl-batch-query shows output from a single call to `query_model`.
 
 ```{r}
 #| label: batch-query

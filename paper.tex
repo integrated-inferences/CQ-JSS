@@ -1291,10 +1291,6 @@ We can use \texttt{get\_parameter\_matrix(model)} to view the resulting
 parameter matrix in which both the set of parameters and the set of
 causal types are restricted.
 
-\begin{verbatim}
-R> get_parameter_matrix(model)
-\end{verbatim}
-
 Setting restrictions sometimes involves using causal syntax; see
 Section~\ref{sec-syntax} for a guide the syntax used by
 \texttt{CausalQueries}.
@@ -1453,8 +1449,6 @@ than \(7\).
 
 \begin{verbatim}
 R> confounded <- make_model("X -> Y ; X <-> Y")
-R> 
-R> confounded$parameters_df
 \end{verbatim}
 
 \hypertarget{tbl-confound-params-df}{}
@@ -2143,33 +2137,6 @@ chains each simultaneously. More generally the number of parallel
 processes at the upper level of the nested parallel structure are given
 by \(\left \lfloor \cfrac{cores}{chains + 1} \right \rfloor\).
 
-\begin{verbatim}
-R> library(future)
-R> library(future.apply)
-R> 
-R> chains <- 3
-R> cores <- 8
-R> 
-R> future::plan(list(
-+      future::tweak(future::multisession, 
-+                    workers = floor(cores/(chains + 1))),
-+      future::tweak(future::multisession, 
-+                    workers = chains)
-+    ))
-R> 
-R> model <- make_model("X -> Y")
-R> data <- list(data_1, data_2)
-R> 
-R> future.apply::future_lapply(data, function(d) {
-+  update_model(
-+    model = model,
-+    data = d,
-+    chains = chains,
-+    refresh = 0
-+  )
-+})
-\end{verbatim}
-
 \hypertarget{incomplete-and-censored-data}{%
 \subsection{Incomplete and censored
 data}\label{incomplete-and-censored-data}}
@@ -2696,7 +2663,7 @@ population or case level estimands given prior or posterior
 distributions and reports summaries of these distributions. The result
 is a data frame that can be displayed as a table or used for graphing.
 
-Table Table~\ref{tbl-batch-query} shows output from a single call to
+Table~\ref{tbl-batch-query} shows output from a single call to
 \texttt{query\_model}.
 
 \begin{verbatim}
@@ -2925,7 +2892,7 @@ Network (CRAN) at {[}https://CRAN.R-project.org/{]}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, breakable, arc=.35mm, colback=white, rightrule=.15mm, opacityback=0, left=2mm, toprule=.15mm, bottomrule=.15mm]
+\begin{tcolorbox}[enhanced jigsaw, colback=white, arc=.35mm, left=2mm, opacityback=0, breakable, leftrule=.75mm, rightrule=.15mm, bottomrule=.15mm, toprule=.15mm]
 
 The approach to generating a generic \texttt{stan} function that can
 take data from arbitrary models was developed in key contributions by
