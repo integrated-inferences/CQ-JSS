@@ -1789,6 +1789,38 @@ The `stats` argument lets users specify alternative summary statistics. The `exp
 
 The results in this paper were obtained using [R]{.proglang}\~3.4.1 with the [MASS]{.pkg}\~7.3.47 package. [R]{.proglang} itself and all packages used are available from the Comprehensive [R]{.proglang} Archive Network (CRAN) at \[https://CRAN.R-project.org/\].
 
+
+## Benchmarks 
+
+We present a brief summary of model updating benchmarks. Benchmark 1 we considers the effect of model complexity on updating time.  Benchmark 2 considers the effect of data size on model complexity. We run 4 parallel chains for each model. 
+
++----------------------------------------------------+----------------------------------+--------------------------------------+
+| Model                                              | Number of Model Parameters       | `update_model()` Runt-Time (seconds) |
++:==================================================:+:================================:+:====================================:+
+| $X1 \rightarrow Y$                                 | 6                                | 10.85                                | 
++----------------------------------------------------+----------------------------------+--------------------------------------+
+| $X1 \rightarrow Y \leftarrow X2$                   | 20                               | 15.79                                |
++----------------------------------------------------+----------------------------------+--------------------------------------+
+| $X1 \rightarrow Y \leftarrow X2; X3 \rightarrow Y$ | 262                              | 77.56                                |
++----------------------------------------------------+----------------------------------+--------------------------------------+
+
+
++----------------------------------------------------+----------------------------------+--------------------------------------+
+| Model                                              | Number of Observations           | `update_model()` Runt-Time (seconds) |
++:==================================================:+:================================:+:====================================:+
+| $X1 \rightarrow Y$                                 | 10                               | 9.04                                 | 
++----------------------------------------------------+----------------------------------+--------------------------------------+
+| $X1 \rightarrow Y$                                 | 100                              | 9.31                                 |
++----------------------------------------------------+----------------------------------+--------------------------------------+
+| $X1 \rightarrow Y$                                 | 1000                             | 10.56                                |
++----------------------------------------------------+----------------------------------+--------------------------------------+
+| $X1 \rightarrow Y$                                 | 10000                            | 14.57                                |
++----------------------------------------------------+----------------------------------+--------------------------------------+
+| $X1 \rightarrow Y$                                 | 100000                           | 17.25                                |
++----------------------------------------------------+----------------------------------+--------------------------------------+
+
+While model updating is fundamentally a $O(N)$ time complexity operation with respect to model and data size; the exponential growth of the parameter space with increasing model complexity places limits on feasible computability without further recourse to specialized methods for handling large causal models.   
+
 ## Acknowledgments {.unnumbered}
 
 ::: callout
