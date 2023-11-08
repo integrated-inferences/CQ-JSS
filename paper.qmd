@@ -1469,7 +1469,7 @@ Giving a *quantitative* answer to a query requires placing probabilities over th
 
 #### Queries by hand
 
-Queries can be calculated directly from the prior distribution or the posterior distribution provided by Stan.
+Queries can be calculated directly from the prior distribution or the posterior distribution provided by Stan. For example the following call plots the posterior distribution for the query that probability of $Y$ is increasing in $X$ for the $X \rightarrow Y$ model. The resulting plot is shown in @fig-posterior-dist.
 
 ```{r}
 #| eval: false
@@ -1480,14 +1480,13 @@ model <-
   make_model("X -> Y") |>
   update_model(data, iter  = 4000)
 
-model$posterior_distribution |> 
+model$posterior_distribution  |> 
   ggplot(aes(Y.01 - Y.10)) + geom_histogram()
-
 ```
 
 ```{r}
 #| label: fig-posterior-dist
-#| fig-cap: "Posterior on `Probability $Y$ is increasing in $X$'"
+#| fig-cap: 'Posterior on "Probability $Y$ is increasing in $X$".'
 #| fig-pos: "t"
 #| fig-align: center
 #| out-width: "60%"
@@ -1516,15 +1515,25 @@ model$posterior_distribution |>
 
 It is generally useful to use causal syntax to define the query and calculate the query with respect to the prior or posterior probability distributions.
 
-This can be done for a list of queries using `query_distribution()` function:
+This can be done for a list of queries using `query_distribution()` function as follows:
+
+```{r}
+#| eval: false
+#| echo: true
+make_model("X -> Y") |> 
+  query_distribution(
+    query = list(increasing = "(Y[X=1] > Y[X=0])"), 
+    using = "priors")
+```
 
 ```{r}
 #| label: fig-query-dist
-#| fig-cap: "Prior on 'Probability $Y$ is increasing in $X$'"
+#| fig-cap: 'Prior on "Probability $Y$ is increasing in $X$".'
 #| fig-pos: "t"
 #| fig-align: center
 #| out-width: "60%"
 #| external: true
+#| echo: false
 
 make_model("X -> Y") |> 
   query_distribution(
@@ -1534,7 +1543,7 @@ make_model("X -> Y") |>
 
 ```
 
-`query_distribution()` can also be used when one is interested in assessing the value of a query for a *particular case*. In a sense this is equivalent to posing a conditional query, querying conditional on values in a case. For instance we might consult our posterior lipids model and ask about the effect of $X$ on $Y$ for a case in which $Z=1$, $X=1$ and $Y=1$.
+Resulting distribution is plotted in @fig-query-dist. `query_distribution()` can also be used when one is interested in assessing the value of a query for a *particular case*. In a sense this is equivalent to posing a conditional query, querying conditional on values in a case. For instance we might consult our posterior lipids model and ask about the effect of $X$ on $Y$ for a case in which $Z=1$, $X=1$ and $Y=1$.
 
 ```{r}
 #| label: case-level-query

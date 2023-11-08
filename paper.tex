@@ -2544,7 +2544,10 @@ probabilities over the causal types that correspond to a query.
 \subsubsection{Queries by hand}\label{queries-by-hand}}
 
 Queries can be calculated directly from the prior distribution or the
-posterior distribution provided by Stan.
+posterior distribution provided by Stan. For example the following call
+plots the posterior distribution for the query that probability of \(Y\)
+is increasing in \(X\) for the \(X \rightarrow Y\) model. The resulting
+plot is shown in Figure~\ref{fig-posterior-dist}.
 
 \begin{verbatim}
 R> data  <- data.frame(X = rep(0:1, 50), Y = rep(0:1, 50))
@@ -2553,7 +2556,7 @@ R> model <-
 +  make_model("X -> Y") |>
 +  update_model(data, iter  = 4000)
 R> 
-R> model$posterior_distribution |> 
+R> model$posterior_distribution  |> 
 +  ggplot(aes(Y.01 - Y.10)) + geom_histogram()
 \end{verbatim}
 
@@ -2563,8 +2566,8 @@ R> model$posterior_distribution |>
 
 }
 
-\caption{\label{fig-posterior-dist}Posterior on `Probability \(Y\) is
-increasing in \(X\)'}
+\caption{\label{fig-posterior-dist}Posterior on ``Probability \(Y\) is
+increasing in \(X\)''.}
 
 \end{figure}
 
@@ -2578,14 +2581,13 @@ calculate the query with respect to the prior or posterior probability
 distributions.
 
 This can be done for a list of queries using
-\texttt{query\_distribution()} function:
+\texttt{query\_distribution()} function as follows:
 
 \begin{verbatim}
 R> make_model("X -> Y") |> 
 +  query_distribution(
 +    query = list(increasing = "(Y[X=1] > Y[X=0])"), 
-+    using = "priors") |>
-+  ggplot(aes(increasing)) + geom_histogram() + theme_bw()
++    using = "priors")
 \end{verbatim}
 
 \begin{figure}[t]
@@ -2594,11 +2596,12 @@ R> make_model("X -> Y") |>
 
 }
 
-\caption{\label{fig-query-dist}Prior on 'Probability \(Y\) is increasing
-in \(X\)'}
+\caption{\label{fig-query-dist}Prior on ``Probability \(Y\) is
+increasing in \(X\)''.}
 
 \end{figure}
 
+Resulting distribution is plotted in Figure~\ref{fig-query-dist}.
 \texttt{query\_distribution()} can also be used when one is interested
 in assessing the value of a query for a \emph{particular case}. In a
 sense this is equivalent to posing a conditional query, querying
@@ -3006,7 +3009,7 @@ for handling large causal models.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, leftrule=.75mm, colback=white, left=2mm, rightrule=.15mm, breakable, arc=.35mm, bottomrule=.15mm, opacityback=0]
+\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, opacityback=0, colback=white, arc=.35mm, leftrule=.75mm, left=2mm, breakable, rightrule=.15mm, bottomrule=.15mm]
 
 The approach to generating a generic function to create Stan code that
 can take data from arbitrary models was developed in key contributions
