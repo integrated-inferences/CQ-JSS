@@ -547,8 +547,8 @@ samples of units that are independent of each other and are
 independently randomly sampled from populations. Thus the basic set up
 does not address problems of sampling, clustering, hierarchical
 structures, or purposive sampling. The broader framework can however be
-used for these purposes (see section 9.4 of
-\citet{humphreys_integrated_2023}). The targets of inference are usually
+used for these purposes \citep[see section 9.4
+of][]{humphreys_integrated_2023}. The targets of inference are usually
 case level quantities or population quantities and
 \texttt{CausalQueries} is not well suited for estimating sample
 quantities.
@@ -1047,7 +1047,7 @@ Y.11 & Y & 2 & Y & 11 &  & 0.25 & 1\\
 \end{tabular}}
 \end{table}
 
-here, as in Table~\ref{tbl-lipidspar}, each row in the data frame
+Here, as in Table~\ref{tbl-lipidspar}, each row in the data frame
 corresponds to a single parameter.
 
 The columns of the parameters data frame are understood as follows:
@@ -1955,8 +1955,8 @@ types, causal types and parameters. The latter includes:
 \begin{itemize}
 \tightlist
 \item
-  A parameter matrix (\texttt{P}) that tells Stan how many parameters
-  there are, and how they map into causal types,
+  A \(P\) matrix (\texttt{P}) that tells Stan how many parameters there
+  are, and how they map into causal types,
 \item
   A matrix that maps parameters to data types (\texttt{parmap}), and
 \item
@@ -2028,16 +2028,16 @@ probability that \(X\) is 0 or 1. These two probabilities sum to one.
 The second parameter set is
 \(\lambda^Y \in \{\lambda^Y_{00}, \lambda^Y_{10}, \lambda^Y_{01} \lambda^Y_{11}\}\).
 These are also probabilities and their values sum to one. Note in all
-that we have 6 parameters but just 1 + 3 = 4 degrees of freedom. We have
-a 2 dimensional Dirichlet distribution over the \(X\) nodal types
-(equivalently, a Beta distribution) and a 4 dimensional Dirichlet over
-the \(Y\) nodal types.
+that we have \(6\) parameters but just \(1 + 3 = 4\) degrees of freedom.
+We have a \(2\)-dimensional Dirichlet distribution over the \(X\) nodal
+types (equivalently, a Beta distribution) and a \(4\)-dimensional
+Dirichlet over the \(Y\) nodal types.
 
 \hypertarget{event-probabilities}{%
 \subsubsection{Event probabilities}\label{event-probabilities}}
 
 For any candidate parameter vector \(\lambda\) we calculate the
-probability of \emph{data} types. This is done using a matrix that maps
+probability of ``data types''. This is done using a matrix that maps
 from parameters into data types, \texttt{parmap}. In cases without
 confounding there is a column for each data type; the matrix indicates
 which nodes in each set ``contribute'' to the data type, and the
@@ -2199,12 +2199,12 @@ been censored then when we update we do not move towards a belief that
 R> data <- data.frame(X = rep(0:1, 5), Y = rep(0:1, 5))
 R> 
 R> list(
-+  uncensored = make_model("X -> Y") |>
++  uncensored = 
++    make_model("X -> Y") |>
 +    update_model(data),
-+  
-+  censored = make_model("X -> Y") |>
-+    update_model(data, censored_types = c("X1Y0",  "X0Y1"))
-+) %>%
++  censored = 
++    make_model("X -> Y") |>
++    update_model(data, censored_types = c("X1Y0",  "X0Y1"))) |>
 +  query_model(te("X", "Y"), using = "posteriors") 
 \end{verbatim}
 
@@ -2492,7 +2492,7 @@ using \texttt{get\_query\_types}. Thus for instance in an
 \(X=1 \& Y=1\) is the probability of causal \texttt{X1.Y11} type divided
 by the sum of the probabilities of types \texttt{X1.Y11} and
 \texttt{X1.Y01}. In practice this is done automatically for users when
-they call \texttt{query\_model} or \texttt{query\_distribution}.
+they call \texttt{query\_model()} or \texttt{query\_distribution()}.
 
 \hypertarget{complex-expressions}{%
 \subsubsection{Complex expressions}\label{complex-expressions}}
@@ -2509,11 +2509,12 @@ some effect on \(Y\)'' is given by
 \texttt{"Y{[}X=1{]}\ !=\ Y{[}X=0{]}"}.
 
 Linear operators can also be used over set of simple statements. Thus
-```Y{[}X=1{]} - Y{[}X=0{]}'' returns the share of units the average
-treatment effect. In essence rather than returning a TRUE or FALSE for
-the two parts of the query, the case memberships are forced to numeric
-values (1 or 0) and the differences taken, which can be a 1, 0 or -1
-depending on the causal type.
+\texttt{"Y{[}X=1{]}\ -\ Y{[}X=0{]}"} returns the share of units the
+average treatment effect. In essence rather than returning a
+\texttt{TRUE} or \texttt{FALSE} for the two parts of the query, the case
+memberships are forced to numeric values (\(1\) or \(0\)) and the
+differences taken, which can be a \(1\), \(0\) or \(-1\) depending on
+the causal type.
 
 \begin{verbatim}
 R> make_model("X -> Y")  |>
@@ -2530,8 +2531,8 @@ R> make_model("X -> Y")  |>
 
 \texttt{CausalQueries} lets users pose nested ``complex counterfactual''
 queries. For instance \texttt{"Y{[}M=M{[}X=0{]},\ X=1{]}==1"} queries
-the types for which \(Y\) equals 1 when \(X\) is set to 1, while keeping
-\(M\) constant at the value it would take if \(X\) were 0.
+the types for which \(Y\) equals \(1\) when \(X\) is set to \(1\), while
+keeping \(M\) constant at the value it would take if \(X\) were \(0\).
 
 \hypertarget{quantifying-queries}{%
 \subsection{Quantifying queries}\label{quantifying-queries}}
@@ -2628,9 +2629,9 @@ Y[X=1] - Y[X=0] & X==1 \& Y==1 \& Z==1 & 0.95 & 0.04 & 0.87 & 1\\
 \end{table}
 
 The answer we get in Table~\ref{tbl-case-level-query} is what we now
-believe for all cases in which \(Z=1, X=1\) and \(Y=1\). It is in fact
-the expected average effect among cases with this data type and so this
-expectation has an uncertainty attached to it.
+believe for all cases in which \(Z=1\), \(X=1\) and \(Y=1\). It is in
+fact the expected average effect among cases with this data type and so
+this expectation has an uncertainty attached to it.
 
 Subtly though this is, in principle, different to what we would infer
 for a ``new case'' that we wonder about. When inquiring about a new
@@ -2920,15 +2921,29 @@ Network (CRAN) at \url{https://CRAN.R-project.org/}.
 \hypertarget{benchmarks}{%
 \section{Benchmarks}\label{benchmarks}}
 
-We present a brief summary of model updating benchmarks. Benchmark 1 we
-considers the effect of model complexity on updating time. Benchmark 2
-considers the effect of data size on model complexity. We run 4 parallel
-chains for each model.
+We present a brief summary of model updating benchmarks. First benchmark
+considers the effect of model complexity on updating time. Second
+benchmark considers the effect of data size on model complexity. We run
+\(4\) parallel chains for each model. Results of the benchmarks are
+presented in Table~\ref{tbl-bench1} and Table~\ref{tbl-bench2}
+respectively.
 
+\hypertarget{tbl-bench1}{}
 \begin{longtable}[]{@{}
   >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.4000}}
   >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3000}}
   >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3000}}@{}}
+\caption{\label{tbl-bench1}Benchmark 1.}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\centering
+Model
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Number of Model Parameters
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+\texttt{update\_model()} Runt-Time (seconds)
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\centering
 Model
@@ -2946,10 +2961,22 @@ Number of Model Parameters
 \(X1 \rightarrow Y \leftarrow X2; X3 \rightarrow Y\) & 262 & 77.56 \\
 \end{longtable}
 
+\hypertarget{tbl-bench2}{}
 \begin{longtable}[]{@{}
   >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.4000}}
   >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3000}}
   >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3000}}@{}}
+\caption{\label{tbl-bench2}Benchmark 2.}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\centering
+Model
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Number of Observations
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+\texttt{update\_model()} Runt-Time (seconds)
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\centering
 Model
@@ -2979,7 +3006,7 @@ for handling large causal models.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, opacityback=0, breakable, colback=white, bottomrule=.15mm, toprule=.15mm, arc=.35mm, rightrule=.15mm, leftrule=.75mm, left=2mm]
+\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, leftrule=.75mm, colback=white, left=2mm, rightrule=.15mm, breakable, arc=.35mm, bottomrule=.15mm, opacityback=0]
 
 The approach to generating a generic function to create Stan code that
 can take data from arbitrary models was developed in key contributions
@@ -2987,12 +3014,16 @@ by \href{http://jasper-cooper.com/}{Jasper Cooper} and
 \href{http://gsyunyaev.com/}{Georgiy Syunyaev}.
 \href{https://lilymedina.github.io/}{Lily Medina} did magical work
 pulling it all together and developing approaches to characterizing
-confounding and defining estimands. Clara Bicalho helped figure out the
-syntax for causal statements. Julio Solis made many key contributions
-figuring out how to simplify the specification of priors. Merlin
-Heidemanns figured out the \texttt{rstantools} integration and made
-myriad code improvements. Till Tietz revamped the entire package and
-improved every part of it.
+confounding and defining estimands.
+\href{https://clarabicalho.github.io/}{Clara Bicalho} helped figure out
+the syntax for causal statements.
+\href{https://www.gov.harvard.edu/directory/julio-s-solis-arce/}{Julio
+S. Solís Arce}made many key contributions figuring out how to simplify
+the specification of priors.
+\href{https://merlinheidemanns.github.io/website/}{Merlin Heidemanns}
+figured out the \texttt{rstantools} integration and made myriad code
+improvements. \href{https://github.com/till-tietz}{Till Tietz} revamped
+the entire package and improved every part of it.
 
 \end{tcolorbox}
 

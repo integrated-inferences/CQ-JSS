@@ -203,7 +203,7 @@ Summarizing, the particular strength of `CausalQueries` is to allow users to spe
 
 There are two broad limitations on the sets of models handled natively by `CausalQueries`. First `CausalQueries` is designed for models with a relatively small number of binary nodes. Because there is no compromise made on the space of possible causal relations implied by a given model, the parameter space grows very rapidly with the complexity of the causal model. The complexity also depends on the causal structure and grows rapidly with the number of parents affecting a given child. A chain model of the form $A \rightarrow B \rightarrow C \rightarrow D \rightarrow E$ has just 40 parameters. A model in which $A, B, C, D$ are all direct ancestors of $E$ has $65,544$ parameters. Moving from binary to non binary nodes has similar effects. The restriction to binary nodes is for computational and not conceptual reasons. In fact it is possible to employ `CausalQueries` to answer queries from models with non binary nodes but in general the computational costs make analysis of these models prohibitive.[^2]
 
-Second, the package is geared towards learning about populations from samples of units that are independent of each other and are independently randomly sampled from populations. Thus the basic set up does not address problems of sampling, clustering, hierarchical structures, or purposive sampling. The broader framework can however be used for these purposes (see section 9.4 of @humphreys_integrated_2023). The targets of inference are usually case level quantities or population quantities and `CausalQueries` is not well suited for estimating sample quantities.
+Second, the package is geared towards learning about populations from samples of units that are independent of each other and are independently randomly sampled from populations. Thus the basic set up does not address problems of sampling, clustering, hierarchical structures, or purposive sampling. The broader framework can however be used for these purposes [see section 9.4 of @humphreys_integrated_2023]. The targets of inference are usually case level quantities or population quantities and `CausalQueries` is not well suited for estimating sample quantities.
 
 ## Statistical model {#sec-theory}
 
@@ -480,7 +480,7 @@ make_model("X -> Y")$parameters_df |>
   kable_styling(latex_options = "HOLD_position")
 ```
 
-here, as in @tbl-lipidspar, each row in the data frame corresponds to a single parameter.
+Here, as in @tbl-lipidspar, each row in the data frame corresponds to a single parameter.
 
 The columns of the parameters data frame are understood as follows:
 
@@ -1150,7 +1150,7 @@ We use a generic Stan program that works for all binary causal models. The main 
 
 The data required by the Stan program includes vectors of observed data (`Y`) and priors on parameters (`lambdas_prior`) as well as a set of matrices required for the mapping between events, data types, causal types and parameters. The latter includes:
 
--   A parameter matrix (`P`) that tells Stan how many parameters there are, and how they map into causal types,
+-   A $P$ matrix (`P`) that tells Stan how many parameters there are, and how they map into causal types,
 -   A matrix that maps parameters to data types (`parmap`), and
 -   An event matrix (`E`) that relates data types into patterns of observed data (events) in cases where there are incomplete observations.
 
@@ -1183,11 +1183,11 @@ We are interested in "sets" of parameters. In the case without confounding these
 
 We express priors over these parameter sets using multiple Dirichlet distributions. In practice because we are dealing with multiple simplices of varying length, it is easier to express priors over gamma distributions with a unit scale parameter and shape parameter corresponding to the Dirichlet priors, $\alpha$. We make use of the fact that $\lambda^X_0 \sim Gamma(\alpha^X_0,1)$ and $\lambda^X_1 \sim Gamma(\alpha^X_1,1)$ then $\frac{1}{\lambda^X_0 +\lambda^X_1}(\lambda^X_0, \lambda^X_1) \sim Dirichlet(\alpha^X_0, \alpha^X_1)$[^5]
 
-To illustrate, in the $X \rightarrow Y$ model we have two parameter sets (`param_sets`). The first is $\lambda^X \in \{\lambda^X_0, \lambda^X_1\}$ whose elements give the probability that $X$ is 0 or 1. These two probabilities sum to one. The second parameter set is $\lambda^Y \in \{\lambda^Y_{00}, \lambda^Y_{10}, \lambda^Y_{01} \lambda^Y_{11}\}$. These are also probabilities and their values sum to one. Note in all that we have 6 parameters but just 1 + 3 = 4 degrees of freedom. We have a 2 dimensional Dirichlet distribution over the $X$ nodal types (equivalently, a Beta distribution) and a 4 dimensional Dirichlet over the $Y$ nodal types.
+To illustrate, in the $X \rightarrow Y$ model we have two parameter sets (`param_sets`). The first is $\lambda^X \in \{\lambda^X_0, \lambda^X_1\}$ whose elements give the probability that $X$ is 0 or 1. These two probabilities sum to one. The second parameter set is $\lambda^Y \in \{\lambda^Y_{00}, \lambda^Y_{10}, \lambda^Y_{01} \lambda^Y_{11}\}$. These are also probabilities and their values sum to one. Note in all that we have $6$ parameters but just $1 + 3 = 4$ degrees of freedom. We have a $2$-dimensional Dirichlet distribution over the $X$ nodal types (equivalently, a Beta distribution) and a $4$-dimensional Dirichlet over the $Y$ nodal types.
 
 #### Event probabilities
 
-For any candidate parameter vector $\lambda$ we calculate the probability of *data* types. This is done using a matrix that maps from parameters into data types, `parmap`. In cases without confounding there is a column for each data type; the matrix indicates which nodes in each set "contribute" to the data type, and the probability of the data type is found by summing within sets and taking the product over sets.
+For any candidate parameter vector $\lambda$ we calculate the probability of "data types". This is done using a matrix that maps from parameters into data types, `parmap`. In cases without confounding there is a column for each data type; the matrix indicates which nodes in each set "contribute" to the data type, and the probability of the data type is found by summing within sets and taking the product over sets.
 
 The following code:
 
@@ -1305,12 +1305,12 @@ To illustrate, in the example below we observe perfectly correlated data for $X$
 data <- data.frame(X = rep(0:1, 5), Y = rep(0:1, 5))
 
 list(
-  uncensored = make_model("X -> Y") |>
+  uncensored = 
+    make_model("X -> Y") |>
     update_model(data),
-  
-  censored = make_model("X -> Y") |>
-    update_model(data, censored_types = c("X1Y0",  "X0Y1"))
-) %>%
+  censored = 
+    make_model("X -> Y") |>
+    update_model(data, censored_types = c("X1Y0",  "X0Y1"))) |>
   query_model(te("X", "Y"), using = "posteriors") 
 ```
 
@@ -1320,15 +1320,17 @@ list(
 #| echo: false
 #| eval: true
 
-list(uncensored = make_model("X -> Y") %>%
-       update_model(data.frame(X=rep(0:1,5), Y=rep(0:1,5)),
+list(uncensored = 
+       make_model("X -> Y") |> 
+       update_model(data.frame(X = rep(0:1,5), Y = rep(0:1,5)),
                     refresh = 0, iter = 3000),
-     censored = make_model("X -> Y") %>%
-       update_model(data.frame(X=rep(0:1,5), Y=rep(0:1,5)),
+     censored = 
+       make_model("X -> Y") |> 
+       update_model(data.frame(X = rep(0:1,5), Y = rep(0:1,5)),
                     censored_types = c("X1Y0",  "X0Y1"),
-                    refresh = 0, iter = 3000)) %>%
+                    refresh = 0, iter = 3000))  |>
   query_model(te("X", "Y"), using = "posteriors") |>
-  select(model, query, mean, sd) |>
+  dplyr::select(model, query, mean, sd) |>
   knitr::kable(
     digits = 2,
     booktabs = TRUE,
@@ -1430,7 +1432,7 @@ In summary, the variables to be intervened, as if conducting an experiment, are 
 
 #### Conditional queries
 
-Many queries of interest are "conditional" queries. For example the effect of $X$ on $Y$ for units for which $W= 1$. Or the the effect of $X$ on $Y$ for units for which $Z$ has a positive effect on $X$. Such conditional queries are posed in `CausalQueries` by providing a `given` statement in addition to the `query` statement. The full query then becomes: for what units does the `query` condition hold among those units for which the `given` condition holds. The two parts can each be calculated using `get_query_types`. Thus for instance in an $X \rightarrow Y$ model the probability that $X$ causes $Y$ given $X=1 \& Y=1$ is the probability of causal `X1.Y11` type divided by the sum of the probabilities of types `X1.Y11` and `X1.Y01`. In practice this is done automatically for users when they call `query_model` or `query_distribution`.
+Many queries of interest are "conditional" queries. For example the effect of $X$ on $Y$ for units for which $W= 1$. Or the the effect of $X$ on $Y$ for units for which $Z$ has a positive effect on $X$. Such conditional queries are posed in `CausalQueries` by providing a `given` statement in addition to the `query` statement. The full query then becomes: for what units does the `query` condition hold among those units for which the `given` condition holds. The two parts can each be calculated using `get_query_types`. Thus for instance in an $X \rightarrow Y$ model the probability that $X$ causes $Y$ given $X=1 \& Y=1$ is the probability of causal `X1.Y11` type divided by the sum of the probabilities of types `X1.Y11` and `X1.Y01`. In practice this is done automatically for users when they call `query_model()` or `query_distribution()`.
 
 ```{r}
 #| eval: false
@@ -1450,7 +1452,7 @@ model$causal_types |>
 
 Many queries involve complex statements over multiple sets of types. These can be formed with the aid of logical operators such as `==`, `!=`, `>`, `>=` `<`,`<=`. For example, they can make queries about cases where $X$ has a positive effect on $Y$, i.e., whether $Y$ is greater when $X$ is set to 1 compared to when $X$ is set to 0, expressed as `"Y[X=1] > Y[X=0]"`. The query "$X$ has some effect on $Y$" is given by `"Y[X=1] != Y[X=0]"`.
 
-Linear operators can also be used over set of simple statements. Thus \`"Y\[X=1\] - Y\[X=0\]" returns the share of units the average treatment effect. In essence rather than returning a TRUE or FALSE for the two parts of the query, the case memberships are forced to numeric values (1 or 0) and the differences taken, which can be a 1, 0 or -1 depending on the causal type.
+Linear operators can also be used over set of simple statements. Thus `"Y[X=1] - Y[X=0]"` returns the share of units the average treatment effect. In essence rather than returning a `TRUE` or `FALSE` for the two parts of the query, the case memberships are forced to numeric values ($1$ or $0$) and the differences taken, which can be a $1$, $0$ or $-1$ depending on the causal type.
 
 ```{r}
 make_model("X -> Y")  |>
@@ -1459,7 +1461,7 @@ make_model("X -> Y")  |>
 
 #### Nested queries
 
-`CausalQueries` lets users pose nested "complex counterfactual" queries. For instance `"Y[M=M[X=0], X=1]==1"` queries the types for which $Y$ equals 1 when $X$ is set to 1, while keeping $M$ constant at the value it would take if $X$ were 0.
+`CausalQueries` lets users pose nested "complex counterfactual" queries. For instance `"Y[M=M[X=0], X=1]==1"` queries the types for which $Y$ equals $1$ when $X$ is set to $1$, while keeping $M$ constant at the value it would take if $X$ were $0$.
 
 ### Quantifying queries
 
@@ -1565,7 +1567,7 @@ lipids_model |>
   kableExtra::kable_classic_2(latex_options = c("scale_down", "hold_position"))
 ```
 
-The answer we get in @tbl-case-level-query is what we now believe for all cases in which $Z=1, X=1$ and $Y=1$. It is in fact the expected average effect among cases with this data type and so this expectation has an uncertainty attached to it.
+The answer we get in @tbl-case-level-query is what we now believe for all cases in which $Z=1$, $X=1$ and $Y=1$. It is in fact the expected average effect among cases with this data type and so this expectation has an uncertainty attached to it.
 
 Subtly though this is, in principle, different to what we would infer for a "new case" that we wonder about. When inquiring about a new case, the case level query *updates* on the given information observed in the new case. The resulting inference can be different to the inference that would be made from the posterior *given* the features of the case. If `case_level = TRUE` is specified, this new case level inference is calculated. For a query $Q$ and given $D$ this returns the value $\frac{\int\pi(Q \& D | \lambda_i)p(\lambda_i)d\lambda_i}{\int\pi(D | \lambda_i)p(\lambda_i)d\lambda_i}$ which may differ from the mean of the distribution $\frac{\pi(Q \& D | \lambda)}{\pi(D | \lambda)}$, $\int \frac{\pi(Q \& D | \lambda_i)}{\pi(D | \lambda_i)} p(\lambda_i)d\lambda_i$.
 
@@ -1743,7 +1745,7 @@ The results in this paper were obtained using [R]{.proglang}\~3.4.1 with the [MA
 
 ## Benchmarks
 
-We present a brief summary of model updating benchmarks. Benchmark 1 we considers the effect of model complexity on updating time. Benchmark 2 considers the effect of data size on model complexity. We run 4 parallel chains for each model.
+We present a brief summary of model updating benchmarks. First benchmark considers the effect of model complexity on updating time. Second benchmark considers the effect of data size on model complexity. We run $4$ parallel chains for each model. Results of the benchmarks are presented in @tbl-bench1 and @tbl-bench2 respectively.
 
 +----------------------------------------------------+----------------------------+--------------------------------------+
 | Model                                              | Number of Model Parameters | `update_model()` Runt-Time (seconds) |
@@ -1755,7 +1757,7 @@ We present a brief summary of model updating benchmarks. Benchmark 1 we consider
 | $X1 \rightarrow Y \leftarrow X2; X3 \rightarrow Y$ | 262                        | 77.56                                |
 +----------------------------------------------------+----------------------------+--------------------------------------+
 
-: {tbl-colwidths=\[40,30,30\]}
+: Benchmark 1. {#tbl-bench1 tbl-colwidths=\[40,30,30\]}
 
 +---------------------+------------------------+--------------------------------------+
 | Model               | Number of Observations | `update_model()` Runt-Time (seconds) |
@@ -1771,14 +1773,14 @@ We present a brief summary of model updating benchmarks. Benchmark 1 we consider
 | $X1 \rightarrow Y$  | 100000                 | 17.25                                |
 +---------------------+------------------------+--------------------------------------+
 
-: {tbl-colwidths=\[40,30,30\]}
+: Benchmark 2. {#tbl-bench2 tbl-colwidths=\[40,30,30\]}
 
 While model updating is fundamentally a $O(N)$ time complexity operation with respect to model and data size; the exponential growth of the parameter space with increasing model complexity places limits on feasible computability without further recourse to specialized methods for handling large causal models.
 
 ## Acknowledgments {.unnumbered}
 
 ::: callout
-The approach to generating a generic function to create Stan code that can take data from arbitrary models was developed in key contributions by [Jasper Cooper](http://jasper-cooper.com/) and [Georgiy Syunyaev](http://gsyunyaev.com/). [Lily Medina](https://lilymedina.github.io/) did magical work pulling it all together and developing approaches to characterizing confounding and defining estimands. Clara Bicalho helped figure out the syntax for causal statements. Julio Solis made many key contributions figuring out how to simplify the specification of priors. Merlin Heidemanns figured out the `rstantools` integration and made myriad code improvements. Till Tietz revamped the entire package and improved every part of it.
+The approach to generating a generic function to create Stan code that can take data from arbitrary models was developed in key contributions by [Jasper Cooper](http://jasper-cooper.com/) and [Georgiy Syunyaev](http://gsyunyaev.com/). [Lily Medina](https://lilymedina.github.io/) did magical work pulling it all together and developing approaches to characterizing confounding and defining estimands. [Clara Bicalho](https://clarabicalho.github.io/) helped figure out the syntax for causal statements. [Julio S. Solís Arce](https://www.gov.harvard.edu/directory/julio-s-solis-arce/)made many key contributions figuring out how to simplify the specification of priors. [Merlin Heidemanns](https://merlinheidemanns.github.io/website/) figured out the `rstantools` integration and made myriad code improvements. [Till Tietz](https://github.com/till-tietz) revamped the entire package and improved every part of it.
 :::
 
 ## References {.unnumbered}
