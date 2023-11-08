@@ -1304,8 +1304,7 @@ R> make_model("S -> C -> Y <- R <- X; X -> C -> R") |>
 \end{itemize}
 
 \begin{verbatim}
-R> make_model("X -> Y") |>
-+  set_restrictions(labels = list(Y = "?0"))
+R> make_model("X -> Y") |> set_restrictions(labels = list(Y = "?0"))
 \end{verbatim}
 
 \begin{itemize}
@@ -1517,8 +1516,7 @@ By default, priors are set to unity, corresponding to uniform priors. To
 retrieve the model's priors we can run the following code:
 
 \begin{verbatim}
-R> make_model("X -> Y") |> 
-+  get_priors()
+R> make_model("X -> Y") |> get_priors()
 \end{verbatim}
 
 \begin{verbatim}
@@ -1530,8 +1528,7 @@ Alternatively you could set Jeffreys priors using \texttt{set\_priors()}
 as follows:
 
 \begin{verbatim}
-R> make_model("X -> Y") |> 
-+  set_priors(distribution = "jeffreys") 
+R> make_model("X -> Y") |> set_priors(distribution = "jeffreys")
 \end{verbatim}
 
 You can also add custom priors. Custom priors are most simply specified
@@ -1563,7 +1560,7 @@ The priors here should be interpreted as indicating:
 \end{itemize}
 
 For larger models it can be hard to provide priors as a vector of
-numbers. For that reason \texttt{set\_priors} allows for more targeted
+numbers. For that reason \texttt{set\_priors()} allows for more targeted
 modifications of the parameter vector. For instance:
 
 \begin{verbatim}
@@ -1593,12 +1590,7 @@ R> make_model("X -> Y") |>
 +  get_priors()
 \end{verbatim}
 
-\begin{verbatim}
- X.0  X.1 Y.00 Y.10 Y.01 Y.11 
-   1    1    1    1    3    1 
-\end{verbatim}
-
-or even parameter names
+Or even parameter names:
 
 \begin{verbatim}
 R> make_model("X -> Y") |>
@@ -1606,22 +1598,16 @@ R> make_model("X -> Y") |>
 +  get_priors()
 \end{verbatim}
 
-\begin{verbatim}
- X.0  X.1 Y.00 Y.10 Y.01 Y.11 
-   1    1    1    1    3    1 
-\end{verbatim}
-
-Indeed \texttt{set\_priors()} allows for the specification of any
-non-redundant combination of arguments on the \texttt{param\_names},
-\texttt{node}, \texttt{nodal\_type}, \texttt{param\_set} and
-\texttt{given} columns of \texttt{parameters\_df} to uniquely identify
-parameters to set priors for. Alternatively a fully formed subsetting
-statement may be supplied to \texttt{alter\_at}. Since all these
-arguments get mapped to the parameters they identify internally they may
-be used interchangeably.\footnote{See \texttt{?set\_priors} and
-  \texttt{?make\_priors} for many more examples.}
-
-Thus the following two specifications of priors are equivalent:
+\texttt{set\_priors()} allows for the specification of any non-redundant
+combination of arguments on the \texttt{param\_names}, \texttt{node},
+\texttt{nodal\_type}, \texttt{param\_set} and \texttt{given} columns of
+\texttt{parameters\_df} to uniquely identify parameters to set priors
+for. Alternatively a fully formed subsetting statement may be supplied
+to \texttt{alter\_at}. Since all these arguments get mapped to the
+parameters they identify internally they may be used
+interchangeably.\footnote{See \texttt{?set\_priors} and
+  \texttt{?make\_priors} for many more examples.} Thus the following two
+specifications of priors are equivalent:
 
 \begin{verbatim}
 R> model <- make_model("X -> M -> Y; X <-> Y")
@@ -2753,7 +2739,7 @@ Network (CRAN) at \url{https://CRAN.R-project.org/}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, bottomrule=.15mm, colback=white, breakable, leftrule=.75mm, arc=.35mm, rightrule=.15mm, left=2mm, opacityback=0]
+\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, rightrule=.15mm, left=2mm, breakable, colback=white, toprule=.15mm, bottomrule=.15mm, opacityback=0, arc=.35mm]
 
 The approach to generating a generic function to create Stan code that
 can take data from arbitrary models was developed in key contributions
