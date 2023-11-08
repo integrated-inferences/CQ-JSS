@@ -2749,95 +2749,11 @@ The results in this paper were obtained using
 packages used are available from the Comprehensive \proglang{R} Archive
 Network (CRAN) at \url{https://CRAN.R-project.org/}.
 
-\hypertarget{benchmarks}{%
-\section{Benchmarks}\label{benchmarks}}
-
-We present a brief summary of model updating benchmarks. First benchmark
-considers the effect of model complexity on updating time. Second
-benchmark considers the effect of data size on model complexity. We run
-\(4\) parallel chains for each model. Results of the benchmarks are
-presented in Table~\ref{tbl-bench1} and Table~\ref{tbl-bench2}
-respectively.
-
-\hypertarget{tbl-bench1}{}
-\begin{longtable}[]{@{}
-  >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.4000}}
-  >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3000}}
-  >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3000}}@{}}
-\caption{\label{tbl-bench1}Benchmark 1.}\tabularnewline
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\centering
-Model
-\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-Number of Model Parameters
-\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-\texttt{update\_model()} Runt-Time (seconds)
-\end{minipage} \\
-\midrule\noalign{}
-\endfirsthead
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\centering
-Model
-\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-Number of Model Parameters
-\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-\texttt{update\_model()} Runt-Time (seconds)
-\end{minipage} \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-\(X1 \rightarrow Y\) & 6 & 10.85 \\
-\(X1 \rightarrow Y \leftarrow X2\) & 20 & 15.79 \\
-\(X1 \rightarrow Y \leftarrow X2; X3 \rightarrow Y\) & 262 & 77.56 \\
-\end{longtable}
-
-\hypertarget{tbl-bench2}{}
-\begin{longtable}[]{@{}
-  >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.4000}}
-  >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3000}}
-  >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3000}}@{}}
-\caption{\label{tbl-bench2}Benchmark 2.}\tabularnewline
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\centering
-Model
-\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-Number of Observations
-\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-\texttt{update\_model()} Runt-Time (seconds)
-\end{minipage} \\
-\midrule\noalign{}
-\endfirsthead
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\centering
-Model
-\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-Number of Observations
-\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-\texttt{update\_model()} Runt-Time (seconds)
-\end{minipage} \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-\(X1 \rightarrow Y\) & 10 & 9.04 \\
-\(X1 \rightarrow Y\) & 100 & 9.31 \\
-\(X1 \rightarrow Y\) & 1000 & 10.56 \\
-\(X1 \rightarrow Y\) & 10000 & 14.57 \\
-\(X1 \rightarrow Y\) & 100000 & 17.25 \\
-\end{longtable}
-
-While model updating is fundamentally a \(O(N)\) time complexity
-operation with respect to model and data size; the exponential growth of
-the parameter space with increasing model complexity places limits on
-feasible computability without further recourse to specialized methods
-for handling large causal models.
-
 \hypertarget{acknowledgments}{%
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, rightrule=.15mm, opacityback=0, colback=white, leftrule=.75mm, breakable, bottomrule=.15mm, arc=.35mm, left=2mm]
+\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, bottomrule=.15mm, colback=white, breakable, leftrule=.75mm, arc=.35mm, rightrule=.15mm, left=2mm, opacityback=0]
 
 The approach to generating a generic function to create Stan code that
 can take data from arbitrary models was developed in key contributions
@@ -3031,6 +2947,91 @@ for (i in 1:n_types) {
  }
 }
 \end{verbatim}
+
+\hypertarget{sec-benchmark}{%
+\section*{Appendix C: Benchmarks}\label{sec-benchmark}}
+\addcontentsline{toc}{section}{Appendix C: Benchmarks}
+
+We present a brief summary of model updating benchmarks. First benchmark
+considers the effect of model complexity on updating time. Second
+benchmark considers the effect of data size on model complexity. We run
+\(4\) parallel chains for each model. Results of the benchmarks are
+presented in Table~\ref{tbl-bench1} and Table~\ref{tbl-bench2}
+respectively.
+
+\hypertarget{tbl-bench1}{}
+\begin{longtable}[]{@{}
+  >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.4000}}
+  >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3000}}
+  >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3000}}@{}}
+\caption{\label{tbl-bench1}Benchmark 1.}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\centering
+Model
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Number of Model Parameters
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+\texttt{update\_model()} Runt-Time (seconds)
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\centering
+Model
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Number of Model Parameters
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+\texttt{update\_model()} Runt-Time (seconds)
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\(X1 \rightarrow Y\) & 6 & 10.85 \\
+\(X1 \rightarrow Y \leftarrow X2\) & 20 & 15.79 \\
+\(X1 \rightarrow Y \leftarrow X2; X3 \rightarrow Y\) & 262 & 77.56 \\
+\end{longtable}
+
+\hypertarget{tbl-bench2}{}
+\begin{longtable}[]{@{}
+  >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.4000}}
+  >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3000}}
+  >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3000}}@{}}
+\caption{\label{tbl-bench2}Benchmark 2.}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\centering
+Model
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Number of Observations
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+\texttt{update\_model()} Runt-Time (seconds)
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\centering
+Model
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Number of Observations
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+\texttt{update\_model()} Runt-Time (seconds)
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\(X1 \rightarrow Y\) & 10 & 9.04 \\
+\(X1 \rightarrow Y\) & 100 & 9.31 \\
+\(X1 \rightarrow Y\) & 1000 & 10.56 \\
+\(X1 \rightarrow Y\) & 10000 & 14.57 \\
+\(X1 \rightarrow Y\) & 100000 & 17.25 \\
+\end{longtable}
+
+While model updating is fundamentally a \(O(N)\) time complexity
+operation with respect to model and data size; the exponential growth of
+the parameter space with increasing model complexity places limits on
+feasible computability without further recourse to specialized methods
+for handling large causal models.
 
 
 
