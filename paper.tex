@@ -196,7 +196,7 @@ CausalQueries} %% without formatting
 making, updating, and querying causal models}
 
 %% at least one keyword must be supplied
-\Keywords{causal models, stan, bayes}
+\Keywords{Causal Models, Stan, Bayesian Updating}
 
 %% publication information
 %% NOTE: Typically, this can be left commented and will be filled out by the technical editor
@@ -248,11 +248,11 @@ other variables in the model. Once provided to \texttt{make\_model()},
 a probability distribution over all possible types of causal relations
 between variables (``causal types''), given the causal structure. Given
 a prior over parameters and data over some or all nodes,
-\texttt{update\_model()} deploys a \texttt{stan} model in order to
-generate a posterior distribution over causal models. The function
-\texttt{query\_model()} can then be used to ask any causal query of the
-model, using either the prior distribution, the posterior distribution,
-or a user-specified candidate vector of parameters.
+\texttt{update\_model()} deploys a Stan \citep{carpenter_stan_2017}
+model in order to generate a posterior distribution over causal models.
+The function \texttt{query\_model()} can then be used to ask any causal
+query of the model, using either the prior distribution, the posterior
+distribution, or a user-specified candidate vector of parameters.
 
 In the next section we provide a short motivating example. We then
 describe how the package relates to existing available software.
@@ -267,18 +267,19 @@ details in the final section.
 
 Before providing details on package functionality we illustrate these
 three core functions by showing how to use \texttt{CuasalQueries} to
-replicate the analysis in \citet{chickering1996clinician} (see also
-\citet{ii2023}). \citet{chickering1996clinician} seek to draw inference
-on causal effects in the presence of imperfect compliance. We have
-access to an instrument \(Z\) (a randomly assigned prescription for
-cholesterol medication), which is a cause of \(X\) (treatment uptake)
-but otherwise unrelated to \(Y\) (cholesterol). We imagine we are
-interested in three specific queries. The first is the average causal
-effect of \(X\) on \(Y\). The second is the average effect for units for
-which \(X=0\) and \(Y=0\). The last is the average treatment effect for
-``compliers'': units for which \(X\) responds positively to \(Z\). Thus
-two of these queries are conditional queries, with one conditional on a
-counterfactual quantity.
+replicate the analysis in \citeauthor{chickering_clinicians_1996}
+\citetext{\citeyear{chickering_clinicians_1996}; \citealp[see
+also][]{humphreys_integrated_2023}}. \citet{chickering_clinicians_1996}
+seek to draw inference on causal effects in the presence of imperfect
+compliance. We have access to an instrument \(Z\) (a randomly assigned
+prescription for cholesterol medication), which is a cause of \(X\)
+(treatment uptake) but otherwise unrelated to \(Y\) (cholesterol). We
+imagine we are interested in three specific queries. The first is the
+average causal effect of \(X\) on \(Y\). The second is the average
+effect for units for which \(X=0\) and \(Y=0\). The last is the average
+treatment effect for ``compliers'': units for which \(X\) responds
+positively to \(Z\). Thus two of these queries are conditional queries,
+with one conditional on a counterfactual quantity.
 
 Our data on \(Z\), \(X\), and \(Y\) is complete for all units and looks,
 in ``compact form,'' as follows:
@@ -319,7 +320,7 @@ R> make_model("Z -> X -> Y; X <-> Y") |>
 
 \hypertarget{tbl-lipids}{}
 \begin{table}
-\caption{\label{tbl-lipids}Replication of \citet{chickering1996clinician}. }\tabularnewline
+\caption{\label{tbl-lipids}Replication of \citet{chickering_clinicians_1996}. }\tabularnewline
 
 \centering
 \resizebox{\linewidth}{!}{
@@ -356,8 +357,8 @@ packages}\label{connections-to-existing-packages}}
 The literature on causal inference and its software ecosystem are rich
 and expansive; spanning the social and natural sciences as well as
 computer science and applied mathematics. In the interest of clarity we
-thus briefly contextualize \texttt{CausalQueries\textquotesingle{}}
-scope and functionality within the subset of the causal inference domain
+thus briefly contextualize \texttt{CausalQueries} scope and
+functionality within the subset of the causal inference domain
 addressing the evaluation of causal queries on causal models encoded as
 directed acyclic graphs (DAGs) or structural equation models (SEMs).
 Table~\ref{tbl-software} provides an overview of relevant software and
@@ -366,11 +367,11 @@ discusses key connections, advantages and disadvantages with respect to
 
 \hypertarget{tbl-software}{}
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1574}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1777}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1168}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1320}}
-  >{\centering\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.4010}}@{}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.4000}}@{}}
 \caption{\label{tbl-software}Related software.}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
@@ -381,7 +382,7 @@ Source
 Language
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 Availability
-\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 Scope
 \end{minipage} \\
 \midrule\noalign{}
@@ -395,15 +396,15 @@ Source
 Language
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 Availability
-\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 Scope
 \end{minipage} \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\textbf{causalnex} & \citet{Beaumont2021causalnex} & \textbf{Python} &
-pip installable & \begin{minipage}[t]{\linewidth}\centering
+\texttt{causalnex} & \citet{beaumont_causalnex_2021} & \proglang{Python}
+& pip & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
 \item
@@ -414,8 +415,8 @@ pip installable & \begin{minipage}[t]{\linewidth}\centering
   discrete data
 \end{itemize}
 \end{minipage} \\
-\textbf{causaloptim} & \citet{sachs2023causaloptim} & \textbf{R} & CRAN
-& \begin{minipage}[t]{\linewidth}\centering
+\texttt{causaloptim} & \citet{sachs_general_2023} & \proglang{R} & CRAN
+& \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
 \item
@@ -426,8 +427,8 @@ pip installable & \begin{minipage}[t]{\linewidth}\centering
   binary data
 \end{itemize}
 \end{minipage} \\
-\textbf{pclag} & \citet{kalisch2012pclag} & \textbf{R} & CRAN &
-\begin{minipage}[t]{\linewidth}\centering
+\texttt{pclag} & \citet{kalisch_causal_2012} & \proglang{R} & CRAN &
+\begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
 \item
@@ -436,8 +437,8 @@ pip installable & \begin{minipage}[t]{\linewidth}\centering
   ATEs under linear conditional expectations and no hidden selection
 \end{itemize}
 \end{minipage} \\
-\textbf{autobounds} & \citet{Duarte2023autobounds} & \textbf{Python} &
-not readily installable & \begin{minipage}[t]{\linewidth}\centering
+\texttt{autobounds} & \citet{duarte_automated_2023} & \proglang{Python}
+& not readily installable & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
 \item
@@ -455,7 +456,7 @@ not readily installable & \begin{minipage}[t]{\linewidth}\centering
 One of the most comprehensive pieces of software in the causal modeling
 domain is \texttt{causalnex}. It provides a feature-rich and highly
 optimized set of tools to learn, update and query causal models using
-discrete data. While avoiding the rich model parameterization via
+discrete data. While avoiding the rich model parametrization via
 principal strata (nodal types) employed by \texttt{CausalQueries},
 allows \texttt{causalnex} to easily handle non-binary data and scale to
 large causal models; it substantially restricts the set of possible
@@ -487,19 +488,20 @@ via main nodes and edges in \texttt{CausalQueries} vs explicitly via
 separate disturbance nodes in \texttt{autobounds} and
 \texttt{causaloptim}. While \texttt{CausalQueries} assumes canonical
 form for input DAGs, \texttt{autobounds} and \texttt{causaloptim}
-facilitate cannonicalization. The essential difference between the
+facilitate canonicalization. The essential difference between the
 methods; however, lies in their approach to evaluating queries.
 
 Both \texttt{autobounds} and \texttt{causaloptim} build on seminal
-approaches in \citet{balke1997bounds} to construct bounds of queries,
+approaches in \citet{balke_bounds_1997} to construct bounds of queries,
 using constrained polynomial and linear optimization respectively. In
 contrast, \texttt{CausalQueries} utilizes Bayesian inference to generate
-a posterior over the causal model which is then queried (consistent with
-\citet{chickering1996clinician} and \citet{zhang2022pci}). A key
+a posterior over the causal model which is then queried
+\citep[consistent
+with][]{chickering_clinicians_1996, zhang_partial_2022}. A key
 difference then is the target of inference. The polynomial and linear
 programming approach to querying is in principle suited to handling
 larger causal models, though given their similarity in model
-parameterization, \texttt{autobounds}, \texttt{causaloptim} and
+parametrization, \texttt{autobounds}, \texttt{causaloptim} and
 \texttt{CausalQueries} face similar constraints induced by parameter
 spaces expanding rapidly with model size. The Bayesian approach to model
 updating and querying holds the efficiency advantage that a model can be
@@ -513,11 +515,11 @@ those DAGs, and use the same canonical procedure to form Bayesian
 posteriors over those queries whether or not the queries are identified.
 Thus in principle if researchers are interested in learning about a
 quantity like the local average treatment effect and their model in fact
-satisfies the conditions in \citet{angrist1996identification}, then
+satisfies the conditions in \citet{angrist_identification_1996}, then
 updating will recover valid estimates even if researchers are unaware
 that the local average treatment effect is identified and are ignorant
 of the estimation procedure proposed by
-\citet{angrist1996identification}.
+\citet{angrist_identification_1996}.
 
 There are two broad limitations on the sets of models handled natively
 by \texttt{CausalQueries}. First \texttt{CausalQueries} is designed for
@@ -529,8 +531,8 @@ causal structure and grows rapidly with the number of parents affecting
 a given child. A chain model of the form
 \(A \rightarrow B \rightarrow C \rightarrow D \rightarrow E\) has just
 40 parameters. A model in which \(A, B, C, D\) are all direct ancestors
-of \(E\) has 65544 parameters. Moving from binary to non binary nodes
-has similar effects. The restriction to binary nodes is for
+of \(E\) has \(65,544\) parameters. Moving from binary to non binary
+nodes has similar effects. The restriction to binary nodes is for
 computational and not conceptual reasons. In fact it is possible to
 employ \texttt{CausalQueries} to answer queries from models with non
 binary nodes but in general the computational costs make analysis of
@@ -545,17 +547,18 @@ samples of units that are independent of each other and are
 independently randomly sampled from populations. Thus the basic set up
 does not address problems of sampling, clustering, hierarchical
 structures, or purposive sampling. The broader framework can however be
-used for these purposes (see section 9.4 of \citet{ii2023}). The targets
-of inference are usually case level quantities or population quantities
-and \texttt{CausalQueries} is not well suited for estimating sample
+used for these purposes (see section 9.4 of
+\citet{humphreys_integrated_2023}). The targets of inference are usually
+case level quantities or population quantities and
+\texttt{CausalQueries} is not well suited for estimating sample
 quantities.
 
 \hypertarget{sec-theory}{%
 \section{Statistical model}\label{sec-theory}}
 
 The core conceptual framework is described in Pearl's \emph{Causality}
-\citep{pearl2009causality} but can be summarized as follows (using the
-notation used in \citet{ii2023}):
+\citep{pearl_causality_2009} but can be summarized as follows
+\citep[using the notation proposed in][]{humphreys_integrated_2023}:
 
 \begin{definition}
   
@@ -572,18 +575,18 @@ notation used in \citet{ii2023}):
 By default, \texttt{CausalQueries} takes endogenous nodes to be
 binary.\footnote{\texttt{CausalQueries} can be used also to analyse non
   binary data though with a cost of greatly increased complexity. See
-  section 9.4.1 of \citet{ii2023} for an approach that codes non binary
-  data as a profile of outcomes on multiple binary nodes.} When we
-specify a causal structure we specify which endogenous nodes are
-(possibly) direct causes of a node, \(Y_j\), given other nodes in the
-model. These nodes are called the parents of \(Y_j\), \(PA_j\) (we use
-upper case \(PA_j\) to indicate the collection of nodes and lower case
-\(pa_j\) to indicate a particular set of values that these nodes might
-take on). With discrete valued nodes, it is possible to identify all
-possible ways that a node might respond to its parents. We refer to the
-ways that a node responds as ``nodal type.'' The set of nodal types
-corresponds to principal strata familiar, for instance, in the study of
-instrumental variables \citep{frangakis2002principal}.
+  section 9.4.1 of \citet{humphreys_integrated_2023} for an approach
+  that codes non binary data as a profile of outcomes on multiple binary
+  nodes.} When we specify a causal structure we specify which endogenous
+nodes are (possibly) direct causes of a node, \(Y_j\), given other nodes
+in the model. These nodes are called the parents of \(Y_j\), \(PA_j\)
+(we use upper case \(PA_j\) to indicate the collection of nodes and
+lower case \(pa_j\) to indicate a particular set of values that these
+nodes might take on). With discrete valued nodes, it is possible to
+identify all possible ways that a node might respond to its parents. We
+refer to the ways that a node responds as ``nodal type.'' The set of
+nodal types corresponds to principal strata familiar, for instance, in
+the study of instrumental variables \citep{frangakis_principal_2002}.
 
 If node \(Y_i\) can take on \(k_i\) possible values then the set of
 possible values that can be taken on by parents of \(j\) is
@@ -753,8 +756,8 @@ and querying causal models.
 \section{Making models}\label{sec-make}}
 
 A model is defined in one step in \texttt{CausalQueries} using a
-\texttt{dagitty} syntax \citep{dagitty} in which the structure of the
-model is provided as a statement.
+\texttt{dagitty} syntax \citep{textor_robust_2016} in which the
+structure of the model is provided as a statement.
 
 For instance:
 
@@ -806,8 +809,8 @@ Formally a statement like this is interpreted as:
 where function \(f\) maps from the set of possible values of the parents
 of \(i\) to values of node \(i\) given \(\theta^i\) as described above.
 
-In addition, as we did in the \citet{chickering1996clinician} example,
-it is possible to use two headed arrows
+In addition, as we did in the \citet{chickering_clinicians_1996}
+example, it is possible to use two headed arrows
 (\texttt{\textless{}-\textgreater{}}) to indicate ``unobserved
 confounding'', that is, the presence of an unobserved variable that
 might influence two or more observed variables. In this case condition 3
@@ -898,7 +901,7 @@ for each one.
 
 The first element is a \texttt{statement} which defines how the nodes in
 the model are related, specified by the user using \texttt{dagitty}
-syntax. The second element, \texttt{dag}, is a dataframe that outlines
+syntax. The second element, \texttt{dag}, is a data frame that outlines
 the parent-child relationships within the model. The element
 \texttt{nodes} is simply a list of the names of the nodes in the model.
 Lastly, \texttt{parents\_df,} is a table listing the nodes, indicating
@@ -955,8 +958,7 @@ After updating a model, two additional components are attached to it:
 \begin{itemize}
 \item
   A posterior distribution of the parameters in the model, generated by
-  \texttt{stan}. This distribution reflects the updated parameter
-  values.
+  Stan. This distribution reflects the updated parameter values.
 \item
   A list of other optional objects, \texttt{stan\_objects}. The
   \texttt{stan\_objects} can include the \texttt{stanfit} object and
@@ -990,7 +992,7 @@ Description
 \bottomrule\noalign{}
 \endlastfoot
 \texttt{posterior\_distribution} & The posterior distribution of the
-updated parameters generated by \texttt{stan}. \\
+updated parameters generated by Stan. \textbar{} \\
 \texttt{stan\_objects} & A list of additional objects (see next
 rows). \\
 \texttt{data} & The data used for updating the model, always included in
@@ -998,9 +1000,9 @@ rows). \\
 \texttt{type\_distribution} & The updated distribution of the nodal
 types, appended to \texttt{stan\_objects} by default. \\
 \texttt{w} & A mapping from parameters to event probabilities,
-optionally appended to \texttt{stan\_objects.} \\
-\texttt{stan\_fit} & The \texttt{stanfit} object generated by
-stan,optionally appended to \texttt{stan\_objects.} \\
+optionally appended to \texttt{stan\_objects}. \\
+\texttt{stan\_fit} & The \texttt{stanfit} object generated by Stan,
+optionally appended to \texttt{stan\_objects}. \\
 \end{longtable}
 
 \hypertarget{sec-param-df}{%
@@ -1118,11 +1120,11 @@ As the number of parents increases, keeping track of what each digit
 represents becomes more difficult. For instance, if \(Y\) had three
 parents, its nodal types would have subscripts of eight digits, each
 associated with the value that \(Y\) would take for each combination of
-the three parents. The \texttt{interpret\_type} function provides a
+the three parents. The \texttt{interpret\_type()} function provides a
 clear map to identify what each digit in the subscript represents. See
 the examples below for models with two and three parents.
 
-The \texttt{interpret\_type} function can be called by the user to
+The \texttt{interpret\_type()} function can be called by the user to
 obtain interpretations for the nodal types of each node in the model.
 
 \begin{verbatim}
@@ -1250,7 +1252,7 @@ R> model <- model |> set_parameter_matrix()
 \hypertarget{tailoring-models}{%
 \subsection{Tailoring models}\label{tailoring-models}}
 
-When a \texttt{dagitty} statement is provided to \texttt{make\_data} a
+When a \texttt{dagitty} statement is provided to \texttt{make\_data()} a
 model is formed with a set of default assumptions: in particular there
 are no restrictions placed on nodal types and flat priors are assumed
 over all parameters. These are features that can be adjusted after a
@@ -1667,7 +1669,7 @@ R> make_model("X -> Y") |>
 #>    1    1    1    1    3    1
 \end{verbatim}
 
-Indeed \texttt{set\_priors} allows for the specification of any
+Indeed \texttt{set\_priors()} allows for the specification of any
 non-redundant combination of arguments on the \texttt{param\_names},
 \texttt{node}, \texttt{nodal\_type}, \texttt{param\_set} and
 \texttt{given} columns of \texttt{parameters\_df} to uniquely identify
@@ -1738,7 +1740,7 @@ Caution regarding priors is particularly important when models are not
 identified, as is the case for many of the models considered here. In
 such cases, for some quantities, the marginal posterior distribution
 simply reflects the marginal prior distribution
-\citep{poirier1998revising}.
+\citep{poirier_revising_1998}.
 
 The key point here is to make sure you do not fall into a trap of
 thinking that ``uninformative'' priors make no commitments regarding the
@@ -1747,7 +1749,7 @@ of flat priors for causal quantities can depend on the structure of the
 model. Moreover for some inferences from causal models the priors can
 matter a lot even if you have a lot of data. In such cases it can be
 helpful to know what priors on parameters imply for priors on causal
-quantities of interest (by using \texttt{query\_model}) and to assess
+quantities of interest (by using \texttt{query\_model()}) and to assess
 how much conclusions depend on priors (by comparing results across
 models that vary in their priors).
 
@@ -1755,18 +1757,18 @@ models that vary in their priors).
 \subsubsection{Setting Parameters}\label{parameters}}
 
 By default, models have a vector of parameter values included in the
-\texttt{parameters\_df} dataframe. These are useful for generating data,
-or for situations, such as process tracing, when one wants to make
+\texttt{parameters\_df} data frame. These are useful for generating
+data, or for situations, such as process tracing, when one wants to make
 inferences about causal types (\(\theta\)), given case level data, under
 the assumption that the model is known.
 
 The logic for setting parameters is similar to that for setting priors:
 effectively we need to place values on the probability of nodal types.
-The key difference is that whereas the \(alpha\) value placed on a nodal
-types can be any positive number---capturing our certainty over the
-parameter value---the parameter values must lie in the unit interval,
-\([0,1]\). In general if parameter values are passed that do not lie in
-the unit interval, these are normalized so that they do.
+The key difference is that whereas the \(\alpha\) value placed on a
+nodal types can be any positive number---capturing our certainty over
+the parameter value---the parameter values must lie in the unit
+interval, \([0,1]\). In general if parameter values are passed that do
+not lie in the unit interval, these are normalized so that they do.
 
 Consider the causal model below. It has two parameter sets, one for
 \(X\) and one for \(Y\), with six nodal types, two corresponding to
@@ -1893,11 +1895,11 @@ R> sample_data_2
 \subsubsection{Reshaping data}\label{reshaping-data}}
 
 Whereas data naturally comes in long form, with a row per observation,
-as in the examples above, the data passed to \texttt{stan} is in a
-compact form, which records only the number of units of each data type,
-grouped by data ``strategy''---an indicator of the nodes for which data
-was gathered. \texttt{CausalQueries} includes functions that lets you
-move between these two forms in case of need.
+as in the examples above, the data passed to Stan is in a compact form,
+which records only the number of units of each data type, grouped by
+data ``strategy''---an indicator of the nodes for which data was
+gathered. \texttt{CausalQueries} includes functions that lets you move
+between these two forms in case of need.
 
 \begin{verbatim}
 R> sample_data_2 |> collapse_data(model)
@@ -1931,14 +1933,14 @@ data on \(Y\) and \(X\) only was sought in six cases.
 
 The approach used by the \texttt{CausalQueries} package to updating
 parameter values given observed data uses Stan
-\citep{carpenter2017stan}.
+\citep{carpenter_stan_2017}.
 
 Below we explain the data required by the generic Stan program
 implemented in the package, the structure of that program, and then show
 how to use the package to produce posterior draws of parameters.
 
 \hypertarget{data-for-stan}{%
-\subsection{Data for stan}\label{data-for-stan}}
+\subsection{Data for Stan}\label{data-for-stan}}
 
 We use a generic Stan program that works for all binary causal models.
 The main advantage of the generic program we implement is that it allows
@@ -1984,7 +1986,7 @@ R> sample_data_2 |>
 \subsection{How the Stan program
 works}\label{how-the-stan-program-works}}
 
-The \texttt{stan} model involves the following elements:
+The Stan model involves the following elements:
 
 \begin{itemize}
 \tightlist
@@ -2016,8 +2018,7 @@ corresponding to the Dirichlet priors, \(\alpha\). We make use of the
 fact that \(\lambda^X_0 \sim Gamma(\alpha^X_0,1)\) and
 \(\lambda^X_1 \sim Gamma(\alpha^X_1,1)\) then
 \(\frac{1}{\lambda^X_0 +\lambda^X_1}(\lambda^X_0, \lambda^X_1) \sim Dirichlet(\alpha^X_0, \alpha^X_1)\)\footnote{For
-  a discussion of implementation of this approach in \texttt{stan} see
-  discussion
+  a discussion of implementation of this approach in Stan see discussion
   (here){[}https://discourse.mc-stan.org/t/ragged-array-of-simplexes/1382{]}.}
 
 To illustrate, in the \(X \rightarrow Y\) model we have two parameter
@@ -2090,8 +2091,8 @@ probability of an observed event, within a data strategy, is given by
 summing the probabilities of the types that could give rise to the
 incomplete data. For example \(X\) is observed, but \(Y\) is not, then
 the probability of \(X=0, Y = \text{NA}\) is \(w_{00} +w_{01}\). The
-matrix \(E\) is passed to \texttt{stan} to figure out which event
-probabilities need to be combined for events with missing data.
+matrix \(E\) is passed to Stan to figure out which event probabilities
+need to be combined for events with missing data.
 
 \hypertarget{data-probability}{%
 \subsubsection{Data probability}\label{data-probability}}
@@ -2135,7 +2136,34 @@ chains in parallel can be achieved by setting up a nested parallel
 process. With 8 cores one can run 2 updating processes with 3 parallel
 chains each simultaneously. More generally the number of parallel
 processes at the upper level of the nested parallel structure are given
-by \(\left \lfloor \cfrac{cores}{chains + 1} \right \rfloor\).
+by \(\left \lfloor \frac{cores}{chains + 1} \right \rfloor\).
+
+\begin{verbatim}
+R> library(future)
+R> library(future.apply)
+R> 
+R> chains <- 3
+R> cores <- 8
+R> 
+R> future::plan(list(
++      future::tweak(future::multisession, 
++                    workers = floor(cores/(chains + 1))),
++      future::tweak(future::multisession, 
++                    workers = chains)
++    ))
+R> 
+R> model <- make_model("X -> Y")
+R> data <- list(data_1, data_2)
+R> 
+R> future.apply::future_lapply(data, function(d) {
++  update_model(
++    model = model,
++    data = d,
++    chains = chains,
++    refresh = 0
++  )
++})
+\end{verbatim}
 
 \hypertarget{incomplete-and-censored-data}{%
 \subsection{Incomplete and censored
@@ -2148,19 +2176,19 @@ conditional on observed data. Thus for instance in a
 case if there are positive relations at each stage you may be more
 likely to observe \(M\) in cases in which \(M=1\). However observation
 of \(M\) is still random \emph{conditional} on the observed \(X\) and
-\(Y\) data. The \texttt{stan} model in \texttt{CausalQueries} takes
-account of this kind of sampling naturally by assessing the probability
-of observing a particular pattern of data within each data strategy. For
-a discussion see section 9.2.3.2 of \citet{ii2023}.
+\(Y\) data. The Stan model in \texttt{CausalQueries} takes account of
+this kind of sampling naturally by assessing the probability of
+observing a particular pattern of data within each data strategy. For a
+discussion see section 9.2.3.2 of \citet{humphreys_integrated_2023}.
 
 In addition it is possible to indicate when data has been censored and
-for the \texttt{stan} model to take this into account also. Say for
-instance that we only get to observe \(X\) in cases where \(X=1\) and
-not when \(X=0\). This kind of sampling is non random conditional on
-observables. It is taken account however by indicating to \texttt{stan}
-that the probability of observing a particular data type is 0,
-regardless of parameter values. This is done using the
-\texttt{censored\_types} argument in \texttt{update\_model()}.
+for the Stan model to take this into account also. Say for instance that
+we only get to observe \(X\) in cases where \(X=1\) and not when
+\(X=0\). This kind of sampling is non random conditional on observables.
+It is taken account however by indicating to Stan that the probability
+of observing a particular data type is 0, regardless of parameter
+values. This is done using the \texttt{censored\_types} argument in
+\texttt{update\_model()}.
 
 To illustrate, in the example below we observe perfectly correlated data
 for \(X\) and \(Y\). If we are aware that data in which \(X \neq Y\) has
@@ -2205,8 +2233,8 @@ censored & (Y[X=1] - Y[X=0]) & 0.01 & 0.31\\
 \subsection{Output}\label{output}}
 
 The primary output from \texttt{update\_model()} is a model with an
-attached posterior distribution over model parameters, stored as a
-dataframe in \texttt{model\$posterior\_distribution}. In addition, a
+attached posterior distribution over model parameters, stored as a data
+frame in \texttt{model\$posterior\_distribution}. In addition, a
 distribution of causal types is stored by default and the
 \texttt{stanfit} object and a distribution over event probabilities are
 optionally saved.
@@ -2220,7 +2248,7 @@ functions of causal types and return a distribution over the queries
 that is implied by the distribution over causal types.
 
 \hypertarget{sec-propagation}{%
-\subsection{Calcuating factual and counterfactual
+\subsection{Calculating factual and counterfactual
 quantities}\label{sec-propagation}}
 
 A key step in the calculation of most queries is the assessment of what
@@ -2228,7 +2256,7 @@ outcomes will arise for causal types given different interventions on
 nodes. In practice, we map from causal types to data types by
 propagating realized values on nodes forward in the DAG, moving from
 exogenous or intervened upon nodes to their descendants in generational
-order. The \texttt{realise\_outcomes} function achieves this by
+order. The \texttt{realise\_outcomes()} function achieves this by
 traversing the DAG, while recording for each node's nodal types, the
 values implied by realizations on the node's parents.
 
@@ -2251,13 +2279,14 @@ parent realizations. Finding the index of a Node's realized value in a
 nodal type given parent realizations is equivalent to finding the row
 index in the Cartesian Product matrix corresponding to those parent
 realizations. By definition of the Cartesian product, the number of
-consecutive 0 or 1 elements in a given column is \(2^{columnindex}\),
-when indexing columns from 0. Given a set of parent realizations \(R\)
-indexed from 0, the corresponding row index in the Cartesian Product
-Matrix indexed from 0 can thus be computed via:
-\(row = (\sum_{i = 0}^{|R| - 1} (2^{i} \times R_i))\).
+consecutive \(0\) or \(1\) elements in a given column is
+\(2^{\text{(column index)}}\), when indexing columns from \(0\). Given a
+set of parent realizations \(R\) indexed from \(0\), the corresponding
+row index in the Cartesian Product Matrix indexed from \(0\) can thus be
+computed via:
+\[\text{(row index)} = (\sum_{i = 0}^{|R| - 1} (2^{i} \times R_i)).\]
 
-Calling \texttt{realise\_outcomes} on the above model thus yields:
+Calling \texttt{realise\_outcomes()} on the above model thus yields:
 
 \begin{verbatim}
 R> make_model("X -> Y") |> realise_outcomes()
@@ -2276,8 +2305,8 @@ R> make_model("X -> Y") |> realise_outcomes()
 \end{verbatim}
 
 with row names indicating nodal types and columns realized values.
-Intervening on \(X\) (see \citet{pearl2009causality}) with \(do(X=1)\)
-yields:
+Intervening on \(X\) \citep[see][]{pearl_causality_2009} with
+\(do(X=1)\) yields:
 
 \begin{verbatim}
 R> make_model("X -> Y") |> realise_outcomes(dos = list(X = 1))
@@ -2295,7 +2324,7 @@ R> make_model("X -> Y") |> realise_outcomes(dos = list(X = 1))
 #> 1.11 1 1
 \end{verbatim}
 
-In the same way \texttt{realise\_outcomes} can return the realized
+In the same way \texttt{realise\_outcomes()} can return the realized
 values on all nodes for each causal type given arbitrary interventions.
 
 \hypertarget{sec-syntax}{%
@@ -2303,14 +2332,14 @@ values on all nodes for each causal type given arbitrary interventions.
 
 \texttt{CausalQueries} provides syntax for the formulation of various
 causal queries including queries on all rungs of the ``causal ladder''
-\citep{pearl2018book}: prediction, such as the proportion of units where
-\(Y\) equals 1; intervention, such as the probability that \(Y\) = 1
-when \(X\) is \emph{set} to 1; counterfactuals, such as the probability
-that \(Y\) would be 1 were \(X=1\) given we know \(Y\) is 0 when \(X\)
-was observed to be 0. Queries can be posed at the population level or
-case level and can be unconditional (e.g.~what is the effect of \(X\) on
-\(Y\) for all units) or conditional (for example, the effect f \(X\) on
-\(Y\) for units for whom \(Z\) affects \(X\)).
+\citep{pearl_causality_2009}: prediction, such as the proportion of
+units where \(Y\) equals 1; intervention, such as the probability that
+\(Y\) = 1 when \(X\) is \emph{set} to 1; counterfactuals, such as the
+probability that \(Y\) would be 1 were \(X=1\) given we know \(Y\) is 0
+when \(X\) was observed to be 0. Queries can be posed at the population
+level or case level and can be unconditional (e.g.~what is the effect of
+\(X\) on \(Y\) for all units) or conditional (for example, the effect f
+\(X\) on \(Y\) for units for whom \(Z\) affects \(X\)).
 
 This syntax enables users to write arbitrary causal queries to
 interrogate their models. The heart of querying is figuring out which
@@ -2350,14 +2379,14 @@ R> make_model("X -> Y")  |>
 The key to posing causal queries is being able to ask about values of
 variables given that the values of some other variables are
 ``controlled''. This corresponds to application of the \texttt{do}
-operator in \citet{pearl2009causality}. In \texttt{CausalQueries} this
-is done by using square brackets {[}{]}. Inside the brackets, variables
-that are to be intervened upon are specified.
+operator in \citet{pearl_causality_2009}. In \texttt{CausalQueries} this
+is done by using square brackets \texttt{{[}\ {]}}. Inside the brackets,
+variables that are to be intervened upon are specified.
 
 For instance, consider the query \texttt{Y{[}X=0{]}==1}. This query that
 asks about the types for which \(Y\) equals 1 when \(X\) is \emph{set
 to} 0. In this case, since \(X\) is being intervened to be zero, \(X\)
-is placed inside the brackets. Given that \(Y\) equaling 1 is a
+is placed inside the brackets. Given that \(Y\) equaling \(1\) is a
 condition about potentially observed values, it is expressed as using
 the logical operator \texttt{==}.
 
@@ -2514,7 +2543,7 @@ probabilities over the causal types that correspond to a query.
 \subsubsection{Queries by hand}\label{queries-by-hand}}
 
 Queries can be calculated directly from the prior distribution or the
-posterior distribution provided by \texttt{stan}.
+posterior distribution provided by Stan.
 
 \begin{verbatim}
 R> data  <- data.frame(X = rep(0:1, 50), Y = rep(0:1, 50))
@@ -2548,7 +2577,7 @@ calculate the query with respect to the prior or posterior probability
 distributions.
 
 This can be done for a list of queries using
-\texttt{query\_distribution}:
+\texttt{query\_distribution()} function:
 
 \begin{verbatim}
 R> make_model("X -> Y") |> 
@@ -2569,18 +2598,18 @@ in \(X\)'}
 
 \end{figure}
 
-\texttt{query\_distribution} can also be used when one is interested in
-assessing the value of a query for a \emph{particular case}. In a sense
-this is equivalent to posing a conditional query, querying conditional
-on values in a case. For instance we might consult our posterior lipids
-model and ask about the effect of \(X\) on \(Y\) for a case in which
-\(Z=1, X=1\) and \(Y=1\).
+\texttt{query\_distribution()} can also be used when one is interested
+in assessing the value of a query for a \emph{particular case}. In a
+sense this is equivalent to posing a conditional query, querying
+conditional on values in a case. For instance we might consult our
+posterior lipids model and ask about the effect of \(X\) on \(Y\) for a
+case in which \(Z=1\), \(X=1\) and \(Y=1\).
 
 \begin{verbatim}
 R> lipids_model |>
 +    query_model(query = "Y[X=1] - Y[X=0]",
-+              given = c("X==1 & Y==1 & Z==1"),
-+              using = "posteriors")
++                given = c("X==1 & Y==1 & Z==1"),
++                using = "posteriors")
 \end{verbatim}
 
 \hypertarget{tbl-case-level-query}{}
@@ -2591,7 +2620,7 @@ R> lipids_model |>
 \resizebox{\linewidth}{!}{
 \begin{tabular}{cccccc}
 \toprule
-query & given & mean & sd & cred.low.2.5\% & cred.high.97.5\%\\
+query & given & mean & sd & cred.low & cred.high\\
 \midrule
 Y[X=1] - Y[X=0] & X==1 \& Y==1 \& Z==1 & 0.95 & 0.04 & 0.87 & 1\\
 \bottomrule
@@ -2737,38 +2766,38 @@ requirements}\label{computational-details-and-software-requirements}}
 requirements}
 
 \begin{longtable}[]{@{}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.1800}}
-  >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.4100}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.4100}}@{}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.3000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.7000}}@{}}
 \toprule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-Version & \begin{minipage}[t]{\linewidth}\centering
+Version & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
 \item
   1.0.1
 \end{itemize}
-\end{minipage} & \\
-Availability & \begin{minipage}[t]{\linewidth}\centering
+\end{minipage} \\
+Availability & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
 \item
   Stable Release:
-  https://cran.rstudio.com/web/packages/CausalQueries/index.html
+  \url{https://cran.rstudio.com/web/packages/CausalQueries/index.html}
 \item
-  Development: https://github.com/integrated-inferences/CausalQueries
+  Development:
+  \url{https://github.com/integrated-inferences/CausalQueries}
 \end{itemize}
-\end{minipage} & \\
-Issues & \begin{minipage}[t]{\linewidth}\centering
+\end{minipage} \\
+Issues & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
 \item
-  https://github.com/integrated-inferences/CausalQueries/issues
+  \url{https://github.com/integrated-inferences/CausalQueries/issues}
 \end{itemize}
-\end{minipage} & \\
-Operating Systems & \begin{minipage}[t]{\linewidth}\centering
+\end{minipage} \\
+Operating Systems & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
 \item
@@ -2778,8 +2807,8 @@ Operating Systems & \begin{minipage}[t]{\linewidth}\centering
 \item
   Windows
 \end{itemize}
-\end{minipage} & \\
-Testing Environments OS & \begin{minipage}[t]{\linewidth}\centering
+\end{minipage} \\
+Testing Environments OS & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
 \item
@@ -2791,8 +2820,8 @@ Testing Environments OS & \begin{minipage}[t]{\linewidth}\centering
 \item
   Windows
 \end{itemize}
-\end{minipage} & \\
-Testing Environments R & \begin{minipage}[t]{\linewidth}\centering
+\end{minipage} \\
+Testing Environments R & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
 \item
@@ -2804,15 +2833,15 @@ Testing Environments R & \begin{minipage}[t]{\linewidth}\centering
 \item
   r-devel
 \end{itemize}
-\end{minipage} & \\
-R Version & \begin{minipage}[t]{\linewidth}\centering
+\end{minipage} \\
+R Version & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
 \item
   R(\textgreater= 3.4.0)
 \end{itemize}
-\end{minipage} & \\
-Compiler & \begin{minipage}[t]{\linewidth}\centering
+\end{minipage} \\
+Compiler & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
 \item
@@ -2822,8 +2851,8 @@ Compiler & \begin{minipage}[t]{\linewidth}\centering
 \item
   clang++
 \end{itemize}
-\end{minipage} & \\
-Stan requirements & \begin{minipage}[t]{\linewidth}\centering
+\end{minipage} \\
+Stan requirements & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
 \item
@@ -2843,8 +2872,8 @@ Stan requirements & \begin{minipage}[t]{\linewidth}\centering
 \item
   rstan (\textgreater= 2.26.0)
 \end{itemize}
-\end{minipage} & \\
-R-Packages Depends & \begin{minipage}[t]{\linewidth}\centering
+\end{minipage} \\
+R-Packages Depends & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
 \item
@@ -2852,8 +2881,8 @@ R-Packages Depends & \begin{minipage}[t]{\linewidth}\centering
 \item
   methods
 \end{itemize}
-\end{minipage} & \\
-R-Packages Imports & \begin{minipage}[t]{\linewidth}\centering
+\end{minipage} \\
+R-Packages Imports & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
 \item
@@ -2879,24 +2908,82 @@ R-Packages Imports & \begin{minipage}[t]{\linewidth}\centering
 \item
   lifecycle (\textgreater= 1.0.1)
 \end{itemize}
-\end{minipage} & \\
+\end{minipage} \\
 \end{longtable}
 
 The results in this paper were obtained using
 \proglang{R}\textasciitilde3.4.1 with the
 \pkg{MASS}\textasciitilde7.3.47 package. \proglang{R} itself and all
 packages used are available from the Comprehensive \proglang{R} Archive
-Network (CRAN) at {[}https://CRAN.R-project.org/{]}.
+Network (CRAN) at \url{https://CRAN.R-project.org/}.
+
+\hypertarget{benchmarks}{%
+\section{Benchmarks}\label{benchmarks}}
+
+We present a brief summary of model updating benchmarks. Benchmark 1 we
+considers the effect of model complexity on updating time. Benchmark 2
+considers the effect of data size on model complexity. We run 4 parallel
+chains for each model.
+
+\begin{longtable}[]{@{}
+  >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.4000}}
+  >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3000}}
+  >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\centering
+Model
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Number of Model Parameters
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+\texttt{update\_model()} Runt-Time (seconds)
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\(X1 \rightarrow Y\) & 6 & 10.85 \\
+\(X1 \rightarrow Y \leftarrow X2\) & 20 & 15.79 \\
+\(X1 \rightarrow Y \leftarrow X2; X3 \rightarrow Y\) & 262 & 77.56 \\
+\end{longtable}
+
+\begin{longtable}[]{@{}
+  >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.4000}}
+  >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3000}}
+  >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\centering
+Model
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Number of Observations
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+\texttt{update\_model()} Runt-Time (seconds)
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\(X1 \rightarrow Y\) & 10 & 9.04 \\
+\(X1 \rightarrow Y\) & 100 & 9.31 \\
+\(X1 \rightarrow Y\) & 1000 & 10.56 \\
+\(X1 \rightarrow Y\) & 10000 & 14.57 \\
+\(X1 \rightarrow Y\) & 100000 & 17.25 \\
+\end{longtable}
+
+While model updating is fundamentally a \(O(N)\) time complexity
+operation with respect to model and data size; the exponential growth of
+the parameter space with increasing model complexity places limits on
+feasible computability without further recourse to specialized methods
+for handling large causal models.
 
 \hypertarget{acknowledgments}{%
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, colback=white, arc=.35mm, left=2mm, opacityback=0, breakable, leftrule=.75mm, rightrule=.15mm, bottomrule=.15mm, toprule=.15mm]
+\begin{tcolorbox}[enhanced jigsaw, opacityback=0, breakable, colback=white, bottomrule=.15mm, toprule=.15mm, arc=.35mm, rightrule=.15mm, leftrule=.75mm, left=2mm]
 
-The approach to generating a generic \texttt{stan} function that can
-take data from arbitrary models was developed in key contributions by
-\href{http://jasper-cooper.com/}{Jasper Cooper} and
+The approach to generating a generic function to create Stan code that
+can take data from arbitrary models was developed in key contributions
+by \href{http://jasper-cooper.com/}{Jasper Cooper} and
 \href{http://gsyunyaev.com/}{Georgiy Syunyaev}.
 \href{https://lilymedina.github.io/}{Lily Medina} did magical work
 pulling it all together and developing approaches to characterizing
@@ -2914,7 +3001,7 @@ improved every part of it.
 \addcontentsline{toc}{section}{References}
 
 \renewcommand{\bibsection}{}
-\bibliography{supp/bib.bib}
+\bibliography{supp/cq_jss.bib}
 
 \newpage{}
 
@@ -2923,32 +3010,17 @@ improved every part of it.
 \addcontentsline{toc}{section}{More technical details}
 
 \hypertarget{appendix-stan-code}{%
-\section{Appendix: stan code}\label{appendix-stan-code}}
+\section{Appendix: Stan code}\label{appendix-stan-code}}
 
-Updating is implemented in \texttt{stan} using a single flexible
-\texttt{stan} model.
-
-The data provided to \texttt{stan} is generated by the internal function
-\texttt{prep\_stan\_data} which returns a list of objects that
-\texttt{stan} expects to receive. These include indicators to figure out
-where a parameter set starts (\texttt{l\_starts}, \texttt{l\_ends}) and
-ends and where a data strategy starts and ends
-(\texttt{strategy\_starts}, \texttt{strategy\_ends}), as well as the
-matrices described above.
-
-One can examine the data passed to stan given a model and compact data
-thus:
-
-\begin{verbatim}
-R> CausalQueries:::prep_stan_data(model, compact_data)
-\end{verbatim}
-
-The code for the \texttt{stan} model is show below. After defining a
-helper function the code starts with a block declaring what input data
-is to be expected. Then there is a characterization of parameters and
-the transformed parameters. Then the likelihoods and priors are
-provided. At the end there is a block for generated quantities which can
-be used to append a posterior distribution of causal types to the model.
+Updating is performed using Stan model. The data provided to Stan is
+generated by the internal function \texttt{prep\_stan\_data()} which
+returns a list of objects that Stan expects to receive. The code for the
+Stan model is show below. After defining a helper function the code
+starts with a block declaring what input data is to be expected. Then
+there is a characterization of parameters and the transformed
+parameters. Then the likelihoods and priors are provided. At the end
+there is a block for generated quantities which can be used to append a
+posterior distribution of causal types to the model.
 
 \begin{verbatim}
 functions{
