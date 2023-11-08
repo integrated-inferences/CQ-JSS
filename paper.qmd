@@ -1,7 +1,7 @@
 ---
 title: "Making, Updating, and Querying Causal Models using `CausalQueries`"
 abstract: "A guide to the [R]{.proglang} package `CausalQueries`  for making, updating, and querying causal models"
-keywords-formatted: [Causal Models, Stan, Bayesian Updating]
+keywords-formatted: [causal model, bayesian updating, DAG, Stan]
 author:
   - name: Till Tietz
     affiliations:
@@ -40,7 +40,7 @@ format:
     knitr: 
       opts_chunk:
         prompt: true
-        comment: "#>"
+        # comment: "#>"
         dev: "tikz"
 bibliography: supp/cq_jss.bib
 fontsize: 11pt
@@ -68,7 +68,6 @@ library(kableExtra)
 library(tikzDevice)
 
 set.seed(20231018)
-
 ```
 
 ## Introduction: Causal models {#sec-intro}
@@ -79,7 +78,7 @@ In the next section we provide a short motivating example. We then describe how 
 
 ## Motivating example
 
-Before providing details on package functionality we illustrate these three core functions by showing how to use `CuasalQueries` to replicate the analysis in @chickering_clinicians_1996 [see also @humphreys_integrated_2023]. @chickering_clinicians_1996 seek to draw inference on causal effects in the presence of imperfect compliance. We have access to an instrument $Z$ (a randomly assigned prescription for cholesterol medication), which is a cause of $X$ (treatment uptake) but otherwise unrelated to $Y$ (cholesterol). We imagine we are interested in three specific queries. The first is the average causal effect of $X$ on $Y$. The second is the average effect for units for which $X=0$ and $Y=0$. The last is the average treatment effect for "compliers": units for which $X$ responds positively to $Z$. Thus two of these queries are conditional queries, with one conditional on a counterfactual quantity.
+Before providing details on package functionality we illustrate these three core functions by showing how to use `CuasalQueries` to replicate the analysis in [@chickering_clinicians_1996; see also @humphreys_integrated_2023]. @chickering_clinicians_1996 seek to draw inference on causal effects in the presence of imperfect compliance. We have access to an instrument $Z$ (a randomly assigned prescription for cholesterol medication), which is a cause of $X$ (treatment uptake) but otherwise unrelated to $Y$ (cholesterol). We imagine we are interested in three specific queries. The first is the average causal effect of $X$ on $Y$. The second is the average effect for units for which $X=0$ and $Y=0$. The last is the average treatment effect for "compliers": units for which $X$ responds positively to $Z$. Thus two of these queries are conditional queries, with one conditional on a counterfactual quantity.
 
 Our data on $Z$, $X$, and $Y$ is complete for all units and looks, in "compact form," as follows:
 
@@ -142,15 +141,11 @@ results |>
     align = "c",
     escape = TRUE, 
     linesep = "") |> 
-  kableExtra::kable_classic_2(latex_options = c("scale_down")) |> 
-  kableExtra::footnote(
-    general = "Rows 1 and 2 replicate results in Chickering and Pearl (1996); row 3 returns inferences for complier average effects.",
-    escape = FALSE, fixed_small_size = TRUE, threeparttable = TRUE, general_title = ""
-  )
+  kableExtra::kable_classic_2(latex_options = c("scale_down"))
 
 ```
 
-The output is a data frame with estimates, posterior standard deviations, and credibility intervals. For example the data frame produced by the code above is shown in @tbl-lipids.
+The output is a data frame with estimates, posterior standard deviations, and credibility intervals. For example the data frame produced by the code above is shown in @tbl-lipids. In the table rows 1 and 2 replicate results in @chickering_clinicians_1996, while row 3 returns inferences for complier average effects.
 
 As we describe below, the same basic procedure of making, updating, and querying models, can be used (up to computational constraints) for arbitrary causal models, for different types of data structures, and for all causal queries that can be posed of the causal model.
 
@@ -234,7 +229,7 @@ In cases in which there is no unobserved confounding, we take the probability di
 
 In cases in which there is confounding, the logic is essentially the same except that we need to specify enough parameters to capture the joint distribution over nodal types for different nodes.
 
-We make use of the causal structure to simplify. As an example, for the lipids model, the full joint distribution of nodal types can be simplified as in @eq-join.
+We make use of the causal structure to simplify. As an example, for the Lipids model, the full joint distribution of nodal types can be simplified as in @eq-join.
 
 $$
 \Pr(\theta^Z = \theta^Z_1, \theta^X = \theta^X_{10}, \theta^Y = \theta^Y_{11}) = 
@@ -265,7 +260,7 @@ w_{01} & = & \lambda^X_0(\lambda^Y_{11} + \lambda^Y_{10})\\
 w_{10} & = & \lambda^X_1(\lambda^Y_{00} + \lambda^Y_{10})\\
 w_{11} & = & \lambda^X_1(\lambda^Y_{11} + \lambda^Y_{01})\end{array} \right.$$
 
-For concreteness: @tbl-lipidspar illustrates key values for the lipids model. We see here that we have two types for node $Z$, four for $X$ (representing the strata familiar from instrumental variables analysis: never takers, always takers, defiers, and compliers) and 4 for $Y$. For $Z$ and $X$ we have parameters corresponding to probability of these nodal types. For instance `Z.0` is the probability that $Z=1$. `Z.1` is the complementary probability that $Z=1$. Things are little more complicated for distributions on nodal types for $Y$ however: because of confounding between $X$ and $Y$ we have parameters that capture the conditional probability of the nodal types for $Y$ *given* the nodal types for $X$. We see there are four sets of these parameters.
+For concreteness: @tbl-lipidspar illustrates key values for the Lipids model. We see here that we have two types for node $Z$, four for $X$ (representing the strata familiar from instrumental variables analysis: never takers, always takers, defiers, and compliers) and 4 for $Y$. For $Z$ and $X$ we have parameters corresponding to probability of these nodal types. For instance `Z.0` is the probability that $Z=1$. `Z.1` is the complementary probability that $Z=1$. Things are little more complicated for distributions on nodal types for $Y$ however: because of confounding between $X$ and $Y$ we have parameters that capture the conditional probability of the nodal types for $Y$ *given* the nodal types for $X$. We see there are four sets of these parameters.
 
 ```{r}
 #| label: tbl-lipidspar
@@ -283,8 +278,8 @@ with_pars$parameters_df |>
     booktabs = TRUE,
     align = "c",
     escape = TRUE, 
-    linesep = "") 
-
+    linesep = "") |> 
+  kableExtra::kable_classic_2()
 ```
 
 The final column shows a sample set of parameter values. Together the parameters describe a full joint probability distribution over types for $Z$, $X$ and $Y$ that is faithful to the graph.
@@ -326,7 +321,7 @@ Formally a statement like this is interpreted as:
 
     -   $\Pr(\theta^i = \theta^i_k) = \lambda^i_k$
 
-3.  Independence assumptions:\
+3.  Independence assumptions:
 
     -   $\theta_i \perp\!\!\! \perp \theta_j, i\neq j$
 
@@ -431,7 +426,7 @@ After updating a model, two additional components are attached to it:
 +--------------------------+------------------------------------------------------------------------------------------+
 | Element                  | Description                                                                              |
 +==========================+==========================================================================================+
-| `posterior_distribution` | The posterior distribution of the updated parameters generated by Stan. \|               |
+| `posterior_distribution` | The posterior distribution of the updated parameters generated by Stan.                  |
 +--------------------------+------------------------------------------------------------------------------------------+
 | `stan_objects`           | A list of additional objects (see next rows).                                            |
 +--------------------------+------------------------------------------------------------------------------------------+
@@ -476,8 +471,7 @@ make_model("X -> Y")$parameters_df |>
     align = "c",
     escape = TRUE, 
     linesep = "") |> 
-  kableExtra::kable_classic_2(latex_options = c("scale_down")) |>
-  kable_styling(latex_options = "HOLD_position")
+  kableExtra::kable_classic_2(latex_options = c("scale_down", "HOLD_position"))
 ```
 
 Here, as in @tbl-lipidspar, each row in the data frame corresponds to a single parameter.
@@ -552,10 +546,9 @@ When a model is created, the full set of causal types is identified. These are s
 #| echo: true
 
 lipids_model$causal_types |> head()
-
 ```
 
-In the lipids model there are $2\times 4\times 4 = 32$ causal types. A model with $n_j$ nodal types at node $j$ has $\prod_jn_j$ causal types. Thus the set of causal types can be large.
+In the Lipids model there are $2\times 4\times 4 = 32$ causal types. A model with $n_j$ nodal types at node $j$ has $\prod_jn_j$ causal types. Thus the set of causal types can be large.
 
 Knowledge of a causal type tells us what values a unit would take, on all nodes, whether or not there are interventions. For example for a model $X \rightarrow M \rightarrow Y$ a type $\theta = (\theta^X_0, \theta^M_{01}, \theta^Y_{10})$ would imply data $(X=0, M=0, Y=1)$ absent any intervention. (The converse of this, of course, is the key to updating: observation of data $(X=0, M=0, Y=1)$ result in more weight placed on $\theta^X_0$, $\theta^M_{01}$, and $\theta^Y_{10})$.) The general approach used by `CausalQueries` for calculating outcomes from causal types is given in @sec-propagation.
 
@@ -570,19 +563,17 @@ The parameter matrix---the "$P$ matrix"---can be added to the model to provide t
 #| echo: true
 
 make_model("X -> Y") |> get_parameter_matrix()
-
 ```
 
-The probability of a causal type is given by the product of the parameter values for parameters whose row in the $P$ matrix contains a 1.
-
-Later (e.g. @tbl-confound-params-mat) we will see examples where the $P$ matrix helps keep track of parameters that are created when confounding is added to a model.
+The probability of a causal type is given by the product of the parameter values for parameters whose row in the $P$ matrix contains a $1$. Later (e.g. @tbl-confound-param-matrix) we will see examples where the $P$ matrix helps keep track of parameters that are created when confounding is added to a model.
 
 The parameter matrix is generated on the fly as needed, but it can also be added to the model using `set_parameter_matrix()`, which can sometimes be useful to speed up operations:
 
 ```{r}
 #| echo: true
 #| eval: false
-model <- model |> set_parameter_matrix()
+
+make_model("X -> Y") |> set_parameter_matrix()
 ```
 
 ### Tailoring models
@@ -593,80 +584,24 @@ When a `dagitty` statement is provided to `make_data()` a model is formed with a
 
 Sometimes for theoretical or practical reasons it is useful to constrain the set of types. In `CausalQueries` this is done at the level of nodal types, with restrictions on causal types following from restrictions on nodal types.
 
-To illustrate, in analyses of data with imperfect compliance, like we saw in our motivating `lipids` model example, it is common to impose a monotonicity assumption: that $X$ does not respond negatively to $Z$. This is one of the conditions needed to interpret instrumental variables estimates as (consistent) estimates of the complier average treatment effect.
+To illustrate, in analyses of data with imperfect compliance, like we saw in our motivating `Lipids` model example, it is common to impose a monotonicity assumption: that $X$ does not respond negatively to $Z$. This is one of the conditions needed to interpret instrumental variables estimates as (consistent) estimates of the complier average treatment effect.
 
-In `CausalQueries` we impose this assumption thus:
+In `CausalQueries` we can impose this assumption as follows:
 
 ```{r}
 #| echo: true
 #| eval: true
 
 model_restricted <- 
-  make_model("Z -> X -> Y; X <-> Y")   |> 
+  make_model("Z -> X -> Y; X <-> Y") |> 
   set_restrictions("X[Z=1] < X[Z=0]")
-
 ```
 
-in words: we restrict by removing types for which $X$ is decreasing in $Z$. If we wanted to retain only this nodal type, rather than remove it, we could do so by stipulating `keep = FALSE`.
+In words: we restrict by removing types for which $X$ is decreasing in $Z$. If we wanted to retain only this nodal type, rather than remove it, we could do so by stipulating `keep = FALSE`. Users can use `get_parameter_matrix(model_restricted)` to view the resulting parameter matrix in which both the set of parameters and the set of causal types are restricted.
 
-```{r}
-#| label: tbl-lipids2
-#| tbl-cap: "Monotonic model."
-#| echo: false
-#| eval: false
+`CausalQueries` allows restrictions to be set in many other ways:
 
-if (params$run) {
- 
-  model_restricted |>
-  update_model(lipids_data, refresh = 0) |>
-    readr::write_rds(file = "saved/lipids_model_list.rds")
-}
-  
-readr::read_rds(file = "saved/lipids_model_list.rds") |>
-  query_model(query = "Y[X=1] - Y[X=0]",
-              given = "X[Z=1] > X[Z=0]",
-              using = "posteriors")  |> 
-  dplyr::select(query, given, mean, sd, starts_with("cred")) |>
-  knitr::kable(
-    digits = 2,
-    booktabs = TRUE,
-    align = "c",
-    escape = TRUE, 
-    linesep = "") |> 
-  kableExtra::kable_classic_2(latex_options = c("scale_down")) |> 
-  kableExtra::footnote(
-    general = "Estimates of complier average effects for model with  monotonicity restrictions.",
-    escape = FALSE, fixed_small_size = TRUE, threeparttable = TRUE, general_title = ""
-  )
-
-```
-
-We can use `get_parameter_matrix(model)` to view the resulting parameter matrix in which both the set of parameters and the set of causal types are restricted.
-
-<!-- LM: No need to include the code if the output is not displayed -->
-
-```{r}
-#| label: get-param-matrix-restrict
-#| echo: true
-#| eval: false
-#| include: false
-
-get_parameter_matrix(model)
-
-```
-
-Setting restrictions sometimes involves using causal syntax; see @sec-syntax for a guide the syntax used by `CausalQueries`.
-
-<!-- GS: Do we need to add this section? -->
-
-Note:
-
--   Restrictions have to operate on nodal types: restrictions on *levels* of endogenous nodes are not allowed. This, for example, will fail: `make_model("X -> Y") |> set_restrictions(statement =  "(Y == 1)")`. The reason is that it requests a correlated restriction on nodal types for `X` and `Y` which involves undeclared confounding.
--   Restrictions implicitly assume fixed values for *all* parents of a node. For instance: `make_model("A -> B <- C") |> set_restrictions("(B[C=1]==1)")` is interpreted as shorthand for the restriction `"B[C = 1, A = 0]==1 | B[C = 1, A = 1]==1"`. The `join_by` argument can be used to indicate "and" rather than "or" relations on omitted parents.
--   To place restrictions on multiple nodes at the same time, provide these as a vector of restrictions. This is not permitted: `set_restrictions("Y[X=1]==1 & X==1")`, since it requests correlated restrictions. This however is allowed: `set_restrictions(c("Y[X=1]==1", "X==1"))`.
--   Use the `keep` argument to indicate whether nodal types should be dropped (default) or retained.
--   Restrictions based on causal statements can use helpers, `decreasing()`, `increasing()`, `complements()` and similar. For instance `set_restrictions(decreasing("X", "Y"))`
--   Restrictions can be set using nodal type labels.
+-   Using nodal type labels
 
 ```{r}
 #| label: set-restrictions1
@@ -678,7 +613,7 @@ make_model("S -> C -> Y <- R <- X; X -> C -> R") |>
                    keep = TRUE)
 ```
 
--   Wild cards can be used in nodal type labels:
+-   Using wild cards in nodal type labels
 
 ```{r}
 #| label: set-restrictions2
@@ -689,56 +624,42 @@ make_model("X -> Y") |>
   set_restrictions(labels = list(Y = "?0"))
 ```
 
--   in models with confounding restrictions can be added to nodal types conditional on the values of other nodal types; this is done using a "given" argument.
+-   In models with confounding restrictions can be added to nodal types conditional on the values of other nodal types; this is done using a `given` argument.
 
 ```{r}
+#| label: set-restrictions3
 #| echo: true
 #| eval: false
-model <- make_model("X -> Y -> Z; X <-> Z") %>%
- set_restrictions(labels = list(X = '0', Y = c('00', '11'), Z = '00'), 
-                  given = c(NA, NA, 'X.1')) |>
-  get_parameter_matrix() 
+
+model <- 
+  make_model("X -> Y -> Z; X <-> Z") |>
+  set_restrictions(labels = list(X = '0', Y = c('00', '11'), Z = '00'), 
+                   given = c(NA, NA, 'X.1'))
 ```
 
-```{r}
-#| label: tbl-confound-params-mat
-#| tbl-cap: "Restrictions on models with confounds."
-#| echo: false
-#| eval: true
-model <- make_model("X -> Y -> Z; X <-> Z") %>%
- set_restrictions(labels = list(X = '0', Y = c('00', '11'), Z = '00'), 
-                  given = c(NA, NA, 'X.1'))
-
-
-get_parameter_matrix(model) |>   knitr::kable(
-    digits = 2,
-    booktabs = TRUE,
-    align = "c",
-    escape = TRUE, 
-    linesep = "")  
-```
+Setting restrictions sometimes involves using causal syntax (see @sec-syntax for a guide the syntax used by `CausalQueries`). Help file in `?set_restrictions` provides further details and examples on restrictions users can set.
 
 #### Allowing confounding {#sec-confounding}
 
 Unobserved confounding between two (or more) nodes arises when the nodal types for the nodes are not independent.
 
-In the $X \rightarrow Y$ graph, for instance, there are 2 nodal types for $X$ and 4 for $Y$. There are thus 8 joint nodal types (or causal types), as shown in @tbl-joint.
+In the $X \rightarrow Y$ graph, for instance, there are $2$ nodal types for $X$ and $4$ for $Y$. There are thus 8 joint nodal types (or causal types), as shown in @tbl-joint.
 
-+------------------------------+----------------------------------+----------------------------------+----------------------+
-| $\theta^Y$ **\\** $\theta^X$ | **0**                            | **1**                            | $\sum$               |
-+:============================:+:================================:+:================================:+:====================:+
-| **00**                       | $\Pr(\theta^X_0, \theta^Y_{00})$ | $\Pr(\theta^X_1, \theta^Y_{00})$ | $\Pr(\theta^Y_{00})$ |
-+------------------------------+----------------------------------+----------------------------------+----------------------+
-| **10**                       | $\Pr(\theta^X_0, \theta^Y_{10})$ | $\Pr(\theta^X_1, \theta^Y_{10})$ | $\Pr(\theta^Y_{10})$ |
-+------------------------------+----------------------------------+----------------------------------+----------------------+
-| **01**                       | $\Pr(\theta^X_0, \theta^Y_{01})$ | $\Pr(\theta^X_1, \theta^Y_{01})$ | $\Pr(\theta^Y_{01})$ |
-+------------------------------+----------------------------------+----------------------------------+----------------------+
-| **11**                       | $\Pr(\theta^X_0, \theta^Y_{11})$ | $\Pr(\theta^X_1, \theta^Y_{11})$ | $\Pr(\theta^Y_{11})$ |
-+------------------------------+----------------------------------+----------------------------------+----------------------+
-| $\sum$                       | $\Pr(\theta^X_0)$                | $\Pr(\theta^X_1)$                | 1                    |
-+------------------------------+----------------------------------+----------------------------------+----------------------+
++-----------------+----------------------------------+----------------------------------+----------------------+
+|                 | $\theta^X_{0}$                   | $\theta^X_{1}$                   | $\sum$               |
++:===============:+:================================:+:================================:+:====================:+
+| $\theta^Y_{00}$ | $\Pr(\theta^X_0, \theta^Y_{00})$ | $\Pr(\theta^X_1, \theta^Y_{00})$ | $\Pr(\theta^Y_{00})$ |
++-----------------+----------------------------------+----------------------------------+----------------------+
+| $\theta^Y_{10}$ | $\Pr(\theta^X_0, \theta^Y_{10})$ | $\Pr(\theta^X_1, \theta^Y_{10})$ | $\Pr(\theta^Y_{10})$ |
++-----------------+----------------------------------+----------------------------------+----------------------+
+| $\theta^Y_{01}$ | $\Pr(\theta^X_0, \theta^Y_{01})$ | $\Pr(\theta^X_1, \theta^Y_{01})$ | $\Pr(\theta^Y_{01})$ |
++-----------------+----------------------------------+----------------------------------+----------------------+
+| $\theta^Y_{11}$ | $\Pr(\theta^X_0, \theta^Y_{11})$ | $\Pr(\theta^X_1, \theta^Y_{11})$ | $\Pr(\theta^Y_{11})$ |
++-----------------+----------------------------------+----------------------------------+----------------------+
+| $\sum$          | $\Pr(\theta^X_0)$                | $\Pr(\theta^X_1)$                | 1                    |
++-----------------+----------------------------------+----------------------------------+----------------------+
 
-: Nodal Types in $X \rightarrow Y$ Model. {#tbl-joint} {tbl-colwidths="\[25,25,25,25\]"}
+: Nodal types in $X \rightarrow Y$ model. {#tbl-joint tbl-colwidths="\[25,25,25,25\]"}
 
 @tbl-joint has eight interior elements and so an unconstrained joint distribution would have $7$ degrees of freedom. A no confounding assumption means that $\Pr(\theta^X | \theta^Y) = \Pr(\theta^X)$, or $\Pr(\theta^X, \theta^Y) = \Pr(\theta^X)\Pr(\theta^Y)$. In this case we just put a distribution on the marginals and there would be $3$ degrees of freedom for $Y$ and $1$ for $X$, totaling $4$ rather than $7$.
 
@@ -753,7 +674,7 @@ confounded <- make_model("X -> Y ; X <-> Y")
 
 ```{r}
 #| label: tbl-confound-params-df
-#| tbl-cap: "Parameters Data Frame for Model with Confounding."
+#| tbl-cap: "Parameters data frame for model with confounding."
 #| echo: false
 #| eval: true
 
@@ -766,8 +687,7 @@ confounded$parameters_df |>
     align = "c",
     escape = TRUE, 
     linesep = "") |> 
-  kableExtra::kable_classic_2(latex_options = c("scale_down"))|> 
- kable_styling(latex_options = "HOLD_position")
+  kableExtra::kable_classic_2(latex_options = c("scale_down", "HOLD_position"))
 ```
 
 The parameters data frame for this model would have two parameter families for parameters associated with the node $Y$. Each family captures the conditional distribution of $Y$'s nodal types, given $X$. For instance the parameter `Y01_X.1` can be interpreted as $\Pr(\theta^Y = \theta^Y_{01} | X=1)$. See again @tbl-lipidspar for an example of a parameters matrix with confounding.
@@ -833,7 +753,7 @@ statements <- list("X -> Y <- W",
    dof <- function(statement)
        make_model(statement, add_causal_types = FALSE)$parameters_df |>
        group_by(param_set) |>
-       summarize(n  = n() -1) |>
+       summarize(n  = n() - 1) |>
        pull(n) |>
        sum()
    
@@ -850,7 +770,7 @@ data.frame(Model = statements |> unlist(),
 
 #### Setting Priors {#priors}
 
-Priors on model parameters can be added to the parameters data frame. The priors are interpreted as "alpha" arguments for a Dirichlet distribution. The Dirichlet distribution is a probability distribution over an $n-1$ dimensional unit simplex. It can be thought of as a generalization of the Beta distribution and is parameterized by an $n$-dimensional positive vector $\alpha$. Thus for example a Dirichlet with $\alpha = (1, 1, 1, 1, 1)$ gives a probability distribution over all non negative $5$-dimensional vectors that sum to $1$, e.g. $(0.1, 0.1, 0.1, 0.1, 0.6)$ or $(0.1, 0.2, 0.3, 0.3, 0.1)$. This particular value for $\alpha$ implies that all such vectors are equally likely. Other values for $\alpha$ can be used to control the expectation for each dimension as well as certainty. Thus for instance the vector $\alpha = (100, 1, 1, 1, 100)$ would result in more weight on distributions that are close to $(0.5, 0, 0, 0, 0.5)$.
+Priors on model parameters can be added to the parameters data frame. The priors are interpreted as "alpha" arguments for a Dirichlet distribution. The Dirichlet distribution is a probability distribution over an $n-1$ dimensional unit simplex. It can be thought of as a generalization of the Beta distribution and is parametrized by an $n$-dimensional positive vector $\alpha$. Thus for example a Dirichlet with $\alpha = (1, 1, 1, 1, 1)$ gives a probability distribution over all non negative $5$-dimensional vectors that sum to $1$, e.g. $(0.1, 0.1, 0.1, 0.1, 0.6)$ or $(0.1, 0.2, 0.3, 0.3, 0.1)$. This particular value for $\alpha$ implies that all such vectors are equally likely. Other values for $\alpha$ can be used to control the expectation for each dimension as well as certainty. Thus for instance the vector $\alpha = (100, 1, 1, 1, 100)$ would result in more weight on distributions that are close to $(0.5, 0, 0, 0, 0.5)$.
 
 In `CausalQueries`, priors are generally specified over the distribution of nodal types (or over the conditional distribution of nodal types, when there is confounding). Thus for instance in an $X \rightarrow Y$ model we have one Dirichlet distribution over the two types for $\theta^X$ and one Dirichlet distribution over the four types for $\theta^Y$.
 
@@ -861,11 +781,11 @@ By default, priors are set to unity, corresponding to uniform priors. To retriev
 #| echo: true
 #| eval: true
 
-make_model("X -> Y") |> get_priors()
-
+make_model("X -> Y") |> 
+  get_priors()
 ```
 
-Alternatively you could set Jeffreys priors using `set_priors` as follows:
+Alternatively you could set Jeffreys priors using `set_priors()` as follows:
 
 ```{r}
 #| label: set-priors
@@ -877,7 +797,7 @@ make_model("X -> Y") |>
 
 ```
 
-You can also add custom priors. Custom priors are most simply specified by being added as a vector of numbers using `set_priors`. For instance:
+You can also add custom priors. Custom priors are most simply specified by being added as a vector of numbers using `set_priors()`. For instance:
 
 ```{r}
 #| label: set-priors-custom
@@ -988,7 +908,6 @@ make_model("X -> Y") |>
 
 make_model("X -> M -> Y") |>
   query_model("Y[X=1] > Y[X=0]", using = "priors")
-
 ```
 
 ```{r}
@@ -1044,10 +963,9 @@ Consider the causal model below. It has two parameter sets, one for $X$ and one 
 
 make_model("X -> Y") |> 
   get_parameters()
-
 ```
 
-The example below illustrates a change in the value of the parameter $Y$ in the case it is increasing in $X$. Here nodal type `Y.Y01` is set to be 0.5, while the other nodal types of this parameter set were renormalized so that the parameters in the set still sum to one.
+The example below illustrates a change in the value of the parameter $Y$ in the case it is increasing in $X$. Here nodal type `Y.Y01` is set to be 0.5, while the other nodal types of this parameter set were re-normalized so that the parameters in the set still sum to one.
 
 ```{r}
 #| label: set-parameters
@@ -1112,14 +1030,14 @@ The function `make_data` allows you to draw data like this if you specify a data
 #| echo: true
 #| eval: true
 #| message: false
-set.seed(1)
 
 sample_data_2 <-
   make_data(model,
             n = 8,
             nodes = list(c("X", "Y"), "M"),
             probs = list(1, .5),
-            subsets = list(TRUE, "X==1 & Y==0"))
+            subsets = list(TRUE, "X==1 & Y==0"),
+            verbose = FALSE)
 
 sample_data_2
 ```
@@ -1166,24 +1084,19 @@ The internal function `prep_stan_data()` takes model and data as arguments and p
 sample_data_2 |> 
   collapse_data(model = model) |> 
   CausalQueries:::prep_stan_data(model = model)
-
 ```
 
 ### How the Stan program works
 
-The Stan model involves the following elements:
-
--   A specification of priors over sets of parameters
--   A mapping from parameters to event probabilities, $w$
--   A likelihood function.
+The Stan model involves the following elements: (1) a specification of priors over sets of parameters, (2) a mapping from parameters to event probabilities, $w$, and (3) a likelihood function. Below we describe each of those elements in more details.
 
 #### Probability distributions over parameter sets
 
-We are interested in "sets" of parameters. In the case without confounding these sets correspond to the nodal types for each node: we have a probability distribution over the set of nodal types. In cases with confounding these are sets of nodal types for a give node *given* values of other nodes: we have characterize the probability of each nodal type in a set given the values of nodal types for other nodes.
+We are interested in "sets" of parameters. In the case without confounding these sets correspond to the nodal types for each node: we have a probability distribution over the set of nodal types. In cases with confounding these are sets of nodal types for a given node *given* values of other nodes: we have to characterize the probability of each nodal type in a set given the values of nodal types for other nodes.
 
-We express priors over these parameter sets using multiple Dirichlet distributions. In practice because we are dealing with multiple simplices of varying length, it is easier to express priors over gamma distributions with a unit scale parameter and shape parameter corresponding to the Dirichlet priors, $\alpha$. We make use of the fact that $\lambda^X_0 \sim Gamma(\alpha^X_0,1)$ and $\lambda^X_1 \sim Gamma(\alpha^X_1,1)$ then $\frac{1}{\lambda^X_0 +\lambda^X_1}(\lambda^X_0, \lambda^X_1) \sim Dirichlet(\alpha^X_0, \alpha^X_1)$[^5]
+To illustrate, in the $X \rightarrow Y$ model we have two parameter sets (`param_sets`). The first is $\lambda^X \in \{\lambda^X_0, \lambda^X_1\}$ whose elements give the probability that $X$ is $0$ or $1$. These two probabilities sum to one. The second parameter set is $\lambda^Y \in \{\lambda^Y_{00}, \lambda^Y_{10}, \lambda^Y_{01} \lambda^Y_{11}\}$. These are also probabilities and their values sum to one. Note that we have $6$ parameters but just $1 + 3 = 4$ degrees of freedom.
 
-To illustrate, in the $X \rightarrow Y$ model we have two parameter sets (`param_sets`). The first is $\lambda^X \in \{\lambda^X_0, \lambda^X_1\}$ whose elements give the probability that $X$ is 0 or 1. These two probabilities sum to one. The second parameter set is $\lambda^Y \in \{\lambda^Y_{00}, \lambda^Y_{10}, \lambda^Y_{01} \lambda^Y_{11}\}$. These are also probabilities and their values sum to one. Note in all that we have $6$ parameters but just $1 + 3 = 4$ degrees of freedom. We have a $2$-dimensional Dirichlet distribution over the $X$ nodal types (equivalently, a Beta distribution) and a $4$-dimensional Dirichlet over the $Y$ nodal types.
+We express priors over these parameter sets using multiple Dirichlet distributions. In practice because we are dealing with multiple simplices of varying length, we express priors with a unit scale parameter and shape parameter corresponding to the Dirichlet priors, $\alpha$.[^5] As a result, in $X \rightarrow Y$ example for the parameters associated with $X$ we have: $$ \frac{1}{\lambda^X_0 +\lambda^X_1}(\lambda^X_0, \lambda^X_1) \sim Dirichlet(\alpha^X_0, \alpha^X_1).$$Overall in $X \rightarrow Y$ we have a $2$-dimensional Dirichlet distribution over the $X$ nodal types (equivalently, a Beta distribution) and a $4$-dimensional Dirichlet over the $Y$ nodal types.
 
 #### Event probabilities
 
@@ -1211,14 +1124,15 @@ make_model("X -> Y") |>
     booktabs = TRUE,
     align = "c",
     escape = TRUE, 
-    linesep = "") 
+    linesep = "") |> 
+  kableExtra::kable_classic_2()
 ```
 
 yields @tbl-parmap, which can be used to calculate event probabilities. For instance the probability of data type `X0Y0`, $w_{00}$ is $\lambda^X_0\times \lambda^Y_{00} + \lambda^X_0\times \lambda^Y_{01}$. This is found by combining a parameter vector with the first column of `parmap`, taking the product of the probability of `X.0` and the *sum* of the probabilities for `Y.00` and `Y.01`.
 
 In cases with confounding the approach is similar except that the `parmap` matrix can contain multiple columns for each data type to capture non-independence between nodes.
 
-In the case of incomplete data we first identify the set of "data strategies", where a collection of a data strategy might be of the form "gather data on $X$ and $M$, but not $Y$, for $n_1$ cases and gather data on $X$ and $Y$, but not $M$, for $n_2$ cases. The probability of an observed event, within a data strategy, is given by summing the probabilities of the types that could give rise to the incomplete data. For example $X$ is observed, but $Y$ is not, then the probability of $X=0, Y = \text{NA}$ is $w_{00} +w_{01}$. The matrix $E$ is passed to Stan to figure out which event probabilities need to be combined for events with missing data.
+In the case of incomplete data we first identify the set of "data strategies", where a collection of a data strategy might be of the form "gather data on $X$ and $M$, but not $Y$, for $n_1$ cases and gather data on $X$ and $Y$, but not $M$, for $n_2$ cases. The probability of an observed event, within a data strategy, is given by summing the probabilities of the types that could give rise to the incomplete data. For example $X$ is observed, but $Y$ is not, then the probability of $X=0$, $Y = \text{NA}$ is $w_{00} +w_{01}$. The matrix $E$ is passed to Stan to figure out which event probabilities need to be combined for events with missing data.
 
 #### Data probability
 
@@ -1236,69 +1150,19 @@ To update a `CausalQueries` model with data use:
 update_model(model, data)
 ```
 
-where the data argument is a dataset containing some or all of the nodes in the model. `update_model()` relies on `rstan::sampling()` to draw from posterior distribution and one can pass any additional arguments accepted by `rstan::sampling()` in `...`.
+where the data argument is a dataset containing some or all of the nodes in the model. `update_model()` relies on `rstan::sampling()` to draw from posterior distribution and one can pass any additional arguments accepted by `rstan::sampling()` in `...` . Given that for complex models the model updating can sometimes be slow in (Appendix A)\[#sec-parallel\] we show how users can utilize parallelization to improve computation speed.
 
 <!-- # is it useful to touch on the possibility to update submodels when there is no confounding and no missing data here? -->
 
-### Parallelization
-
-If you have multiple cores you can do parallel processing by including this line before running `CausalQueries`:
-
-```{r}
-#| eval: false
-
-library(parallel)
-
-options(mc.cores = parallel::detectCores())
-
-```
-
-Additionally parallelizing across models or data while running MCMC chains in parallel can be achieved by setting up a nested parallel process. With 8 cores one can run 2 updating processes with 3 parallel chains each simultaneously. More generally the number of parallel processes at the upper level of the nested parallel structure are given by $\left \lfloor \frac{cores}{chains + 1} \right \rfloor$.
-
-<!-- # LM: I don't quite understand why this produces an empty table -->
-
-```{r}
-#| eval: false
-
-
-
-library(future)
-library(future.apply)
-
-chains <- 3
-cores <- 8
-
-future::plan(list(
-      future::tweak(future::multisession, 
-                    workers = floor(cores/(chains + 1))),
-      future::tweak(future::multisession, 
-                    workers = chains)
-    ))
-
-model <- make_model("X -> Y")
-data <- list(data_1, data_2)
-
-future.apply::future_lapply(data, function(d) {
-  update_model(
-    model = model,
-    data = d,
-    chains = chains,
-    refresh = 0
-  )
-})
-
-```
-
 ### Incomplete and censored data
 
-`CausalQueries` assumes that missing data is missing at random, conditional on observed data. Thus for instance in a $X \rightarrow M \rightarrow Y$ model one might choose to observe $M$ in a random set of cases in which $X=1$ and $Y=1$. In that case if there are positive relations at each stage you may be more likely to observe $M$ in cases in which $M=1$. However observation of $M$ is still random *conditional* on the observed $X$ and $Y$ data. The Stan model in `CausalQueries` takes account of this kind of sampling naturally by assessing the probability of observing a particular pattern of data within each data strategy. For a discussion see section 9.2.3.2 of @humphreys_integrated_2023.
+`CausalQueries` assumes that missing data is missing at random, conditional on observed data. Thus for instance in a $X \rightarrow M \rightarrow Y$ model one might choose to observe $M$ in a random set of cases in which $X=1$ and $Y=1$. In that case if there are positive relations at each stage you may be more likely to observe $M$ in cases in which $M=1$. However observation of $M$ is still random conditional on the observed $X$ and $Y$ data. The Stan model in `CausalQueries` takes account of this kind of sampling naturally by assessing the probability of observing a particular pattern of data within each data strategy. For a discussion see section 9.2.3.2 of @humphreys_integrated_2023.
 
 In addition it is possible to indicate when data has been censored and for the Stan model to take this into account also. Say for instance that we only get to observe $X$ in cases where $X=1$ and not when $X=0$. This kind of sampling is non random conditional on observables. It is taken account however by indicating to Stan that the probability of observing a particular data type is 0, regardless of parameter values. This is done using the `censored_types` argument in `update_model()`.
 
 To illustrate, in the example below we observe perfectly correlated data for $X$ and $Y$. If we are aware that data in which $X \neq Y$ has been censored then when we update we do not move towards a belief that $X$ causes $Y$.
 
 ```{r}
-#| label: tbl-censored0
 #| echo: true
 #| eval: false
 
@@ -1336,7 +1200,8 @@ list(uncensored =
     booktabs = TRUE,
     align = "c",
     escape = TRUE, 
-    linesep = "")
+    linesep = "") |> 
+  kableExtra::kable_classic_2()
 ```
 
 ### Output
@@ -1353,10 +1218,10 @@ A key step in the calculation of most queries is the assessment of what outcomes
 
 By way of example, consider the first causal type of a $X \rightarrow Y$ model:
 
-1.  $X$ is exogenous and has a realized value of $0$
-2.  We substitute for $Y$ the value implied by the $00$ nodal type given a $0$ value on $X$, which in turn is $0$ (see nodal types)
+1.  $X$ is exogenous and has a realized value of $0$,
+2.  We substitute for $Y$ the value implied by the $00$ nodal type given a $0$ value on $X$, which in turn is $0$ (see @sec-nodal-types).
 
-Recovering implied values on complex nodal types efficiently at scale, exploits the fact that nodal types are the Cartesian Product of possible parent realizations. Finding the index of a Node's realized value in a nodal type given parent realizations is equivalent to finding the row index in the Cartesian Product matrix corresponding to those parent realizations. By definition of the Cartesian product, the number of consecutive $0$ or $1$ elements in a given column is $2^{\text{(column index)}}$, when indexing columns from $0$. Given a set of parent realizations $R$ indexed from $0$, the corresponding row index in the Cartesian Product Matrix indexed from $0$ can thus be computed via: $$\text{(row index)} = (\sum_{i = 0}^{|R| - 1} (2^{i} \times R_i)).$$
+Recovering implied values on complex nodal types efficiently at scale, exploits the fact that nodal types are the Cartesian product of possible parent realizations. Finding the index of a node's realized value in a nodal type given parent realizations is equivalent to finding the row index in the Cartesian product matrix corresponding to those parent realizations. By definition of the Cartesian product, the number of consecutive $0$ or $1$ elements in a given column is $2^{\text{(column index)}}$, when indexing columns from $0$. Given a set of parent realizations $R$ indexed from $0$, the corresponding row index in the Cartesian product matrix indexed from $0$ can thus be computed via: $$\text{(row index)} = \sum_{i = 0}^{|R| - 1} (2^{i} \times R_i).$$
 
 Calling `realise_outcomes()` on the above model thus yields:
 
@@ -1365,7 +1230,6 @@ Calling `realise_outcomes()` on the above model thus yields:
 #| echo: true
 
 make_model("X -> Y") |> realise_outcomes()
-
 ```
 
 with row names indicating nodal types and columns realized values. Intervening on $X$ [see @pearl_causality_2009] with $do(X=1)$ yields:
@@ -1375,7 +1239,6 @@ with row names indicating nodal types and columns realized values. Intervening o
 #| echo: true
 
 make_model("X -> Y") |> realise_outcomes(dos = list(X = 1))
-
 ```
 
 <!-- # should we show data types for comparison here with all_data_types() ? -->
@@ -1386,49 +1249,44 @@ In the same way `realise_outcomes()` can return the realized values on all nodes
 
 <!-- WRITE SECTION DESCRIBING FACTUAL AND COUNTERFACTULA QUERIES AND THE SYNTAX INCLUDING Role of \[\] AND OF GIVEN `get_query_types` return sets; discuss how all queries related to these sets -->
 
-`CausalQueries` provides syntax for the formulation of various causal queries including queries on all rungs of the "causal ladder" [@pearl_causality_2009]: prediction, such as the proportion of units where $Y$ equals 1; intervention, such as the probability that $Y$ = 1 when $X$ is *set* to 1; counterfactuals, such as the probability that $Y$ would be 1 were $X=1$ given we know $Y$ is 0 when $X$ was observed to be 0. Queries can be posed at the population level or case level and can be unconditional (e.g. what is the effect of $X$ on $Y$ for all units) or conditional (for example, the effect f $X$ on $Y$ for units for whom $Z$ affects $X$).
+`CausalQueries` provides syntax for the formulation of various causal queries including queries on all rungs of the "causal ladder" [@pearl_causality_2009]: prediction, such as the proportion of units where $Y$ equals 1; intervention, such as the probability that $Y$ = 1 when $X$ is *set* to 1; counterfactuals, such as the probability that $Y$ would be 1 were $X=1$ given we know $Y$ is 0 when $X$ was observed to be 0. Queries can be posed at the population level or case level and can be unconditional (e.g. what is the effect of $X$ on $Y$ for all units) or conditional (for example, the effect f $X$ on $Y$ for units for whom $Z$ affects $X$). This syntax enables users to write arbitrary causal queries to interrogate their models.
 
-This syntax enables users to write arbitrary causal queries to interrogate their models. The heart of querying is figuring out which causal types correspond to particular queries.
-
-For factual queries, users may employ logical statements to ask questions about observed conditions, without any intervention. Take, for example, the query mentioned above about the proportion of units where $Y$ equals 1, expressed as `"Y == 1"`. In this case the logical operator == indicates that `CausalQueries` should consider units that fulfill the condition of strict equality where $Y$ equals 1.[^6] When this query is posed, the `get_query_types` function identifies all types that give rise to $Y=1$, absent any interventions.
+The heart of querying is figuring out which causal types correspond to particular queries. For factual queries, users may employ logical statements to ask questions about observed conditions, without any intervention. Take, for example, the query mentioned above about the proportion of units where $Y$ equals 1, expressed as `"Y == 1"`. In this case the logical operator == indicates that `CausalQueries` should consider units that fulfill the condition of strict equality where $Y$ equals 1.[^6] When this query is posed, the `get_query_types` function identifies all types that give rise to $Y=1$, absent any interventions.
 
 ```{r}
-make_model("X -> Y")  |>
-  get_query_types("Y==1")
+make_model("X -> Y")  |> get_query_types("Y==1")
 ```
 
 The key to posing causal queries is being able to ask about values of variables given that the values of some other variables are "controlled". This corresponds to application of the `do` operator in @pearl_causality_2009. In `CausalQueries` this is done by using square brackets `[ ]`. Inside the brackets, variables that are to be intervened upon are specified.
 
-For instance, consider the query `Y[X=0]==1`. This query that asks about the types for which $Y$ equals 1 when $X$ is *set to* 0. In this case, since $X$ is being intervened to be zero, $X$ is placed inside the brackets. Given that $Y$ equaling $1$ is a condition about potentially observed values, it is expressed as using the logical operator `==`.
-
-The set of causal types that meets this query is quite different:
+For instance, consider the query `Y[X=0]==1`. This query that asks about the types for which $Y$ equals $1$ when $X$ is setto $0$. In this case, since $X$ is being intervened to be zero, $X$ is placed inside the brackets. Given that $Y$ equaling $1$ is a condition about potentially observed values, it is expressed as using the logical operator `==`. The set of causal types that meets this query is quite different:
 
 ```{r}
-make_model("X -> Y")  |>
-  get_query_types("Y[X=1]==1")
+make_model("X -> Y")  |> get_query_types("Y[X=1]==1")
 ```
 
-When a node has multiple parents it is possible to set the value of none of the parents, of some of the parents, or of all of the parents. For instance if `X1` and `X2` are parents of `Y` then `Y==1`, `Y[X1 = 1]==1`, and `Y[X1 = 1, X2 = 1]==1` queries cases for which $Y=1$ when, respectively, neither parents values are controlled, when `X1` is set to 1 but `X2` is not controlled, and when both `X1` and `X2` are set to 1.
-
-As an example we have:
-
-```{r}
-make_model("X1 -> Y <- X2")  |>
-  get_query_types("X1 ==1 & X2 == 1 & (Y[X1=1, X2=1] > Y[X1=0, X2=0])")
-```
-
-In this case, the aim is to identify the types for which $X1=X2=1$ *and* $Y$ equals zero when $X1 = 0$ and $X2 = 0$, and $Y$ equals 1 when $X1 = 1$ and $X2 = 1$.
+When a node has multiple parents it is possible to set the value of none of the parents, of some of the parents, or of all of the parents. For instance if $X1$ and $X2$ are parents of $Y$ then `Y==1`, `Y[X1 = 1]==1`, and `Y[X1 = 1, X2 = 1]==1` queries cases for which $Y=1$ when, respectively, neither parents values are controlled, when $X1$ is set to $1$ but $X2$ is not controlled, and when both $X1$ and $X2$ are set to $1$. For example we can have:
 
 ```{r}
 #| eval: true
 #| echo: true
+
+make_model("X1 -> Y <- X2")  |>
+  get_query_types("X1==1 & X2==1 & (Y[X1=1, X2=1] > Y[X1=0, X2=0])")
+```
+
+In this case, the aim is to identify the types for which $X1=X2=1$ *and at the same time* $Y=0$ when $X1 = X2 = 0$, and $Y = 1$ when $X1 = X2 = 1$.
+
+```{r}
+#| eval: false
+#| echo: false
 
 make_model('X -> M -> Y <- X') |> 
   get_query_types(query = "Y[X=1, M=1] > Y[X=0, M=0]", 
                   map = "nodal_type")
 ```
 
-In summary, the variables to be intervened, as if conducting an experiment, are placed inside square brackets, followed by an equal sign and the value to which we want to set them, either 1 or 0, as $X$ in the case of `"Y[X=1]"`. The variable whose value is to be observed, as $Y$ in the same example, should be placed before the square brackets. Finally, conditions related to observed or potentially observed values, in the context of an intervention, are expressed outside the brackets, along with the logical condition that defines the observed values, as in `"Y == 1"` or `"Y[X=1] > Y[X=0]"`.
+In general, the variables to be intervened, as if conducting an experiment, are placed inside square brackets, followed by an equal sign and the value to which we want to set them, either 1 or 0, as $X$ in the case of `"Y[X=1]"`. The variable whose value is to be observed, as $Y$ in the same example, should be placed before the square brackets. Finally, conditions related to observed or potentially observed values, in the context of an intervention, are expressed outside the brackets, along with the logical condition that defines the observed values, as in `"Y==1"` or `"Y[X=1] > Y[X=0]"`.
 
 #### Conditional queries
 
@@ -1455,8 +1313,7 @@ Many queries involve complex statements over multiple sets of types. These can b
 Linear operators can also be used over set of simple statements. Thus `"Y[X=1] - Y[X=0]"` returns the share of units the average treatment effect. In essence rather than returning a `TRUE` or `FALSE` for the two parts of the query, the case memberships are forced to numeric values ($1$ or $0$) and the differences taken, which can be a $1$, $0$ or $-1$ depending on the causal type.
 
 ```{r}
-make_model("X -> Y")  |>
-  get_query_types("Y[X=1]- Y[X=0]")
+make_model("X -> Y")  |> get_query_types("Y[X=1]- Y[X=0]")
 ```
 
 #### Nested queries
@@ -1506,44 +1363,25 @@ model <- read_rds("saved/app_2_illus.rds")
 
 model$posterior_distribution |> 
   ggplot(aes(Y.01 - Y.10)) + geom_histogram() + theme_bw()
-
 ```
 
 \FloatBarrier
 
 #### Query distribution
 
-It is generally useful to use causal syntax to define the query and calculate the query with respect to the prior or posterior probability distributions.
-
-This can be done for a list of queries using `query_distribution()` function as follows:
+It is generally useful to use causal syntax to define the query and calculate the query with respect to the prior or posterior probability distributions. This can be done for a list of queries using `query_distribution()` function as follows:
 
 ```{r}
 #| eval: false
 #| echo: true
+
 make_model("X -> Y") |> 
   query_distribution(
     query = list(increasing = "(Y[X=1] > Y[X=0])"), 
     using = "priors")
 ```
 
-```{r}
-#| label: fig-query-dist
-#| fig-cap: 'Prior on "Probability $Y$ is increasing in $X$".'
-#| fig-pos: "t"
-#| fig-align: center
-#| out-width: "60%"
-#| external: true
-#| echo: false
-
-make_model("X -> Y") |> 
-  query_distribution(
-    query = list(increasing = "(Y[X=1] > Y[X=0])"), 
-    using = "priors") |>
-  ggplot(aes(increasing)) + geom_histogram() + theme_bw()
-
-```
-
-Resulting distribution is plotted in @fig-query-dist. `query_distribution()` can also be used when one is interested in assessing the value of a query for a *particular case*. In a sense this is equivalent to posing a conditional query, querying conditional on values in a case. For instance we might consult our posterior lipids model and ask about the effect of $X$ on $Y$ for a case in which $Z=1$, $X=1$ and $Y=1$.
+`query_distribution()` can also be used when one is interested in assessing the value of a query for a *particular case*. In a sense this is equivalent to posing a conditional query, querying conditional on values in a case. For instance we might consult our posterior for Lipids model and ask about the effect of $X$ on $Y$ for a case in which $Z=1$, $X=1$ and $Y=1$.
 
 ```{r}
 #| label: case-level-query
@@ -1558,7 +1396,7 @@ lipids_model |>
 
 ```{r}
 #| label: tbl-case-level-query
-#| tbl-cap: "Case Level Query Example."
+#| tbl-cap: "Case level query example."
 #| echo: false
 #| eval: true
 
@@ -1580,9 +1418,7 @@ The answer we get in @tbl-case-level-query is what we now believe for all cases 
 
 Subtly though this is, in principle, different to what we would infer for a "new case" that we wonder about. When inquiring about a new case, the case level query *updates* on the given information observed in the new case. The resulting inference can be different to the inference that would be made from the posterior *given* the features of the case. If `case_level = TRUE` is specified, this new case level inference is calculated. For a query $Q$ and given $D$ this returns the value $\frac{\int\pi(Q \& D | \lambda_i)p(\lambda_i)d\lambda_i}{\int\pi(D | \lambda_i)p(\lambda_i)d\lambda_i}$ which may differ from the mean of the distribution $\frac{\pi(Q \& D | \lambda)}{\pi(D | \lambda)}$, $\int \frac{\pi(Q \& D | \lambda_i)}{\pi(D | \lambda_i)} p(\lambda_i)d\lambda_i$.
 
-To illustrate, consider a model for which we are quite sure that $X$ causes $Y$ but we do not know whether it works through two positive effects or two negative effects.
-
-Thus we do not know if $M=0$ would suggest an effect or no effect. If asked what we would infer for a case that had $M=0$ we would not know whether $M=0$ information is consistent with a positive effect or not. However if provided with a randomly sampled case and learn that it has $M=0$, then we update about the causal model and infer that there is an effect in this case (but that there would not be were $M=1$). The results are in @tbl-case-level. Note that the case level query returns a single number and no posterior standard deviation: this is the belief about the (new) case in question. The non case case level query summarizes the posterior distribution over cases with this data.
+To illustrate, consider a model for which we are quite sure that $X$ causes $Y$ but we do not know whether it works through two positive effects or two negative effects. Thus we do not know if $M=0$ would suggest an effect or no effect. If asked what we would infer for a case that had $M=0$ we would not know whether $M=0$ information is consistent with a positive effect or not. However if provided with a randomly sampled case and learn that it has $M=0$, then we update about the causal model and infer that there is an effect in this case (but that there would not be were $M=1$). The results are in @tbl-case-level. Note that the case level query returns a single number and no posterior standard deviation: this is the belief about the (new) case in question. The non case case level query summarizes the posterior distribution over cases with this data.
 
 ```{r}
 #| echo: true
@@ -1606,10 +1442,11 @@ Thus we do not know if $M=0$ would suggest an effect or no effect. If asked what
 
 if (params$run) {
   
-set.seed(1)
- model <-
-   make_model("X -> M -> Y") |>
-   update_model(data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)), iter = 10000) |>
+  set.seed(1)
+ 
+  model <-
+    make_model("X -> M -> Y") |>
+    update_model(data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)), iter = 10000) |>
     write_rds("saved/caselevel.rds")
   
 }
@@ -1619,24 +1456,20 @@ read_rds("saved/caselevel.rds") |>
             given = "X==1 & Y==1 & M==1", 
             using = "posteriors",
             case_level = c(TRUE, FALSE)) |>
-  select(query, given, case_level, mean, sd) |>
-    knitr::kable(
+  dplyr::select(query, given, case_level, mean, sd) |>
+  knitr::kable(
     digits = 2,
     booktabs = TRUE,
     align = "c",
     escape = TRUE,
     longtable = TRUE,
-    linesep = "") 
-
-  
-
+    linesep = "") |> 
+  kableExtra::kable_classic_2()
 ```
 
 #### Batch queries
 
-The function `query_model()` is perhaps the most important function for querying models. The function takes as input a list of models, causal queries, and conditions (`given`), calculates population or case level estimands given prior or posterior distributions and reports summaries of these distributions. The result is a data frame that can be displayed as a table or used for graphing.
-
-@tbl-batch-query shows output from a single call to `query_model`.
+The function `query_model()` is perhaps the most important function for querying models. The function takes as input a list of models, causal queries, and conditions (`given`), calculates population or case level estimands given prior or posterior distributions and reports summaries of these distributions. The result is a data frame that can be displayed as a table or used for graphing. @tbl-batch-query shows output from a single call to `query_model()`.
 
 ```{r}
 #| label: batch-query
@@ -1660,7 +1493,7 @@ query_model(
 
 ```{r}
 #| label: tbl-batch-query
-#| tbl-cap: "Results for Two Queries on Two Models."
+#| tbl-cap: "Results for two queries on two models."
 #| echo: false
 #| eval: true
 
@@ -1686,12 +1519,13 @@ query_model(
     longtable = TRUE,
     linesep = "") |> 
   kableExtra::kable_classic_2(latex_options = c("hold_position"))
-
 ```
 
 The `stats` argument lets users specify alternative summary statistics. The `expand_grid` argument lets users specify whether all combinations of list elements should be generated.
 
 \FloatBarrier
+
+{{< pagebreak >}}
 
 ## Computational details and software requirements {.unnumbered}
 
@@ -1768,19 +1602,19 @@ We present a brief summary of model updating benchmarks. First benchmark conside
 
 : Benchmark 1. {#tbl-bench1 tbl-colwidths=\[40,30,30\]}
 
-+---------------------+------------------------+--------------------------------------+
-| Model               | Number of Observations | `update_model()` Runt-Time (seconds) |
-+:===================:+:======================:+:====================================:+
-| $X1 \rightarrow Y$  | 10                     | 9.04                                 |
-+---------------------+------------------------+--------------------------------------+
-| $X1 \rightarrow Y$  | 100                    | 9.31                                 |
-+---------------------+------------------------+--------------------------------------+
-| $X1 \rightarrow Y$  | 1000                   | 10.56                                |
-+---------------------+------------------------+--------------------------------------+
-| $X1 \rightarrow Y$  | 10000                  | 14.57                                |
-+---------------------+------------------------+--------------------------------------+
-| $X1 \rightarrow Y$  | 100000                 | 17.25                                |
-+---------------------+------------------------+--------------------------------------+
++--------------------+------------------------+--------------------------------------+
+| Model              | Number of Observations | `update_model()` Runt-Time (seconds) |
++:==================:+:======================:+:====================================:+
+| $X1 \rightarrow Y$ | 10                     | 9.04                                 |
++--------------------+------------------------+--------------------------------------+
+| $X1 \rightarrow Y$ | 100                    | 9.31                                 |
++--------------------+------------------------+--------------------------------------+
+| $X1 \rightarrow Y$ | 1000                   | 10.56                                |
++--------------------+------------------------+--------------------------------------+
+| $X1 \rightarrow Y$ | 10000                  | 14.57                                |
++--------------------+------------------------+--------------------------------------+
+| $X1 \rightarrow Y$ | 100000                 | 17.25                                |
++--------------------+------------------------+--------------------------------------+
 
 : Benchmark 2. {#tbl-bench2 tbl-colwidths=\[40,30,30\]}
 
@@ -1799,9 +1633,51 @@ The approach to generating a generic function to create Stan code that can take 
 
 {{< pagebreak >}}
 
-## More technical details {#sec-techdetails .unnumbered}
+## Appendix A: Parallelization {#sec-parallel .unnumbered}
 
-## Appendix: Stan code
+If you have multiple cores you can do parallel processing by including this line before running `CausalQueries`:
+
+```{r}
+#| eval: false
+
+library(parallel)
+
+options(mc.cores = parallel::detectCores())
+```
+
+Additionally parallelizing across models or data while running MCMC chains in parallel can be achieved by setting up a nested parallel process. With 8 cores one can run 2 updating processes with 3 parallel chains each simultaneously. More generally the number of parallel processes at the upper level of the nested parallel structure are given by $\left \lfloor \frac{cores}{chains + 1} \right \rfloor$.
+
+```{r}
+#| echo: true
+#| eval: false
+
+library(future)
+library(future.apply)
+
+chains <- 3
+cores <- 8
+
+future::plan(list(
+      future::tweak(future::multisession, 
+                    workers = floor(cores/(chains + 1))),
+      future::tweak(future::multisession, 
+                    workers = chains)
+    ))
+
+model <- make_model("X -> Y")
+data <- list(data_1, data_2)
+
+future.apply::future_lapply(data, function(d) {
+  update_model(
+    model = model,
+    data = d,
+    chains = chains,
+    refresh = 0
+  )
+})
+```
+
+## Appendix B: Stan code {#sec-stancode .unnumbered}
 
 Updating is performed using Stan model. The data provided to Stan is generated by the internal function `prep_stan_data()` which returns a list of objects that Stan expects to receive. The code for the Stan model is show below. After defining a helper function the code starts with a block declaring what input data is to be expected. Then there is a characterization of parameters and the transformed parameters. Then the likelihoods and priors are provided. At the end there is a block for generated quantities which can be used to append a posterior distribution of causal types to the model.
 
@@ -1835,6 +1711,6 @@ cat(rstan::get_stancode(read_rds("saved/fit.rds")))
 
 [^4]: See `?set_priors` and `?make_priors` for many more examples.
 
-[^5]: For a discussion of implementation of this approach in Stan see discussion (here)\[https://discourse.mc-stan.org/t/ragged-array-of-simplexes/1382\].
+[^5]: For a discussion of implementation of this approach in Stan see (https://discourse.mc-stan.org/t/ragged-array-of-simplexes/1382)\[https://discourse.mc-stan.org/t/ragged-array-of-simplexes/1382\].
 
 [^6]: `CausalQueries` also accepts = as a shorthand for ==. However, == is preferred as it is the conventional logical operator to express a condition of strict equality.
