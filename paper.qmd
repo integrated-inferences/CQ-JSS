@@ -16,7 +16,8 @@ author:
     url: https://github.com/till-tietz
   - name: Lily Medina
     affiliations:
-      - name: UC Berkeley
+      - name:University of California, Berkeley
+    orcid: 0009-0004-2423-524X
     email: lily.medina@berkeley.edu
     url: https:/lilymedina.github.io/
   - name: Georgiy Syunyaev
