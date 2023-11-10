@@ -16,7 +16,7 @@ author:
     url: https://github.com/till-tietz
   - name: Lily Medina
     affiliations:
-      - name:University of California, Berkeley
+      - name: University of California, Berkeley
     orcid: 0009-0004-2423-524X
     email: lily.medina@berkeley.edu
     url: https:/lilymedina.github.io/
@@ -1199,7 +1199,7 @@ list(uncensored =
 
 ### Output
 
-The primary output from `update_model()` is a model with an attached posterior distribution over model parameters, stored as a data frame in `model$posterior_distribution`. In addition, a distribution of causal types is stored by default and the `stanfit` object and a distribution over event probabilities are optionally saved.
+The primary output from `update_model()` is a model with an attached posterior distribution over model parameters, stored as a data frame in `model$posterior_distribution`. In addition, a distribution of causal types is stored by default and the `stanfit` object and a distribution over event probabilities are optionally saved. @tbl-additional describes the elements that the updated model contains.
 
 ## Queries {#sec-query}
 
@@ -1469,10 +1469,12 @@ The function `query_model()` is perhaps the most important function for querying
 #| echo: true
 #| eval: false
 
+
 models <- list(
- `1` = make_model("X -> Y"),
- `2` = make_model("X -> Y") |> set_restrictions("Y[X=1] < Y[X=0]")
- )
+ `1` = make_model("X -> Y")  |> 
+        update_model(data.frame(X=rep(0:1, 10), Y=rep(0:1,10)), refresh = 0),
+ `2` = make_model("X -> Y")  |>  set_restrictions("Y[X=1] < Y[X=0]") |>
+        update_model(data.frame(X=rep(0:1, 10), Y=rep(0:1,10)), refresh = 0))
 
 query_model(
   models,
@@ -1480,7 +1482,7 @@ query_model(
                POS = "Y[X=1] > Y[X=0]"),
   given = c(TRUE,  "Y==1 & X==1"),
   case_level = c(FALSE, TRUE),
-  using = c("parameters", "priors"),
+  using = c("priors", "posteriors"),
   expand_grid = TRUE)
 ```
 
@@ -1489,11 +1491,15 @@ query_model(
 #| tbl-cap: "Results for two queries on two models."
 #| echo: false
 #| eval: true
+#| message: false
+
 
 models <- list(
- `1` = make_model("X -> Y"),
- `2` = make_model("X -> Y") |> set_restrictions("Y[X=1] < Y[X=0]")
- )
+ `1` = make_model("X -> Y")  |> 
+        update_model( data.frame(X=rep(0:1, 10), Y=rep(0:1,10)), refresh = 0),
+ `2` = make_model("X -> Y")  |>  set_restrictions("Y[X=1] < Y[X=0]") |>
+        update_model( data.frame(X=rep(0:1, 10), Y=rep(0:1,10)), refresh = 0))
+
 
 query_model(
   models,
@@ -1501,7 +1507,7 @@ query_model(
                POS = "Y[X=1] > Y[X=0]"),
   given = c(TRUE,  "Y==1 & X==1"),
   case_level = c(FALSE, TRUE),
-  using = c("parameters", "priors"),
+  using = c("priors", "posteriors"),
   expand_grid = TRUE) |>
   dplyr::select(-starts_with("cred")) |> 
   knitr::kable(
