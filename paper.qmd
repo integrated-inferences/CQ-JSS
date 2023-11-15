@@ -157,28 +157,35 @@ The literature on causal inference and its software ecosystem are rich and expan
 +---------------+--------------------------+---------------------+-------------------------+------------------------------------------------------------------------+
 | Software      | Source                   | Language            | Availability            | Scope                                                                  |
 +===============+==========================+=====================+=========================+========================================================================+
-| `causalnex`   | @beaumont_causalnex_2021 | [Python]{.proglang} | pip                     | -   causal structure learning                                          |
+| `causalnex`   | @beaumont_causalnex_2021 | [Python]{.proglang} | -   pip                 | -   causal structure learning                                          |
 |               |                          |                     |                         | -   querying marginal distributions                                    |
 |               |                          |                     |                         | -   discrete data                                                      |
 +---------------+--------------------------+---------------------+-------------------------+------------------------------------------------------------------------+
-| `causaloptim` | @sachs_general_2023      | [R]{.proglang}      | CRAN                    | -   bounding causal effects                                            |
-|               |                          |                     |                         | -   non-identified queries                                             |
-|               |                          |                     |                         | -   binary data                                                        |
+| `pclag`       | @kalisch_causal_2012     | [R]{.proglang}      | -   CRAN                | -   causal structure learning                                          |
+|               |                          |                     | -   GitHub              | -   ATEs under linear conditional expectations and no hidden selection |
 +---------------+--------------------------+---------------------+-------------------------+------------------------------------------------------------------------+
-| `pclag`       | @kalisch_causal_2012     | [R]{.proglang}      | CRAN                    | -   causal structure learning                                          |
-|               |                          |                     |                         | -   ATEs under linear conditional expectations and no hidden selection |
+| `DoWhy`       | @dowhy                   | [Python]{.proglang} | -   pip                 | -   identification                                                     |
+|               |                          |                     |                         | -   average and conditional causal effects                             |
+|               |                          |                     |                         | -   robustness checks                                                  |
 +---------------+--------------------------+---------------------+-------------------------+------------------------------------------------------------------------+
-| `autobounds`  | @duarte_automated_2023   | [Python]{.proglang} | not readily installable | -   bounding causal effects                                            |
-|               |                          |                     |                         | -   partial identification                                             |
+| `autobounds`  | @duarte_automated_2023   | [Python]{.proglang} | -   Docker              | -   bounding causal effects                                            |
+|               |                          |                     | -   GitHub              | -   partial identification                                             |
 |               |                          |                     |                         | -   DAG canonicalization                                               |
 |               |                          |                     |                         | -   binary data                                                        |
 +---------------+--------------------------+---------------------+-------------------------+------------------------------------------------------------------------+
+| `causaloptim` | @sachs_general_2023      | [R]{.proglang}      | -   CRAN                | -   bounding causal effects                                            |
+|               |                          |                     | -   GitHub              | -   non-identified queries                                             |
+|               |                          |                     |                         | -   binary data                                                        |
++---------------+--------------------------+---------------------+-------------------------+------------------------------------------------------------------------+
+
 
 : Related software. {#tbl-software tbl-colwidths="\[20,15,10,15,40\]"}
 
 `causalnex` is a highly comprehensive software in the domain of causal modeling, offering a suite rich in features and optimized for the learning, updating, and querying of causal models using discrete data. Its avoidance of the intricate model parametrization, characterized by principal strata (nodal types) in `CausalQueries`, enables `causalnex` to adeptly process non-binary data and scale to extensive causal models. However, this approach significantly constrains the variety of feasible queries and the extent of prior knowledge that can be incorporated into models. In this capacity, `causalnex` mirrors machine learning strategies in causal inference, prioritizing the learning of causal structures in environments abundant with variables yet potentially deficient in domain-specific knowledge, and focusing on the assessment of basic queries over marginal distributions in learned DAGs. Conversely, the complex model structure utilized by `CausalQueries` is particularly advantageous for intricate causal queries in settings where domain knowledge is more prevalent.
 
 Like `causalnex`, `pclag` places particular emphasis on causal structure learning, utilizing the resultant DAGs to recover average treatment effects (ATEs) across all learned markov-equivalent classes implied by observed data that satisfy linearity of conditional expectations. This approach again is more restrictive than `CausalQueries` in the DAGs and particularly the queries it allows.
+
+`DoWhy` is a feature rich, mature inference framework emphasizing causal identification, causal effect estimation and assumption validation. Given a user specified DAG, it deploys do-calculus to find expressions that identify desired causal-effects via Back-door, Front-door, IV and mediation identification criteria and leverages the identified expression and standard estimators to estimate the desired estimand. Following estimation `DoWhy` deploys a comprehensive refutation engine implementing a large set of robustness tests. While this approach allows it to efficiently handle varied data types on large causal models; the decision to not parameterize the DAG itself places substantial limitations on the types of queries that can be posed. Moreover the reliance on standard estimators introduces implicit functional form assumptions on the causal relationships in the DAG. 
 
 The software bearing the highest resemblance to `CausalQueries` with respect to model definition are `autobounds` and `causaloptim`. Dealing with binary causal models, their definitions of principal strata (nodal types) and the resultant set of causal relations on the DAG (causal types) are very close to those of `CausalQueries`. Differences in model definition arise with respect to disturbance terms and confounding being defined implicitly via main nodes and edges in `CausalQueries` vs explicitly via separate disturbance nodes in `autobounds` and `causaloptim`. While `CausalQueries` assumes canonical form for input DAGs, `autobounds` and `causaloptim` facilitate canonicalization. The essential difference between the methods; however, lies in their approach to evaluating queries.
 
@@ -1183,8 +1190,6 @@ A key step in the calculation of most queries is the assessment of what outcomes
 1.  $X$ is exogenous and has a realized value of $0$,
 2.  We substitute for $Y$ the value implied by the $00$ nodal type given a $0$ value on $X$, which in turn is $0$ (see @sec-nodal-types).
 
-Recovering implied values on complex nodal types efficiently at scale, exploits the fact that nodal types are the Cartesian product of possible parent realizations. Finding the index of a node's realized value in a nodal type given parent realizations is equivalent to finding the row index in the Cartesian product matrix corresponding to those parent realizations. By definition of the Cartesian product, the number of consecutive $0$ or $1$ elements in a given column is $2^{\text{(column index)}}$, when indexing columns from $0$. Given a set of parent realizations $R$ indexed from $0$, the corresponding row index in the Cartesian product matrix indexed from $0$ can thus be computed via: $$\text{(row index)} = \sum_{i = 0}^{|R| - 1} (2^{i} \times R_i).$$
-
 Calling `realise_outcomes()` on the above model yields:
 
 ```{r}
@@ -1635,7 +1640,7 @@ cat(rstan::get_stancode(read_rds("saved/fit.rds")))
 
 ## Appendix C: Benchmarks {#sec-benchmark .unnumbered}
 
-We present a brief summary of model updating benchmarks. First benchmark considers the effect of model complexity on updating time. Second benchmark considers the effect of data size on updating time. We run $4$ parallel chains for each model. Results of the benchmarks are presented in @tbl-bench1 and @tbl-bench2 respectively.
+We present a brief summary of model updating benchmarks. The first benchmark considers the effect of model complexity on updating time. The second benchmark considers the effect of data size on updating time. We run $4$ parallel chains for each model. Results of the benchmarks are presented in @tbl-bench1 and @tbl-bench2 respectively.
 
 +----------------------------------------------------+----------------------------+--------------------------------------+
 | Model                                              | Number of Model Parameters | `update_model()` Runt-Time (seconds) |
