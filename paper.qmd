@@ -58,6 +58,8 @@ execute:
 #| label: preamble
 #| include: false
 
+# knitr::purl("paper.qmd")
+
 options(kableExtra.latex.load_packages = FALSE)
 
 library(tidyverse)
