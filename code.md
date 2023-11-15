@@ -1,6 +1,14 @@
 
 
 ```r
+# R code for evaluated code chunks in CausalQueries.qmd
+# "Making, Updating, and Querying Causal Models using CausalQueries"
+# Till Tietz, Lily Medina, Georgiy Syunyaev, Macartan Humphreys
+# Generated using: knitr::spin("code.R")
+# 15 November 2023
+```
+
+```r
 options(kableExtra.latex.load_packages = FALSE)
 
 library(tidyverse)
@@ -12,6 +20,8 @@ library(kableExtra)
 library(tikzDevice)
 
 set.seed(20231018)
+
+## SECTION 2: Motivating example
 
 data("lipids_data")
 
@@ -250,17 +260,6 @@ lipids_data
 model <- make_model("X -> M -> Y <- X")
 ```
 
-```r
-## make_model("X -> M -> Y <- X; Z -> Y") |>
-##   plot(x_coord = 1:4,
-##        y_coord = c(1.5,2,1,2),
-##        textcol = "white",
-##        textsize = 3,
-##        shape = 18,
-##        nodecol = "grey",
-##        nodesize = 12)
-##
-```
 ![Examples of model graphs.](figure/fig-plots-1.png)![Examples of model graphs.](figure/fig-plots-2.png)
 <table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
  <thead>
@@ -743,6 +742,9 @@ sample_data_2
 
 ```r
 sample_data_2 |> collapse_data(model)
+
+
+## SECTION 6: Updating models
 ```
 <table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
  <thead>
@@ -931,8 +933,8 @@ make_model("X -> Y")  |> get_query_types("Y[X=1] - Y[X=0]")
 ## 
 ## SAMPLING FOR MODEL 'simplexes' NOW (CHAIN 1).
 ## Chain 1: 
-## Chain 1: Gradient evaluation took 2.7e-05 seconds
-## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.27 seconds.
+## Chain 1: Gradient evaluation took 2.4e-05 seconds
+## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.24 seconds.
 ## Chain 1: Adjust your expectations accordingly!
 ## Chain 1: 
 ## Chain 1: 
@@ -949,15 +951,15 @@ make_model("X -> Y")  |> get_query_types("Y[X=1] - Y[X=0]")
 ## Chain 1: Iteration: 9000 / 10000 [ 90%]  (Sampling)
 ## Chain 1: Iteration: 10000 / 10000 [100%]  (Sampling)
 ## Chain 1: 
-## Chain 1:  Elapsed Time: 1.24 seconds (Warm-up)
-## Chain 1:                1.287 seconds (Sampling)
+## Chain 1:  Elapsed Time: 1.224 seconds (Warm-up)
+## Chain 1:                1.303 seconds (Sampling)
 ## Chain 1:                2.527 seconds (Total)
 ## Chain 1: 
 ## 
 ## SAMPLING FOR MODEL 'simplexes' NOW (CHAIN 2).
 ## Chain 2: 
-## Chain 2: Gradient evaluation took 2.6e-05 seconds
-## Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.26 seconds.
+## Chain 2: Gradient evaluation took 3.8e-05 seconds
+## Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.38 seconds.
 ## Chain 2: Adjust your expectations accordingly!
 ## Chain 2: 
 ## Chain 2: 
@@ -974,15 +976,15 @@ make_model("X -> Y")  |> get_query_types("Y[X=1] - Y[X=0]")
 ## Chain 2: Iteration: 9000 / 10000 [ 90%]  (Sampling)
 ## Chain 2: Iteration: 10000 / 10000 [100%]  (Sampling)
 ## Chain 2: 
-## Chain 2:  Elapsed Time: 1.206 seconds (Warm-up)
-## Chain 2:                1.356 seconds (Sampling)
-## Chain 2:                2.562 seconds (Total)
+## Chain 2:  Elapsed Time: 1.209 seconds (Warm-up)
+## Chain 2:                1.291 seconds (Sampling)
+## Chain 2:                2.5 seconds (Total)
 ## Chain 2: 
 ## 
 ## SAMPLING FOR MODEL 'simplexes' NOW (CHAIN 3).
 ## Chain 3: 
-## Chain 3: Gradient evaluation took 2.4e-05 seconds
-## Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 0.24 seconds.
+## Chain 3: Gradient evaluation took 2.2e-05 seconds
+## Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 0.22 seconds.
 ## Chain 3: Adjust your expectations accordingly!
 ## Chain 3: 
 ## Chain 3: 
@@ -999,15 +1001,15 @@ make_model("X -> Y")  |> get_query_types("Y[X=1] - Y[X=0]")
 ## Chain 3: Iteration: 9000 / 10000 [ 90%]  (Sampling)
 ## Chain 3: Iteration: 10000 / 10000 [100%]  (Sampling)
 ## Chain 3: 
-## Chain 3:  Elapsed Time: 1.244 seconds (Warm-up)
-## Chain 3:                1.364 seconds (Sampling)
-## Chain 3:                2.608 seconds (Total)
+## Chain 3:  Elapsed Time: 1.235 seconds (Warm-up)
+## Chain 3:                1.355 seconds (Sampling)
+## Chain 3:                2.59 seconds (Total)
 ## Chain 3: 
 ## 
 ## SAMPLING FOR MODEL 'simplexes' NOW (CHAIN 4).
 ## Chain 4: 
-## Chain 4: Gradient evaluation took 2.2e-05 seconds
-## Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.22 seconds.
+## Chain 4: Gradient evaluation took 2.3e-05 seconds
+## Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.23 seconds.
 ## Chain 4: Adjust your expectations accordingly!
 ## Chain 4: 
 ## Chain 4: 
@@ -1024,9 +1026,9 @@ make_model("X -> Y")  |> get_query_types("Y[X=1] - Y[X=0]")
 ## Chain 4: Iteration: 9000 / 10000 [ 90%]  (Sampling)
 ## Chain 4: Iteration: 10000 / 10000 [100%]  (Sampling)
 ## Chain 4: 
-## Chain 4:  Elapsed Time: 1.237 seconds (Warm-up)
-## Chain 4:                1.339 seconds (Sampling)
-## Chain 4:                2.576 seconds (Total)
+## Chain 4:  Elapsed Time: 1.205 seconds (Warm-up)
+## Chain 4:                1.344 seconds (Sampling)
+## Chain 4:                2.549 seconds (Total)
 ## Chain 4:
 ```
 

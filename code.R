@@ -1,4 +1,8 @@
-
+# R code for evaluated code chunks in CausalQueries.qmd
+# "Making, Updating, and Querying Causal Models using CausalQueries"
+# Till Tietz, Lily Medina, Georgiy Syunyaev, Macartan Humphreys
+# Generated using: knitr::spin("code.R")
+# 15 November 2023
 
 ## ----------------------------------------------------------------------------------------------
 #| label: preamble
@@ -14,6 +18,8 @@ library(kableExtra)
 library(tikzDevice)
 
 set.seed(20231018)
+
+## SECTION 2: Motivating example
 
 data("lipids_data")
 
@@ -52,7 +58,7 @@ results |>
 
 
 
-
+## SECTION 4: Statistical Model
 
 ## ----------------------------------------------------------------------------------------------
 #| label: tbl-lipidspar
@@ -75,6 +81,7 @@ with_pars$parameters_df |>
   ) |>
   kableExtra::kable_classic_2(latex_options = c("hold_position"))
 
+## SECTION 5: Making models
 
 ## ----------------------------------------------------------------------------------------------
 #| echo: true
@@ -89,26 +96,10 @@ model <- make_model("X -> M -> Y <- X")
 #| echo: true
 #| eval: false
 
-## make_model("X -> M -> Y <- X; Z -> Y") |>
-##   plot(x_coord = 1:4,
-##        y_coord = c(1.5,2,1,2),
-##        textcol = "white",
-##        textsize = 3,
-##        shape = 18,
-##        nodecol = "grey",
-##        nodesize = 12)
-##
-
-
 ## ----------------------------------------------------------------------------------------------
 #| label: fig-plots
 #| echo: false
 #| fig-cap: "Examples of model graphs."
-#| fig-subcap:
-#|   - "Without options"
-#|   - "With options"
-#| fig-pos: 'h'
-#| layout-ncol: 2
 
 make_model("X -> M -> Y <- X; Z -> Y") |>
   plot()
@@ -157,10 +148,6 @@ interpretations <-
 interpretations$Y
 
 
-
-
-
-
 ## ----------------------------------------------------------------------------------------------
 #| label: causal-types
 #| echo: true
@@ -184,14 +171,6 @@ make_model("X -> Y") |> get_parameter_matrix()
 model_restricted <-
   make_model("Z -> X -> Y; X <-> Y") |>
   set_restrictions("X[Z=1] < X[Z=0]")
-
-
-
-
-
-
-
-
 
 
 ## ----------------------------------------------------------------------------------------------
@@ -267,7 +246,6 @@ data.frame(Model = statements |> unlist(),
   )
 
 
-
 ## ----------------------------------------------------------------------------------------------
 #| label: get-priors
 #| echo: true
@@ -298,18 +276,6 @@ make_model("X -> Y") |>
   get_priors()
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 ## ----------------------------------------------------------------------------------------------
 #| label: get-parameters
 #| echo: true
@@ -335,8 +301,6 @@ make_model("X -> Y") |>
 
 model <- make_model("X -> M -> Y")
 
-
-
 ## ----------------------------------------------------------------------------------------------
 #| label: make-data
 #| echo: true
@@ -354,8 +318,6 @@ sample_data_1 <-
 #| eval: true
 
 make_data(model, n = 3, param_type = "prior_draw")
-
-
 
 ## ----------------------------------------------------------------------------------------------
 #| label: make-data-incomplete
@@ -384,9 +346,7 @@ sample_data_2
 sample_data_2 |> collapse_data(model)
 
 
-
-
-
+## SECTION 6: Updating models
 
 ## ----------------------------------------------------------------------------------------------
 #| label: tbl-parmap
@@ -404,9 +364,6 @@ make_model("X -> Y") |>
     linesep = ""
   ) |>
   kableExtra::kable_classic_2()
-
-
-
 
 
 
@@ -445,6 +402,8 @@ list(
   kableExtra::kable_classic_2()
 
 
+## SECTION 7: Querying models
+
 ## ----------------------------------------------------------------------------------------------
 #| label: realise-outcomes
 #| echo: true
@@ -476,14 +435,8 @@ make_model("X1 -> Y <- X2")  |>
 
 
 
-
-
-
 ## ----------------------------------------------------------------------------------------------
 make_model("X -> Y")  |> get_query_types("Y[X=1] - Y[X=0]")
-
-
-
 
 ## ----------------------------------------------------------------------------------------------
 #| label: fig-posterior-dist
@@ -507,9 +460,6 @@ model$posterior_distribution |>
 
 
 
-
-
-
 ## ----------------------------------------------------------------------------------------------
 #| label: tbl-case-level-query
 #| tbl-cap: "Case level query example."
@@ -529,8 +479,6 @@ lipids_model |>
     linesep = ""
   ) |>
   kableExtra::kable_classic_2(latex_options = c("scale_down", "hold_position"))
-
-
 
 
 ## ----------------------------------------------------------------------------------------------
@@ -605,3 +553,4 @@ query_model(
     linesep = ""
   ) |>
   kableExtra::kable_classic_2(latex_options = c("hold_position"))
+
