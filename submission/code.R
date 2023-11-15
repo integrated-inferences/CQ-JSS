@@ -7,7 +7,6 @@
 ## ----------------------------------------------------------------------------------------------
 #| label: preamble
 
-options(kableExtra.latex.load_packages = FALSE)
 
 library(tidyverse)
 library(CausalQueries)
@@ -16,6 +15,9 @@ library(rstan)
 library(DeclareDesign)
 library(kableExtra)
 library(tikzDevice)
+
+options(kableExtra.latex.load_packages = FALSE)
+options(mc.cores = parallel::detectCores())
 
 set.seed(20231018)
 
@@ -491,7 +493,8 @@ lipids_model |>
 set.seed(1)
 
 make_model("X -> M -> Y") |>
-  update_model(data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)), iter = 10000) |>
+  update_model(data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)),
+               refresh = 0, iter = 10000) |>
   query_model(
     "Y[X=1] > Y[X=0]",
     given = "X==1 & Y==1 & M==1",

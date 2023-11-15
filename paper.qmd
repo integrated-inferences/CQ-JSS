@@ -1,6 +1,6 @@
 ---
 title: "Making, Updating, and Querying Causal Models using `CausalQueries`"
-abstract: "A guide to the [R]{.proglang} package `CausalQueries`  for making, updating, and querying causal models"
+abstract: "A guide to the [R]{.proglang} package `CausalQueries`  for making, updating, and querying causal models. Users provide a causal statement of the form `X -> M <- Y; M <-> Y` which is interpreted as a structural causal model over a collection of binary variables.  `CausalQueries` can be used to (1) identify the set of principal strata---causal types---required to characterize all possible types of causal relations between nodes consistent with the causal statement (2) determine a set of parameters needed to characterize distributions over these types (3) update beliefs over the distribution of causal types, using a `stan` model and (4) post a wide range of causal queries of the model, using either the prior distribution, the posterior distribution, or a user-specified candidate vector of parameters."
 keywords-formatted: [causal model, bayesian updating, DAG, Stan]
 author:
   - name: Till Tietz
@@ -30,6 +30,11 @@ author:
   - name: Macartan Humphreys
     affiliations:
       - name: WZB
+        department: IPI
+        address: Reichpietschufer 50
+        city: Berlin
+        country: Germany
+        postal-code: 10785
     orcid: 0000-0001-7029-2326
     email: macartan.humphreys@wzb.eu
     url: https://macartan.github.io/
@@ -59,9 +64,7 @@ execute:
 #| include: false
 
 # knitr::purl("paper.qmd")
-
-options(kableExtra.latex.load_packages = FALSE)
-
+# knitr::spin("submission/code.R")
 library(tidyverse)
 library(CausalQueries)
 library(knitr)
@@ -70,12 +73,15 @@ library(DeclareDesign)
 library(kableExtra)
 library(tikzDevice)
 
+options(kableExtra.latex.load_packages = FALSE)
+options(mc.cores = parallel::detectCores())
+
 set.seed(20231018)
 ```
 
 ## Introduction: Causal models {#sec-intro}
 
-`CausalQueries` is an [R]{.proglang} package that lets users make, update, and query causal models. Users provide a statement that reports a set of binary variables and the relations of causal ancestry between them: which variables are direct causes of other variables, given the other variables in the model. Once provided to `make_model()`, `CausalQueries` generates a parameter vector that fully describes a probability distribution over all possible types of causal relations between variables ("causal types"), given the causal structure. Given a prior over parameters and data over some or all nodes, `update_model()` deploys a Stan [@carpenter_stan_2017] model in order to generate a posterior distribution over causal models. The function `query_model()` can then be used to ask any causal query of the model, using either the prior distribution, the posterior distribution, or a user-specified candidate vector of parameters.
+`CausalQueries` is an [R]{.proglang} package that lets users make, update, and query causal models. Users provide a statement that reports a set of binary variables and the relations of causal ancestry between them: which variables are direct causes of other variables, given the other variables in the model. Once provided to `make_model()`, `CausalQueries` generates a parameter vector that fully describes a probability distribution over all possible types of causal relations between variables ("causal types"), given the causal structure. Given a prior over parameters and data over some or all nodes, `update_model()` deploys a Stan [@carpenter_stan_2017] model in order to generate a posterior distribution over causal models. The function `query_model()` can then be used to ask a wide range of causal queries of the model, using either the prior distribution, the posterior distribution, or a user-specified candidate vector of parameters.
 
 In the next section we provide a short motivating example. We then describe how the package relates to existing available software. @sec-theory gives an overview of the statistical model behind the package. @sec-make, @sec-update, and @sec-query then describe the main functionality for the major operations using the package. We provide further computation details in the final section.
 
@@ -693,7 +699,7 @@ confounded$parameters_df |>
   kableExtra::kable_classic_2(latex_options = c("scale_down", "HOLD_position"))
 ```
 
-The parameters data frame for this model would have two parameter families for parameters associated with the node $Y$. Each family captures the conditional distribution of $Y$'s nodal types, given $X$. For instance the parameter `Y01_X.1` can be interpreted as $\Pr(\theta^Y = \theta^Y_{01} | X=1)$. See again @tbl-lipidspar for an example of a parameters matrix with confounding.
+The parameters data frame for this model would have two parameter families for parameters associated with the node $Y$. Each family captures the conditional distribution of $Y$'s nodal types, given $X$. For instance the parameter `Y01_X.1` can be interpreted as $\Pr(\theta^Y = \theta^Y_{01} | \theta^X=1)$. See again @tbl-lipidspar for an example of a parameters matrix with confounding.
 
 To see exactly how the parameters map to causal types we can look at the parameter matrix for the model by calling `get_parameter_matrix(confounded)`. The parameter matrix is shown in @tbl-confound-param-matrix. Importantly, the $P$ matrix works as before, despite confounding. We can assess the probability of causal types by multiplying the probabilities of the constituent parameters.
 
@@ -882,6 +888,12 @@ More subtly the *structure* of a model, coupled with flat priors, has substantiv
 
 Again, you can use `query_model()` to figure out what flat (or other) priors over parameters imply for priors over causal quantities:
 
+Caution regarding priors is particularly important when models are not identified, as is the case for many of the models considered here. In such cases, for some quantities, the marginal posterior distribution simply reflects the marginal prior distribution [@poirier_revising_1998].
+
+The crucial aspect we emphasize is the necessity of avoiding the misconception that "uninformative" priors are devoid of implications concerning the values of causal quantities of interest. In reality, these priors do carry certain presumptions. The impact of flat priors on causal quantities is contingent on the structural configuration of the model. Moreover for some inferences from causal models the priors can matter a lot even if you have a lot of data. In such cases it can be helpful to know what priors on parameters imply for priors on causal quantities of interest (by using `query_model()`) and to assess how much conclusions depend on priors (by comparing results across models that vary in their priors). 
+
+The following code gives an example where a change in model structure together with uniform priors implies different beliefs over causal quantities.
+
 ```{r}
 #| label: compare-flat-priors
 #| echo: true
@@ -928,9 +940,7 @@ make_model("X -> M -> Y") |>
   kableExtra::kable_classic_2(latex_options = c("scale_down"))
 ```
 
-Caution regarding priors is particularly important when models are not identified, as is the case for many of the models considered here. In such cases, for some quantities, the marginal posterior distribution simply reflects the marginal prior distribution [@poirier_revising_1998].
 
-The crucial aspect we emphasize is the necessity of avoiding the misconception that "uninformative" priors are devoid of implications concerning the values of causal quantities of interest. In reality, these priors do carry certain presumptions. The impact of flat priors on causal quantities is contingent on the structural configuration of the model. Moreover for some inferences from causal models the priors can matter a lot even if you have a lot of data. In such cases it can be helpful to know what priors on parameters imply for priors on causal quantities of interest (by using `query_model()`) and to assess how much conclusions depend on priors (by comparing results across models that vary in their priors).
 
 #### Setting Parameters {#parameters}
 
@@ -1080,7 +1090,7 @@ We are interested in "sets" of parameters. In the case without confounding these
 
 To illustrate, in the $X \rightarrow Y$ model we have two parameter sets (`param_sets`). The first is $\lambda^X \in \{\lambda^X_0, \lambda^X_1\}$ whose elements give the probability that $X$ is $0$ or $1$. These two probabilities sum to one. The second parameter set is $\lambda^Y \in \{\lambda^Y_{00}, \lambda^Y_{10}, \lambda^Y_{01} \lambda^Y_{11}\}$. These are also probabilities and their values sum to one. Note that we have $6$ parameters but just $1 + 3 = 4$ degrees of freedom.
 
-We express priors over these parameter sets using multiple Dirichlet distributions. In practice because we are dealing with multiple simplices of varying length, we express priors with a unit scale parameter and shape parameter corresponding to the Dirichlet priors, $\alpha$.[^5] As a result, in $X \rightarrow Y$ example for the parameters associated with $X$ we have: $$ \frac{1}{\lambda^X_0 +\lambda^X_1}(\lambda^X_0, \lambda^X_1) \sim Dirichlet(\alpha^X_0, \alpha^X_1).$$Overall in $X \rightarrow Y$ we have a $2$-dimensional Dirichlet distribution over the $X$ nodal types (equivalently, a Beta distribution) and a $4$-dimensional Dirichlet over the $Y$ nodal types.
+We express priors over these parameter sets using multiple Dirichlet distributions. Thus for instance we have $(\lambda^X_0, \lambda^X_1) \sim Dirichlet(\alpha^X_0, \alpha^X_1).$ Overall in $X \rightarrow Y$ we have a $2$-dimensional Dirichlet distribution over the $X$ nodal types (equivalently, a Beta distribution) and a $4$-dimensional Dirichlet over the $Y$ nodal types.
 
 #### Event probabilities
 
@@ -1226,7 +1236,7 @@ In the same way `realise_outcomes()` can return the realized values on all nodes
 
 `CausalQueries` provides syntax for the formulation of various causal queries including queries on all rungs of the "causal ladder" [@pearl_causality_2009]: prediction, such as the proportion of units where $Y$ equals $1$; intervention, such as the probability that $Y = 1$ when $X$ is *set* to $1$; counterfactuals, such as the probability that $Y$ would be $1$ were $X = 1$ given we know $Y$ is $0$ when $X$ was observed to be $0$. Queries can be posed at the population level or case level and can be unconditional (e.g. what is the effect of $X$ on $Y$ for all units) or conditional (for example, the effect f $X$ on $Y$ for units for whom $Z$ affects $X$). This syntax enables users to write arbitrary causal queries to interrogate their models.
 
-The heart of querying is figuring out which causal types correspond to particular queries. For factual queries, users may employ logical statements to ask questions about observed conditions, without any intervention. Take, for example, the query mentioned above about the proportion of units where $Y$ equals $1$, expressed as `"Y == 1"`. In this case the logical operator `==` indicates that `CausalQueries` should consider units that fulfill the condition of strict equality where $Y$ equals $1$.[^6] When this query is posed, the `get_query_types()` function identifies all types that give rise to $Y=1$, absent any interventions.
+The heart of querying is figuring out which causal types correspond to particular queries. For factual queries, users may employ logical statements to ask questions about observed conditions, without any intervention. Take, for example, the query mentioned above about the proportion of units where $Y$ equals $1$, expressed as `"Y == 1"`. In this case the logical operator `==` indicates that `CausalQueries` should consider units that fulfill the condition of strict equality where $Y$ equals $1$.[^5] When this query is posed, the `get_query_types()` function identifies all types that give rise to $Y=1$, absent any interventions.
 
 ```{r}
 make_model("X -> Y")  |> get_query_types("Y==1")
@@ -1261,7 +1271,7 @@ make_model('X -> M -> Y <- X') |>
                   map = "nodal_type")
 ```
 
-In general, the variables to be intervened, as if conducting an experiment, are placed inside square brackets, followed by an equal sign and the value to which we want to set them, either 1 or 0, as $X$ in the case of `"Y[X=1]"`. The variable whose value is to be observed, as $Y$ in the same example, should be placed before the square brackets. Finally, conditions related to observed or potentially observed values, in the context of an intervention, are expressed outside the brackets, along with the logical condition that defines the observed values, as in `"Y==1"` or `"Y[X=1] > Y[X=0]"`.
+In general, the variables to be intervened, as if conducting an experiment, are placed inside square brackets, followed by an equal sign and the value to which we want to set them, either 1 or 0, as $X$ in the case of `"Y[X=1]"`. The variable whose value is observed, as $Y$ in the same example, should be placed before the square brackets. Finally, conditions related to observed or potentially observed values, in the context of an intervention, are expressed outside the brackets, along with the logical condition that defines the observed values, as in `"Y==1"` or `"Y[X=1] > Y[X=0]"`.
 
 #### Conditional queries
 
@@ -1285,7 +1295,7 @@ model$causal_types |>
 
 Many queries involve complex statements over multiple sets of types. These can be formed with the aid of relational operators. For example, you can make queries about cases where $X$ has a positive effect on $Y$, i.e., whether $Y$ is greater when $X$ is set to $1$ compared to when $X$ is set to $0$, expressed as `"Y[X=1] > Y[X=0]"`. The query "$X$ has some effect on $Y$" is given by `"Y[X=1] != Y[X=0]"`.
 
-Linear operators can also be used over set of simple statements. Thus `"Y[X=1] - Y[X=0]"` returns the share of units the average treatment effect. In essence rather than returning a `TRUE` or `FALSE` for the two parts of the query, the case memberships are forced to numeric values ($1$ or $0$) and the differences are taken, which can be a $1$, $0$ or $-1$ depending on the causal type.
+Linear operators can also be used over set of simple statements. Thus `"Y[X=1] - Y[X=0]"` returns the average treatment effect. In essence rather than returning a `TRUE` or `FALSE` for the two parts of the query, the case memberships are forced to numeric values ($1$ or $0$) and the differences are taken, which can be a $1$, $0$ or $-1$ depending on the causal type. Averaging in effect averages over the share of cases with positive effects, less the share of cases with negative effects.
 
 ```{r}
 make_model("X -> Y")  |> get_query_types("Y[X=1] - Y[X=0]")
@@ -1572,7 +1582,7 @@ The results in this paper were obtained using [R]{.proglang}\~3.4.1 with the [MA
 ## Acknowledgments {.unnumbered}
 
 ::: callout
-The approach to generating a generic function to create Stan code that can take data from arbitrary models was developed in key contributions by [Jasper Cooper](http://jasper-cooper.com/) and [Georgiy Syunyaev](http://gsyunyaev.com/). [Lily Medina](https://lilymedina.github.io/) did magical work pulling it all together and developing approaches to characterizing confounding and defining estimands. [Clara Bicalho](https://clarabicalho.github.io/) helped figure out the syntax for causal statements. [Julio S. Solís Arce](https://www.gov.harvard.edu/directory/julio-s-solis-arce/)made many key contributions figuring out how to simplify the specification of priors. [Merlin Heidemanns](https://merlinheidemanns.github.io/website/) figured out the `rstantools` integration and made myriad code improvements. [Till Tietz](https://github.com/till-tietz) revamped the entire package and improved every part of it.
+We thank Ben Goodrich who provided generous insights on using `stan` for this project. We thank Alan M Jacobs for key work developing the framework underlying the package. Our thanks to Cristian-Liviu Nicolescu who provided wonderful feedback on use of the package and a draft of this paper.  Our thanks to Jasper Cooper for contributions  generating a generic function to create Stan code,  to  [Clara Bicalho](https://clarabicalho.github.io/) who helped figure out the syntax for causal statements, to [Julio S. Solís Arce](https://www.gov.harvard.edu/directory/julio-s-solis-arce/) who made many key contributions figuring out how to simplify the specification of priors, and to  [Merlin Heidemanns](https://merlinheidemanns.github.io/website/) who figured out the `rstantools` integration and made myriad code improvements. 
 :::
 
 ## References {.unnumbered}
@@ -1681,6 +1691,4 @@ Increasing the number of parents in a model greatly increases the number of para
 
 [^4]: See `?set_priors` and `?make_priors` for many more examples.
 
-[^5]: For a discussion of implementation of this approach in Stan see (https://discourse.mc-stan.org/t/ragged-array-of-simplexes/1382)\[https://discourse.mc-stan.org/t/ragged-array-of-simplexes/1382\].
-
-[^6]: `CausalQueries` also accepts = as a shorthand for ==. However, == is preferred as it is the conventional logical operator to express a condition of strict equality.
+[^5]: `CausalQueries` also accepts = as a shorthand for ==. However, == is preferred as it is the conventional logical operator to express a condition of strict equality.
