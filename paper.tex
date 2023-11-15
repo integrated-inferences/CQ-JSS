@@ -2097,10 +2097,8 @@ propagating realized values on nodes forward in the DAG, moving from
 exogenous or intervened upon nodes to their descendants in generational
 order. The \texttt{realise\_outcomes()} function achieves this by
 traversing the DAG, while recording for each node's nodal types, the
-values implied by realizations on the node's parents.
-
-By way of example, consider the first causal type of a
-\(X \rightarrow Y\) model:
+values implied by realizations on the node's parents. For example,
+consider the first causal type of a \(X \rightarrow Y\) model:
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
@@ -2433,35 +2431,33 @@ believe for all cases in which \(Z=1\), \(X=1\) and \(Y=1\). It is in
 fact the expected average effect among cases with this data type and so
 this expectation has an uncertainty attached to it.
 
-Subtly though this is, in principle, different to what we would infer
-for a ``new case'' that we wonder about. When inquiring about a new
-case, the case level query \emph{updates} on the given information
-observed in the new case. The resulting inference can be different to
-the inference that would be made from the posterior \emph{given} the
-features of the case. If \texttt{case\_level\ =\ TRUE} is specified,
-this new case level inference is calculated. For a query \(Q\) and given
-\(D\) this returns the value
+This is, in principle, different to what we would infer for a ``new
+case'' that we wonder about. When inquiring about a new case, the case
+level query \emph{updates} on the given information observed in the new
+case. The resulting inference can be different to the inference that
+would be made from the posterior \emph{given} the features of the case.
+If \texttt{case\_level\ =\ TRUE} is specified, this new case level
+inference is calculated. For a query \(Q\) and given \(D\) this returns
+the value
 \(\frac{\int\pi(Q \& D | \lambda_i)p(\lambda_i)d\lambda_i}{\int\pi(D | \lambda_i)p(\lambda_i)d\lambda_i}\)
 which may differ from the mean of the distribution
 \(\frac{\pi(Q \& D | \lambda)}{\pi(D | \lambda)}\),
 \(\int \frac{\pi(Q \& D | \lambda_i)}{\pi(D | \lambda_i)} p(\lambda_i)d\lambda_i\).
 
-To illustrate, consider a model for which we are quite sure that \(X\)
-causes \(Y\) but we do not know whether it works through two positive
-effects or two negative effects. Thus we do not know if \(M=0\) would
-suggest an effect or no effect. If asked what we would infer for a case
-that had \(M=0\) we would not know whether \(M=0\) information is
-consistent with a positive effect or not. However if provided with a
-randomly sampled case and learn that it has \(M=0\), then we update
-about the causal model and infer that there is an effect in this case
-(but that there would not be were \(M=1\)). The results are in
-Table~\ref{tbl-case-level}. Note that the case level query returns a
-single number and no posterior standard deviation: this is the belief
-about the (new) case in question. The non case case level query
-summarizes the posterior distribution over cases with this data.
+To simplify, consider a model where it's clear that \(X\) causes \(Y\),
+but it's uncertain if this is through two positive or two negative
+effects. If we encounter a case with \(M=0\), it's unclear if this
+indicates an effect or not. However, if we randomly find a case with
+\(M=0\), our understanding of the causal model evolves, leading us to
+believe there is an effect in this specific case, which would not be the
+case if \(M=1\). The results are shown in Table~\ref{tbl-case-level}.
+Here, the case level query gives a single value without posterior
+standard deviation, representing the belief about this new case. The
+non-case level query summarizes the posterior distribution for cases
+with similar data.
 
 \begin{verbatim}
-R>  make_model("X -> M -> Y") |>
+R> make_model("X -> M -> Y") |>
 +  update_model(data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)), iter = 10000) |> 
 +  query_model(
 +    query = "Y[X=1] > Y[X=0]",
@@ -2491,14 +2487,18 @@ models, causal queries, and conditions. It then calculates population or
 case level estimands given prior or posterior distributions and reports
 summaries of these distributions. The result is a data frame that can be
 displayed as a table or used for graphing. Table~\ref{tbl-batch-query}
-shows output from a single call to \texttt{query\_model()}.
+shows output from a single call to \texttt{query\_model()} with the
+\texttt{expand\_grid} argument set to \texttt{TRUE} to generate all
+combinations of list elements.
 
 \begin{verbatim}
 R> models <- list(
-+ `1` = make_model("X -> Y")  |> 
-+        update_model(data.frame(X=rep(0:1, 10), Y=rep(0:1,10)), refresh = 0),
-+ `2` = make_model("X -> Y")  |>  set_restrictions("Y[X=1] < Y[X=0]") |>
-+        update_model(data.frame(X=rep(0:1, 10), Y=rep(0:1,10)), refresh = 0))
++  `1` = 
++    update_model(make_model("X -> Y"),
++                 data.frame(X = rep(0:1, 10), Y = rep(0:1,10)), refresh = 0),
++  `2` = 
++    update_model(set_restrictions(make_model("X -> Y"), "Y[X=1] < Y[X=0]"),
++                 data.frame(X = rep(0:1, 10), Y = rep(0:1,10)), refresh = 0))
 R> 
 R> query_model(
 +  models,
@@ -2551,10 +2551,6 @@ model & query & given & using & case\_level & mean & sd\\
 2 & POS & Y==1 \& X==1 & posteriors & TRUE & 0.91 & NA\\
 \bottomrule
 \end{longtable}
-
-The \texttt{stats} argument lets users specify alternative summary
-statistics. The \texttt{expand\_grid} argument lets users specify
-whether all combinations of list elements should be generated.
 
 \FloatBarrier
 
@@ -2722,7 +2718,7 @@ Network (CRAN) at \url{https://CRAN.R-project.org/}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, colback=white, bottomrule=.15mm, toprule=.15mm, leftrule=.75mm, left=2mm, breakable, arc=.35mm, rightrule=.15mm, opacityback=0]
+\begin{tcolorbox}[enhanced jigsaw, breakable, opacityback=0, colback=white, bottomrule=.15mm, rightrule=.15mm, leftrule=.75mm, left=2mm, arc=.35mm, toprule=.15mm]
 
 The approach to generating a generic function to create Stan code that
 can take data from arbitrary models was developed in key contributions
