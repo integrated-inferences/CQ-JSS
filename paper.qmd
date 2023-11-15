@@ -1634,19 +1634,8 @@ Updating is performed using Stan model. The data provided to Stan is generated b
 #| echo: false
 #| results: markup
 #| comment: ""
-if (params$run) {
-  
-  make_model("X -> Y") |> 
-    update_model(
-      data = data,
-      keep_fit = TRUE, 
-      refresh = 0) |> 
-    (\(.) .$stan_objects$stan_fit)() |>
-    write_rds("saved/fit.rds")
-  
-}
 
-cat(rstan::get_stancode(read_rds("saved/fit.rds")))
+CausalQueries:::stanmodels$simplexes
 
 ```
 

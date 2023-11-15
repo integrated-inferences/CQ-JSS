@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title></title>
+<style type="text/css">
+/**
+ * Prism.s theme ported from highlight.js's xcode style
+ */
+pre code {
+  padding: 1em;
+}
+.token.comment {
+  color: #007400;
+}
+.token.punctuation {
+  color: #999;
+}
+.token.tag,
+.token.selector {
+  color: #aa0d91;
+}
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol {
+  color: #1c00cf;
+}
+.token.property,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin {
+  color: #c41a16;
+}
+.token.inserted {
+  background-color: #ccffd8;
+}
+.token.deleted {
+  background-color: #ffebe9;
+}
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+  color: #9a6e3a;
+}
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+  color: #836c28;
+}
+.token.function,
+.token.class-name {
+  color: #DD4A68;
+}
+.token.regex,
+.token.important,
+.token.variable {
+  color: #5c2699;
+}
+.token.important,
+.token.bold {
+  font-weight: bold;
+}
+.token.italic {
+  font-style: italic;
+}
+</style>
+<style type="text/css">
+body {
+  font-family: sans-serif;
+  max-width: 800px;
+  margin: auto;
+  padding: 1em;
+  line-height: 1.5;
+  box-sizing: border-box;
+}
+body, .footnotes, code { font-size: .9em; }
+li li { font-size: .95em; }
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+pre, img { max-width: 100%; }
+pre, pre:hover {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+pre code {
+  display: block;
+  overflow-x: auto;
+}
+code { font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace; }
+:not(pre) > code, code[class] { background-color: #F8F8F8; }
+code.language-undefined, pre > code:not([class]) {
+  background-color: inherit;
+  border: 1px solid #eee;
+}
+table {
+  margin: auto;
+  border-top: 1px solid #666;
+}
+table thead th { border-bottom: 1px solid #ddd; }
+th, td { padding: 5px; }
+thead, tfoot, tr:nth-child(even) { background: #eee; }
+blockquote {
+  color: #666;
+  margin: 0;
+  padding-left: 1em;
+  border-left: 0.5em solid #eee;
+}
+hr, .footnotes::before { border: 1px dashed #ddd; }
+.frontmatter { text-align: center; }
+#TOC .numbered li { list-style: none; }
+#TOC .numbered { padding-left: 0; }
+#TOC .numbered ul { padding-left: 1em; }
+table, .body h2 { border-bottom: 1px solid #666; }
+.body .appendix, .appendix ~ h2 { border-bottom-style: dashed; }
+.footnote-ref a::before { content: "["; }
+.footnote-ref a::after { content: "]"; }
+section.footnotes::before {
+  content: "";
+  display: block;
+  max-width: 20em;
+}
+
+@media print {
+  body {
+    font-size: 12pt;
+    max-width: 100%;
+  }
+  tr, img { page-break-inside: avoid; }
+}
+@media only screen and (min-width: 992px) {
+  pre { white-space: pre; }
+}
+</style>
+<script>
+$(document).ready(function(){
+    if (typeof $('[data-toggle="tooltip"]').tooltip === 'function') {
+        $('[data-toggle="tooltip"]').tooltip();
+    }
+    if ($('[data-toggle="popover"]').popover === 'function') {
+        $('[data-toggle="popover"]').popover();
+    }
+});
+</script>
+<link href="C:\Users\humphreys\AppData\Local\R\win-library\4.2\kableExtra\lightable-0.0.1\lightable.css" rel="stylesheet" />
+</head>
+<body>
+<div class="include-before">
+</div>
+<div class="frontmatter">
+<div class="title"><h1></h1></div>
+<div class="author"><h2></h2></div>
+<div class="date"><h3></h3></div>
+</div>
+<div class="body">
+<pre><code class="language-r">options(kableExtra.latex.load_packages = FALSE)
+
+library(tidyverse)
+library(CausalQueries)
+library(knitr)
+library(rstan)
+library(DeclareDesign)
+library(kableExtra)
+library(tikzDevice)
+
+set.seed(20231018)
+
+data(&quot;lipids_data&quot;)
+
+lipids_data
+</code></pre>
+<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
+ <thead>
+  <tr>
+   <th style="text-align:center;"> query </th>
+   <th style="text-align:center;"> given </th>
+   <th style="text-align:center;"> mean </th>
+   <th style="text-align:center;"> sd </th>
+   <th style="text-align:center;"> cred.low </th>
+   <th style="text-align:center;"> cred.high </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
+   <td style="text-align:center;"> - </td>
+   <td style="text-align:center;"> 0.55 </td>
+   <td style="text-align:center;"> 0.10 </td>
+   <td style="text-align:center;"> 0.37 </td>
+   <td style="text-align:center;"> 0.73 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
+   <td style="text-align:center;"> X==0 &amp; Y==0 </td>
+   <td style="text-align:center;"> 0.63 </td>
+   <td style="text-align:center;"> 0.15 </td>
+   <td style="text-align:center;"> 0.37 </td>
+   <td style="text-align:center;"> 0.89 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
+   <td style="text-align:center;"> X[Z=1] &gt; X[Z=0] </td>
+   <td style="text-align:center;"> 0.70 </td>
+   <td style="text-align:center;"> 0.05 </td>
+   <td style="text-align:center;"> 0.59 </td>
+   <td style="text-align:center;"> 0.81 </td>
+  </tr>
+</tbody>
+</table>
+<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
+ <thead>
+  <tr>
+   <th style="text-align:center;"> node </th>
+   <th style="text-align:center;"> nodal_type </th>
+   <th style="text-align:center;"> param_set </th>
+   <th style="text-align:center;"> param_names </th>
+   <th style="text-align:center;"> param_value </th>
+   <th style="text-align:center;"> priors </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:center;"> Z </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> Z </td>
+   <td style="text-align:center;"> Z.0 </td>
+   <td style="text-align:center;"> 0.00 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Z </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> Z </td>
+   <td style="text-align:center;"> Z.1 </td>
+   <td style="text-align:center;"> 1.00 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> X </td>
+   <td style="text-align:center;"> 00 </td>
+   <td style="text-align:center;"> X </td>
+   <td style="text-align:center;"> X.00 </td>
+   <td style="text-align:center;"> 0.42 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> X </td>
+   <td style="text-align:center;"> 10 </td>
+   <td style="text-align:center;"> X </td>
+   <td style="text-align:center;"> X.10 </td>
+   <td style="text-align:center;"> 0.01 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> X </td>
+   <td style="text-align:center;"> 01 </td>
+   <td style="text-align:center;"> X </td>
+   <td style="text-align:center;"> X.01 </td>
+   <td style="text-align:center;"> 0.03 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> X </td>
+   <td style="text-align:center;"> 11 </td>
+   <td style="text-align:center;"> X </td>
+   <td style="text-align:center;"> X.11 </td>
+   <td style="text-align:center;"> 0.54 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 00 </td>
+   <td style="text-align:center;"> Y.X.00 </td>
+   <td style="text-align:center;"> Y.00_X.00 </td>
+   <td style="text-align:center;"> 0.09 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 10 </td>
+   <td style="text-align:center;"> Y.X.00 </td>
+   <td style="text-align:center;"> Y.10_X.00 </td>
+   <td style="text-align:center;"> 0.57 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 01 </td>
+   <td style="text-align:center;"> Y.X.00 </td>
+   <td style="text-align:center;"> Y.01_X.00 </td>
+   <td style="text-align:center;"> 0.12 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 11 </td>
+   <td style="text-align:center;"> Y.X.00 </td>
+   <td style="text-align:center;"> Y.11_X.00 </td>
+   <td style="text-align:center;"> 0.23 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 00 </td>
+   <td style="text-align:center;"> Y.X.01 </td>
+   <td style="text-align:center;"> Y.00_X.01 </td>
+   <td style="text-align:center;"> 0.64 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 10 </td>
+   <td style="text-align:center;"> Y.X.01 </td>
+   <td style="text-align:center;"> Y.10_X.01 </td>
+   <td style="text-align:center;"> 0.09 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 01 </td>
+   <td style="text-align:center;"> Y.X.01 </td>
+   <td style="text-align:center;"> Y.01_X.01 </td>
+   <td style="text-align:center;"> 0.26 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 11 </td>
+   <td style="text-align:center;"> Y.X.01 </td>
+   <td style="text-align:center;"> Y.11_X.01 </td>
+   <td style="text-align:center;"> 0.01 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 00 </td>
+   <td style="text-align:center;"> Y.X.10 </td>
+   <td style="text-align:center;"> Y.00_X.10 </td>
+   <td style="text-align:center;"> 0.31 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 10 </td>
+   <td style="text-align:center;"> Y.X.10 </td>
+   <td style="text-align:center;"> Y.10_X.10 </td>
+   <td style="text-align:center;"> 0.25 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 01 </td>
+   <td style="text-align:center;"> Y.X.10 </td>
+   <td style="text-align:center;"> Y.01_X.10 </td>
+   <td style="text-align:center;"> 0.14 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 11 </td>
+   <td style="text-align:center;"> Y.X.10 </td>
+   <td style="text-align:center;"> Y.11_X.10 </td>
+   <td style="text-align:center;"> 0.30 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 00 </td>
+   <td style="text-align:center;"> Y.X.11 </td>
+   <td style="text-align:center;"> Y.00_X.11 </td>
+   <td style="text-align:center;"> 0.14 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 10 </td>
+   <td style="text-align:center;"> Y.X.11 </td>
+   <td style="text-align:center;"> Y.10_X.11 </td>
+   <td style="text-align:center;"> 0.26 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 01 </td>
+   <td style="text-align:center;"> Y.X.11 </td>
+   <td style="text-align:center;"> Y.01_X.11 </td>
+   <td style="text-align:center;"> 0.20 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 11 </td>
+   <td style="text-align:center;"> Y.X.11 </td>
+   <td style="text-align:center;"> Y.11_X.11 </td>
+   <td style="text-align:center;"> 0.41 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+</tbody>
+</table>
+<pre><code class="language-r">model &lt;- make_model(&quot;X -&gt; M -&gt; Y &lt;- X&quot;)
+</code></pre>
+<pre><code class="language-r">## make_model(&quot;X -&gt; M -&gt; Y &lt;- X; Z -&gt; Y&quot;) |&gt;
+##   plot(x_coord = 1:4,
+##        y_coord = c(1.5,2,1,2),
+##        textcol = &quot;white&quot;,
+##        textsize = 3,
+##        shape = 18,
+##        nodecol = &quot;grey&quot;,
+##        nodesize = 12)
+##
+</code></pre>
+<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfgAAAH4CAMAAACR9g9NAAAAflBMVEUAAAAAADoAAGYAOpAAZrY6AAA6ADo6AGY6ZrY6kLY6kNtmAABmADpmkLZmtttmtv+QOgCQOjqQkJCQttuQ27aQ29uQ2/+2ZgC2tpC2tra225C2/7a2///bkDrbkGbbtmbb25Db27bb29vb/7bb/9vb////tmb/25D//7b///9dLyn5AAAACXBIWXMAAAsSAAALEgHS3X78AAALOklEQVR4nO3c7VYcxxlF4UaAkyAnwokEzgexkjjY3P8NZkmJ4+mer+7qeqvOW2fvP15Ly8xUn8fTCMwwvZFlU+8DUJ+ANw1404A3DXjTgDcNeNOANw1404A3DXjTgDcNeNOANw1404A3DXjTgDcNeNOANw1404A3DXjTgDcNeNOANw1404A3DXjTgDcNeNOANw1404A3DXjTgDcNeLGmRiLA6zQdFP9k4c9A65oWRT9d8OPTypbu0fLAS3TMHk0PvEKn3UPlgRfonHukPPACAe/ZefdAeeC7d8k9Th747gHv2WX3MHngewe8acCbBrxpM+WHn+6n6cMr8OO3eH1/eJnuXud/FPS8MQ9La1vAv/vrtx/fA+/QQv7u7ZnP8RYt4B/+3OROD3z35sy3n795egbeoZnyzafH6fZf74E3aOb+9DL972s64IdvuljYs0Y9MK0NeNd6uAOvUAd34BUC3rX27sBr1NwdeJXasgOvU1t34IVqyA68XPxiBAoNeNOANw14idozAC8R8KYB79lSoYEK8AIdIQDv0TEC37lz6IQB8A4B79kpAuANAt6z0wLhLsB37gwA8KMHvGfn9gd+8ID37Oz8wI/d+fn5KduRu7A+8CMHvGcXx+edNMN2eXvghw14z65MD/yoAe/ZteWBH7Sry8fSAN+p68MDP2Irdgd+xIA3DXjP1swO/ICtmp1fdzZc61YHfriA92zl6MAP1trNgR8s4D1bPzm/vXqogPdsw+LAjxTwnm0ZHPiBAt6zbXsH6gDftI1zAz9KwHu2ee04HuBbBrxn28cGfoiA96xga+AHqGRq4AeoaOowH+BbVbY08OkD3rPCoYHPHvCele4MfPKKd44CAr5J5TMDn7kdKwOfOeA92zMy8IkD3rRdIwcJAR/fvo2BTxvwnu2cGPik7V0Y+KQB79n+gWOIgA8OeM8q7At8xmrsG2IEfGhV5gU+XXXWBT5dwHtWaVzgswW8Z9W2jUACPi7gPas3LfCpAt6zissCn6iawwKfKOA9q7trgBLwMQHvWeVZgc8S8J7VXhX4HFUfFfgc1R81wyNSCibg65fixgx8/VJ8ow346uX4gRnga5fk/Q/A1w54z7K8uRX4ygHvWdieCb4LbB3wnsXNCbxygWsCrxzwnkWOCbxwoWPq/1CPbbFbAi8b8J4FTwm8asB7Fr0k8JrFDyn/5hzPgPeswY7AKwa8Zy1mBF4w4D1rs2LVZwG+Qo1GBF4t4D1rtqH6L1RyC3jP2k0IvFTAe9ZwQeCVAt6zpgNWfDLgdwa8Z233A14m4D1rPB/wKgHvWfP16j0h8HsC3rP24wGvUIftgFcIeM96TAe8QF2mq/akwJfWZznguwe8Z72Gq/W8wJfVbTfg+wa8Z/1mA75rwHvWcTXge9ZztUrPDXxBXUcDvl/Ae9Z3M+B71Xky4HsFvGfdF6tzgO6Xka7uiwHfp+6LAd+l/oMB36X+gwHfI4G9gO+QxFxVDiFxJXmSmAv45mmsBXzzNNYCvnUiYwHfOpGxgG+czFY1DiJzMfrpTAV803SmAr5lSktVOIvS5WintBTw7ZIaCvh2SQ0FfLO0dgK+WVo7Ad8qtZn2n0ftijSTWwn4NsmtBHyT9EYCvkl6IwHfIsGNgG+R4ka7z6R4UWJJTgR8eJoLAR+e5kLAh6e5EPDRiQ4EfHSiAwEfnOw+ew8me2Eiye4DfGi68wAfmfA6wEcmvA7wgSmPA3xg0uPsPJz0tXVOexvgw9LeBvio1KfZdz71q+uY+jTAxyS/DPAh6Q8DfEj6wwAfUYJdgI8owy67zpjhAjuUYhbg65diFuCrl2MV4GuXZBTga5dkFOArl2aTPQdNc5ENS7MJ8FXLMwnwVcszCfA1S7QI8DVLtAjwFUs1yI7DprrOBuXaA/hq5doD+DpN6eYoP2+2Kw1tmrLNAXyVpikbPfBVSucOfJ2ysQNfqXxjAO9asR/wuQO+tHyf12cBX9B0UO+zlAb85qZFvc9TFvBbW7onlQd+W8fsWelLD53yYnd32j2lPPAbOueeUR74DQHvCX/ePaE88Ku75J5PHvjVjQVfKpjvQvd22T2fPPArA37PhyUO+D0flrgD45un5y//+PACvEGHyDefHqfp7pVXvEHz+/rt5/t3f7l3vNenu8y9LT6jP7z84dHyk3y6y9zdgnn+CT6hO/ArW8I/n4XP8h9B0TGTXFvF1sLnefUDv6p18Jlu+8CvarrS4l/retZ1Ab+uVe7/f+tsAn7g17USfraNND7wK1vpfvrDmp1yQyWHkryQ6IrcZx8bf8YtlRxI7BLatAf+10eIPOGGCv9LVDl+2/a6HzxI0Am3nmP7RwWcRLbp6Iu1He7zR6p4ypIjFHxQ/XOItgCqw37u0dsG/MUWMlXdTz9Fs4C/0LFubfbDR633eEHpn7BS05k7YpCRPL/y2WrW5zqF8VXPVbee84u+9vVOVD+F2cP5tz64wCbBKbD/Ugx+0V9ShVaJSe4CY76K2Ewvt0vdlF7us6rxl34jSnWYOqlf3W7+Y/a1D6g+za6SXFw5/mn3VY+WZJuSZG/zpyp67Z9zX/VzBUXHTFAq9l/a+jdz4I/KfF2rP01f6PoH7z6mZOkvawXfJffr8ukXOlXK2/ypLhoCv2y0azotedn9qvxoI70NeUlfWmoCP2+Y2/zJDkSBP2xs9lnA/5oR+xz+9t/P0/Tw83tT+JGu5WqzV/ftP3+Ybj79YwZ/ZY1xxrJ6uS/hP//x/t33Hx3hzdjfFrf6z79/vPv7R8Nb/SCXsaU5/G+ff/edIfwYV7GtOfxvvv/4rR28323+S3P4b/70w40b/ACXUNIc/v7hxQ0+/xUUNl3s6ke3OGJgnrf5rznDG7O/Of8gRurDV2iHe+rtMp+9Sp7w3rf5/1bunhYe9q8Vu2eFT3rsgMrYky7Iy/2gMveM8LAvKmDPCJ/vxE0a/hcjpDuwaMl25DZfq1RDwl6vTFNmOqt8icZMdNQEpVmT23zdssyZ5ZxpSjJokmMmKsWi3Obrpz/plu9D0urkR5U/YNLUd1U/X9q0h+UuH5bysrAHJryt8NEGSHdd3ZMNkeq83OaDE91X9FgDpbmw5qmGSnFibvMN0tsY9ibJrSx3oEFT21ntPMOmNTS3+WYpLQ17w4S2FjqKQTJr83Jvm8jcsLdOY3CNU1glMbnEIcwS2JzbfI+6jw57n3rP3vv5bes8PO696ro8t/l+9Zwe9o51HB/3nnVbn9t83/rMzxshu9cFAPX+9TDAXaD2CNzlJWqtALtIjR1gV6mtBO4ytaTgNi9UQwvYlWqngbtUrTi4zYvVxgN2uZqIwK5XAxNe7oqFo8CuWTQL7KIFw+CuWqgMt3ndAmlgVy4OB3bpwnhw1y7Ih9u8eiFAsOsXQQR7ggKQcM9QdSVu8zmqzQR7kupC8XJPU00p2BO12eqsLuyp2qI1HbTrgah/672mRaWPQxKtBlu6z+S5zadrpdgx+yE97PlaZ3bandd54lbZnXNHPm/Am7aG7rw78mlbIXfJHfmsAW/adbjL7sgnDXjTgDdtI/zd1z96BT59Ba/42x8fgU/fVbcj93d/e+Zen7/N8DdPL3ySH6DNt/oPr7iP0Fb4h5/ugR+hrX+r//n98t7f4JBUv23wN09f/4gv5/LHN3BM43/SmAa8afwghmn86JVpwJvGj1ebVuUNFZSvOm+honTVetMkJava26QpV/V+MQKlCkbTgDcNeNOANw1404A3DXjTgDcNeNOANw1404A3DXjTgDcNeNOANw1404A3DXjTgDcNeNOANw1404A3DXjTgDcNeNOANw1404A3DXjTgDftP6WjUMJxKKHYAAAAAElFTkSuQmCC" alt="Examples of model graphs." /><img src="data:image/png;base64,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" alt="Examples of model graphs." /></p>
+<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
+ <thead>
+  <tr>
+   <th style="text-align:center;"> param_names </th>
+   <th style="text-align:center;"> node </th>
+   <th style="text-align:center;"> gen </th>
+   <th style="text-align:center;"> param_set </th>
+   <th style="text-align:center;"> nodal_type </th>
+   <th style="text-align:center;"> given </th>
+   <th style="text-align:center;"> param_value </th>
+   <th style="text-align:center;"> priors </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:center;"> X.0 </td>
+   <td style="text-align:center;"> X </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> X </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;"> 0.50 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> X.1 </td>
+   <td style="text-align:center;"> X </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> X </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;"> 0.50 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y.00 </td>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 2 </td>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 00 </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;"> 0.25 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y.10 </td>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 2 </td>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 10 </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;"> 0.25 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y.01 </td>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 2 </td>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 01 </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;"> 0.25 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y.11 </td>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 2 </td>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 11 </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;"> 0.25 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+</tbody>
+</table>
+<pre><code class="language-r">interpretations &lt;-
+  make_model(&quot;X -&gt; Y &lt;- M; W -&gt; Y&quot;) |&gt;
+  interpret_type()
+
+interpretations$Y
+</code></pre>
+<pre><code class="language-r">lipids_model$causal_types |&gt; head()
+</code></pre>
+<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt; get_parameter_matrix()
+</code></pre>
+<pre><code>## 
+## Rows are parameters, grouped in parameter sets
+## 
+## Columns are causal types
+## 
+## Cell entries indicate whether a parameter probability is used
+## in the calculation of causal type probability
+## 
+## 
+##  
+##  param_set  (P)
+## 
+</code></pre>
+<pre><code class="language-r">model_restricted &lt;-
+  make_model(&quot;Z -&gt; X -&gt; Y; X &lt;-&gt; Y&quot;) |&gt;
+  set_restrictions(&quot;X[Z=1] &lt; X[Z=0]&quot;)
+</code></pre>
+<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
+ <thead>
+  <tr>
+   <th style="text-align:center;"> param_names </th>
+   <th style="text-align:center;"> node </th>
+   <th style="text-align:center;"> gen </th>
+   <th style="text-align:center;"> param_set </th>
+   <th style="text-align:center;"> nodal_type </th>
+   <th style="text-align:center;"> given </th>
+   <th style="text-align:center;"> param_value </th>
+   <th style="text-align:center;"> priors </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:center;"> X.0 </td>
+   <td style="text-align:center;"> X </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> X </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;"> 0.50 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> X.1 </td>
+   <td style="text-align:center;"> X </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> X </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;">  </td>
+   <td style="text-align:center;"> 0.50 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y.00_X.0 </td>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 2 </td>
+   <td style="text-align:center;"> Y.X.0 </td>
+   <td style="text-align:center;"> 00 </td>
+   <td style="text-align:center;"> X.0 </td>
+   <td style="text-align:center;"> 0.25 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y.10_X.0 </td>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 2 </td>
+   <td style="text-align:center;"> Y.X.0 </td>
+   <td style="text-align:center;"> 10 </td>
+   <td style="text-align:center;"> X.0 </td>
+   <td style="text-align:center;"> 0.25 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y.01_X.0 </td>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 2 </td>
+   <td style="text-align:center;"> Y.X.0 </td>
+   <td style="text-align:center;"> 01 </td>
+   <td style="text-align:center;"> X.0 </td>
+   <td style="text-align:center;"> 0.25 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y.11_X.0 </td>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 2 </td>
+   <td style="text-align:center;"> Y.X.0 </td>
+   <td style="text-align:center;"> 11 </td>
+   <td style="text-align:center;"> X.0 </td>
+   <td style="text-align:center;"> 0.25 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y.00_X.1 </td>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 2 </td>
+   <td style="text-align:center;"> Y.X.1 </td>
+   <td style="text-align:center;"> 00 </td>
+   <td style="text-align:center;"> X.1 </td>
+   <td style="text-align:center;"> 0.25 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y.10_X.1 </td>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 2 </td>
+   <td style="text-align:center;"> Y.X.1 </td>
+   <td style="text-align:center;"> 10 </td>
+   <td style="text-align:center;"> X.1 </td>
+   <td style="text-align:center;"> 0.25 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y.01_X.1 </td>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 2 </td>
+   <td style="text-align:center;"> Y.X.1 </td>
+   <td style="text-align:center;"> 01 </td>
+   <td style="text-align:center;"> X.1 </td>
+   <td style="text-align:center;"> 0.25 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y.11_X.1 </td>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 2 </td>
+   <td style="text-align:center;"> Y.X.1 </td>
+   <td style="text-align:center;"> 11 </td>
+   <td style="text-align:center;"> X.1 </td>
+   <td style="text-align:center;"> 0.25 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+</tbody>
+</table>
+<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
+ <thead>
+  <tr>
+   <th style="text-align:left;">   </th>
+   <th style="text-align:center;"> X0.Y00 </th>
+   <th style="text-align:center;"> X1.Y00 </th>
+   <th style="text-align:center;"> X0.Y10 </th>
+   <th style="text-align:center;"> X1.Y10 </th>
+   <th style="text-align:center;"> X0.Y01 </th>
+   <th style="text-align:center;"> X1.Y01 </th>
+   <th style="text-align:center;"> X0.Y11 </th>
+   <th style="text-align:center;"> X1.Y11 </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> X.0 </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> X.1 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Y.00_X.0 </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Y.10_X.0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Y.01_X.0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Y.11_X.0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Y.00_X.1 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Y.10_X.1 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Y.01_X.1 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Y.11_X.1 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+</tbody>
+</table>
+<table>
+ <thead>
+  <tr>
+   <th style="text-align:left;"> Model </th>
+   <th style="text-align:center;"> dof </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> X -&gt; Y &lt;- W </td>
+   <td style="text-align:center;"> 17 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> X -&gt; Y &lt;- W; X &lt;-&gt; W </td>
+   <td style="text-align:center;"> 18 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> X -&gt; Y &lt;- W; X &lt;-&gt; Y; W &lt;-&gt; Y </td>
+   <td style="text-align:center;"> 62 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> X -&gt; Y &lt;- W; X &lt;-&gt; Y; W &lt;-&gt; Y; X &lt;-&gt;W </td>
+   <td style="text-align:center;"> 63 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> X -&gt; W -&gt; Y &lt;- X </td>
+   <td style="text-align:center;"> 19 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> X -&gt; W -&gt; Y &lt;- X; W &lt;-&gt; Y </td>
+   <td style="text-align:center;"> 64 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> X -&gt; W -&gt; Y &lt;- X; X &lt;-&gt; W; W &lt;-&gt; Y </td>
+   <td style="text-align:center;"> 67 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> X -&gt; W -&gt; Y &lt;- X; X &lt;-&gt; W; W &lt;-&gt; Y; X &lt;-&gt; Y </td>
+   <td style="text-align:center;"> 127 </td>
+  </tr>
+</tbody>
+</table>
+<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt; get_priors()
+</code></pre>
+<pre><code>##  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
+##    1    1    1    1    1    1
+</code></pre>
+<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt;
+  set_priors(1:6) |&gt;
+  get_priors()
+</code></pre>
+<pre><code>##  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
+##    1    2    3    4    5    6
+</code></pre>
+<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt;
+  set_priors(statement = &quot;Y[X=1] &gt; Y[X=0]&quot;, alphas = 3) |&gt;
+  get_priors()
+</code></pre>
+<pre><code>##  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
+##    1    1    1    1    3    1
+</code></pre>
+<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt;
+  get_parameters()
+</code></pre>
+<pre><code>##  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
+## 0.50 0.50 0.25 0.25 0.25 0.25
+</code></pre>
+<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt;
+  set_parameters(statement = &quot;Y[X=1] &gt; Y[X=0]&quot;, parameters = .5) |&gt;
+  get_parameters()
+</code></pre>
+<pre><code>##       X.0       X.1      Y.00      Y.10      Y.01      Y.11 
+## 0.5000000 0.5000000 0.1666667 0.1666667 0.5000000 0.1666667
+</code></pre>
+<pre><code class="language-r">model &lt;- make_model(&quot;X -&gt; M -&gt; Y&quot;)
+</code></pre>
+<pre><code class="language-r">sample_data_1 &lt;-
+  model |&gt;
+  make_data(n = 4)
+</code></pre>
+<pre><code class="language-r">make_data(model, n = 3, param_type = &quot;prior_draw&quot;)
+</code></pre>
+<pre><code class="language-r">sample_data_2 &lt;-
+  make_data(
+    model,
+    n = 8,
+    nodes = list(c(&quot;X&quot;, &quot;Y&quot;), &quot;M&quot;),
+    probs = list(1, .5),
+    subsets = list(TRUE, &quot;X==1 &amp; Y==0&quot;),
+    verbose = FALSE
+  )
+
+sample_data_2
+</code></pre>
+<pre><code class="language-r">sample_data_2 |&gt; collapse_data(model)
+</code></pre>
+<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
+ <thead>
+  <tr>
+   <th style="text-align:left;">   </th>
+   <th style="text-align:center;"> X0Y0 </th>
+   <th style="text-align:center;"> X1Y0 </th>
+   <th style="text-align:center;"> X0Y1 </th>
+   <th style="text-align:center;"> X1Y1 </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> X.0 </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> X.1 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Y.00 </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Y.10 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Y.01 </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Y.11 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+</tbody>
+</table>
+<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
+ <thead>
+  <tr>
+   <th style="text-align:center;"> model </th>
+   <th style="text-align:center;"> query </th>
+   <th style="text-align:center;"> mean </th>
+   <th style="text-align:center;"> sd </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:center;"> uncensored </td>
+   <td style="text-align:center;"> (Y[X=1] - Y[X=0]) </td>
+   <td style="text-align:center;"> 0.59 </td>
+   <td style="text-align:center;"> 0.20 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> censored </td>
+   <td style="text-align:center;"> (Y[X=1] - Y[X=0]) </td>
+   <td style="text-align:center;"> 0.01 </td>
+   <td style="text-align:center;"> 0.32 </td>
+  </tr>
+</tbody>
+</table>
+<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt; realise_outcomes()
+</code></pre>
+<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt; realise_outcomes(dos = list(X = 1))
+</code></pre>
+<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;)  |&gt; get_query_types(&quot;Y==1&quot;)
+</code></pre>
+<pre><code>## 
+## Causal types satisfying query's condition(s)  
+## 
+##  query =  Y==1 
+## 
+## X0.Y10  X1.Y01
+## X0.Y11  X1.Y11
+## 
+## 
+##  Number of causal types that meet condition(s) =  4
+##  Total number of causal types in model =  8
+</code></pre>
+<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;)  |&gt; get_query_types(&quot;Y[X=1]==1&quot;)
+</code></pre>
+<pre><code>## 
+## Causal types satisfying query's condition(s)  
+## 
+##  query =  Y[X=1]==1 
+## 
+## X0.Y01  X1.Y01
+## X0.Y11  X1.Y11
+## 
+## 
+##  Number of causal types that meet condition(s) =  4
+##  Total number of causal types in model =  8
+</code></pre>
+<pre><code class="language-r">make_model(&quot;X1 -&gt; Y &lt;- X2&quot;)  |&gt;
+  get_query_types(&quot;X1==1 &amp; X2==1 &amp; (Y[X1=1, X2=1] &gt; Y[X1=0, X2=0])&quot;)
+</code></pre>
+<pre><code>## 
+## Causal types satisfying query's condition(s)  
+## 
+##  query =  X1==1&amp;X2==1&amp;(Y[X1=1,X2=1]&gt;Y[X1=0,X2=0]) 
+## 
+## X11.X21.Y0001  X11.X21.Y0101
+## X11.X21.Y0011  X11.X21.Y0111
+## 
+## 
+##  Number of causal types that meet condition(s) =  4
+##  Total number of causal types in model =  64
+</code></pre>
+<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;)  |&gt; get_query_types(&quot;Y[X=1] - Y[X=0]&quot;)
+</code></pre>
+<pre><code>## X0.Y00 X1.Y00 X0.Y10 X1.Y10 X0.Y01 X1.Y01 X0.Y11 X1.Y11 
+##      0      0     -1     -1      1      1      0      0
+</code></pre>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+</code></pre>
+<div class="figure" style="text-align: center">
+<img src="data:image/png;base64,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" alt="Posterior on &quot;Probability $Y$ is increasing in $X$&quot;." width="60%" />
+<p class="caption">Posterior on "Probability $Y$ is increasing in $X$".</p>
+</div>
+<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
+ <thead>
+  <tr>
+   <th style="text-align:center;"> query </th>
+   <th style="text-align:center;"> given </th>
+   <th style="text-align:center;"> mean </th>
+   <th style="text-align:center;"> sd </th>
+   <th style="text-align:center;"> cred.low </th>
+   <th style="text-align:center;"> cred.high </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
+   <td style="text-align:center;"> X==1 &amp; Y==1 &amp; Z==1 </td>
+   <td style="text-align:center;"> 0.95 </td>
+   <td style="text-align:center;"> 0.04 </td>
+   <td style="text-align:center;"> 0.86 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+</tbody>
+</table>
+<pre><code>## 
+## SAMPLING FOR MODEL 'simplexes' NOW (CHAIN 1).
+## Chain 1: 
+## Chain 1: Gradient evaluation took 2.7e-05 seconds
+## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.27 seconds.
+## Chain 1: Adjust your expectations accordingly!
+## Chain 1: 
+## Chain 1: 
+## Chain 1: Iteration:    1 / 10000 [  0%]  (Warmup)
+## Chain 1: Iteration: 1000 / 10000 [ 10%]  (Warmup)
+## Chain 1: Iteration: 2000 / 10000 [ 20%]  (Warmup)
+## Chain 1: Iteration: 3000 / 10000 [ 30%]  (Warmup)
+## Chain 1: Iteration: 4000 / 10000 [ 40%]  (Warmup)
+## Chain 1: Iteration: 5000 / 10000 [ 50%]  (Warmup)
+## Chain 1: Iteration: 5001 / 10000 [ 50%]  (Sampling)
+## Chain 1: Iteration: 6000 / 10000 [ 60%]  (Sampling)
+## Chain 1: Iteration: 7000 / 10000 [ 70%]  (Sampling)
+## Chain 1: Iteration: 8000 / 10000 [ 80%]  (Sampling)
+## Chain 1: Iteration: 9000 / 10000 [ 90%]  (Sampling)
+## Chain 1: Iteration: 10000 / 10000 [100%]  (Sampling)
+## Chain 1: 
+## Chain 1:  Elapsed Time: 1.24 seconds (Warm-up)
+## Chain 1:                1.287 seconds (Sampling)
+## Chain 1:                2.527 seconds (Total)
+## Chain 1: 
+## 
+## SAMPLING FOR MODEL 'simplexes' NOW (CHAIN 2).
+## Chain 2: 
+## Chain 2: Gradient evaluation took 2.6e-05 seconds
+## Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.26 seconds.
+## Chain 2: Adjust your expectations accordingly!
+## Chain 2: 
+## Chain 2: 
+## Chain 2: Iteration:    1 / 10000 [  0%]  (Warmup)
+## Chain 2: Iteration: 1000 / 10000 [ 10%]  (Warmup)
+## Chain 2: Iteration: 2000 / 10000 [ 20%]  (Warmup)
+## Chain 2: Iteration: 3000 / 10000 [ 30%]  (Warmup)
+## Chain 2: Iteration: 4000 / 10000 [ 40%]  (Warmup)
+## Chain 2: Iteration: 5000 / 10000 [ 50%]  (Warmup)
+## Chain 2: Iteration: 5001 / 10000 [ 50%]  (Sampling)
+## Chain 2: Iteration: 6000 / 10000 [ 60%]  (Sampling)
+## Chain 2: Iteration: 7000 / 10000 [ 70%]  (Sampling)
+## Chain 2: Iteration: 8000 / 10000 [ 80%]  (Sampling)
+## Chain 2: Iteration: 9000 / 10000 [ 90%]  (Sampling)
+## Chain 2: Iteration: 10000 / 10000 [100%]  (Sampling)
+## Chain 2: 
+## Chain 2:  Elapsed Time: 1.206 seconds (Warm-up)
+## Chain 2:                1.356 seconds (Sampling)
+## Chain 2:                2.562 seconds (Total)
+## Chain 2: 
+## 
+## SAMPLING FOR MODEL 'simplexes' NOW (CHAIN 3).
+## Chain 3: 
+## Chain 3: Gradient evaluation took 2.4e-05 seconds
+## Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 0.24 seconds.
+## Chain 3: Adjust your expectations accordingly!
+## Chain 3: 
+## Chain 3: 
+## Chain 3: Iteration:    1 / 10000 [  0%]  (Warmup)
+## Chain 3: Iteration: 1000 / 10000 [ 10%]  (Warmup)
+## Chain 3: Iteration: 2000 / 10000 [ 20%]  (Warmup)
+## Chain 3: Iteration: 3000 / 10000 [ 30%]  (Warmup)
+## Chain 3: Iteration: 4000 / 10000 [ 40%]  (Warmup)
+## Chain 3: Iteration: 5000 / 10000 [ 50%]  (Warmup)
+## Chain 3: Iteration: 5001 / 10000 [ 50%]  (Sampling)
+## Chain 3: Iteration: 6000 / 10000 [ 60%]  (Sampling)
+## Chain 3: Iteration: 7000 / 10000 [ 70%]  (Sampling)
+## Chain 3: Iteration: 8000 / 10000 [ 80%]  (Sampling)
+## Chain 3: Iteration: 9000 / 10000 [ 90%]  (Sampling)
+## Chain 3: Iteration: 10000 / 10000 [100%]  (Sampling)
+## Chain 3: 
+## Chain 3:  Elapsed Time: 1.244 seconds (Warm-up)
+## Chain 3:                1.364 seconds (Sampling)
+## Chain 3:                2.608 seconds (Total)
+## Chain 3: 
+## 
+## SAMPLING FOR MODEL 'simplexes' NOW (CHAIN 4).
+## Chain 4: 
+## Chain 4: Gradient evaluation took 2.2e-05 seconds
+## Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.22 seconds.
+## Chain 4: Adjust your expectations accordingly!
+## Chain 4: 
+## Chain 4: 
+## Chain 4: Iteration:    1 / 10000 [  0%]  (Warmup)
+## Chain 4: Iteration: 1000 / 10000 [ 10%]  (Warmup)
+## Chain 4: Iteration: 2000 / 10000 [ 20%]  (Warmup)
+## Chain 4: Iteration: 3000 / 10000 [ 30%]  (Warmup)
+## Chain 4: Iteration: 4000 / 10000 [ 40%]  (Warmup)
+## Chain 4: Iteration: 5000 / 10000 [ 50%]  (Warmup)
+## Chain 4: Iteration: 5001 / 10000 [ 50%]  (Sampling)
+## Chain 4: Iteration: 6000 / 10000 [ 60%]  (Sampling)
+## Chain 4: Iteration: 7000 / 10000 [ 70%]  (Sampling)
+## Chain 4: Iteration: 8000 / 10000 [ 80%]  (Sampling)
+## Chain 4: Iteration: 9000 / 10000 [ 90%]  (Sampling)
+## Chain 4: Iteration: 10000 / 10000 [100%]  (Sampling)
+## Chain 4: 
+## Chain 4:  Elapsed Time: 1.237 seconds (Warm-up)
+## Chain 4:                1.339 seconds (Sampling)
+## Chain 4:                2.576 seconds (Total)
+## Chain 4:
+</code></pre>
+<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
+ <thead>
+  <tr>
+   <th style="text-align:center;"> query </th>
+   <th style="text-align:center;"> given </th>
+   <th style="text-align:center;"> case_level </th>
+   <th style="text-align:center;"> mean </th>
+   <th style="text-align:center;"> sd </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:center;"> Y[X=1] &gt; Y[X=0] </td>
+   <td style="text-align:center;"> X==1 &amp; Y==1 &amp; M==1 </td>
+   <td style="text-align:center;"> TRUE </td>
+   <td style="text-align:center;"> 0.67 </td>
+   <td style="text-align:center;"> NA </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y[X=1] &gt; Y[X=0] </td>
+   <td style="text-align:center;"> X==1 &amp; Y==1 &amp; M==1 </td>
+   <td style="text-align:center;"> FALSE </td>
+   <td style="text-align:center;"> 0.43 </td>
+   <td style="text-align:center;"> 0.33 </td>
+  </tr>
+</tbody>
+</table>
+<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
+ <thead>
+  <tr>
+   <th style="text-align:center;"> model </th>
+   <th style="text-align:center;"> query </th>
+   <th style="text-align:center;"> given </th>
+   <th style="text-align:center;"> using </th>
+   <th style="text-align:center;"> case_level </th>
+   <th style="text-align:center;"> mean </th>
+   <th style="text-align:center;"> sd </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> - </td>
+   <td style="text-align:center;"> priors </td>
+   <td style="text-align:center;"> FALSE </td>
+   <td style="text-align:center;"> 0.00 </td>
+   <td style="text-align:center;"> 0.32 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 2 </td>
+   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> - </td>
+   <td style="text-align:center;"> priors </td>
+   <td style="text-align:center;"> FALSE </td>
+   <td style="text-align:center;"> 0.32 </td>
+   <td style="text-align:center;"> 0.24 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> - </td>
+   <td style="text-align:center;"> posteriors </td>
+   <td style="text-align:center;"> FALSE </td>
+   <td style="text-align:center;"> 0.76 </td>
+   <td style="text-align:center;"> 0.13 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 2 </td>
+   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> - </td>
+   <td style="text-align:center;"> posteriors </td>
+   <td style="text-align:center;"> FALSE </td>
+   <td style="text-align:center;"> 0.83 </td>
+   <td style="text-align:center;"> 0.11 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
+   <td style="text-align:center;"> priors </td>
+   <td style="text-align:center;"> FALSE </td>
+   <td style="text-align:center;"> 0.50 </td>
+   <td style="text-align:center;"> 0.29 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 2 </td>
+   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
+   <td style="text-align:center;"> priors </td>
+   <td style="text-align:center;"> FALSE </td>
+   <td style="text-align:center;"> 0.49 </td>
+   <td style="text-align:center;"> 0.29 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
+   <td style="text-align:center;"> posteriors </td>
+   <td style="text-align:center;"> FALSE </td>
+   <td style="text-align:center;"> 0.91 </td>
+   <td style="text-align:center;"> 0.08 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 2 </td>
+   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
+   <td style="text-align:center;"> posteriors </td>
+   <td style="text-align:center;"> FALSE </td>
+   <td style="text-align:center;"> 0.91 </td>
+   <td style="text-align:center;"> 0.09 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> POS </td>
+   <td style="text-align:center;"> - </td>
+   <td style="text-align:center;"> priors </td>
+   <td style="text-align:center;"> FALSE </td>
+   <td style="text-align:center;"> 0.25 </td>
+   <td style="text-align:center;"> 0.19 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 2 </td>
+   <td style="text-align:center;"> POS </td>
+   <td style="text-align:center;"> - </td>
+   <td style="text-align:center;"> priors </td>
+   <td style="text-align:center;"> FALSE </td>
+   <td style="text-align:center;"> 0.32 </td>
+   <td style="text-align:center;"> 0.24 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> POS </td>
+   <td style="text-align:center;"> - </td>
+   <td style="text-align:center;"> posteriors </td>
+   <td style="text-align:center;"> FALSE </td>
+   <td style="text-align:center;"> 0.80 </td>
+   <td style="text-align:center;"> 0.11 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 2 </td>
+   <td style="text-align:center;"> POS </td>
+   <td style="text-align:center;"> - </td>
+   <td style="text-align:center;"> posteriors </td>
+   <td style="text-align:center;"> FALSE </td>
+   <td style="text-align:center;"> 0.83 </td>
+   <td style="text-align:center;"> 0.11 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> POS </td>
+   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
+   <td style="text-align:center;"> priors </td>
+   <td style="text-align:center;"> FALSE </td>
+   <td style="text-align:center;"> 0.50 </td>
+   <td style="text-align:center;"> 0.29 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 2 </td>
+   <td style="text-align:center;"> POS </td>
+   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
+   <td style="text-align:center;"> priors </td>
+   <td style="text-align:center;"> FALSE </td>
+   <td style="text-align:center;"> 0.49 </td>
+   <td style="text-align:center;"> 0.29 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> POS </td>
+   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
+   <td style="text-align:center;"> posteriors </td>
+   <td style="text-align:center;"> FALSE </td>
+   <td style="text-align:center;"> 0.91 </td>
+   <td style="text-align:center;"> 0.08 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 2 </td>
+   <td style="text-align:center;"> POS </td>
+   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
+   <td style="text-align:center;"> posteriors </td>
+   <td style="text-align:center;"> FALSE </td>
+   <td style="text-align:center;"> 0.91 </td>
+   <td style="text-align:center;"> 0.09 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> - </td>
+   <td style="text-align:center;"> priors </td>
+   <td style="text-align:center;"> TRUE </td>
+   <td style="text-align:center;"> 0.00 </td>
+   <td style="text-align:center;"> NA </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 2 </td>
+   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> - </td>
+   <td style="text-align:center;"> priors </td>
+   <td style="text-align:center;"> TRUE </td>
+   <td style="text-align:center;"> 0.32 </td>
+   <td style="text-align:center;"> NA </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> - </td>
+   <td style="text-align:center;"> posteriors </td>
+   <td style="text-align:center;"> TRUE </td>
+   <td style="text-align:center;"> 0.76 </td>
+   <td style="text-align:center;"> NA </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 2 </td>
+   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> - </td>
+   <td style="text-align:center;"> posteriors </td>
+   <td style="text-align:center;"> TRUE </td>
+   <td style="text-align:center;"> 0.83 </td>
+   <td style="text-align:center;"> NA </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
+   <td style="text-align:center;"> priors </td>
+   <td style="text-align:center;"> TRUE </td>
+   <td style="text-align:center;"> 0.50 </td>
+   <td style="text-align:center;"> NA </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 2 </td>
+   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
+   <td style="text-align:center;"> priors </td>
+   <td style="text-align:center;"> TRUE </td>
+   <td style="text-align:center;"> 0.49 </td>
+   <td style="text-align:center;"> NA </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
+   <td style="text-align:center;"> posteriors </td>
+   <td style="text-align:center;"> TRUE </td>
+   <td style="text-align:center;"> 0.91 </td>
+   <td style="text-align:center;"> NA </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 2 </td>
+   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
+   <td style="text-align:center;"> posteriors </td>
+   <td style="text-align:center;"> TRUE </td>
+   <td style="text-align:center;"> 0.91 </td>
+   <td style="text-align:center;"> NA </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> POS </td>
+   <td style="text-align:center;"> - </td>
+   <td style="text-align:center;"> priors </td>
+   <td style="text-align:center;"> TRUE </td>
+   <td style="text-align:center;"> 0.25 </td>
+   <td style="text-align:center;"> NA </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 2 </td>
+   <td style="text-align:center;"> POS </td>
+   <td style="text-align:center;"> - </td>
+   <td style="text-align:center;"> priors </td>
+   <td style="text-align:center;"> TRUE </td>
+   <td style="text-align:center;"> 0.32 </td>
+   <td style="text-align:center;"> NA </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> POS </td>
+   <td style="text-align:center;"> - </td>
+   <td style="text-align:center;"> posteriors </td>
+   <td style="text-align:center;"> TRUE </td>
+   <td style="text-align:center;"> 0.80 </td>
+   <td style="text-align:center;"> NA </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 2 </td>
+   <td style="text-align:center;"> POS </td>
+   <td style="text-align:center;"> - </td>
+   <td style="text-align:center;"> posteriors </td>
+   <td style="text-align:center;"> TRUE </td>
+   <td style="text-align:center;"> 0.83 </td>
+   <td style="text-align:center;"> NA </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> POS </td>
+   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
+   <td style="text-align:center;"> priors </td>
+   <td style="text-align:center;"> TRUE </td>
+   <td style="text-align:center;"> 0.50 </td>
+   <td style="text-align:center;"> NA </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 2 </td>
+   <td style="text-align:center;"> POS </td>
+   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
+   <td style="text-align:center;"> priors </td>
+   <td style="text-align:center;"> TRUE </td>
+   <td style="text-align:center;"> 0.49 </td>
+   <td style="text-align:center;"> NA </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> POS </td>
+   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
+   <td style="text-align:center;"> posteriors </td>
+   <td style="text-align:center;"> TRUE </td>
+   <td style="text-align:center;"> 0.91 </td>
+   <td style="text-align:center;"> NA </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 2 </td>
+   <td style="text-align:center;"> POS </td>
+   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
+   <td style="text-align:center;"> posteriors </td>
+   <td style="text-align:center;"> TRUE </td>
+   <td style="text-align:center;"> 0.91 </td>
+   <td style="text-align:center;"> NA </td>
+  </tr>
+</tbody>
+</table>
+</div>
+<div class="include-after">
+</div>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js" defer></script>
+</body>
+</html>

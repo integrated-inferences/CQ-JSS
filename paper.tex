@@ -2767,7 +2767,7 @@ Network (CRAN) at \url{https://CRAN.R-project.org/}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, colback=white, opacityback=0, bottomrule=.15mm, leftrule=.75mm, arc=.35mm, rightrule=.15mm, breakable, left=2mm, toprule=.15mm]
+\begin{tcolorbox}[enhanced jigsaw, opacityback=0, left=2mm, rightrule=.15mm, colback=white, breakable, leftrule=.75mm, toprule=.15mm, arc=.35mm, bottomrule=.15mm]
 
 The approach to generating a generic function to create Stan code that
 can take data from arbitrary models was developed in key contributions
@@ -2859,6 +2859,7 @@ there is a block for generated quantities which can be used to append a
 posterior distribution of causal types to the model.
 
 \begin{verbatim}
+S4 class stanmodel 'simplexes' coded as follows:
 functions{
   row_vector col_sums(matrix X) {
     row_vector[cols(X)] s ;
@@ -2934,7 +2935,7 @@ for (i in 1:n_paths) {
  w_full = E * w;
 }
 model {
-// Dirichlet distributions (earlier versions used gamma)
+// Dirichlet distributions
 for (i in 1:n_param_sets) {
   target += dirichlet_lpdf(lambdas[l_starts[i]:l_ends[i]]  |
     lambdas_prior[l_starts[i] :l_ends[i]]);
@@ -2959,7 +2960,7 @@ for (i in 1:n_types) {
  if (keep_transformed == 0){
     prob_of_types = rep_vector(1, n_types);
  }
-}
+} 
 \end{verbatim}
 
 \hypertarget{sec-benchmark}{%
