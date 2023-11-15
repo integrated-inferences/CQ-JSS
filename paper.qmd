@@ -1671,7 +1671,7 @@ We present a brief summary of model updating benchmarks. The first benchmark con
 
 : Benchmark 2. {#tbl-bench2 tbl-colwidths=\[40,30,30\]}
 
-While model updating is fundamentally an $O(N)$ time complexity operation with respect to model and data size; the exponential growth of the parameter space with increasing model complexity places limits on feasible computability without further recourse to specialized methods for handling large causal models.
+Increasing the number of parents in a model greatly increases the number of parameters and computational time.  The  growth of the parameter space with increasing model complexity places limits on feasible computability without further recourse to specialized methods for handling large causal models. Data size increases here have a more modest effect on computation time.
 
 [^1]: The "strategy" column records the set of variables for which data has been recorded.
 
