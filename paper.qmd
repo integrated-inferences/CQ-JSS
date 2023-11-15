@@ -176,9 +176,9 @@ The literature on causal inference and its software ecosystem are rich and expan
 
 : Related software. {#tbl-software tbl-colwidths="\[20,15,10,15,40\]"}
 
-One of the most comprehensive pieces of software in the causal modeling domain is `causalnex`. It provides a feature-rich and highly optimized set of tools to learn, update and query causal models using discrete data. While avoiding the rich model parametrization via principal strata (nodal types) employed by `CausalQueries`, allows `causalnex` to easily handle non-binary data and scale to large causal models; it substantially restricts the set of possible queries that can be evaluated and prior knowledge that can be specified on models. `causalnex` is in this sense akin to machine learning approaches to causal inference, focusing on causal structure learning in variable rich but potentially domain knowledge poor settings and the evaluation of simple queries over marginal distributions on learned DAGs. The rich model structure employed by `CausalQueries` by contrast makes it highly suited to problems where answers to complex causal queries are sought in relatively more domain knowledge abundant settings.
+`causalnex` is a highly comprehensive software in the domain of causal modeling, offering a suite rich in features and optimized for the learning, updating, and querying of causal models using discrete data. Its avoidance of the intricate model parametrization, characterized by principal strata (nodal types) in `CausalQueries`, enables `causalnex` to adeptly process non-binary data and scale to extensive causal models. However, this approach significantly constrains the variety of feasible queries and the extent of prior knowledge that can be incorporated into models. In this capacity, `causalnex` mirrors machine learning strategies in causal inference, prioritizing the learning of causal structures in environments abundant with variables yet potentially deficient in domain-specific knowledge, and focusing on the assessment of basic queries over marginal distributions in learned DAGs. Conversely, the complex model structure utilized by `CausalQueries` is particularly advantageous for intricate causal queries in settings where domain knowledge is more prevalent.
 
-Like `causalnex`, `pclag` places particular emphasis on causal structure learning, utilizing the resultant DAGs to recover ATEs across all learned markov-equivalent classes implied by observed data that satisfy linearity of conditional expectations. This approach again is more restrictive than `CausalQueries` in the DAGs and particularly the queries it allows.
+Like `causalnex`, `pclag` places particular emphasis on causal structure learning, utilizing the resultant DAGs to recover average treatment effects (ATEs) across all learned markov-equivalent classes implied by observed data that satisfy linearity of conditional expectations. This approach again is more restrictive than `CausalQueries` in the DAGs and particularly the queries it allows.
 
 The software bearing the highest resemblance to `CausalQueries` with respect to model definition are `autobounds` and `causaloptim`. Dealing with binary causal models, their definitions of principal strata (nodal types) and the resultant set of causal relations on the DAG (causal types) are very close to those of `CausalQueries`. Differences in model definition arise with respect to disturbance terms and confounding being defined implicitly via main nodes and edges in `CausalQueries` vs explicitly via separate disturbance nodes in `autobounds` and `causaloptim`. While `CausalQueries` assumes canonical form for input DAGs, `autobounds` and `causaloptim` facilitate canonicalization. The essential difference between the methods; however, lies in their approach to evaluating queries.
 
@@ -278,9 +278,10 @@ with_pars$parameters_df |>
     digits = 2,
     booktabs = TRUE,
     align = "c",
-    escape = TRUE, 
+    escape = TRUE,
+    longtable = TRUE,
     linesep = "") |> 
-  kableExtra::kable_classic_2()
+  kableExtra::kable_classic_2(latex_options = c("hold_position"))
 ```
 
 The final column shows a sample set of parameter values. Together the parameters describe a full joint probability distribution over types for $Z$, $X$ and $Y$ that is faithful to the graph.
@@ -297,9 +298,7 @@ In the next sections we review key functionality for making, updating and queryi
 
 ## Making models {#sec-make}
 
-A model is defined in one step in `CausalQueries` using a `dagitty` syntax [@textor_robust_2016] in which the structure of the model is provided as a statement.
-
-For instance:
+A model is defined in one step in `CausalQueries` using a `dagitty` syntax [@textor_robust_2016] in which the structure of the model is provided as a statement. For instance:
 
 ```{r}
 #| echo: true
@@ -308,9 +307,7 @@ For instance:
 model <- make_model("X -> M -> Y <- X")
 ```
 
-The statement in quotes, `"X -> M -> Y <- X"`, provides the names of nodes. An arrow ("`->`" or "`<-`") connecting nodes indicates that one node is a potential cause of another, i.e. whether a given node is a "parent" or "child" of another.
-
-Formally a statement like this is interpreted as:
+The statement in quotes, `"X -> M -> Y <- X"`, provides the names of nodes. An arrow ("`->`" or "`<-`") connecting nodes indicates that one node is a potential cause of another, i.e. whether a given node is a "parent" or "child" of another. Formally a statement like this is interpreted as:
 
 1.  Functional equations:
 
@@ -326,7 +323,7 @@ Formally a statement like this is interpreted as:
 
     -   $\theta_i \perp\!\!\! \perp \theta_j, i\neq j$
 
-where function $f$ maps from the set of possible values of the parents of $i$ to values of node $i$ given $\theta^i$ as described above.
+Function $f$ maps from the set of possible values of the parents of $i$ to values of node $i$ given $\theta^i$ as described above.
 
 In addition, as we did in the @chickering_clinicians_1996 example, it is possible to use two headed arrows (`<->`) to indicate "unobserved confounding", that is, the presence of an unobserved variable that might influence two or more observed variables. In this case condition 3 above is relaxed and the exogenous nodes associated with confounded variables have a joint distribution. We describe how this is done in greater detail in @sec-confounding.
 
@@ -345,7 +342,7 @@ make_model("X -> M -> Y <- X; Z -> Y") |>
 
 ```
 
-Alternatively you can provide a number of options to the `plot()` call that will be passed to `CausalQueries:::plot_dag` via the method.
+Alternatively you can provide a number of options to the `plot()` call that will be passed to `CausalQueries:::plot_dag()` via the method.
 
 ```{r}
 #| echo: true
@@ -444,11 +441,9 @@ After updating a model, two additional components are attached to it:
 
 #### Parameters data frame {#sec-param-df}
 
-When a model is created, `CausalQueries` attaches a "parameters data frame" which keeps track of model parameters, which belong together in a family, and how they relate to causal types. This becomes especially important for more complex models with confounding that might involve more complicated mappings between parameters and nodal types. In the case with no confounding the nodal types *are* the parameters; in cases with confounding there are generally more parameters than nodal types.
+When a model is created, `CausalQueries` attaches a "parameters data frame" which keeps track of model parameters, which belong together in a family, and how they relate to causal types. This becomes especially important for more complex models with confounding that might involve more complicated mappings between parameters and nodal types. In the case with no confounding the nodal types *are* the parameters; in cases with confounding there are generally more parameters than nodal types. We already saw a segment of a parameters data frame for a model with confounding in @tbl-lipidspar.
 
-We already saw a segment of a parameters data frame for a model with confounding in @tbl-lipidspar.
-
-@tbl-params-df shows the full parameters data frame for a simple model, as generated by the following code:
+@tbl-params-df shows the full parameters data frame for a simple model generated by the following code.
 
 ```{r}
 #| label: params-df
@@ -462,7 +457,7 @@ make_model("X -> Y")$parameters_df
 #| label: tbl-params-df
 #| echo: false
 #| eval: true
-#| tbl-cap: "Example of Parameters Data Frame."
+#| tbl-cap: "Example of parameters data frame."
 
 latex_options = "HOLD_position"
 make_model("X -> Y")$parameters_df |>
@@ -475,9 +470,7 @@ make_model("X -> Y")$parameters_df |>
   kableExtra::kable_classic_2(latex_options = c("scale_down", "HOLD_position"))
 ```
 
-Here, as in @tbl-lipidspar, each row in the data frame corresponds to a single parameter.
-
-The columns of the parameters data frame are understood as follows:
+As in @tbl-lipidspar, each row in @tbl-params-df corresponds to a single parameter. The columns of the parameters data frame are understood as follows:
 
 -   `param_names` gives the name of the parameter, in shorthand. For instance the parameter $\lambda^X_0 = \Pr(\theta^X = \theta^X_0)$ has `par_name` `X.0`.
 -   `param_value` gives the (possibly default) parameter values (probabilities).
@@ -493,9 +486,7 @@ As described above, two units have the same *nodal type* at node $Y$, $\theta^Y$
 
 A binary node with $k$ binary parents has $2^{2^k}$ nodal types. The reason is that with $k$ parents, there are $2^k$ possible values of the parents and so $2^{2^k}$ ways to respond to these possible parental values. As a convention we say that a node with no parents has two nodal types (0 or 1).
 
-When a model is created the full set of nodal types is identified. These are stored in the model. The labels for these nodal types indicate how the unit responds to values of parents.
-
-For instance, consider the model with two parents $X \rightarrow Y \leftarrow M.$ In such a case, the nodal types of $Y$ will have subscripts with four digits, with each digit representing one of the possible combinations of values that $Y$ can take, given the values of its parents $X$ and $M.$ These combinations include the value of $Y$ when:
+When a model is created the full set of nodal types is identified. These are stored in the model. The labels for these nodal types indicate how the unit responds to values of parents. For instance, consider the model with two parents $X \rightarrow Y \leftarrow M.$ In such a case, the nodal types of $Y$ will have subscripts with four digits, with each digit representing one of the possible combinations of values that $Y$ can take, given the values of its parents $X$ and $M.$ These combinations include the value of $Y$ when:
 
 -   $X = 0$ and $M = 0$,
 -   $X = 0$ and $M = 1$,
@@ -555,9 +546,7 @@ Knowledge of a causal type tells us what values a unit would take, on all nodes,
 
 #### Parameter matrix
 
-The parameters data frame keeps track of parameter values and priors for parameters but it does not provide a mapping between parameters and the probability of causal types.
-
-The parameter matrix---the "$P$ matrix"---can be added to the model to provide this mapping. The $P$ matrix has a row for each parameter and a column for each causal type. For instance:
+The parameters data frame keeps track of parameter values and priors for parameters, but it does not provide a mapping between parameters and the probability of causal types. The parameter matrix---the "$P$ matrix"---can be added to the model to provide this mapping. The $P$ matrix has a row for each parameter and a column for each causal type. For instance:
 
 ```{r}
 #| label: get-param-matrix
@@ -585,9 +574,7 @@ When a `dagitty` statement is provided to `make_data()` a model is formed with a
 
 Sometimes for theoretical or practical reasons it is useful to constrain the set of types. In `CausalQueries` this is done at the level of nodal types, with restrictions on causal types following from restrictions on nodal types.
 
-To illustrate, in analyses of data with imperfect compliance, like we saw in our motivating Lipids model example, it is common to impose a monotonicity assumption: that $X$ does not respond negatively to $Z$. This is one of the conditions needed to interpret instrumental variables estimates as (consistent) estimates of the complier average treatment effect.
-
-In `CausalQueries` we can impose this assumption as follows:
+To illustrate, in analyses of data with imperfect compliance, like we saw in our motivating Lipids model example, it is common to impose a monotonicity assumption: that $X$ does not respond negatively to $Z$. This is one of the conditions needed to interpret instrumental variables estimates as (consistent) estimates of the complier average treatment effect. In `CausalQueries` we can impose this assumption as follows:
 
 ```{r}
 #| echo: true
@@ -641,9 +628,7 @@ Setting restrictions sometimes involves using causal syntax (see @sec-syntax for
 
 #### Allowing confounding {#sec-confounding}
 
-Unobserved confounding between two (or more) nodes arises when the nodal types for the nodes are not independent.
-
-In the $X \rightarrow Y$ graph, for instance, there are $2$ nodal types for $X$ and $4$ for $Y$. There are thus 8 joint nodal types (or causal types), as shown in @tbl-joint.
+Unobserved confounding between two (or more) nodes arises when the nodal types for the nodes are not independent. In the $X \rightarrow Y$ graph, for instance, there are $2$ nodal types for $X$ and $4$ for $Y$. There are thus 8 joint nodal types (or causal types), as shown in @tbl-joint.
 
 +-----------------+----------------------------------+----------------------------------+----------------------+
 |                 | $\theta^X_{0}$                   | $\theta^X_{1}$                   | $\sum$               |
@@ -661,7 +646,7 @@ In the $X \rightarrow Y$ graph, for instance, there are $2$ nodal types for $X$ 
 
 : Nodal types in $X \rightarrow Y$ model. {#tbl-joint tbl-colwidths="\[25,25,25,25\]"}
 
-@tbl-joint has eight interior elements and so an unconstrained joint distribution would have $7$ degrees of freedom. A no confounding assumption means that $\Pr(\theta^X | \theta^Y) = \Pr(\theta^X)$, or $\Pr(\theta^X, \theta^Y) = \Pr(\theta^X)\Pr(\theta^Y)$. In this case we just put a distribution on the marginals and there would be $3$ degrees of freedom for $Y$ and $1$ for $X$, totaling $4$ rather than $7$.
+@tbl-joint has eight interior elements and so an unconstrained joint distribution would have $7$ degrees of freedom. A no-confounding assumption means that $\Pr(\theta^X | \theta^Y) = \Pr(\theta^X)$, or $\Pr(\theta^X, \theta^Y) = \Pr(\theta^X)\Pr(\theta^Y)$. In this case we just put a distribution on the marginals and there would be $3$ degrees of freedom for $Y$ and $1$ for $X$, totaling $4$ rather than $7$.
 
 ```{r}
 #| label: confound-params-df
@@ -692,19 +677,11 @@ confounded$parameters_df |>
 
 The parameters data frame for this model would have two parameter families for parameters associated with the node $Y$. Each family captures the conditional distribution of $Y$'s nodal types, given $X$. For instance the parameter `Y01_X.1` can be interpreted as $\Pr(\theta^Y = \theta^Y_{01} | X=1)$. See again @tbl-lipidspar for an example of a parameters matrix with confounding.
 
-To see exactly how the parameters map to causal types we can view the parameter matrix thus:
-
-```{r}
-#| label: confound-param-matrix
-#| echo: true
-#| eval: false
-
-get_parameter_matrix(confounded)
-```
+To see exactly how the parameters map to causal types we can look at the parameter matrix for the model by calling `get_parameter_matrix(confounded)`. The parameter matrix is shown in @tbl-confound-param-matrix. Importantly, the $P$ matrix works as before, despite confounding. We can assess the probability of causal types by multiplying the probabilities of the constituent parameters.
 
 ```{r}
 #| label: tbl-confound-param-matrix
-#| tbl-cap: "Parameter Matrix for Model with Confounding."
+#| tbl-cap: "Parameter matrix for model with confounding."
 #| echo: false
 #| eval: true
 
@@ -718,14 +695,12 @@ get_parameter_matrix(confounded) |>
   kableExtra::kable_classic_2(latex_options = c("scale_down"))
 ```
 
-The output is shown in @tbl-confound-param-matrix. Importantly, the $P$ matrix works as before, despite confounding. We can assess the probability of causal types by multiplying the probabilities of the constituent parameters.
-
 @tbl-dof illustrates more generally how the number of independent parameters depends on the nature of possible confounding.
 
 ```{r}
 #| label: fig-confound
 #| echo: false
-#| fig-cap: "Graph of Model with Confounding."
+#| fig-cap: "Graph of model with confounding."
 #| fig-pos: 't'
 #| fig-align: center
 #| out-width: "60%"
@@ -770,7 +745,7 @@ data.frame(Model = statements |> unlist(),
 
 #### Setting Priors {#priors}
 
-Priors on model parameters can be added to the parameters data frame. The priors are interpreted as "alpha" arguments for a Dirichlet distribution. The Dirichlet distribution is a probability distribution over an $n-1$ dimensional unit simplex. It can be thought of as a generalization of the Beta distribution and is parametrized by an $n$-dimensional positive vector $\alpha$. Thus for example a Dirichlet with $\alpha = (1, 1, 1, 1, 1)$ gives a probability distribution over all non negative $5$-dimensional vectors that sum to $1$, e.g. $(0.1, 0.1, 0.1, 0.1, 0.6)$ or $(0.1, 0.2, 0.3, 0.3, 0.1)$. This particular value for $\alpha$ implies that all such vectors are equally likely. Other values for $\alpha$ can be used to control the expectation for each dimension as well as certainty. Thus for instance the vector $\alpha = (100, 1, 1, 1, 100)$ would result in more weight on distributions that are close to $(0.5, 0, 0, 0, 0.5)$.
+Priors on model parameters can be added to the parameters data frame and are interpreted as "alpha" arguments for a Dirichlet distribution. The Dirichlet distribution is a probability distribution over an $n-1$ dimensional unit simplex. It can be thought of as a generalization of the Beta distribution and is parametrized by an $n$-dimensional positive vector $\alpha$. Thus for example a Dirichlet with $\alpha = (1, 1, 1, 1, 1)$ gives a probability distribution over all non negative $5$-dimensional vectors that sum to $1$, e.g. $(0.1, 0.1, 0.1, 0.1, 0.6)$ or $(0.1, 0.2, 0.3, 0.3, 0.1)$. This particular value for $\alpha$ implies that all such vectors are equally likely. Other values for $\alpha$ can be used to control the expectation for each dimension as well as certainty. Thus for instance the vector $\alpha = (100, 1, 1, 1, 100)$ would result in more weight on distributions that are close to $(0.5, 0, 0, 0, 0.5)$.
 
 In `CausalQueries`, priors are generally specified over the distribution of nodal types (or over the conditional distribution of nodal types, when there is confounding). Thus for instance in an $X \rightarrow Y$ model we have one Dirichlet distribution over the two types for $\theta^X$ and one Dirichlet distribution over the four types for $\theta^Y$.
 
@@ -871,11 +846,9 @@ model |>
     alphas = c(3,2)) 
 ```
 
-It should be noted that while highly targeted prior setting is convenient and flexible; it should be done with caution. Setting priors on specific parameters in complex models; especially models involving confounding, may strongly affect inferences in intractable ways.
+While highly targeted prior setting is convenient and flexible, they should be used with caution. Setting priors on specific parameters in complex models, especially models involving confounding, may strongly affect inferences in intractable ways.
 
-We additionally note that flat priors over nodal types do not necessarily translate into flat priors over queries. "Flat" priors over parameters in a parameter family put equal weight on each nodal type, but this in turn can translate into strong assumptions on causal quantities of interest.
-
-For instance in an $X \rightarrow Y$ model in which negative effects are ruled out, the average causal effect implied by "flat" priors is $1/3$. This can be seen by querying the model as follows:
+Furthermore, note that flat priors over nodal types do not necessarily translate into flat priors over queries. "Flat" priors over parameters in a parameter family put equal weight on each nodal type, but this in turn can translate into strong assumptions on causal quantities of interest. For instance in an $X \rightarrow Y$ model in which negative effects are ruled out, the average causal effect implied by "flat" priors is $1/3$. This can be seen by querying the model as follows:
 
 ```{r}
 #| label: set-priors-flat
@@ -889,7 +862,7 @@ make_model("X -> Y") |>
 
 More subtly the *structure* of a model, coupled with flat priors, has substantive importance for priors on causal quantities. For instance with flat priors, priors on the probability that $X$ has a positive effect on $Y$ in the model $X \rightarrow Y$ is centered on $1/4$. But priors on the probability that $X$ has a positive effect on $Y$ in the model $X \rightarrow M \rightarrow Y$ is centered on $1/8$.
 
-Again, you can use `query_model` to figure out what flat (or other) priors over parameters imply for priors over causal quantities:
+Again, you can use `query_model()` to figure out what flat (or other) priors over parameters imply for priors over causal quantities:
 
 ```{r}
 #| label: compare-flat-priors
@@ -939,7 +912,7 @@ make_model("X -> M -> Y") |>
 
 Caution regarding priors is particularly important when models are not identified, as is the case for many of the models considered here. In such cases, for some quantities, the marginal posterior distribution simply reflects the marginal prior distribution [@poirier_revising_1998].
 
-The key point here is to make sure you do not fall into a trap of thinking that "uninformative" priors make no commitments regarding the values of causal quantities of interest. They do, and the implications of flat priors for causal quantities can depend on the structure of the model. Moreover for some inferences from causal models the priors can matter a lot even if you have a lot of data. In such cases it can be helpful to know what priors on parameters imply for priors on causal quantities of interest (by using `query_model()`) and to assess how much conclusions depend on priors (by comparing results across models that vary in their priors).
+The crucial aspect we emphasize is the necessity of avoiding the misconception that "uninformative" priors are devoid of implications concerning the values of causal quantities of interest. In reality, these priors do carry certain presumptions. The impact of flat priors on causal quantities is contingent on the structural configuration of the model. Moreover for some inferences from causal models the priors can matter a lot even if you have a lot of data. In such cases it can be helpful to know what priors on parameters imply for priors on causal quantities of interest (by using `query_model()`) and to assess how much conclusions depend on priors (by comparing results across models that vary in their priors).
 
 #### Setting Parameters {#parameters}
 
@@ -974,7 +947,7 @@ make_model("X -> Y") |>
 
 ### Drawing and manipulating data
 
-Once a model has been defined it is possible to simulate data from the model using the `make_data` function. This can be useful for instance for assessing the expected performance of a model given data drawn from some speculated set of parameter values.
+Once a model has been defined it is possible to simulate data from the model using the `make_data()` function. This can be useful for instance for assessing the expected performance of a model given data drawn from some speculated set of parameter values.
 
 ```{r}
 #| label: make-data-model
@@ -1095,7 +1068,7 @@ We express priors over these parameter sets using multiple Dirichlet distributio
 
 For any candidate parameter vector $\lambda$ we calculate the probability of "data types". This is done using a matrix that maps from parameters into data types, `parmap`. In cases without confounding there is a column for each data type; the matrix indicates which nodes in each set "contribute" to the data type, and the probability of the data type is found by summing within sets and taking the product over sets.
 
-The following code:
+The following code yields @tbl-parmap, which can be used to calculate event probabilities.
 
 ```{r}
 #| echo: true
@@ -1121,7 +1094,7 @@ make_model("X -> Y") |>
   kableExtra::kable_classic_2()
 ```
 
-yields @tbl-parmap, which can be used to calculate event probabilities. For instance the probability of data type `X0Y0`, $w_{00}$ is $\lambda^X_0\times \lambda^Y_{00} + \lambda^X_0\times \lambda^Y_{01}$. This is found by combining a parameter vector with the first column of `parmap`, taking the product of the probability of `X.0` and the *sum* of the probabilities for `Y.00` and `Y.01`.
+For instance the probability of data type `X0Y0`, $w_{00}$ is $\lambda^X_0\times \lambda^Y_{00} + \lambda^X_0\times \lambda^Y_{01}$. This is found by combining a parameter vector with the first column of `parmap`, taking the product of the probability of `X.0` and the *sum* of the probabilities for `Y.00` and `Y.01`.
 
 In cases with confounding the approach is similar except that the `parmap` matrix can contain multiple columns for each data type to capture non-independence between nodes.
 
@@ -1143,9 +1116,7 @@ To update a `CausalQueries` model with data use:
 update_model(model, data)
 ```
 
-where the data argument is a dataset containing some or all of the nodes in the model. `update_model()` relies on `rstan::sampling()` to draw from posterior distribution and one can pass any additional arguments accepted by `rstan::sampling()` in `...` . Given that for complex models the model updating can sometimes be slow in [Appendix  A](#sec-parallel) we show how users can utilize parallelization to improve computation speed. [Appendix C](#sec-benchmark) provides an overview of model updating benchmarks, evaluating the effects of model complexity and data size on updating times.
-
-<!-- # is it useful to touch on the possibility to update submodels when there is no confounding and no missing data here? -->
+The `data` argument is a data frame containing some or all of the nodes in the model. `update_model()` relies on `rstan::sampling()` to draw from posterior distribution and one can pass any additional arguments accepted by `rstan::sampling()` in `...` . Given that for complex models the model updating can sometimes be slow in [Appendix  A](#sec-parallel) we show how users can utilize parallelization to improve computation speed. [Appendix C](#sec-benchmark) provides an overview of model updating benchmarks, evaluating the effects of model complexity and data size on updating times.
 
 ### Incomplete and censored data
 
@@ -1216,7 +1187,7 @@ By way of example, consider the first causal type of a $X \rightarrow Y$ model:
 
 Recovering implied values on complex nodal types efficiently at scale, exploits the fact that nodal types are the Cartesian product of possible parent realizations. Finding the index of a node's realized value in a nodal type given parent realizations is equivalent to finding the row index in the Cartesian product matrix corresponding to those parent realizations. By definition of the Cartesian product, the number of consecutive $0$ or $1$ elements in a given column is $2^{\text{(column index)}}$, when indexing columns from $0$. Given a set of parent realizations $R$ indexed from $0$, the corresponding row index in the Cartesian product matrix indexed from $0$ can thus be computed via: $$\text{(row index)} = \sum_{i = 0}^{|R| - 1} (2^{i} \times R_i).$$
 
-Calling `realise_outcomes()` on the above model thus yields:
+Calling `realise_outcomes()` on the above model yields:
 
 ```{r}
 #| label: realise-outcomes
@@ -1225,7 +1196,7 @@ Calling `realise_outcomes()` on the above model thus yields:
 make_model("X -> Y") |> realise_outcomes()
 ```
 
-with row names indicating nodal types and columns realized values. Intervening on $X$ [see @pearl_causality_2009] with $do(X=1)$ yields:
+In the output above row names indicating nodal types and columns realized values. Intervening on $X$ [see @pearl_causality_2009] with $do(X=1)$ yields:
 
 ```{r}
 #| label: realise-outcomes-do
@@ -1234,31 +1205,27 @@ with row names indicating nodal types and columns realized values. Intervening o
 make_model("X -> Y") |> realise_outcomes(dos = list(X = 1))
 ```
 
-<!-- # should we show data types for comparison here with all_data_types() ? -->
-
 In the same way `realise_outcomes()` can return the realized values on all nodes for each causal type given arbitrary interventions.
 
 ### Causal Syntax {#sec-syntax}
 
-<!-- WRITE SECTION DESCRIBING FACTUAL AND COUNTERFACTULA QUERIES AND THE SYNTAX INCLUDING Role of \[\] AND OF GIVEN `get_query_types` return sets; discuss how all queries related to these sets -->
+`CausalQueries` provides syntax for the formulation of various causal queries including queries on all rungs of the "causal ladder" [@pearl_causality_2009]: prediction, such as the proportion of units where $Y$ equals $1$; intervention, such as the probability that $Y = 1$ when $X$ is *set* to $1$; counterfactuals, such as the probability that $Y$ would be $1$ were $X = 1$ given we know $Y$ is $0$ when $X$ was observed to be $0$. Queries can be posed at the population level or case level and can be unconditional (e.g. what is the effect of $X$ on $Y$ for all units) or conditional (for example, the effect f $X$ on $Y$ for units for whom $Z$ affects $X$). This syntax enables users to write arbitrary causal queries to interrogate their models.
 
-`CausalQueries` provides syntax for the formulation of various causal queries including queries on all rungs of the "causal ladder" [@pearl_causality_2009]: prediction, such as the proportion of units where $Y$ equals 1; intervention, such as the probability that $Y$ = 1 when $X$ is *set* to 1; counterfactuals, such as the probability that $Y$ would be 1 were $X=1$ given we know $Y$ is 0 when $X$ was observed to be 0. Queries can be posed at the population level or case level and can be unconditional (e.g. what is the effect of $X$ on $Y$ for all units) or conditional (for example, the effect f $X$ on $Y$ for units for whom $Z$ affects $X$). This syntax enables users to write arbitrary causal queries to interrogate their models.
-
-The heart of querying is figuring out which causal types correspond to particular queries. For factual queries, users may employ logical statements to ask questions about observed conditions, without any intervention. Take, for example, the query mentioned above about the proportion of units where $Y$ equals 1, expressed as `"Y == 1"`. In this case the logical operator == indicates that `CausalQueries` should consider units that fulfill the condition of strict equality where $Y$ equals 1.[^6] When this query is posed, the `get_query_types` function identifies all types that give rise to $Y=1$, absent any interventions.
+The heart of querying is figuring out which causal types correspond to particular queries. For factual queries, users may employ logical statements to ask questions about observed conditions, without any intervention. Take, for example, the query mentioned above about the proportion of units where $Y$ equals $1$, expressed as `"Y == 1"`. In this case the logical operator `==` indicates that `CausalQueries` should consider units that fulfill the condition of strict equality where $Y$ equals $1$.[^6] When this query is posed, the `get_query_types()` function identifies all types that give rise to $Y=1$, absent any interventions.
 
 ```{r}
 make_model("X -> Y")  |> get_query_types("Y==1")
 ```
 
-The key to posing causal queries is being able to ask about values of variables given that the values of some other variables are "controlled". This corresponds to application of the `do` operator in @pearl_causality_2009. In `CausalQueries` this is done by using square brackets `[ ]`. Inside the brackets, variables that are to be intervened upon are specified.
+The key to posing causal queries is being able to ask about values of variables given that the values of some other variables are "controlled". This corresponds to application of the `do` operator in @pearl_causality_2009. In `CausalQueries` this is done by putting square brackets `[ ]` around variables that should be intervened upon.
 
-For instance, consider the query `Y[X=0]==1`. This query that asks about the types for which $Y$ equals $1$ when $X$ is setto $0$. In this case, since $X$ is being intervened to be zero, $X$ is placed inside the brackets. Given that $Y$ equaling $1$ is a condition about potentially observed values, it is expressed as using the logical operator `==`. The set of causal types that meets this query is quite different:
+For instance, consider the query `Y[X=0]==1`. This query asks about the types for which $Y$ equals $1$ when $X$ is set to $0$. In this case, since $X$ is being intervened to be zero, $X$ is placed inside the brackets. Given that $Y$ equaling $1$ is a condition about potentially observed values, it is expressed as using the logical operator `==`. The set of causal types that meets this query is quite different:
 
 ```{r}
 make_model("X -> Y")  |> get_query_types("Y[X=1]==1")
 ```
 
-When a node has multiple parents it is possible to set the value of none of the parents, of some of the parents, or of all of the parents. For instance if $X1$ and $X2$ are parents of $Y$ then `Y==1`, `Y[X1 = 1]==1`, and `Y[X1 = 1, X2 = 1]==1` queries cases for which $Y=1$ when, respectively, neither parents values are controlled, when $X1$ is set to $1$ but $X2$ is not controlled, and when both $X1$ and $X2$ are set to $1$. For example we can have:
+When a node has multiple parents it is possible to set the values of none, some or all of the parents. For instance if $X1$ and $X2$ are parents of $Y$ then `Y==1`, `Y[X1 = 1]==1`, and `Y[X1 = 1, X2 = 1]==1` queries cases for which $Y=1$ when, respectively, neither parents values are controlled, when $X1$ is set to $1$ but $X2$ is not controlled, and when both $X1$ and $X2$ are set to $1$. For example we can have:
 
 ```{r}
 #| eval: true
@@ -1301,12 +1268,12 @@ model$causal_types |>
 
 #### Complex expressions
 
-Many queries involve complex statements over multiple sets of types. These can be formed with the aid of logical operators such as `==`, `!=`, `>`, `>=` `<`,`<=`. For example, they can make queries about cases where $X$ has a positive effect on $Y$, i.e., whether $Y$ is greater when $X$ is set to 1 compared to when $X$ is set to 0, expressed as `"Y[X=1] > Y[X=0]"`. The query "$X$ has some effect on $Y$" is given by `"Y[X=1] != Y[X=0]"`.
+Many queries involve complex statements over multiple sets of types. These can be formed with the aid of relational operators. For example, you can make queries about cases where $X$ has a positive effect on $Y$, i.e., whether $Y$ is greater when $X$ is set to $1$ compared to when $X$ is set to $0$, expressed as `"Y[X=1] > Y[X=0]"`. The query "$X$ has some effect on $Y$" is given by `"Y[X=1] != Y[X=0]"`.
 
-Linear operators can also be used over set of simple statements. Thus `"Y[X=1] - Y[X=0]"` returns the share of units the average treatment effect. In essence rather than returning a `TRUE` or `FALSE` for the two parts of the query, the case memberships are forced to numeric values ($1$ or $0$) and the differences taken, which can be a $1$, $0$ or $-1$ depending on the causal type.
+Linear operators can also be used over set of simple statements. Thus `"Y[X=1] - Y[X=0]"` returns the share of units the average treatment effect. In essence rather than returning a `TRUE` or `FALSE` for the two parts of the query, the case memberships are forced to numeric values ($1$ or $0$) and the differences are taken, which can be a $1$, $0$ or $-1$ depending on the causal type.
 
 ```{r}
-make_model("X -> Y")  |> get_query_types("Y[X=1]- Y[X=0]")
+make_model("X -> Y")  |> get_query_types("Y[X=1] - Y[X=0]")
 ```
 
 #### Nested queries
@@ -1462,7 +1429,7 @@ read_rds("saved/caselevel.rds") |>
 
 #### Batch queries
 
-The function `query_model()` is perhaps the most important function for querying models. The function takes as input a list of models, causal queries, and conditions (`given`), calculates population or case level estimands given prior or posterior distributions and reports summaries of these distributions. The result is a data frame that can be displayed as a table or used for graphing. @tbl-batch-query shows output from a single call to `query_model()`.
+The function `query_model()` is perhaps the most important function for querying models. The function takes as input a list of models, causal queries, and conditions. It then calculates population or case level estimands given prior or posterior distributions and reports summaries of these distributions. The result is a data frame that can be displayed as a table or used for graphing. @tbl-batch-query shows output from a single call to `query_model()`.
 
 ```{r}
 #| label: batch-query
@@ -1683,7 +1650,7 @@ We present a brief summary of model updating benchmarks. First benchmark conside
 : Benchmark 1. {#tbl-bench1 tbl-colwidths=\[40,30,30\]}
 
 +--------------------+------------------------+--------------------------------------+
-| Model              | Number of Observations | `update_model()` Runt-Time (seconds) |
+| Model              | Number of Observations | `update_model()` Run-Time (seconds) |
 +:==================:+:======================:+:====================================:+
 | $X1 \rightarrow Y$ | 10                     | 9.04                                 |
 +--------------------+------------------------+--------------------------------------+
@@ -1698,9 +1665,7 @@ We present a brief summary of model updating benchmarks. First benchmark conside
 
 : Benchmark 2. {#tbl-bench2 tbl-colwidths=\[40,30,30\]}
 
-While model updating is fundamentally a $O(N)$ time complexity operation with respect to model and data size; the exponential growth of the parameter space with increasing model complexity places limits on feasible computability without further recourse to specialized methods for handling large causal models.
-
-<!-- [^2]: See (Using BibTeX)\[#sec-bibtex\] for more details. -->
+While model updating is fundamentally an $O(N)$ time complexity operation with respect to model and data size; the exponential growth of the parameter space with increasing model complexity places limits on feasible computability without further recourse to specialized methods for handling large causal models.
 
 [^1]: The "strategy" column records the set of variables for which data has been recorded.
 
