@@ -101,6 +101,7 @@ With `CausalQueries`, you can create the model, input data to update it, and the
 ```{r}
 #| echo: true
 #| eval: false
+#| purl: false
 
 make_model("Z -> X -> Y; X <-> Y") |>
   update_model(lipids_data, refresh = 0) |>
@@ -198,6 +199,7 @@ Both `autobounds` and `causaloptim` build on seminal approaches in @balke_bounds
 #| results: markup
 #| eval: false
 #| include: false
+#| purl: false
 
 make_model("A -> B -> C -> D -> E")$parameters_df |> nrow()
 
@@ -345,6 +347,7 @@ Once defined, a model can be graphed by calling the `plot()` method defined for 
 ```{r}
 #| echo: true
 #| eval: false
+#| purl: false
 
 make_model("X -> M -> Y <- X; Z -> Y") |>
   plot()
@@ -458,6 +461,7 @@ When a model is created, `CausalQueries` attaches a "parameters data frame" whic
 #| label: params-df
 #| echo: true
 #| eval: false
+#| purl: false
 
 make_model("X -> Y")$parameters_df
 ```
@@ -523,6 +527,7 @@ Interpretations are automatically provided as part of the model object. A user c
 #| label: nodal-types
 #| echo: true
 #| eval: false
+#| purl: false
 
 make_model("X -> Y")$nodal_types
 ```
@@ -531,6 +536,7 @@ make_model("X -> Y")$nodal_types
 #| label: nodal-types-nointerpret
 #| echo: false
 #| eval: false
+#| purl: false
 
 # make_model("X -> Y")$nodal_types |> `attr<-`("interpret", NULL)
 make_model("X -> Y")$nodal_types 
@@ -571,6 +577,7 @@ The parameter matrix is generated on the fly as needed, but it can also be added
 ```{r}
 #| echo: true
 #| eval: false
+#| purl: false
 
 make_model("X -> Y") |> set_parameter_matrix()
 ```
@@ -604,6 +611,7 @@ In words: we restrict by removing types for which $X$ is decreasing in $Z$. If w
 #| label: set-restrictions1
 #| echo: true
 #| eval: false
+#| purl: false
 
 make_model("S -> C -> Y <- R <- X; X -> C -> R") |>
   set_restrictions(labels = list(C = "1000", R = "0001", Y = "0001"), 
@@ -616,6 +624,7 @@ make_model("S -> C -> Y <- R <- X; X -> C -> R") |>
 #| label: set-restrictions2
 #| echo: true
 #| eval: false
+#| purl: false
 
 make_model("X -> Y") |> set_restrictions(labels = list(Y = "?0"))
 ```
@@ -626,7 +635,7 @@ make_model("X -> Y") |> set_restrictions(labels = list(Y = "?0"))
 #| label: set-restrictions3
 #| echo: true
 #| eval: false
-
+#| purl: false
 model <- 
   make_model("X -> Y -> Z; X <-> Z") |>
   set_restrictions(labels = list(X = '0', Y = c('00', '11'), Z = '00'), 
@@ -661,7 +670,7 @@ Unobserved confounding between two (or more) nodes arises when the nodal types f
 #| label: confound-params-df
 #| echo: true
 #| eval: false
-
+#| purl: false
 confounded <- make_model("X -> Y ; X <-> Y")
 
 ```
@@ -714,7 +723,7 @@ get_parameter_matrix(confounded) |>
 #| fig-align: center
 #| out-width: "60%"
 #| eval: false
-
+#| purl: false
 make_model("A <- X -> B; A <-> X; B <-> X") |> 
   plot()
 ```
@@ -774,7 +783,7 @@ Alternatively you could set Jeffreys priors using `set_priors()` as follows:
 #| label: set-priors
 #| echo: true
 #| eval: false
-
+#| purl: false
 make_model("X -> Y") |> set_priors(distribution = "jeffreys")
 ```
 
@@ -815,7 +824,7 @@ We can achieve the same result as above by specifying nodal types for which we w
 #| label: set-priors-nodal-type
 #| echo: true
 #| eval: false
-
+#| purl: false
 make_model("X -> Y") |>
   set_priors(nodal_type = "01", alphas = 3) |>
   get_priors()
@@ -827,7 +836,7 @@ Or even parameter names:
 #| label: set-priors-param-names
 #| echo: true
 #| eval: false
-
+#| purl: false
 make_model("X -> Y") |>
   set_priors(param_names = "Y.01", alphas = 3) |>
   get_priors()
@@ -839,7 +848,7 @@ make_model("X -> Y") |>
 #| label: set-priors-other
 #| echo: true
 #| eval: false
-
+#| purl: false
 model <- make_model("X -> M -> Y; X <-> Y")
 
 model |>
@@ -863,7 +872,7 @@ Furthermore, note that flat priors over nodal types do not necessarily translate
 #| label: set-priors-flat
 #| echo: true
 #| eval: false
-
+#| purl: false
 make_model("X -> Y") |>
   set_restrictions(decreasing("X", "Y")) |>
   query_model("Y[X=1] - Y[X=0]", using = "priors")
@@ -877,7 +886,7 @@ Again, you can use `query_model()` to figure out what flat (or other) priors ove
 #| label: compare-flat-priors
 #| echo: true
 #| eval: false
-
+#| purl: false
 make_model("X -> Y") |>
   query_model("Y[X=1] > Y[X=0]", using = "priors")
 
@@ -894,7 +903,7 @@ make_model("X -> M -> Y") |>
 #| echo: false
 #| eval: false
 #| include: false
-
+#| purl: false
 
 make_model("X -> Y") |>
   query_model("Y[X=1] > Y[X=0]", n_draws = 10000) |> 
@@ -1055,7 +1064,7 @@ The internal function `prep_stan_data()` takes model and data as arguments and p
 #| label: prep-stan-data
 #| echo: true
 #| eval: false
-
+#| purl: false
 sample_data_2 |> 
   collapse_data(model = model) |> 
   CausalQueries:::prep_stan_data(model = model)
@@ -1082,6 +1091,7 @@ The following code yields @tbl-parmap, which can be used to calculate event prob
 ```{r}
 #| echo: true
 #| eval: false
+#| purl: false 
 make_model("X -> Y") |> 
   get_parmap() 
 ```
@@ -1121,7 +1131,7 @@ To update a `CausalQueries` model with data use:
 #| label: update-model
 #| echo: true
 #| eval: false
-
+#| purl: false
 update_model(model, data)
 ```
 
@@ -1138,7 +1148,7 @@ To illustrate, in the example below we observe perfectly correlated data for $X$
 ```{r}
 #| echo: true
 #| eval: false
-
+#| purl: false
 data <- data.frame(X = rep(0:1, 5), Y = rep(0:1, 5))
 
 list(
@@ -1245,7 +1255,7 @@ In this case, the aim is to identify the types for which $X1=X2=1$ *and at the s
 ```{r}
 #| eval: false
 #| echo: false
-
+#| purl: false
 make_model('X -> M -> Y <- X') |> 
   get_query_types(query = "Y[X=1, M=1] > Y[X=0, M=0]", 
                   map = "nodal_type")
@@ -1260,7 +1270,7 @@ Many queries of interest are "conditional" queries. For example the effect of $X
 ```{r}
 #| eval: false
 #| echo: false
-
+#| purl: false
 model <- make_model('X -> Y') 
 
 query <- model |> get_query_types(query = "Y[X=1] > Y[X=0]")
@@ -1295,7 +1305,7 @@ Queries can be calculated directly from the prior distribution or the posterior 
 
 ```{r}
 #| eval: false
-
+#| purl: false
 data  <- data.frame(X = rep(0:1, 50), Y = rep(0:1, 50))
 
 model <- 
@@ -1339,7 +1349,7 @@ It is generally useful to use causal syntax to define the query and calculate th
 ```{r}
 #| eval: false
 #| echo: true
-
+#| purl: false
 make_model("X -> Y") |> 
   query_distribution(
     query = list(increasing = "(Y[X=1] > Y[X=0])"), 
@@ -1352,7 +1362,7 @@ make_model("X -> Y") |>
 #| label: case-level-query
 #| echo: true
 #| eval: false
-
+#| purl: false
 lipids_model |>
     query_model(query = "Y[X=1] - Y[X=0]",
                 given = c("X==1 & Y==1 & Z==1"),
@@ -1388,7 +1398,7 @@ To simplify, consider a model where it's clear that $X$ causes $Y$, but it's unc
 ```{r}
 #| echo: true
 #| eval: false
-
+#| purl: false
 make_model("X -> M -> Y") |>
   update_model(data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)), iter = 10000) |> 
   query_model(
@@ -1440,7 +1450,7 @@ The function `query_model()` is perhaps the most important function for querying
 #| label: batch-query
 #| echo: true
 #| eval: false
-
+#| purl: false
 models <- list(
   `1` = 
     update_model(make_model("X -> Y"),
@@ -1578,7 +1588,7 @@ If you have multiple cores you can do parallel processing by including this line
 
 ```{r}
 #| eval: false
-
+#| purl: false
 library(parallel)
 
 options(mc.cores = parallel::detectCores())
@@ -1589,7 +1599,7 @@ Additionally parallelizing across models or data while running MCMC chains in pa
 ```{r}
 #| echo: true
 #| eval: false
-
+#| purl: false
 library(future)
 library(future.apply)
 
