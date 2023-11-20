@@ -74,11 +74,13 @@ library(future.apply)
 library(knitr)
 library(rstan)
 library(DeclareDesign)
-library(kableExtra)
+
 library(tikzDevice)
 
 options(kableExtra.latex.load_packages = FALSE)
+library(kableExtra)
 options(mc.cores = parallel::detectCores())
+
 
 set.seed(20231018)
 ```
