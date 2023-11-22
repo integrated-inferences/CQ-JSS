@@ -557,3 +557,40 @@ query_model(
   ) |>
   kableExtra::kable_classic_2(latex_options = c("hold_position"))
 
+## Appendix C: Benchmarks
+#####################################################################
+
+# effect of model complexity on run-time
+model <- list(
+  CausalQueries::make_model("X -> Y"),
+  CausalQueries::make_model("X1 -> Y <- X2"),
+  CausalQueries::make_model("X1 -> Y; X2 -> Y; X3 -> Y")
+)
+
+
+benchmark_model <- microbenchmark::microbenchmark(
+  m1 = CausalQueries::update_model(model[[1]]),
+  m2 = CausalQueries::update_model(model[[2]]),
+  m3 = CausalQueries::update_model(model[[3]]),
+  times = 5
+)
+
+benchmark_model
+
+# effect of data size on run-time
+model <- CausalQueries::make_model("X -> Y")
+
+data <- lapply(10^c(1:5), function(n) {
+  CausalQueries::make_data(model, n)
+})
+
+benchmark_data <- microbenchmark::microbenchmark(
+  d0 = CausalQueries::update_model(model, data[[1]]),
+  d1 = CausalQueries::update_model(model, data[[2]]),
+  d2 = CausalQueries::update_model(model, data[[3]]),
+  d3 = CausalQueries::update_model(model, data[[4]]),
+  d4 = CausalQueries::update_model(model, data[[5]]),
+  times = 5
+)
+
+benchmark_data

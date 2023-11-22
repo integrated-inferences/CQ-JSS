@@ -722,10 +722,10 @@ a probability distribution over \(\lambda\). This might be a degenerate
 distribution if users want to specify a particular model.
 \texttt{CausalQueries} allows users to specify parameters, \(\alpha\) of
 a Dirichlet distribution over \(\lambda\). If all entries of \(\alpha\)
-are 0.5 this corresponds to Jeffrey's priors. The default behavior is
-for \texttt{CausalQueries} to assume a uniform distribution -- that is,
-that all nodal types are equally likely -- which corresponds to
-\(\alpha\) being a vector of 1s.
+are 0.5 this corresponds to Jeffreys priors. The default behavior is for
+\texttt{CausalQueries} to assume a uniform distribution -- that is, that
+all nodal types are equally likely -- which corresponds to \(\alpha\)
+being a vector of 1s.
 
 Updating is then done with respect to beliefs over \(\lambda\). In the
 Bayesian approach we have simply:
@@ -799,9 +799,9 @@ Y & 11 & Y.X.11 & Y.11\_X.11 & 0.25 & 1\\
 \bottomrule
 \end{longtable}
 
-The final column shows a sample set of parameter values. Together the
-parameters describe a full joint probability distribution over types for
-\(Z\), \(X\) and \(Y\) that is faithful to the graph.
+The next to final column shows a sample set of parameter values.
+Together the parameters describe a full joint probability distribution
+over types for \(Z\), \(X\) and \(Y\) that is faithful to the graph.
 
 From these we can calculate the probability of each data type. For
 instance the probability of data type \(Z=0, X=0, Y=0\) is:
@@ -1453,32 +1453,8 @@ we just put a distribution on the marginals and there would be \(3\)
 degrees of freedom for \(Y\) and \(1\) for \(X\), totaling \(4\) rather
 than \(7\).
 
-\begin{verbatim}
-R> confounded <- make_model("X -> Y ; X <-> Y")
-\end{verbatim}
+\begin{table}
 
-\hypertarget{tbl-confound-params-df}{}
-\begin{table}[H]
-\caption{\label{tbl-confound-params-df}Parameters data frame for model with confounding. }\tabularnewline
-
-\centering
-\resizebox{\linewidth}{!}{
-\begin{tabular}{cccccccc}
-\toprule
-param\_names & node & gen & param\_set & nodal\_type & given & param\_value & priors\\
-\midrule
-X.0 & X & 1 & X & 0 &  & 0.50 & 1\\
-X.1 & X & 1 & X & 1 &  & 0.50 & 1\\
-Y.00\_X.0 & Y & 2 & Y.X.0 & 00 & X.0 & 0.25 & 1\\
-Y.10\_X.0 & Y & 2 & Y.X.0 & 10 & X.0 & 0.25 & 1\\
-Y.01\_X.0 & Y & 2 & Y.X.0 & 01 & X.0 & 0.25 & 1\\
-Y.11\_X.0 & Y & 2 & Y.X.0 & 11 & X.0 & 0.25 & 1\\
-Y.00\_X.1 & Y & 2 & Y.X.1 & 00 & X.1 & 0.25 & 1\\
-Y.10\_X.1 & Y & 2 & Y.X.1 & 10 & X.1 & 0.25 & 1\\
-Y.01\_X.1 & Y & 2 & Y.X.1 & 01 & X.1 & 0.25 & 1\\
-Y.11\_X.1 & Y & 2 & Y.X.1 & 11 & X.1 & 0.25 & 1\\
-\bottomrule
-\end{tabular}}
 \end{table}
 
 The parameters data frame for this model would have two parameter
@@ -1496,6 +1472,11 @@ shown in Table~\ref{tbl-confound-param-matrix}. Importantly, the \(P\)
 matrix works as before, despite confounding. We can assess the
 probability of causal types by multiplying the probabilities of the
 constituent parameters.
+
+\begin{verbatim}
+R> make_model("X -> Y ; X <-> Y") |>
++  get_parameter_matrix()
+\end{verbatim}
 
 \hypertarget{tbl-confound-param-matrix}{}
 \begin{table}
@@ -2170,21 +2151,27 @@ propagating realized values on nodes forward in the DAG, moving from
 exogenous or intervened upon nodes to their descendants in generational
 order. The \texttt{realise\_outcomes()} function achieves this by
 traversing the DAG, while recording for each node's nodal types, the
-values implied by realizations on the node's parents. For example,
-consider the first causal type of a \(X \rightarrow Y\) model:
+values implied by realizations on the node's parents.
+
+To illustrate, consider the first causal type of a \(X \rightarrow Y\)
+model:
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  \(X\) is exogenous and has a realized value of \(0\),
+  \(\theta^X_0\) implies that, absent intervention on \(X\), \(X\) has a
+  realized value of \(0\); \(\theta^Y_{00}\) implies that, absent
+  intervention on \(Y\), \(Y\) has a realized value of \(0\) regardless
+  of \(X\)
 \item
   We substitute for \(Y\) the value implied by the \(00\) nodal type
   given a \(0\) value on \(X\), which in turn is \(0\) (see
   Section~\ref{sec-nodal-types}).
 \end{enumerate}
 
-Calling \texttt{realise\_outcomes()} on the above model yields:
+Calling \texttt{realise\_outcomes()} on this model yields the outcomes
+implied by all causal types:
 
 \begin{verbatim}
 R> make_model("X -> Y") |> realise_outcomes()
@@ -2202,9 +2189,9 @@ R> make_model("X -> Y") |> realise_outcomes()
 1.11 1 1
 \end{verbatim}
 
-In the output above row names indicating nodal types and columns
-realized values. Intervening on \(X\)
-\citep[see][]{pearl_causality_2009} with \(do(X=1)\) yields:
+In the output above, row names indicate nodal types and columns realized
+values. Intervening on \(X\) \citep[see][]{pearl_causality_2009} with
+\(do(X=1)\) yields:
 
 \begin{verbatim}
 R> make_model("X -> Y") |> realise_outcomes(dos = list(X = 1))
@@ -2339,13 +2326,13 @@ when \(X1 = X2 = 1\).
 
 In general, the variables to be intervened, as if conducting an
 experiment, are placed inside square brackets, followed by an equal sign
-and the value to which we want to set them, either 1 or 0, as \(X\) in
-the case of \texttt{"Y{[}X=1{]}"}. The variable whose value is observed,
-as \(Y\) in the same example, should be placed before the square
-brackets. Finally, conditions related to observed or potentially
-observed values, in the context of an intervention, are expressed
-outside the brackets, along with the logical condition that defines the
-observed values, as in \texttt{"Y==1"} or
+and the value to which we want to set them, either 1 or 0. The variable
+whose value is observed should be placed before the square brackets.
+Thus \texttt{"Y{[}X=1{]}"} queries the values of \(Y\) when \(X\) is set
+to 1. Finally, conditions related to observed or potentially observed
+values, in the context of an intervention, are expressed outside the
+brackets, along with the logical condition that defines the observed
+values, as in \texttt{"Y==1"}, \texttt{"Y{[}X=1{]}==1} or
 \texttt{"Y{[}X=1{]}\ \textgreater{}\ Y{[}X=0{]}"}.
 
 \hypertarget{conditional-queries}{%
@@ -2779,7 +2766,7 @@ Network (CRAN) at \url{https://CRAN.R-project.org/}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, left=2mm, bottomrule=.15mm, leftrule=.75mm, breakable, opacityback=0, colback=white, rightrule=.15mm, arc=.35mm, toprule=.15mm]
+\begin{tcolorbox}[enhanced jigsaw, colback=white, bottomrule=.15mm, arc=.35mm, opacityback=0, leftrule=.75mm, toprule=.15mm, left=2mm, breakable, rightrule=.15mm]
 
 We thank Ben Goodrich who provided generous insights on using
 \texttt{stan} for this project. We thank Alan M Jacobs for key work

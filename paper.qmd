@@ -267,7 +267,7 @@ $$
 \lambda^Z_1\lambda^X_{10}\lambda^{Y|\theta^X_{10}}_{11}
 $$ {#eq-join2}
 
-Representing beliefs *over causal models* thus requires specifying a probability distribution over $\lambda$. This might be a degenerate distribution if users want to specify a particular model. `CausalQueries` allows users to specify parameters, $\alpha$ of a Dirichlet distribution over $\lambda$. If all entries of $\alpha$ are 0.5 this corresponds to Jeffrey's priors. The default behavior is for `CausalQueries` to assume a uniform distribution -- that is, that all nodal types are equally likely -- which corresponds to $\alpha$ being a vector of 1s.
+Representing beliefs *over causal models* thus requires specifying a probability distribution over $\lambda$. This might be a degenerate distribution if users want to specify a particular model. `CausalQueries` allows users to specify parameters, $\alpha$ of a Dirichlet distribution over $\lambda$. If all entries of $\alpha$ are 0.5 this corresponds to Jeffreys priors. The default behavior is for `CausalQueries` to assume a uniform distribution -- that is, that all nodal types are equally likely -- which corresponds to $\alpha$ being a vector of 1s.
 
 Updating is then done with respect to beliefs over $\lambda$. In the Bayesian approach we have simply:
 
@@ -307,7 +307,7 @@ with_pars$parameters_df |>
   kableExtra::kable_classic_2(latex_options = c("hold_position"))
 ```
 
-The final column shows a sample set of parameter values. Together the parameters describe a full joint probability distribution over types for $Z$, $X$ and $Y$ that is faithful to the graph.
+The next to final column shows a sample set of parameter values. Together the parameters describe a full joint probability distribution over types for $Z$, $X$ and $Y$ that is faithful to the graph.
 
 From these we can calculate the probability of each data type. For instance the probability of data type $Z=0, X=0, Y=0$ is:
 
@@ -678,20 +678,12 @@ Unobserved confounding between two (or more) nodes arises when the nodal types f
 
 @tbl-joint has eight interior elements and so an unconstrained joint distribution would have $7$ degrees of freedom. A no-confounding assumption means that $\Pr(\theta^X | \theta^Y) = \Pr(\theta^X)$, or $\Pr(\theta^X, \theta^Y) = \Pr(\theta^X)\Pr(\theta^Y)$. In this case we just put a distribution on the marginals and there would be $3$ degrees of freedom for $Y$ and $1$ for $X$, totaling $4$ rather than $7$.
 
-```{r}
-#| label: confound-params-df
-#| echo: true
-#| eval: false
-#| purl: false
-confounded <- make_model("X -> Y ; X <-> Y")
-
-```
 
 ```{r}
 #| label: tbl-confound-params-df
 #| tbl-cap: "Parameters data frame for model with confounding."
 #| echo: false
-#| eval: true
+#| eval: false
 
 confounded <- make_model("X -> Y ; X <-> Y")
 
@@ -710,10 +702,22 @@ The parameters data frame for this model would have two parameter families for p
 To see exactly how the parameters map to causal types we can look at the parameter matrix for the model by calling `get_parameter_matrix(confounded)`. The parameter matrix is shown in @tbl-confound-param-matrix. Importantly, the $P$ matrix works as before, despite confounding. We can assess the probability of causal types by multiplying the probabilities of the constituent parameters.
 
 ```{r}
+#| label: confound-params-df
+#| echo: true
+#| eval: false
+#| purl: false
+make_model("X -> Y ; X <-> Y") |>
+  get_parameter_matrix()
+
+```
+
+```{r}
 #| label: tbl-confound-param-matrix
 #| tbl-cap: "Parameter matrix for model with confounding."
 #| echo: false
 #| eval: true
+
+confounded <- make_model("X -> Y ; X <-> Y")
 
 get_parameter_matrix(confounded) |>
   knitr::kable(
@@ -1213,12 +1217,14 @@ The primary output from `update_model()` is a model with an attached posterior d
 
 ### Calculating factual and counterfactual quantities {#sec-propagation}
 
-A key step in the calculation of most queries is the assessment of what outcomes will arise for causal types given different interventions on nodes. In practice, we map from causal types to data types by propagating realized values on nodes forward in the DAG, moving from exogenous or intervened upon nodes to their descendants in generational order. The `realise_outcomes()` function achieves this by traversing the DAG, while recording for each node's nodal types, the values implied by realizations on the node's parents. For example, consider the first causal type of a $X \rightarrow Y$ model:
+A key step in the calculation of most queries is the assessment of what outcomes will arise for causal types given different interventions on nodes. In practice, we map from causal types to data types by propagating realized values on nodes forward in the DAG, moving from exogenous or intervened upon nodes to their descendants in generational order. The `realise_outcomes()` function achieves this by traversing the DAG, while recording for each node's nodal types, the values implied by realizations on the node's parents. 
 
-1.  $X$ is exogenous and has a realized value of $0$,
+To illustrate, consider the first causal type of a $X \rightarrow Y$ model:
+
+1.  $\theta^X_0$ implies that, absent intervention on $X$, $X$ has a realized value of $0$; $\theta^Y_{00}$ implies that, absent intervention on $Y$, $Y$ has a realized value of $0$ regardless of $X$
 2.  We substitute for $Y$ the value implied by the $00$ nodal type given a $0$ value on $X$, which in turn is $0$ (see @sec-nodal-types).
 
-Calling `realise_outcomes()` on the above model yields:
+Calling `realise_outcomes()` on this model yields the outcomes implied by all causal types:
 
 ```{r}
 #| label: realise-outcomes
@@ -1227,7 +1233,7 @@ Calling `realise_outcomes()` on the above model yields:
 make_model("X -> Y") |> realise_outcomes()
 ```
 
-In the output above row names indicating nodal types and columns realized values. Intervening on $X$ [see @pearl_causality_2009] with $do(X=1)$ yields:
+In the output above, row names indicate nodal types and columns realized values. Intervening on $X$ [see @pearl_causality_2009] with $do(X=1)$ yields:
 
 ```{r}
 #| label: realise-outcomes-do
@@ -1277,7 +1283,7 @@ make_model('X -> M -> Y <- X') |>
                   map = "nodal_type")
 ```
 
-In general, the variables to be intervened, as if conducting an experiment, are placed inside square brackets, followed by an equal sign and the value to which we want to set them, either 1 or 0, as $X$ in the case of `"Y[X=1]"`. The variable whose value is observed, as $Y$ in the same example, should be placed before the square brackets. Finally, conditions related to observed or potentially observed values, in the context of an intervention, are expressed outside the brackets, along with the logical condition that defines the observed values, as in `"Y==1"` or `"Y[X=1] > Y[X=0]"`.
+In general, the variables to be intervened, as if conducting an experiment, are placed inside square brackets, followed by an equal sign and the value to which we want to set them, either 1 or 0. The variable whose value is observed should be placed before the square brackets. Thus `"Y[X=1]"` queries the values of $Y$ when $X$ is set to 1.  Finally, conditions related to observed or potentially observed values, in the context of an intervention, are expressed outside the brackets, along with the logical condition that defines the observed values, as in `"Y==1"`, `"Y[X=1]==1` or `"Y[X=1] > Y[X=0]"`.
 
 #### Conditional queries
 
