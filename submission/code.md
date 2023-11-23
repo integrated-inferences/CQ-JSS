@@ -6,27 +6,72 @@
 # Till Tietz, Lily Medina, Georgiy Syunyaev, Macartan Humphreys
 # Generated using: knitr::spin("code.R")
 # 15 November 2023
+
+## Set up
+#####################################################################
 ```
 
 ```r
-options(kableExtra.latex.load_packages = FALSE)
-
+#|
 library(tidyverse)
 library(CausalQueries)
 library(knitr)
 library(rstan)
-library(DeclareDesign)
 library(kableExtra)
 library(tikzDevice)
+
+options(kableExtra.latex.load_packages = FALSE)
+options(mc.cores = parallel::detectCores())
 
 set.seed(20231018)
 
 ## SECTION 2: Motivating example
+#####################################################################
 
 data("lipids_data")
 
 lipids_data
 ```
+
+```
+##    event strategy count
+## 1 Z0X0Y0      ZXY   158
+## 2 Z1X0Y0      ZXY    52
+## 3 Z0X1Y0      ZXY     0
+## 4 Z1X1Y0      ZXY    23
+## 5 Z0X0Y1      ZXY    14
+## 6 Z1X0Y1      ZXY    12
+## 7 Z0X1Y1      ZXY     0
+## 8 Z1X1Y1      ZXY    78
+```
+
+```r
+lipids_model <-
+  make_model("Z -> X -> Y; X <-> Y") |>
+  update_model(lipids_data, refresh = 0)
+
+
+results <-
+  lipids_model |>
+  query_model(
+    query = "Y[X=1] - Y[X=0]",
+    given = c("All",  "X==0 & Y==0", "X[Z=1] > X[Z=0]"),
+    using = "posteriors"
+  )
+
+
+results |>
+  dplyr::select(query, given, mean, sd, starts_with("cred")) |>
+  knitr::kable(
+    digits = 2,
+    booktabs = TRUE,
+    align = "c",
+    escape = TRUE,
+    linesep = ""
+  ) |>
+  kableExtra::kable_classic_2(latex_options = c("scale_down"))
+```
+
 <table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
  <thead>
   <tr>
@@ -50,21 +95,46 @@ lipids_data
   <tr>
    <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
    <td style="text-align:center;"> X==0 &amp; Y==0 </td>
-   <td style="text-align:center;"> 0.63 </td>
+   <td style="text-align:center;"> 0.64 </td>
    <td style="text-align:center;"> 0.15 </td>
    <td style="text-align:center;"> 0.37 </td>
-   <td style="text-align:center;"> 0.89 </td>
+   <td style="text-align:center;"> 0.90 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
    <td style="text-align:center;"> X[Z=1] &gt; X[Z=0] </td>
    <td style="text-align:center;"> 0.70 </td>
-   <td style="text-align:center;"> 0.05 </td>
+   <td style="text-align:center;"> 0.06 </td>
    <td style="text-align:center;"> 0.59 </td>
-   <td style="text-align:center;"> 0.81 </td>
+   <td style="text-align:center;"> 0.80 </td>
   </tr>
 </tbody>
 </table>
+
+```r
+## SECTION 4: Statistical Model
+#####################################################################
+```
+
+```r
+with_pars <-
+  lipids_model |>
+  set_parameters(param_type = "prior_draw")
+
+with_pars$parameters_df |>
+  dplyr::select(node,  nodal_type, param_set, 
+                param_names, param_value, priors) |>
+  knitr::kable(
+    digits = 2,
+    booktabs = TRUE,
+    align = "c",
+    escape = TRUE,
+    longtable = TRUE,
+    linesep = ""
+  ) |>
+  kableExtra::kable_classic_2(latex_options = c("hold_position"))
+```
+
 <table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
  <thead>
   <tr>
@@ -82,7 +152,7 @@ lipids_data
    <td style="text-align:center;"> 0 </td>
    <td style="text-align:center;"> Z </td>
    <td style="text-align:center;"> Z.0 </td>
-   <td style="text-align:center;"> 0.00 </td>
+   <td style="text-align:center;"> 0.37 </td>
    <td style="text-align:center;"> 1 </td>
   </tr>
   <tr>
@@ -90,7 +160,7 @@ lipids_data
    <td style="text-align:center;"> 1 </td>
    <td style="text-align:center;"> Z </td>
    <td style="text-align:center;"> Z.1 </td>
-   <td style="text-align:center;"> 1.00 </td>
+   <td style="text-align:center;"> 0.63 </td>
    <td style="text-align:center;"> 1 </td>
   </tr>
   <tr>
@@ -98,7 +168,7 @@ lipids_data
    <td style="text-align:center;"> 00 </td>
    <td style="text-align:center;"> X </td>
    <td style="text-align:center;"> X.00 </td>
-   <td style="text-align:center;"> 0.42 </td>
+   <td style="text-align:center;"> 0.02 </td>
    <td style="text-align:center;"> 1 </td>
   </tr>
   <tr>
@@ -106,7 +176,7 @@ lipids_data
    <td style="text-align:center;"> 10 </td>
    <td style="text-align:center;"> X </td>
    <td style="text-align:center;"> X.10 </td>
-   <td style="text-align:center;"> 0.01 </td>
+   <td style="text-align:center;"> 0.31 </td>
    <td style="text-align:center;"> 1 </td>
   </tr>
   <tr>
@@ -114,7 +184,7 @@ lipids_data
    <td style="text-align:center;"> 01 </td>
    <td style="text-align:center;"> X </td>
    <td style="text-align:center;"> X.01 </td>
-   <td style="text-align:center;"> 0.03 </td>
+   <td style="text-align:center;"> 0.06 </td>
    <td style="text-align:center;"> 1 </td>
   </tr>
   <tr>
@@ -122,7 +192,7 @@ lipids_data
    <td style="text-align:center;"> 11 </td>
    <td style="text-align:center;"> X </td>
    <td style="text-align:center;"> X.11 </td>
-   <td style="text-align:center;"> 0.54 </td>
+   <td style="text-align:center;"> 0.62 </td>
    <td style="text-align:center;"> 1 </td>
   </tr>
   <tr>
@@ -138,7 +208,7 @@ lipids_data
    <td style="text-align:center;"> 10 </td>
    <td style="text-align:center;"> Y.X.00 </td>
    <td style="text-align:center;"> Y.10_X.00 </td>
-   <td style="text-align:center;"> 0.57 </td>
+   <td style="text-align:center;"> 0.42 </td>
    <td style="text-align:center;"> 1 </td>
   </tr>
   <tr>
@@ -146,7 +216,7 @@ lipids_data
    <td style="text-align:center;"> 01 </td>
    <td style="text-align:center;"> Y.X.00 </td>
    <td style="text-align:center;"> Y.01_X.00 </td>
-   <td style="text-align:center;"> 0.12 </td>
+   <td style="text-align:center;"> 0.19 </td>
    <td style="text-align:center;"> 1 </td>
   </tr>
   <tr>
@@ -154,7 +224,7 @@ lipids_data
    <td style="text-align:center;"> 11 </td>
    <td style="text-align:center;"> Y.X.00 </td>
    <td style="text-align:center;"> Y.11_X.00 </td>
-   <td style="text-align:center;"> 0.23 </td>
+   <td style="text-align:center;"> 0.30 </td>
    <td style="text-align:center;"> 1 </td>
   </tr>
   <tr>
@@ -162,7 +232,7 @@ lipids_data
    <td style="text-align:center;"> 00 </td>
    <td style="text-align:center;"> Y.X.01 </td>
    <td style="text-align:center;"> Y.00_X.01 </td>
-   <td style="text-align:center;"> 0.64 </td>
+   <td style="text-align:center;"> 0.05 </td>
    <td style="text-align:center;"> 1 </td>
   </tr>
   <tr>
@@ -170,7 +240,7 @@ lipids_data
    <td style="text-align:center;"> 10 </td>
    <td style="text-align:center;"> Y.X.01 </td>
    <td style="text-align:center;"> Y.10_X.01 </td>
-   <td style="text-align:center;"> 0.09 </td>
+   <td style="text-align:center;"> 0.41 </td>
    <td style="text-align:center;"> 1 </td>
   </tr>
   <tr>
@@ -178,7 +248,7 @@ lipids_data
    <td style="text-align:center;"> 01 </td>
    <td style="text-align:center;"> Y.X.01 </td>
    <td style="text-align:center;"> Y.01_X.01 </td>
-   <td style="text-align:center;"> 0.26 </td>
+   <td style="text-align:center;"> 0.13 </td>
    <td style="text-align:center;"> 1 </td>
   </tr>
   <tr>
@@ -186,7 +256,7 @@ lipids_data
    <td style="text-align:center;"> 11 </td>
    <td style="text-align:center;"> Y.X.01 </td>
    <td style="text-align:center;"> Y.11_X.01 </td>
-   <td style="text-align:center;"> 0.01 </td>
+   <td style="text-align:center;"> 0.41 </td>
    <td style="text-align:center;"> 1 </td>
   </tr>
   <tr>
@@ -194,7 +264,7 @@ lipids_data
    <td style="text-align:center;"> 00 </td>
    <td style="text-align:center;"> Y.X.10 </td>
    <td style="text-align:center;"> Y.00_X.10 </td>
-   <td style="text-align:center;"> 0.31 </td>
+   <td style="text-align:center;"> 0.26 </td>
    <td style="text-align:center;"> 1 </td>
   </tr>
   <tr>
@@ -202,7 +272,7 @@ lipids_data
    <td style="text-align:center;"> 10 </td>
    <td style="text-align:center;"> Y.X.10 </td>
    <td style="text-align:center;"> Y.10_X.10 </td>
-   <td style="text-align:center;"> 0.25 </td>
+   <td style="text-align:center;"> 0.07 </td>
    <td style="text-align:center;"> 1 </td>
   </tr>
   <tr>
@@ -210,7 +280,7 @@ lipids_data
    <td style="text-align:center;"> 01 </td>
    <td style="text-align:center;"> Y.X.10 </td>
    <td style="text-align:center;"> Y.01_X.10 </td>
-   <td style="text-align:center;"> 0.14 </td>
+   <td style="text-align:center;"> 0.11 </td>
    <td style="text-align:center;"> 1 </td>
   </tr>
   <tr>
@@ -218,7 +288,7 @@ lipids_data
    <td style="text-align:center;"> 11 </td>
    <td style="text-align:center;"> Y.X.10 </td>
    <td style="text-align:center;"> Y.11_X.10 </td>
-   <td style="text-align:center;"> 0.30 </td>
+   <td style="text-align:center;"> 0.55 </td>
    <td style="text-align:center;"> 1 </td>
   </tr>
   <tr>
@@ -226,7 +296,7 @@ lipids_data
    <td style="text-align:center;"> 00 </td>
    <td style="text-align:center;"> Y.X.11 </td>
    <td style="text-align:center;"> Y.00_X.11 </td>
-   <td style="text-align:center;"> 0.14 </td>
+   <td style="text-align:center;"> 0.22 </td>
    <td style="text-align:center;"> 1 </td>
   </tr>
   <tr>
@@ -234,7 +304,7 @@ lipids_data
    <td style="text-align:center;"> 10 </td>
    <td style="text-align:center;"> Y.X.11 </td>
    <td style="text-align:center;"> Y.10_X.11 </td>
-   <td style="text-align:center;"> 0.26 </td>
+   <td style="text-align:center;"> 0.06 </td>
    <td style="text-align:center;"> 1 </td>
   </tr>
   <tr>
@@ -242,7 +312,7 @@ lipids_data
    <td style="text-align:center;"> 01 </td>
    <td style="text-align:center;"> Y.X.11 </td>
    <td style="text-align:center;"> Y.01_X.11 </td>
-   <td style="text-align:center;"> 0.20 </td>
+   <td style="text-align:center;"> 0.54 </td>
    <td style="text-align:center;"> 1 </td>
   </tr>
   <tr>
@@ -250,17 +320,61 @@ lipids_data
    <td style="text-align:center;"> 11 </td>
    <td style="text-align:center;"> Y.X.11 </td>
    <td style="text-align:center;"> Y.11_X.11 </td>
-   <td style="text-align:center;"> 0.41 </td>
+   <td style="text-align:center;"> 0.18 </td>
    <td style="text-align:center;"> 1 </td>
   </tr>
 </tbody>
 </table>
 
 ```r
+## SECTION 5: Making models
+#####################################################################
+```
+
+```r
 model <- make_model("X -> M -> Y <- X")
 ```
 
-![Examples of model graphs.](figure/fig-plots-1.png)![Examples of model graphs.](figure/fig-plots-2.png)
+```r
+make_model("X -> M -> Y <- X; Z -> Y") |>
+  plot()
+```
+
+![Examples of model graphs.](figure/fig-plots-1.png)
+
+```r
+make_model("X -> M -> Y <- X; Z -> Y") |>
+  plot(
+    x_coord = 1:4,
+    y_coord = c(1.5, 2, 1, 2),
+    textcol = "white",
+    textsize = 3,
+    shape = 18,
+    nodecol = "grey",
+    nodesize = 12
+  )
+```
+
+![Examples of model graphs.](figure/fig-plots-2.png)
+
+```r
+## Parameters data frame
+#####################################################################
+```
+
+```r
+latex_options = "HOLD_position"
+make_model("X -> Y")$parameters_df |>
+  knitr::kable(
+    digits = 2,
+    booktabs = TRUE,
+    align = "c",
+    escape = TRUE,
+    linesep = ""
+  ) |>
+  kableExtra::kable_classic_2(latex_options = c("scale_down", "HOLD_position"))
+```
+
 <table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
  <thead>
   <tr>
@@ -339,6 +453,9 @@ model <- make_model("X -> M -> Y <- X")
 </table>
 
 ```r
+## Interpreting nodal types
+#####################################################################
+
 interpretations <-
   make_model("X -> Y <- M; W -> Y") |>
   interpret_type()
@@ -346,8 +463,33 @@ interpretations <-
 interpretations$Y
 ```
 
+```
+##   node position     display            interpretation
+## 1    Y        1 Y[*]******* Y | M = 0 & W = 0 & X = 0
+## 2    Y        2 Y*[*]****** Y | M = 1 & W = 0 & X = 0
+## 3    Y        3 Y**[*]***** Y | M = 0 & W = 1 & X = 0
+## 4    Y        4 Y***[*]**** Y | M = 1 & W = 1 & X = 0
+## 5    Y        5 Y****[*]*** Y | M = 0 & W = 0 & X = 1
+## 6    Y        6 Y*****[*]** Y | M = 1 & W = 0 & X = 1
+## 7    Y        7 Y******[*]* Y | M = 0 & W = 1 & X = 1
+## 8    Y        8 Y*******[*] Y | M = 1 & W = 1 & X = 1
+```
+
 ```r
+## Causal types
+
+
 lipids_model$causal_types |> head()
+```
+
+```
+##            Z  X  Y
+## Z0.X00.Y00 0 00 00
+## Z1.X00.Y00 1 00 00
+## Z0.X10.Y00 0 10 00
+## Z1.X10.Y00 1 10 00
+## Z0.X01.Y00 0 01 00
+## Z1.X01.Y00 1 01 00
 ```
 
 ```r
@@ -363,6 +505,13 @@ make_model("X -> Y") |> get_parameter_matrix()
 ## Cell entries indicate whether a parameter probability is used
 ## in the calculation of causal type probability
 ## 
+##      X0.Y00 X1.Y00 X0.Y10 X1.Y10 X0.Y01 X1.Y01 X0.Y11 X1.Y11
+## X.0       1      0      1      0      1      0      1      0
+## X.1       0      1      0      1      0      1      0      1
+## Y.00      1      1      0      0      0      0      0      0
+## Y.10      0      0      1      1      0      0      0      0
+## Y.01      0      0      0      0      1      1      0      0
+## Y.11      0      0      0      0      0      0      1      1
 ## 
 ##  
 ##  param_set  (P)
@@ -370,10 +519,28 @@ make_model("X -> Y") |> get_parameter_matrix()
 ```
 
 ```r
+## Models with confounding
+#####################################################################
+
 model_restricted <-
   make_model("Z -> X -> Y; X <-> Y") |>
   set_restrictions("X[Z=1] < X[Z=0]")
 ```
+
+```r
+confounded <- make_model("X -> Y ; X <-> Y")
+
+confounded$parameters_df |>
+  knitr::kable(
+    digits = 2,
+    booktabs = TRUE,
+    align = "c",
+    escape = TRUE,
+    linesep = ""
+  ) |>
+  kableExtra::kable_classic_2(latex_options = c("scale_down", "HOLD_position"))
+```
+
 <table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
  <thead>
   <tr>
@@ -490,6 +657,19 @@ model_restricted <-
   </tr>
 </tbody>
 </table>
+
+```r
+get_parameter_matrix(confounded) |>
+  knitr::kable(
+    digits = 2,
+    booktabs = TRUE,
+    align = "c",
+    escape = TRUE,
+    linesep = ""
+  ) |>
+  kableExtra::kable_classic_2(latex_options = c("scale_down"))
+```
+
 <table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
  <thead>
   <tr>
@@ -617,6 +797,41 @@ model_restricted <-
   </tr>
 </tbody>
 </table>
+
+```r
+## Degrees of freedom
+#####################################################################
+
+
+statements <- list(
+  "X -> Y <- W",
+  "X -> Y <- W; X <-> W",
+  "X -> Y <- W; X <-> Y; W <-> Y",
+  "X -> Y <- W; X <-> Y; W <-> Y; X <->W",
+  "X -> W -> Y <- X",
+  "X -> W -> Y <- X; W <-> Y",
+  "X -> W -> Y <- X; X <-> W; W <-> Y",
+  "X -> W -> Y <- X; X <-> W; W <-> Y; X <-> Y"
+)
+
+dof <- function(statement)
+  make_model(statement, add_causal_types = FALSE)$parameters_df |>
+  group_by(param_set) |>
+  summarize(n  = n() - 1) |>
+  pull(n) |>
+  sum()
+
+data.frame(Model = statements |> unlist(),
+           dof = statements |> lapply(dof) |> unlist()) |>
+  knitr::kable(
+    digits = 2,
+    booktabs = TRUE,
+    align = c("l", "c"),
+    escape = TRUE,
+    linesep = ""
+  )
+```
+
 <table>
  <thead>
   <tr>
@@ -661,6 +876,8 @@ model_restricted <-
 </table>
 
 ```r
+# get-priors
+
 make_model("X -> Y") |> get_priors()
 ```
 
@@ -670,6 +887,8 @@ make_model("X -> Y") |> get_priors()
 ```
 
 ```r
+# set-priors-custom
+
 make_model("X -> Y") |>
   set_priors(1:6) |>
   get_priors()
@@ -681,6 +900,8 @@ make_model("X -> Y") |>
 ```
 
 ```r
+# label: set-priors-statement
+
 make_model("X -> Y") |>
   set_priors(statement = "Y[X=1] > Y[X=0]", alphas = 3) |>
   get_priors()
@@ -692,6 +913,9 @@ make_model("X -> Y") |>
 ```
 
 ```r
+# label: get-parameters
+
+
 make_model("X -> Y") |>
   get_parameters()
 ```
@@ -702,6 +926,8 @@ make_model("X -> Y") |>
 ```
 
 ```r
+# label: set-parameters
+
 make_model("X -> Y") |>
   set_parameters(statement = "Y[X=1] > Y[X=0]", parameters = .5) |>
   get_parameters()
@@ -713,20 +939,29 @@ make_model("X -> Y") |>
 ```
 
 ```r
-model <- make_model("X -> M -> Y")
-```
+## Drawing and manipulating data
 
-```r
+
+model <- make_model("X -> M -> Y")
+
 sample_data_1 <-
   model |>
   make_data(n = 4)
-```
 
-```r
+
 make_data(model, n = 3, param_type = "prior_draw")
 ```
 
+```
+##   X M Y
+## 1 0 0 1
+## 2 0 1 0
+## 3 0 1 1
+```
+
 ```r
+# Incompete data
+
 sample_data_2 <-
   make_data(
     model,
@@ -740,12 +975,59 @@ sample_data_2 <-
 sample_data_2
 ```
 
-```r
-sample_data_2 |> collapse_data(model)
-
-
-## SECTION 6: Updating models
 ```
+##   X  M Y
+## 1 0 NA 1
+## 2 1  0 0
+## 3 1 NA 0
+## 4 1 NA 0
+## 5 1 NA 0
+## 6 1  1 0
+## 7 1  1 0
+## 8 1 NA 1
+```
+
+```r
+# Collapse data
+
+sample_data_2 |> collapse_data(model)
+```
+
+```
+##     event strategy count
+## 1  X0M0Y0      XMY     0
+## 2  X1M0Y0      XMY     1
+## 3  X0M1Y0      XMY     0
+## 4  X1M1Y0      XMY     2
+## 5  X0M0Y1      XMY     0
+## 6  X1M0Y1      XMY     0
+## 7  X0M1Y1      XMY     0
+## 8  X1M1Y1      XMY     0
+## 9    X0Y0       XY     0
+## 10   X1Y0       XY     3
+## 11   X0Y1       XY     1
+## 12   X1Y1       XY     1
+```
+
+```r
+## SECTION 6: Updating models
+#####################################################################
+
+
+# get_parmap
+
+make_model("X -> Y") |>
+  get_parmap() |>
+  knitr::kable(
+    digits = 2,
+    booktabs = TRUE,
+    align = "c",
+    escape = TRUE,
+    linesep = ""
+  ) |>
+  kableExtra::kable_classic_2()
+```
+
 <table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
  <thead>
   <tr>
@@ -801,6 +1083,39 @@ sample_data_2 |> collapse_data(model)
   </tr>
 </tbody>
 </table>
+
+```r
+# censored data
+
+list(
+  uncensored =
+    make_model("X -> Y") |>
+    update_model(
+      data.frame(X = rep(0:1, 5), Y = rep(0:1, 5)),
+      refresh = 0,
+      iter = 3000
+    ),
+  censored =
+    make_model("X -> Y") |>
+    update_model(
+      data.frame(X = rep(0:1, 5), Y = rep(0:1, 5)),
+      censored_types = c("X1Y0",  "X0Y1"),
+      refresh = 0,
+      iter = 3000
+    )
+)  |>
+  query_model(te("X", "Y"), using = "posteriors") |>
+  dplyr::select(model, query, mean, sd) |>
+  knitr::kable(
+    digits = 2,
+    booktabs = TRUE,
+    align = "c",
+    escape = TRUE,
+    linesep = ""
+  ) |>
+  kableExtra::kable_classic_2()
+```
+
 <table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
  <thead>
   <tr>
@@ -827,14 +1142,47 @@ sample_data_2 |> collapse_data(model)
 </table>
 
 ```r
+## SECTION 7: Querying models
+#####################################################################
+
+
+# realise_outcomes
+
+
 make_model("X -> Y") |> realise_outcomes()
+```
+
+```
+##      X Y
+## 0.00 0 0
+## 1.00 1 0
+## 0.10 0 1
+## 1.10 1 0
+## 0.01 0 0
+## 1.01 1 1
+## 0.11 0 1
+## 1.11 1 1
 ```
 
 ```r
 make_model("X -> Y") |> realise_outcomes(dos = list(X = 1))
 ```
 
+```
+##      X Y
+## 0.00 1 0
+## 1.00 1 0
+## 0.10 1 0
+## 1.10 1 0
+## 0.01 1 1
+## 1.01 1 1
+## 0.11 1 1
+## 1.11 1 1
+```
+
 ```r
+# get_query_types
+
 make_model("X -> Y")  |> get_query_types("Y==1")
 ```
 
@@ -898,14 +1246,47 @@ make_model("X -> Y")  |> get_query_types("Y[X=1] - Y[X=0]")
 ##      0      0     -1     -1      1      1      0      0
 ```
 
+```r
+# posterior distributions
+
+data  <- data.frame(X = rep(0:1, 50), Y = rep(0:1, 50))
+
+model <-
+  make_model("X -> Y") |>
+  update_model(data, iter  = 4000, refresh = 0)
+
+
+model$posterior_distribution |>
+  ggplot(aes(Y.01 - Y.10)) + geom_histogram() + theme_bw()
+```
+
 ```
 ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 ```
 
 <div class="figure" style="text-align: center">
-<img src="figure/fig-posterior-dist-1.png" alt="Posterior on &quot;Probability $Y$ is increasing in $X$&quot;." width="60%" />
+<img src="figure/fig-posterior-dist-1.png" alt="Posterior on "Probability $Y$ is increasing in $X$"." width="60%" />
 <p class="caption">Posterior on "Probability $Y$ is increasing in $X$".</p>
 </div>
+
+```r
+# case level queries
+
+lipids_model |>
+  query_model(query = "Y[X=1] - Y[X=0]",
+              given = c("X==1 & Y==1 & Z==1"),
+              using = "posteriors") |>
+  dplyr::select(query, given, mean, sd, starts_with("cred")) |>
+  knitr::kable(
+    digits = 2,
+    booktabs = TRUE,
+    align = "c",
+    escape = TRUE,
+    linesep = ""
+  ) |>
+  kableExtra::kable_classic_2(latex_options = c("scale_down", "hold_position"))
+```
+
 <table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
  <thead>
   <tr>
@@ -929,107 +1310,29 @@ make_model("X -> Y")  |> get_query_types("Y[X=1] - Y[X=0]")
 </tbody>
 </table>
 
-```
-## 
-## SAMPLING FOR MODEL 'simplexes' NOW (CHAIN 1).
-## Chain 1: 
-## Chain 1: Gradient evaluation took 2.4e-05 seconds
-## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.24 seconds.
-## Chain 1: Adjust your expectations accordingly!
-## Chain 1: 
-## Chain 1: 
-## Chain 1: Iteration:    1 / 10000 [  0%]  (Warmup)
-## Chain 1: Iteration: 1000 / 10000 [ 10%]  (Warmup)
-## Chain 1: Iteration: 2000 / 10000 [ 20%]  (Warmup)
-## Chain 1: Iteration: 3000 / 10000 [ 30%]  (Warmup)
-## Chain 1: Iteration: 4000 / 10000 [ 40%]  (Warmup)
-## Chain 1: Iteration: 5000 / 10000 [ 50%]  (Warmup)
-## Chain 1: Iteration: 5001 / 10000 [ 50%]  (Sampling)
-## Chain 1: Iteration: 6000 / 10000 [ 60%]  (Sampling)
-## Chain 1: Iteration: 7000 / 10000 [ 70%]  (Sampling)
-## Chain 1: Iteration: 8000 / 10000 [ 80%]  (Sampling)
-## Chain 1: Iteration: 9000 / 10000 [ 90%]  (Sampling)
-## Chain 1: Iteration: 10000 / 10000 [100%]  (Sampling)
-## Chain 1: 
-## Chain 1:  Elapsed Time: 1.224 seconds (Warm-up)
-## Chain 1:                1.303 seconds (Sampling)
-## Chain 1:                2.527 seconds (Total)
-## Chain 1: 
-## 
-## SAMPLING FOR MODEL 'simplexes' NOW (CHAIN 2).
-## Chain 2: 
-## Chain 2: Gradient evaluation took 3.8e-05 seconds
-## Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.38 seconds.
-## Chain 2: Adjust your expectations accordingly!
-## Chain 2: 
-## Chain 2: 
-## Chain 2: Iteration:    1 / 10000 [  0%]  (Warmup)
-## Chain 2: Iteration: 1000 / 10000 [ 10%]  (Warmup)
-## Chain 2: Iteration: 2000 / 10000 [ 20%]  (Warmup)
-## Chain 2: Iteration: 3000 / 10000 [ 30%]  (Warmup)
-## Chain 2: Iteration: 4000 / 10000 [ 40%]  (Warmup)
-## Chain 2: Iteration: 5000 / 10000 [ 50%]  (Warmup)
-## Chain 2: Iteration: 5001 / 10000 [ 50%]  (Sampling)
-## Chain 2: Iteration: 6000 / 10000 [ 60%]  (Sampling)
-## Chain 2: Iteration: 7000 / 10000 [ 70%]  (Sampling)
-## Chain 2: Iteration: 8000 / 10000 [ 80%]  (Sampling)
-## Chain 2: Iteration: 9000 / 10000 [ 90%]  (Sampling)
-## Chain 2: Iteration: 10000 / 10000 [100%]  (Sampling)
-## Chain 2: 
-## Chain 2:  Elapsed Time: 1.209 seconds (Warm-up)
-## Chain 2:                1.291 seconds (Sampling)
-## Chain 2:                2.5 seconds (Total)
-## Chain 2: 
-## 
-## SAMPLING FOR MODEL 'simplexes' NOW (CHAIN 3).
-## Chain 3: 
-## Chain 3: Gradient evaluation took 2.2e-05 seconds
-## Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 0.22 seconds.
-## Chain 3: Adjust your expectations accordingly!
-## Chain 3: 
-## Chain 3: 
-## Chain 3: Iteration:    1 / 10000 [  0%]  (Warmup)
-## Chain 3: Iteration: 1000 / 10000 [ 10%]  (Warmup)
-## Chain 3: Iteration: 2000 / 10000 [ 20%]  (Warmup)
-## Chain 3: Iteration: 3000 / 10000 [ 30%]  (Warmup)
-## Chain 3: Iteration: 4000 / 10000 [ 40%]  (Warmup)
-## Chain 3: Iteration: 5000 / 10000 [ 50%]  (Warmup)
-## Chain 3: Iteration: 5001 / 10000 [ 50%]  (Sampling)
-## Chain 3: Iteration: 6000 / 10000 [ 60%]  (Sampling)
-## Chain 3: Iteration: 7000 / 10000 [ 70%]  (Sampling)
-## Chain 3: Iteration: 8000 / 10000 [ 80%]  (Sampling)
-## Chain 3: Iteration: 9000 / 10000 [ 90%]  (Sampling)
-## Chain 3: Iteration: 10000 / 10000 [100%]  (Sampling)
-## Chain 3: 
-## Chain 3:  Elapsed Time: 1.235 seconds (Warm-up)
-## Chain 3:                1.355 seconds (Sampling)
-## Chain 3:                2.59 seconds (Total)
-## Chain 3: 
-## 
-## SAMPLING FOR MODEL 'simplexes' NOW (CHAIN 4).
-## Chain 4: 
-## Chain 4: Gradient evaluation took 2.3e-05 seconds
-## Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.23 seconds.
-## Chain 4: Adjust your expectations accordingly!
-## Chain 4: 
-## Chain 4: 
-## Chain 4: Iteration:    1 / 10000 [  0%]  (Warmup)
-## Chain 4: Iteration: 1000 / 10000 [ 10%]  (Warmup)
-## Chain 4: Iteration: 2000 / 10000 [ 20%]  (Warmup)
-## Chain 4: Iteration: 3000 / 10000 [ 30%]  (Warmup)
-## Chain 4: Iteration: 4000 / 10000 [ 40%]  (Warmup)
-## Chain 4: Iteration: 5000 / 10000 [ 50%]  (Warmup)
-## Chain 4: Iteration: 5001 / 10000 [ 50%]  (Sampling)
-## Chain 4: Iteration: 6000 / 10000 [ 60%]  (Sampling)
-## Chain 4: Iteration: 7000 / 10000 [ 70%]  (Sampling)
-## Chain 4: Iteration: 8000 / 10000 [ 80%]  (Sampling)
-## Chain 4: Iteration: 9000 / 10000 [ 90%]  (Sampling)
-## Chain 4: Iteration: 10000 / 10000 [100%]  (Sampling)
-## Chain 4: 
-## Chain 4:  Elapsed Time: 1.205 seconds (Warm-up)
-## Chain 4:                1.344 seconds (Sampling)
-## Chain 4:                2.549 seconds (Total)
-## Chain 4:
+```r
+set.seed(1)
+
+make_model("X -> M -> Y") |>
+  update_model(data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)),
+               refresh = 0,
+               iter = 10000) |>
+  query_model(
+    "Y[X=1] > Y[X=0]",
+    given = "X==1 & Y==1 & M==1",
+    using = "posteriors",
+    case_level = c(TRUE, FALSE)
+  ) |>
+  dplyr::select(query, given, case_level, mean, sd) |>
+  knitr::kable(
+    digits = 2,
+    booktabs = TRUE,
+    align = "c",
+    escape = TRUE,
+    longtable = TRUE,
+    linesep = ""
+  ) |>
+  kableExtra::kable_classic_2()
 ```
 
 <table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
@@ -1059,6 +1362,47 @@ make_model("X -> Y")  |> get_query_types("Y[X=1] - Y[X=0]")
   </tr>
 </tbody>
 </table>
+
+```r
+# batch queries
+```
+
+```r
+models <- list(
+  `1` = make_model("X -> Y")  |>
+    update_model(data.frame(
+      X = rep(0:1, 10),
+      Y = rep(0:1, 10)
+    ), refresh = 0),
+  `2` = make_model("X -> Y")  |>  set_restrictions("Y[X=1] < Y[X=0]") |>
+    update_model(data.frame(
+      X = rep(0:1, 10),
+      Y = rep(0:1, 10)
+    ), refresh = 0)
+)
+
+
+query_model(
+  models,
+  query = list(ATE = "Y[X=1] - Y[X=0]",
+               POS = "Y[X=1] > Y[X=0]"),
+  given = c(TRUE,  "Y==1 & X==1"),
+  case_level = c(FALSE, TRUE),
+  using = c("priors", "posteriors"),
+  expand_grid = TRUE
+) |>
+  dplyr::select(-starts_with("cred")) |>
+  knitr::kable(
+    digits = 2,
+    booktabs = TRUE,
+    align = "c",
+    escape = TRUE,
+    longtable = TRUE,
+    linesep = ""
+  ) |>
+  kableExtra::kable_classic_2(latex_options = c("hold_position"))
+```
+
 <table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
  <thead>
   <tr>
@@ -1078,8 +1422,8 @@ make_model("X -> Y")  |> get_query_types("Y[X=1] - Y[X=0]")
    <td style="text-align:center;"> - </td>
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.00 </td>
-   <td style="text-align:center;"> 0.32 </td>
+   <td style="text-align:center;"> -0.01 </td>
+   <td style="text-align:center;"> 0.31 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> 2 </td>
@@ -1087,7 +1431,7 @@ make_model("X -> Y")  |> get_query_types("Y[X=1] - Y[X=0]")
    <td style="text-align:center;"> - </td>
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.32 </td>
+   <td style="text-align:center;"> 0.33 </td>
    <td style="text-align:center;"> 0.24 </td>
   </tr>
   <tr>
@@ -1114,7 +1458,7 @@ make_model("X -> Y")  |> get_query_types("Y[X=1] - Y[X=0]")
    <td style="text-align:center;"> Y==1 &amp; X==1 </td>
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.50 </td>
+   <td style="text-align:center;"> 0.49 </td>
    <td style="text-align:center;"> 0.29 </td>
   </tr>
   <tr>
@@ -1123,7 +1467,7 @@ make_model("X -> Y")  |> get_query_types("Y[X=1] - Y[X=0]")
    <td style="text-align:center;"> Y==1 &amp; X==1 </td>
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.49 </td>
+   <td style="text-align:center;"> 0.50 </td>
    <td style="text-align:center;"> 0.29 </td>
   </tr>
   <tr>
@@ -1150,7 +1494,7 @@ make_model("X -> Y")  |> get_query_types("Y[X=1] - Y[X=0]")
    <td style="text-align:center;"> - </td>
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.25 </td>
+   <td style="text-align:center;"> 0.24 </td>
    <td style="text-align:center;"> 0.19 </td>
   </tr>
   <tr>
@@ -1159,7 +1503,7 @@ make_model("X -> Y")  |> get_query_types("Y[X=1] - Y[X=0]")
    <td style="text-align:center;"> - </td>
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.32 </td>
+   <td style="text-align:center;"> 0.33 </td>
    <td style="text-align:center;"> 0.24 </td>
   </tr>
   <tr>
@@ -1186,7 +1530,7 @@ make_model("X -> Y")  |> get_query_types("Y[X=1] - Y[X=0]")
    <td style="text-align:center;"> Y==1 &amp; X==1 </td>
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.50 </td>
+   <td style="text-align:center;"> 0.49 </td>
    <td style="text-align:center;"> 0.29 </td>
   </tr>
   <tr>
@@ -1195,7 +1539,7 @@ make_model("X -> Y")  |> get_query_types("Y[X=1] - Y[X=0]")
    <td style="text-align:center;"> Y==1 &amp; X==1 </td>
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.49 </td>
+   <td style="text-align:center;"> 0.50 </td>
    <td style="text-align:center;"> 0.29 </td>
   </tr>
   <tr>
@@ -1222,7 +1566,7 @@ make_model("X -> Y")  |> get_query_types("Y[X=1] - Y[X=0]")
    <td style="text-align:center;"> - </td>
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.00 </td>
+   <td style="text-align:center;"> -0.01 </td>
    <td style="text-align:center;"> NA </td>
   </tr>
   <tr>
@@ -1231,7 +1575,7 @@ make_model("X -> Y")  |> get_query_types("Y[X=1] - Y[X=0]")
    <td style="text-align:center;"> - </td>
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.32 </td>
+   <td style="text-align:center;"> 0.33 </td>
    <td style="text-align:center;"> NA </td>
   </tr>
   <tr>
@@ -1258,19 +1602,19 @@ make_model("X -> Y")  |> get_query_types("Y[X=1] - Y[X=0]")
    <td style="text-align:center;"> Y==1 &amp; X==1 </td>
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> TRUE </td>
+   <td style="text-align:center;"> 0.48 </td>
+   <td style="text-align:center;"> NA </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> 2 </td>
+   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
+   <td style="text-align:center;"> priors </td>
+   <td style="text-align:center;"> TRUE </td>
    <td style="text-align:center;"> 0.50 </td>
    <td style="text-align:center;"> NA </td>
   </tr>
   <tr>
-   <td style="text-align:center;"> 2 </td>
-   <td style="text-align:center;"> ATE </td>
-   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
-   <td style="text-align:center;"> priors </td>
-   <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.49 </td>
-   <td style="text-align:center;"> NA </td>
-  </tr>
-  <tr>
    <td style="text-align:center;"> 1 </td>
    <td style="text-align:center;"> ATE </td>
    <td style="text-align:center;"> Y==1 &amp; X==1 </td>
@@ -1294,7 +1638,7 @@ make_model("X -> Y")  |> get_query_types("Y[X=1] - Y[X=0]")
    <td style="text-align:center;"> - </td>
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.25 </td>
+   <td style="text-align:center;"> 0.24 </td>
    <td style="text-align:center;"> NA </td>
   </tr>
   <tr>
@@ -1303,7 +1647,7 @@ make_model("X -> Y")  |> get_query_types("Y[X=1] - Y[X=0]")
    <td style="text-align:center;"> - </td>
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.32 </td>
+   <td style="text-align:center;"> 0.33 </td>
    <td style="text-align:center;"> NA </td>
   </tr>
   <tr>
@@ -1330,7 +1674,7 @@ make_model("X -> Y")  |> get_query_types("Y[X=1] - Y[X=0]")
    <td style="text-align:center;"> Y==1 &amp; X==1 </td>
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.50 </td>
+   <td style="text-align:center;"> 0.48 </td>
    <td style="text-align:center;"> NA </td>
   </tr>
   <tr>
@@ -1339,7 +1683,7 @@ make_model("X -> Y")  |> get_query_types("Y[X=1] - Y[X=0]")
    <td style="text-align:center;"> Y==1 &amp; X==1 </td>
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.49 </td>
+   <td style="text-align:center;"> 0.50 </td>
    <td style="text-align:center;"> NA </td>
   </tr>
   <tr>
@@ -1359,6 +1703,110 @@ make_model("X -> Y")  |> get_query_types("Y[X=1] - Y[X=0]")
    <td style="text-align:center;"> TRUE </td>
    <td style="text-align:center;"> 0.91 </td>
    <td style="text-align:center;"> NA </td>
+  </tr>
+</tbody>
+</table>
+
+```r
+## Appendix C: Benchmarks
+#####################################################################
+
+# effect of model complexity on run-time
+options(mc.cores = parallel::detectCores())
+
+model <- list(
+  CausalQueries::make_model("X1 -> Y"),
+  CausalQueries::make_model("X1 -> Y <- X2"),
+  CausalQueries::make_model("X1 -> Y <- X2; X3 -> Y")
+)
+```
+
+```r
+benchmark_model <- microbenchmark::microbenchmark(
+  m1 = CausalQueries::update_model(model[[1]]),
+  m2 = CausalQueries::update_model(model[[2]]),
+  m3 = CausalQueries::update_model(model[[3]]),
+  times = 5
+)
+
+summary(benchmark_model) |> select(expr, mean) |>
+  kable(digits = 0)
+```
+
+<table>
+ <thead>
+  <tr>
+   <th style="text-align:left;"> expr </th>
+   <th style="text-align:right;"> mean </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> m1 </td>
+   <td style="text-align:right;"> 7 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> m2 </td>
+   <td style="text-align:right;"> 9 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> m3 </td>
+   <td style="text-align:right;"> 49 </td>
+  </tr>
+</tbody>
+</table>
+
+```r
+# effect of data size on run-time
+
+model <- CausalQueries::make_model("X -> Y")
+
+data <- lapply(10 ^ c(1:5), function(n) {
+  CausalQueries::make_data(model, n)
+})
+```
+
+```r
+benchmark_data <- microbenchmark::microbenchmark(
+  d0 = CausalQueries::update_model(model, data[[1]]),
+  d1 = CausalQueries::update_model(model, data[[2]]),
+  d2 = CausalQueries::update_model(model, data[[3]]),
+  d3 = CausalQueries::update_model(model, data[[4]]),
+  d4 = CausalQueries::update_model(model, data[[5]]),
+  times = 5
+)
+
+summary(benchmark_data) |> select(expr, mean) |>
+  kable(digits = 0)
+```
+
+<table>
+ <thead>
+  <tr>
+   <th style="text-align:left;"> expr </th>
+   <th style="text-align:right;"> mean </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> d0 </td>
+   <td style="text-align:right;"> 10 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> d1 </td>
+   <td style="text-align:right;"> 11 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> d2 </td>
+   <td style="text-align:right;"> 12 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> d3 </td>
+   <td style="text-align:right;"> 14 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> d4 </td>
+   <td style="text-align:right;"> 23 </td>
   </tr>
 </tbody>
 </table>

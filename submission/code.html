@@ -147,7 +147,7 @@ $(document).ready(function(){
     }
 });
 </script>
-<link href="C:\Users\humphreys\AppData\Local\R\win-library\4.2\kableExtra\lightable-0.0.1\lightable.css" rel="stylesheet" />
+<link href="C:\Users\macar\AppData\Local\R\win-library\4.2\kableExtra\lightable-0.0.1\lightable.css" rel="stylesheet" />
 </head>
 <body>
 <div class="include-before">
@@ -163,12 +163,15 @@ $(document).ready(function(){
 # Till Tietz, Lily Medina, Georgiy Syunyaev, Macartan Humphreys
 # Generated using: knitr::spin(&quot;code.R&quot;)
 # 15 November 2023
+
+## Set up
+#####################################################################
 </code></pre>
-<pre><code class="language-r">library(tidyverse)
+<pre><code class="language-r">#|
+library(tidyverse)
 library(CausalQueries)
 library(knitr)
 library(rstan)
-library(DeclareDesign)
 library(kableExtra)
 library(tikzDevice)
 
@@ -178,10 +181,46 @@ options(mc.cores = parallel::detectCores())
 set.seed(20231018)
 
 ## SECTION 2: Motivating example
+#####################################################################
 
 data(&quot;lipids_data&quot;)
 
 lipids_data
+</code></pre>
+<pre><code>##    event strategy count
+## 1 Z0X0Y0      ZXY   158
+## 2 Z1X0Y0      ZXY    52
+## 3 Z0X1Y0      ZXY     0
+## 4 Z1X1Y0      ZXY    23
+## 5 Z0X0Y1      ZXY    14
+## 6 Z1X0Y1      ZXY    12
+## 7 Z0X1Y1      ZXY     0
+## 8 Z1X1Y1      ZXY    78
+</code></pre>
+<pre><code class="language-r">lipids_model &lt;-
+  make_model(&quot;Z -&gt; X -&gt; Y; X &lt;-&gt; Y&quot;) |&gt;
+  update_model(lipids_data, refresh = 0)
+
+
+results &lt;-
+  lipids_model |&gt;
+  query_model(
+    query = &quot;Y[X=1] - Y[X=0]&quot;,
+    given = c(&quot;All&quot;,  &quot;X==0 &amp; Y==0&quot;, &quot;X[Z=1] &gt; X[Z=0]&quot;),
+    using = &quot;posteriors&quot;
+  )
+
+
+results |&gt;
+  dplyr::select(query, given, mean, sd, starts_with(&quot;cred&quot;)) |&gt;
+  knitr::kable(
+    digits = 2,
+    booktabs = TRUE,
+    align = &quot;c&quot;,
+    escape = TRUE,
+    linesep = &quot;&quot;
+  ) |&gt;
+  kableExtra::kable_classic_2(latex_options = c(&quot;scale_down&quot;))
 </code></pre>
 <table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
  <thead>
@@ -206,21 +245,41 @@ lipids_data
   <tr>
    <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
    <td style="text-align:center;"> X==0 &amp; Y==0 </td>
-   <td style="text-align:center;"> 0.63 </td>
+   <td style="text-align:center;"> 0.64 </td>
    <td style="text-align:center;"> 0.15 </td>
    <td style="text-align:center;"> 0.37 </td>
-   <td style="text-align:center;"> 0.89 </td>
+   <td style="text-align:center;"> 0.90 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
    <td style="text-align:center;"> X[Z=1] &gt; X[Z=0] </td>
    <td style="text-align:center;"> 0.70 </td>
-   <td style="text-align:center;"> 0.05 </td>
+   <td style="text-align:center;"> 0.06 </td>
    <td style="text-align:center;"> 0.59 </td>
-   <td style="text-align:center;"> 0.81 </td>
+   <td style="text-align:center;"> 0.80 </td>
   </tr>
 </tbody>
 </table>
+<pre><code class="language-r">## SECTION 4: Statistical Model
+#####################################################################
+</code></pre>
+<pre><code class="language-r">with_pars &lt;-
+  lipids_model |&gt;
+  set_parameters(param_type = &quot;prior_draw&quot;)
+
+with_pars$parameters_df |&gt;
+  dplyr::select(node,  nodal_type, param_set, 
+                param_names, param_value, priors) |&gt;
+  knitr::kable(
+    digits = 2,
+    booktabs = TRUE,
+    align = &quot;c&quot;,
+    escape = TRUE,
+    longtable = TRUE,
+    linesep = &quot;&quot;
+  ) |&gt;
+  kableExtra::kable_classic_2(latex_options = c(&quot;hold_position&quot;))
+</code></pre>
 <table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
  <thead>
   <tr>
@@ -411,9 +470,41 @@ lipids_data
   </tr>
 </tbody>
 </table>
+<pre><code class="language-r">## SECTION 5: Making models
+#####################################################################
+</code></pre>
 <pre><code class="language-r">model &lt;- make_model(&quot;X -&gt; M -&gt; Y &lt;- X&quot;)
 </code></pre>
-<p><img src="data:image/png;base64,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" alt="Examples of model graphs." /><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfgAAAH4CAMAAACR9g9NAAAAflBMVEUAAAC+vr6+vsm+vtS+yd++1OrJvr7JvsnJvtTJ3+rJ3/TUvr7UvsnU3/TU6vTU6v/fyb7fydTf38nf6t/f9Orf9PTf9P/q1L7q38nq6urq6vTq9N/q/+rq//T038n039T06tT06ur09N/09PT0////6tT/9N///+r///T///8NDvHNAAAACXBIWXMAAAsSAAALEgHS3X78AAANv0lEQVR4nO2df3sjRxGEPb7TAXcQHJKcCYQDQg6i7/8FwdiyVz9W2pnpnq6arvePPEkea1Vd77XWtnZ1d3uRkrvoACIGiU+KxCdF4pMi8UmR+KRIfFIkPikSnxSJT4rEJ0XikyLxSZH4pEh8UiQ+KRKfFIlPisQnReKTIvFJkfikSHxSJD4pEp8UiU+KxCdF4pMi8UmR+KRIfFIkPikSnxSJT4rEJ0XikyLxSZH4pEh8UiQ+KRKfFFrxpUQnwKK2D1bxpcj8kuo+SMWXIvNL6vvgFF+KzC9p6INSfCkyv6SlD0bxpcj8kqY+CMWXIvNL2vrgE1+KzC9p7INO/Omc2c239sEm/nzO3Oab+yATf5ht9/QfX/OZP9X1PP/95y//++cfv9T0wSV++ef63d8e8u383d2RsMP89z88lN3XUtMHlfil9/vPjxdf3e7m50If73/+7V8/VL3aU4lfmn97Ycu08kfel33sfn2o64NL/NukH7/WzTkJdye+3k58lQvPJv4w6S6n93NdF8U3HQmdlxP807/++0M27xe4IH7T4+jEn//kGh0omMY++MSfThodJ5y2PgjF7+X9mKY+GMXv5f2Ylj4oxe/l/ZiGPjjF79N6P/nd3YH6PkjF75N6fzF//r+r+2AVv0/q/fSXtq/U9kErfp/X+2VnSW6oyMmT8xXv1YcyOYoYgZHyl4MZHkt4Yqpd4lkw1i7xHJhrl3gGHLRLPD4u2iUeHSftEo/NFu2NBiUelrVf0Z1+VePR2x4mvNkodNufjksPbHuY8GWrzvVf3d98ZNOjhCsVLiV+HupM6qV+EipFNvuTeCiq91fiZ6DhZVvi+Wk5W7frk3gQ2r5Jk3hyxn9vLvEANL8T02FP4sPpeANO4nnped+1R57Eh9L3drvEk9J7lYXEU9J9cU3Yq4XowOCaKomno/nyieOjhD1YNGF1AaXEU2F23WzfcSR+LIaXS0s8D0D3u0r8OGxvjgj8HYCowfqeGImnAO42Z4kfAeBtzhLvD+RtzhLvjc/9rt0HlXhfvG5zlnho3O5ul3hk/LRLPDCe2g20SbwPrtolHhVn7RKPibt2C2sSb4zNxTW3ngTiEOKNEdZtpEm8IWO0SzwYo7RLPBTjtNs4k3gTBmqXeByGapd4FAZrN1Im8Z2M1i7xEIzXbmVM4jsI0C7x8YRol/hogrSbCZP4JqK0S3wocdolPpBI7RIfxZC32689P9yBUhBsfS/xIcRrl/gAELQb6kKYhgEI7RI/GhDtlrZAJoIGRbvEDwVHu8QPBEm7qSykufCA0i7xowDTLvFjgNMu8SMA1G7rCnA+ABC1S7w7mNol3hlU7caqUKeMAla7xHsCrN3aFPCko4m+uOYGEu8DtvW9xPsAr91cFPzAI8DXLvEOMGiXeHM4tNt74hjbDRLtEm8LjXYHTTSjO0A0u8TbwbPue4k3hGtwiTeCat1dLHEVYASZdom3gU67xFtAqF3i+6HU7iKJsohWOLVLfB/g11lcQ+Lb4bXu5Ii4jwqYtUt8M9zanRRxd7IFcu0S3wa9dolvYQLtXoYmaGaVGbRLfDVzaJf4SmbRLvFVzKPdTdA8Db0xkXaJ385U2iV+K5Np9/MzV0+zaZf4Tcyn3VHPPF1NqF3ibzOldom/AfHFNddxHGuCxma1vpf4a0ysXeLXmVq7qxzq4ubWLvErzK7d1w1tedNrl/hLJNAu8eek0O6shrDCHNol/oQs2iX+iDzaJX5BJu3eZoiqTKVd4g8k0y7xz6TT7i6GodBp326/hsRntD7AC3qrObWnF59Ve3LxebUP0ILbbWLtmcWn1p5XfHLtWcWn1z7CCl7H0p5SvLQ/kU68tP+fES0gNS3tL+QSL+0HhhSB0ra0v5FIvLQvSSNe2o8Y00Z859J+QgrxKS+uuUEC8bJ+ienFS/tFBrUSVr60rzC3eGlfZWbx0r7OqGoCFEj7NaYVL+1XGdbOYA3SfoM5xUv7TWYUL+23GVfRuD9h0r6B6cRL+zYmEy/tGxl54h3wFNK+lZnES/t2Rlbl/Ukr0l7BNOKlvY45xOvimlrG/jLN67iyXs0E4qW9BXrx0t4GuXhpb2Rsb9bPJu3NMIuX9g54xUt7D6Mvial9QClrR5L2LsDFl3LZvLR3Mrq/yucr5bJ5ae8FW3wpa+ZFJ9DiS5F5J8Zf5l7xtaXIvBfI4kuReTeAxZci837gij/1LvOWjP+paOsznnuXeUNgxb/K/vhYdl9l3hpU8W9bfv/977//pJ23BlT88vV9969HvdpbE/EpBZu+aqH63U+fJN4aWPEL8x9//CLvxkS801H7Xf37f5RvHuTdFmTxL+bvf3go73/+IO+mQIs//0neMVUuYj55bPuXyrsT6OL38u4DvPi9vHsQc/VS2xU48m4Ig/i9vJsT9WnClV8v79aQiN/LuzEs4vfybkrUhekWz6uL6jtgFi/zHVCL1w1U7XCL19K3Etab2RNr6ZvgF6+lb2IG8Vr6euIaM/4oFNOjJWAW8TJfR2Bd5p96ZXy8uZlIvE70NcwkXku/ncim9JGmgcwmXku/kfnEa+k3MaF4Lf0GQity/Bsq3I48C5OKl/lbzCpeJ/rrxLbj++wyf4WZxWvp1wluxv3pZX6F2cVr6VeYXnz4iJhElzLk+aOHRCS6kzHPHz0lINGVDHp+nehPCO9jWIDwSbEIr2NcAC39gvguRiaInxaG+CqGJtDSH4gvYnCC+IEhAKhhdASAkQEAaGF4BICZ4wEoYXwEneiTiocYOxaEAmI+ThNh8kAQxqf5sK2ZQJg+7CNYEIYPAmL0aW7QJgJi8rnu16QAY+4p7+LBBmPs2Iv6MToYDMbQCS75AwNk5OgY+ZYeZOD4GPEJxgIyL0CMZEsPMi1EDIgQg0CZFSMHRoohoIwKkgMkxgBQJoXJgRLEGZgxYYIAJfEEZkqYIDmWHmdEnCR7sDAu4EyIk+SJ6ZceZz6cJM+g5bEFaDqgKM/ABbIEaDigKC/gJbIDaDagKAfmPdEjDYaU5RXIUAYgzYWU5Y05lx5qKKgwC1Bz9QA1E1SYJRMuPdREUGGOAY7WBNY8WGmOQc7WANY4WGlOgA5XDdY0WGlOmepEjzULVppz0PNtB2wSsDjnTLP0YHOAxbkEQcQtgI0BFuciDBlvgjYEWp6LUIS8AdoMaHkuw3+ihxsALtAKLDnXgMsPF2gN8qWHSw8XaB2iqGfgZcdLtA7x0uMlx0t0Da60C/CC4yW6ClncV/By4yW6DlveZwBTA0a6DuWJHjAzYKRbKLIFgJFuwrf0gIEBI22ALDViXMRMG+CKjZgWMdMWmHJDZoUMtQWi4JBRIUNtgic5ZFLIUNtgiY6ZEzPVNkh+rMNMiZlqKxTpMUNiptoMwdKDJgSNtR34AUADgsaqAHzpUdOh5qoBegbUcKi5qkAeAjUbaq46cKeATQYbrA7YEz1qLtxgtYAOAhoLOFg1mEsPGeoJ2GANAM4CGOkF3GQN4C09XKBXcJM1gTYOWp43cJO1gTUPVpojgKO1ATUQVJhjgKM1AnSix0lyDnK2VmBmgglyAeRszaAsPUiMiyBn6wBiLIgQa0CH6wBh6QEirAMdrov4yeITXAE6XB/ho4UHuAZ0uE6CZ8OuFjtdJ7EneuxqsdN1EzkedrXY6fqJW3rwZsHjGRA1IXiz4PEsiFl69GLR85kQMSR6sej5bAiYEr1Y9HxGDB8Tvlf4gEaMPtHD9wof0Iyxk8L3Ch/QjqFLD98rfEBLxg2LXyt+QkuGLT1+rfgJbRk0L36t+AmNGTIwQasEEY0ZMTFBqwQRrfE/0TOUypDRHO+hGUplyGiP89IzlMqQ0QPPuSk6pQjpgePSU3RKEdIHt9EpOqUI6YTT7ByVcqR0wmd4jko5UnrhcaInaZQkphv285M0ShLTD/OlJ2mUJKYnthWwFMqS0xPTpWcplCWnL4YtsBTKktMZuxpYCmXJ6Y1VDzR90gT1xuhET9MnTVB/TKqg6ZMm6AAMlp6nTp6kI+hug6dOnqRD6Fx6ojaJoo6hqxCiNomiDqKnEaI2iaKOor0SpjKZso6i+UTPVCZT1nE0tsJUJlPWgbQtPVOZTFmH0lAMVZdUYYdS3wxVl1Rhx1JdDVWXVGEHU3mi56qSK+1oqtrhqpIr7XAqlp6sSbK449lcEFmTZHED2Lr0ZE2SxQ1hU0dsRbLlDWHGkmacyZ4JW5pwJA8Q/uJKW6YbyIvZipptHj+eln6itiYaxZ27mV7wJxrFnbuZzM8ziT8Sn5O7u5nMTzNIGCU6QBsS30kpnOYlvo9SSM1LfBelsJqX+B5KoTUv8R2Uwmte4tsphdi8xDdTCrN5iW+lnBIdqA6Jb+TMO5l5iW/jgncu8xLfxIvp3X8+lfvPj4zmJb6Fg+jdrw/l/S+PjDsv8Q28et7988/ld3+R+DS8iv/7d7/57g96qc/DQfyXb77908dHQu8S38hB/O7Hx1fx0ZmqkPhGXsS/++nTQXx0ojokvhXmH+L3Et8BtXeJ74DZu8T3QOxd4rvg9S7xfdB6l/hOWL1LfC+k3iU+KxKfFIlPisQnReKTIvFJkfikSHxSJD4pEp8UiU+KxCdF4pMi8UmR+KRIfFIkPikSnxSJT4rEJ0XikyLxSZH4pEh8UiQ+KRKfFIlPisQnReKTIvFJkfikSHxSJD4pEp8UiU+KxCflv12pWmMnCJzfAAAAAElFTkSuQmCC" alt="Examples of model graphs." /></p>
+<pre><code class="language-r">make_model(&quot;X -&gt; M -&gt; Y &lt;- X; Z -&gt; Y&quot;) |&gt;
+  plot()
+</code></pre>
+<p><img src="data:image/png;base64,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" alt="Examples of model graphs." /></p>
+<pre><code class="language-r">make_model(&quot;X -&gt; M -&gt; Y &lt;- X; Z -&gt; Y&quot;) |&gt;
+  plot(
+    x_coord = 1:4,
+    y_coord = c(1.5, 2, 1, 2),
+    textcol = &quot;white&quot;,
+    textsize = 3,
+    shape = 18,
+    nodecol = &quot;grey&quot;,
+    nodesize = 12
+  )
+</code></pre>
+<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfgAAAH4CAMAAACR9g9NAAAAflBMVEUAAAC+vr6+vsm+vtS+yd++1OrJvr7JvsnJvtTJ3+rJ3/TUvr7UvsnU3/TU6vTU6v/fyb7fydTf38nf6t/f9Orf9PTf9P/q1L7q38nq6urq6vTq9N/q/+rq//T038n039T06tT06ur09N/09PT0////6tT/9N///+r///T///8NDvHNAAAACXBIWXMAAAsSAAALEgHS3X78AAANv0lEQVR4nO2df3sjRxGEPb7TAXcQHJKcCYQDQg6i7/8FwdiyVz9W2pnpnq6arvePPEkea1Vd77XWtnZ1d3uRkrvoACIGiU+KxCdF4pMi8UmR+KRIfFIkPikSnxSJT4rEJ0XikyLxSZH4pEh8UiQ+KRKfFIlPisQnReKTIvFJkfikSHxSJD4pEp8UiU+KxCdF4pMi8UmR+KRIfFIkPikSnxSJT4rEJ0XikyLxSZH4pEh8UiQ+KRKfFFrxpUQnwKK2D1bxpcj8kuo+SMWXIvNL6vvgFF+KzC9p6INSfCkyv6SlD0bxpcj8kqY+CMWXIvNL2vrgE1+KzC9p7INO/Omc2c239sEm/nzO3Oab+yATf5ht9/QfX/OZP9X1PP/95y//++cfv9T0wSV++ef63d8e8u383d2RsMP89z88lN3XUtMHlfil9/vPjxdf3e7m50If73/+7V8/VL3aU4lfmn97Ycu08kfel33sfn2o64NL/NukH7/WzTkJdye+3k58lQvPJv4w6S6n93NdF8U3HQmdlxP807/++0M27xe4IH7T4+jEn//kGh0omMY++MSfThodJ5y2PgjF7+X9mKY+GMXv5f2Ylj4oxe/l/ZiGPjjF79N6P/nd3YH6PkjF75N6fzF//r+r+2AVv0/q/fSXtq/U9kErfp/X+2VnSW6oyMmT8xXv1YcyOYoYgZHyl4MZHkt4Yqpd4lkw1i7xHJhrl3gGHLRLPD4u2iUeHSftEo/NFu2NBiUelrVf0Z1+VePR2x4mvNkodNufjksPbHuY8GWrzvVf3d98ZNOjhCsVLiV+HupM6qV+EipFNvuTeCiq91fiZ6DhZVvi+Wk5W7frk3gQ2r5Jk3hyxn9vLvEANL8T02FP4sPpeANO4nnped+1R57Eh9L3drvEk9J7lYXEU9J9cU3Yq4XowOCaKomno/nyieOjhD1YNGF1AaXEU2F23WzfcSR+LIaXS0s8D0D3u0r8OGxvjgj8HYCowfqeGImnAO42Z4kfAeBtzhLvD+RtzhLvjc/9rt0HlXhfvG5zlnho3O5ul3hk/LRLPDCe2g20SbwPrtolHhVn7RKPibt2C2sSb4zNxTW3ngTiEOKNEdZtpEm8IWO0SzwYo7RLPBTjtNs4k3gTBmqXeByGapd4FAZrN1Im8Z2M1i7xEIzXbmVM4jsI0C7x8YRol/hogrSbCZP4JqK0S3wocdolPpBI7RIfxZC32689P9yBUhBsfS/xIcRrl/gAELQb6kKYhgEI7RI/GhDtlrZAJoIGRbvEDwVHu8QPBEm7qSykufCA0i7xowDTLvFjgNMu8SMA1G7rCnA+ABC1S7w7mNol3hlU7caqUKeMAla7xHsCrN3aFPCko4m+uOYGEu8DtvW9xPsAr91cFPzAI8DXLvEOMGiXeHM4tNt74hjbDRLtEm8LjXYHTTSjO0A0u8TbwbPue4k3hGtwiTeCat1dLHEVYASZdom3gU67xFtAqF3i+6HU7iKJsohWOLVLfB/g11lcQ+Lb4bXu5Ii4jwqYtUt8M9zanRRxd7IFcu0S3wa9dolvYQLtXoYmaGaVGbRLfDVzaJf4SmbRLvFVzKPdTdA8Db0xkXaJ385U2iV+K5Np9/MzV0+zaZf4Tcyn3VHPPF1NqF3ibzOldom/AfHFNddxHGuCxma1vpf4a0ysXeLXmVq7qxzq4ubWLvErzK7d1w1tedNrl/hLJNAu8eek0O6shrDCHNol/oQs2iX+iDzaJX5BJu3eZoiqTKVd4g8k0y7xz6TT7i6GodBp326/hsRntD7AC3qrObWnF59Ve3LxebUP0ILbbWLtmcWn1p5XfHLtWcWn1z7CCl7H0p5SvLQ/kU68tP+fES0gNS3tL+QSL+0HhhSB0ra0v5FIvLQvSSNe2o8Y00Z859J+QgrxKS+uuUEC8bJ+ienFS/tFBrUSVr60rzC3eGlfZWbx0r7OqGoCFEj7NaYVL+1XGdbOYA3SfoM5xUv7TWYUL+23GVfRuD9h0r6B6cRL+zYmEy/tGxl54h3wFNK+lZnES/t2Rlbl/Ukr0l7BNOKlvY45xOvimlrG/jLN67iyXs0E4qW9BXrx0t4GuXhpb2Rsb9bPJu3NMIuX9g54xUt7D6Mvial9QClrR5L2LsDFl3LZvLR3Mrq/yucr5bJ5ae8FW3wpa+ZFJ9DiS5F5J8Zf5l7xtaXIvBfI4kuReTeAxZci837gij/1LvOWjP+paOsznnuXeUNgxb/K/vhYdl9l3hpU8W9bfv/977//pJ23BlT88vV9969HvdpbE/EpBZu+aqH63U+fJN4aWPEL8x9//CLvxkS801H7Xf37f5RvHuTdFmTxL+bvf3go73/+IO+mQIs//0neMVUuYj55bPuXyrsT6OL38u4DvPi9vHsQc/VS2xU48m4Ig/i9vJsT9WnClV8v79aQiN/LuzEs4vfybkrUhekWz6uL6jtgFi/zHVCL1w1U7XCL19K3Etab2RNr6ZvgF6+lb2IG8Vr6euIaM/4oFNOjJWAW8TJfR2Bd5p96ZXy8uZlIvE70NcwkXku/ncim9JGmgcwmXku/kfnEa+k3MaF4Lf0GQity/Bsq3I48C5OKl/lbzCpeJ/rrxLbj++wyf4WZxWvp1wluxv3pZX6F2cVr6VeYXnz4iJhElzLk+aOHRCS6kzHPHz0lINGVDHp+nehPCO9jWIDwSbEIr2NcAC39gvguRiaInxaG+CqGJtDSH4gvYnCC+IEhAKhhdASAkQEAaGF4BICZ4wEoYXwEneiTiocYOxaEAmI+ThNh8kAQxqf5sK2ZQJg+7CNYEIYPAmL0aW7QJgJi8rnu16QAY+4p7+LBBmPs2Iv6MToYDMbQCS75AwNk5OgY+ZYeZOD4GPEJxgIyL0CMZEsPMi1EDIgQg0CZFSMHRoohoIwKkgMkxgBQJoXJgRLEGZgxYYIAJfEEZkqYIDmWHmdEnCR7sDAu4EyIk+SJ6ZceZz6cJM+g5bEFaDqgKM/ABbIEaDigKC/gJbIDaDagKAfmPdEjDYaU5RXIUAYgzYWU5Y05lx5qKKgwC1Bz9QA1E1SYJRMuPdREUGGOAY7WBNY8WGmOQc7WANY4WGlOgA5XDdY0WGlOmepEjzULVppz0PNtB2wSsDjnTLP0YHOAxbkEQcQtgI0BFuciDBlvgjYEWp6LUIS8AdoMaHkuw3+ihxsALtAKLDnXgMsPF2gN8qWHSw8XaB2iqGfgZcdLtA7x0uMlx0t0Da60C/CC4yW6ClncV/By4yW6DlveZwBTA0a6DuWJHjAzYKRbKLIFgJFuwrf0gIEBI22ALDViXMRMG+CKjZgWMdMWmHJDZoUMtQWi4JBRIUNtgic5ZFLIUNtgiY6ZEzPVNkh+rMNMiZlqKxTpMUNiptoMwdKDJgSNtR34AUADgsaqAHzpUdOh5qoBegbUcKi5qkAeAjUbaq46cKeATQYbrA7YEz1qLtxgtYAOAhoLOFg1mEsPGeoJ2GANAM4CGOkF3GQN4C09XKBXcJM1gTYOWp43cJO1gTUPVpojgKO1ATUQVJhjgKM1AnSix0lyDnK2VmBmgglyAeRszaAsPUiMiyBn6wBiLIgQa0CH6wBh6QEirAMdrov4yeITXAE6XB/ho4UHuAZ0uE6CZ8OuFjtdJ7EneuxqsdN1EzkedrXY6fqJW3rwZsHjGRA1IXiz4PEsiFl69GLR85kQMSR6sej5bAiYEr1Y9HxGDB8Tvlf4gEaMPtHD9wof0Iyxk8L3Ch/QjqFLD98rfEBLxg2LXyt+QkuGLT1+rfgJbRk0L36t+AmNGTIwQasEEY0ZMTFBqwQRrfE/0TOUypDRHO+hGUplyGiP89IzlMqQ0QPPuSk6pQjpgePSU3RKEdIHt9EpOqUI6YTT7ByVcqR0wmd4jko5UnrhcaInaZQkphv285M0ShLTD/OlJ2mUJKYnthWwFMqS0xPTpWcplCWnL4YtsBTKktMZuxpYCmXJ6Y1VDzR90gT1xuhET9MnTVB/TKqg6ZMm6AAMlp6nTp6kI+hug6dOnqRD6Fx6ojaJoo6hqxCiNomiDqKnEaI2iaKOor0SpjKZso6i+UTPVCZT1nE0tsJUJlPWgbQtPVOZTFmH0lAMVZdUYYdS3wxVl1Rhx1JdDVWXVGEHU3mi56qSK+1oqtrhqpIr7XAqlp6sSbK449lcEFmTZHED2Lr0ZE2SxQ1hU0dsRbLlDWHGkmacyZ4JW5pwJA8Q/uJKW6YbyIvZipptHj+eln6itiYaxZ27mV7wJxrFnbuZzM8ziT8Sn5O7u5nMTzNIGCU6QBsS30kpnOYlvo9SSM1LfBelsJqX+B5KoTUv8R2Uwmte4tsphdi8xDdTCrN5iW+lnBIdqA6Jb+TMO5l5iW/jgncu8xLfxIvp3X8+lfvPj4zmJb6Fg+jdrw/l/S+PjDsv8Q28et7988/ld3+R+DS8iv/7d7/57g96qc/DQfyXb77908dHQu8S38hB/O7Hx1fx0ZmqkPhGXsS/++nTQXx0ojokvhXmH+L3Et8BtXeJ74DZu8T3QOxd4rvg9S7xfdB6l/hOWL1LfC+k3iU+KxKfFIlPisQnReKTIvFJkfikSHxSJD4pEp8UiU+KxCdF4pMi8UmR+KRIfFIkPikSnxSJT4rEJ0XikyLxSZH4pEh8UiQ+KRKfFIlPisQnReKTIvFJkfikSHxSJD4pEp8UiU+KxCflv12pWmMnCJzfAAAAAElFTkSuQmCC" alt="Examples of model graphs." /></p>
+<pre><code class="language-r">## Parameters data frame
+#####################################################################
+</code></pre>
+<pre><code class="language-r">latex_options = &quot;HOLD_position&quot;
+make_model(&quot;X -&gt; Y&quot;)$parameters_df |&gt;
+  knitr::kable(
+    digits = 2,
+    booktabs = TRUE,
+    align = &quot;c&quot;,
+    escape = TRUE,
+    linesep = &quot;&quot;
+  ) |&gt;
+  kableExtra::kable_classic_2(latex_options = c(&quot;scale_down&quot;, &quot;HOLD_position&quot;))
+</code></pre>
 <table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
  <thead>
   <tr>
@@ -490,13 +581,37 @@ lipids_data
   </tr>
 </tbody>
 </table>
-<pre><code class="language-r">interpretations &lt;-
+<pre><code class="language-r">## Interpreting nodal types
+#####################################################################
+
+interpretations &lt;-
   make_model(&quot;X -&gt; Y &lt;- M; W -&gt; Y&quot;) |&gt;
   interpret_type()
 
 interpretations$Y
 </code></pre>
-<pre><code class="language-r">lipids_model$causal_types |&gt; head()
+<pre><code>##   node position     display            interpretation
+## 1    Y        1 Y[*]******* Y | M = 0 &amp; W = 0 &amp; X = 0
+## 2    Y        2 Y*[*]****** Y | M = 1 &amp; W = 0 &amp; X = 0
+## 3    Y        3 Y**[*]***** Y | M = 0 &amp; W = 1 &amp; X = 0
+## 4    Y        4 Y***[*]**** Y | M = 1 &amp; W = 1 &amp; X = 0
+## 5    Y        5 Y****[*]*** Y | M = 0 &amp; W = 0 &amp; X = 1
+## 6    Y        6 Y*****[*]** Y | M = 1 &amp; W = 0 &amp; X = 1
+## 7    Y        7 Y******[*]* Y | M = 0 &amp; W = 1 &amp; X = 1
+## 8    Y        8 Y*******[*] Y | M = 1 &amp; W = 1 &amp; X = 1
+</code></pre>
+<pre><code class="language-r">## Causal types
+
+
+lipids_model$causal_types |&gt; head()
+</code></pre>
+<pre><code>##            Z  X  Y
+## Z0.X00.Y00 0 00 00
+## Z1.X00.Y00 1 00 00
+## Z0.X10.Y00 0 10 00
+## Z1.X10.Y00 1 10 00
+## Z0.X01.Y00 0 01 00
+## Z1.X01.Y00 1 01 00
 </code></pre>
 <pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt; get_parameter_matrix()
 </code></pre>
@@ -508,14 +623,36 @@ interpretations$Y
 ## Cell entries indicate whether a parameter probability is used
 ## in the calculation of causal type probability
 ## 
+##      X0.Y00 X1.Y00 X0.Y10 X1.Y10 X0.Y01 X1.Y01 X0.Y11 X1.Y11
+## X.0       1      0      1      0      1      0      1      0
+## X.1       0      1      0      1      0      1      0      1
+## Y.00      1      1      0      0      0      0      0      0
+## Y.10      0      0      1      1      0      0      0      0
+## Y.01      0      0      0      0      1      1      0      0
+## Y.11      0      0      0      0      0      0      1      1
 ## 
 ##  
 ##  param_set  (P)
 ## 
 </code></pre>
-<pre><code class="language-r">model_restricted &lt;-
+<pre><code class="language-r">## Models with confounding
+#####################################################################
+
+model_restricted &lt;-
   make_model(&quot;Z -&gt; X -&gt; Y; X &lt;-&gt; Y&quot;) |&gt;
   set_restrictions(&quot;X[Z=1] &lt; X[Z=0]&quot;)
+</code></pre>
+<pre><code class="language-r">confounded &lt;- make_model(&quot;X -&gt; Y ; X &lt;-&gt; Y&quot;)
+
+confounded$parameters_df |&gt;
+  knitr::kable(
+    digits = 2,
+    booktabs = TRUE,
+    align = &quot;c&quot;,
+    escape = TRUE,
+    linesep = &quot;&quot;
+  ) |&gt;
+  kableExtra::kable_classic_2(latex_options = c(&quot;scale_down&quot;, &quot;HOLD_position&quot;))
 </code></pre>
 <table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
  <thead>
@@ -633,6 +770,16 @@ interpretations$Y
   </tr>
 </tbody>
 </table>
+<pre><code class="language-r">get_parameter_matrix(confounded) |&gt;
+  knitr::kable(
+    digits = 2,
+    booktabs = TRUE,
+    align = &quot;c&quot;,
+    escape = TRUE,
+    linesep = &quot;&quot;
+  ) |&gt;
+  kableExtra::kable_classic_2(latex_options = c(&quot;scale_down&quot;))
+</code></pre>
 <table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
  <thead>
   <tr>
@@ -760,6 +907,38 @@ interpretations$Y
   </tr>
 </tbody>
 </table>
+<pre><code class="language-r">## Degrees of freedom
+#####################################################################
+
+
+statements &lt;- list(
+  &quot;X -&gt; Y &lt;- W&quot;,
+  &quot;X -&gt; Y &lt;- W; X &lt;-&gt; W&quot;,
+  &quot;X -&gt; Y &lt;- W; X &lt;-&gt; Y; W &lt;-&gt; Y&quot;,
+  &quot;X -&gt; Y &lt;- W; X &lt;-&gt; Y; W &lt;-&gt; Y; X &lt;-&gt;W&quot;,
+  &quot;X -&gt; W -&gt; Y &lt;- X&quot;,
+  &quot;X -&gt; W -&gt; Y &lt;- X; W &lt;-&gt; Y&quot;,
+  &quot;X -&gt; W -&gt; Y &lt;- X; X &lt;-&gt; W; W &lt;-&gt; Y&quot;,
+  &quot;X -&gt; W -&gt; Y &lt;- X; X &lt;-&gt; W; W &lt;-&gt; Y; X &lt;-&gt; Y&quot;
+)
+
+dof &lt;- function(statement)
+  make_model(statement, add_causal_types = FALSE)$parameters_df |&gt;
+  group_by(param_set) |&gt;
+  summarize(n  = n() - 1) |&gt;
+  pull(n) |&gt;
+  sum()
+
+data.frame(Model = statements |&gt; unlist(),
+           dof = statements |&gt; lapply(dof) |&gt; unlist()) |&gt;
+  knitr::kable(
+    digits = 2,
+    booktabs = TRUE,
+    align = c(&quot;l&quot;, &quot;c&quot;),
+    escape = TRUE,
+    linesep = &quot;&quot;
+  )
+</code></pre>
 <table>
  <thead>
   <tr>
@@ -802,47 +981,69 @@ interpretations$Y
   </tr>
 </tbody>
 </table>
-<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt; get_priors()
+<pre><code class="language-r"># get-priors
+
+make_model(&quot;X -&gt; Y&quot;) |&gt; get_priors()
 </code></pre>
 <pre><code>##  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
 ##    1    1    1    1    1    1
 </code></pre>
-<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt;
+<pre><code class="language-r"># set-priors-custom
+
+make_model(&quot;X -&gt; Y&quot;) |&gt;
   set_priors(1:6) |&gt;
   get_priors()
 </code></pre>
 <pre><code>##  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
 ##    1    2    3    4    5    6
 </code></pre>
-<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt;
+<pre><code class="language-r"># label: set-priors-statement
+
+make_model(&quot;X -&gt; Y&quot;) |&gt;
   set_priors(statement = &quot;Y[X=1] &gt; Y[X=0]&quot;, alphas = 3) |&gt;
   get_priors()
 </code></pre>
 <pre><code>##  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
 ##    1    1    1    1    3    1
 </code></pre>
-<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt;
+<pre><code class="language-r"># label: get-parameters
+
+
+make_model(&quot;X -&gt; Y&quot;) |&gt;
   get_parameters()
 </code></pre>
 <pre><code>##  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
 ## 0.50 0.50 0.25 0.25 0.25 0.25
 </code></pre>
-<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt;
+<pre><code class="language-r"># label: set-parameters
+
+make_model(&quot;X -&gt; Y&quot;) |&gt;
   set_parameters(statement = &quot;Y[X=1] &gt; Y[X=0]&quot;, parameters = .5) |&gt;
   get_parameters()
 </code></pre>
 <pre><code>##       X.0       X.1      Y.00      Y.10      Y.01      Y.11 
 ## 0.5000000 0.5000000 0.1666667 0.1666667 0.5000000 0.1666667
 </code></pre>
-<pre><code class="language-r">model &lt;- make_model(&quot;X -&gt; M -&gt; Y&quot;)
-</code></pre>
-<pre><code class="language-r">sample_data_1 &lt;-
+<pre><code class="language-r">## Drawing and manipulating data
+
+
+model &lt;- make_model(&quot;X -&gt; M -&gt; Y&quot;)
+
+sample_data_1 &lt;-
   model |&gt;
   make_data(n = 4)
+
+
+make_data(model, n = 3, param_type = &quot;prior_draw&quot;)
 </code></pre>
-<pre><code class="language-r">make_data(model, n = 3, param_type = &quot;prior_draw&quot;)
+<pre><code>##   X M Y
+## 1 0 0 1
+## 2 0 1 0
+## 3 0 1 1
 </code></pre>
-<pre><code class="language-r">sample_data_2 &lt;-
+<pre><code class="language-r"># Incompete data
+
+sample_data_2 &lt;-
   make_data(
     model,
     n = 8,
@@ -854,10 +1055,50 @@ interpretations$Y
 
 sample_data_2
 </code></pre>
-<pre><code class="language-r">sample_data_2 |&gt; collapse_data(model)
+<pre><code>##   X  M Y
+## 1 0 NA 1
+## 2 1  0 0
+## 3 1 NA 0
+## 4 1 NA 0
+## 5 1 NA 0
+## 6 1  1 0
+## 7 1  1 0
+## 8 1 NA 1
+</code></pre>
+<pre><code class="language-r"># Collapse data
+
+sample_data_2 |&gt; collapse_data(model)
+</code></pre>
+<pre><code>##     event strategy count
+## 1  X0M0Y0      XMY     0
+## 2  X1M0Y0      XMY     1
+## 3  X0M1Y0      XMY     0
+## 4  X1M1Y0      XMY     2
+## 5  X0M0Y1      XMY     0
+## 6  X1M0Y1      XMY     0
+## 7  X0M1Y1      XMY     0
+## 8  X1M1Y1      XMY     0
+## 9    X0Y0       XY     0
+## 10   X1Y0       XY     3
+## 11   X0Y1       XY     1
+## 12   X1Y1       XY     1
+</code></pre>
+<pre><code class="language-r">## SECTION 6: Updating models
+#####################################################################
 
 
-## SECTION 6: Updating models
+# get_parmap
+
+make_model(&quot;X -&gt; Y&quot;) |&gt;
+  get_parmap() |&gt;
+  knitr::kable(
+    digits = 2,
+    booktabs = TRUE,
+    align = &quot;c&quot;,
+    escape = TRUE,
+    linesep = &quot;&quot;
+  ) |&gt;
+  kableExtra::kable_classic_2()
 </code></pre>
 <table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
  <thead>
@@ -914,6 +1155,36 @@ sample_data_2
   </tr>
 </tbody>
 </table>
+<pre><code class="language-r"># censored data
+
+list(
+  uncensored =
+    make_model(&quot;X -&gt; Y&quot;) |&gt;
+    update_model(
+      data.frame(X = rep(0:1, 5), Y = rep(0:1, 5)),
+      refresh = 0,
+      iter = 3000
+    ),
+  censored =
+    make_model(&quot;X -&gt; Y&quot;) |&gt;
+    update_model(
+      data.frame(X = rep(0:1, 5), Y = rep(0:1, 5)),
+      censored_types = c(&quot;X1Y0&quot;,  &quot;X0Y1&quot;),
+      refresh = 0,
+      iter = 3000
+    )
+)  |&gt;
+  query_model(te(&quot;X&quot;, &quot;Y&quot;), using = &quot;posteriors&quot;) |&gt;
+  dplyr::select(model, query, mean, sd) |&gt;
+  knitr::kable(
+    digits = 2,
+    booktabs = TRUE,
+    align = &quot;c&quot;,
+    escape = TRUE,
+    linesep = &quot;&quot;
+  ) |&gt;
+  kableExtra::kable_classic_2()
+</code></pre>
 <table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
  <thead>
   <tr>
@@ -938,11 +1209,40 @@ sample_data_2
   </tr>
 </tbody>
 </table>
-<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt; realise_outcomes()
+<pre><code class="language-r">## SECTION 7: Querying models
+#####################################################################
+
+
+# realise_outcomes
+
+
+make_model(&quot;X -&gt; Y&quot;) |&gt; realise_outcomes()
+</code></pre>
+<pre><code>##      X Y
+## 0.00 0 0
+## 1.00 1 0
+## 0.10 0 1
+## 1.10 1 0
+## 0.01 0 0
+## 1.01 1 1
+## 0.11 0 1
+## 1.11 1 1
 </code></pre>
 <pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt; realise_outcomes(dos = list(X = 1))
 </code></pre>
-<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;)  |&gt; get_query_types(&quot;Y==1&quot;)
+<pre><code>##      X Y
+## 0.00 1 0
+## 1.00 1 0
+## 0.10 1 0
+## 1.10 1 0
+## 0.01 1 1
+## 1.01 1 1
+## 0.11 1 1
+## 1.11 1 1
+</code></pre>
+<pre><code class="language-r"># get_query_types
+
+make_model(&quot;X -&gt; Y&quot;)  |&gt; get_query_types(&quot;Y==1&quot;)
 </code></pre>
 <pre><code>## 
 ## Causal types satisfying query's condition(s)  
@@ -990,12 +1290,40 @@ sample_data_2
 <pre><code>## X0.Y00 X1.Y00 X0.Y10 X1.Y10 X0.Y01 X1.Y01 X0.Y11 X1.Y11 
 ##      0      0     -1     -1      1      1      0      0
 </code></pre>
+<pre><code class="language-r"># posterior distributions
+
+data  &lt;- data.frame(X = rep(0:1, 50), Y = rep(0:1, 50))
+
+model &lt;-
+  make_model(&quot;X -&gt; Y&quot;) |&gt;
+  update_model(data, iter  = 4000, refresh = 0)
+
+
+model$posterior_distribution |&gt;
+  ggplot(aes(Y.01 - Y.10)) + geom_histogram() + theme_bw()
+</code></pre>
 <pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 </code></pre>
 <div class="figure" style="text-align: center">
-<img src="data:image/png;base64,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" alt="Posterior on &quot;Probability $Y$ is increasing in $X$&quot;." width="60%" />
+<img src="data:image/png;base64,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" alt="Posterior on "Probability $Y$ is increasing in $X$"." width="60%" />
 <p class="caption">Posterior on "Probability $Y$ is increasing in $X$".</p>
 </div>
+<pre><code class="language-r"># case level queries
+
+lipids_model |&gt;
+  query_model(query = &quot;Y[X=1] - Y[X=0]&quot;,
+              given = c(&quot;X==1 &amp; Y==1 &amp; Z==1&quot;),
+              using = &quot;posteriors&quot;) |&gt;
+  dplyr::select(query, given, mean, sd, starts_with(&quot;cred&quot;)) |&gt;
+  knitr::kable(
+    digits = 2,
+    booktabs = TRUE,
+    align = &quot;c&quot;,
+    escape = TRUE,
+    linesep = &quot;&quot;
+  ) |&gt;
+  kableExtra::kable_classic_2(latex_options = c(&quot;scale_down&quot;, &quot;hold_position&quot;))
+</code></pre>
 <table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
  <thead>
   <tr>
@@ -1018,6 +1346,29 @@ sample_data_2
   </tr>
 </tbody>
 </table>
+<pre><code class="language-r">set.seed(1)
+
+make_model(&quot;X -&gt; M -&gt; Y&quot;) |&gt;
+  update_model(data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)),
+               refresh = 0,
+               iter = 10000) |&gt;
+  query_model(
+    &quot;Y[X=1] &gt; Y[X=0]&quot;,
+    given = &quot;X==1 &amp; Y==1 &amp; M==1&quot;,
+    using = &quot;posteriors&quot;,
+    case_level = c(TRUE, FALSE)
+  ) |&gt;
+  dplyr::select(query, given, case_level, mean, sd) |&gt;
+  knitr::kable(
+    digits = 2,
+    booktabs = TRUE,
+    align = &quot;c&quot;,
+    escape = TRUE,
+    longtable = TRUE,
+    linesep = &quot;&quot;
+  ) |&gt;
+  kableExtra::kable_classic_2()
+</code></pre>
 <table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
  <thead>
   <tr>
@@ -1045,6 +1396,42 @@ sample_data_2
   </tr>
 </tbody>
 </table>
+<pre><code class="language-r"># batch queries
+</code></pre>
+<pre><code class="language-r">models &lt;- list(
+  `1` = make_model(&quot;X -&gt; Y&quot;)  |&gt;
+    update_model(data.frame(
+      X = rep(0:1, 10),
+      Y = rep(0:1, 10)
+    ), refresh = 0),
+  `2` = make_model(&quot;X -&gt; Y&quot;)  |&gt;  set_restrictions(&quot;Y[X=1] &lt; Y[X=0]&quot;) |&gt;
+    update_model(data.frame(
+      X = rep(0:1, 10),
+      Y = rep(0:1, 10)
+    ), refresh = 0)
+)
+
+
+query_model(
+  models,
+  query = list(ATE = &quot;Y[X=1] - Y[X=0]&quot;,
+               POS = &quot;Y[X=1] &gt; Y[X=0]&quot;),
+  given = c(TRUE,  &quot;Y==1 &amp; X==1&quot;),
+  case_level = c(FALSE, TRUE),
+  using = c(&quot;priors&quot;, &quot;posteriors&quot;),
+  expand_grid = TRUE
+) |&gt;
+  dplyr::select(-starts_with(&quot;cred&quot;)) |&gt;
+  knitr::kable(
+    digits = 2,
+    booktabs = TRUE,
+    align = &quot;c&quot;,
+    escape = TRUE,
+    longtable = TRUE,
+    linesep = &quot;&quot;
+  ) |&gt;
+  kableExtra::kable_classic_2(latex_options = c(&quot;hold_position&quot;))
+</code></pre>
 <table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
  <thead>
   <tr>
@@ -1345,6 +1732,100 @@ sample_data_2
    <td style="text-align:center;"> TRUE </td>
    <td style="text-align:center;"> 0.91 </td>
    <td style="text-align:center;"> NA </td>
+  </tr>
+</tbody>
+</table>
+<pre><code class="language-r">## Appendix C: Benchmarks
+#####################################################################
+
+# effect of model complexity on run-time
+options(mc.cores = parallel::detectCores())
+
+model &lt;- list(
+  CausalQueries::make_model(&quot;X1 -&gt; Y&quot;),
+  CausalQueries::make_model(&quot;X1 -&gt; Y &lt;- X2&quot;),
+  CausalQueries::make_model(&quot;X1 -&gt; Y &lt;- X2; X3 -&gt; Y&quot;)
+)
+</code></pre>
+<pre><code class="language-r">benchmark_model &lt;- microbenchmark::microbenchmark(
+  m1 = CausalQueries::update_model(model[[1]]),
+  m2 = CausalQueries::update_model(model[[2]]),
+  m3 = CausalQueries::update_model(model[[3]]),
+  times = 5
+)
+
+summary(benchmark_model) |&gt; select(expr, mean) |&gt;
+  kable(digits = 0)
+</code></pre>
+<table>
+ <thead>
+  <tr>
+   <th style="text-align:left;"> expr </th>
+   <th style="text-align:right;"> mean </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> m1 </td>
+   <td style="text-align:right;"> 7 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> m2 </td>
+   <td style="text-align:right;"> 9 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> m3 </td>
+   <td style="text-align:right;"> 49 </td>
+  </tr>
+</tbody>
+</table>
+<pre><code class="language-r"># effect of data size on run-time
+
+model &lt;- CausalQueries::make_model(&quot;X -&gt; Y&quot;)
+
+data &lt;- lapply(10 ^ c(1:5), function(n) {
+  CausalQueries::make_data(model, n)
+})
+</code></pre>
+<pre><code class="language-r">benchmark_data &lt;- microbenchmark::microbenchmark(
+  d0 = CausalQueries::update_model(model, data[[1]]),
+  d1 = CausalQueries::update_model(model, data[[2]]),
+  d2 = CausalQueries::update_model(model, data[[3]]),
+  d3 = CausalQueries::update_model(model, data[[4]]),
+  d4 = CausalQueries::update_model(model, data[[5]]),
+  times = 5
+)
+
+summary(benchmark_data) |&gt; select(expr, mean) |&gt;
+  kable(digits = 0)
+</code></pre>
+<table>
+ <thead>
+  <tr>
+   <th style="text-align:left;"> expr </th>
+   <th style="text-align:right;"> mean </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> d0 </td>
+   <td style="text-align:right;"> 10 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> d1 </td>
+   <td style="text-align:right;"> 11 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> d2 </td>
+   <td style="text-align:right;"> 12 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> d3 </td>
+   <td style="text-align:right;"> 14 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> d4 </td>
+   <td style="text-align:right;"> 23 </td>
   </tr>
 </tbody>
 </table>
