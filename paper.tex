@@ -8,6 +8,7 @@
   article]{jss}
 
 \usepackage{amsmath,amssymb}
+\usepackage{lmodern}
 \usepackage{iftex}
 \ifPDFTeX
   \usepackage[T1]{fontenc}
@@ -17,10 +18,6 @@
   \usepackage{unicode-math}
   \defaultfontfeatures{Scale=MatchLowercase}
   \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
-\fi
-\usepackage{lmodern}
-\ifPDFTeX\else  
-    % xetex/luatex font selection
 \fi
 % Use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
@@ -76,6 +73,29 @@
 \makeatletter
 \def\fps@figure{htbp}
 \makeatother
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newlength{\cslentryspacingunit} % times entry-spacing
+\setlength{\cslentryspacingunit}{\parskip}
+\newenvironment{CSLReferences}[2] % #1 hanging-ident, #2 entry spacing
+ {% don't indent paragraphs
+  \setlength{\parindent}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+  \let\oldpar\par
+  \def\par{\hangindent=\cslhangindent\oldpar}
+  \fi
+  % set entry spacing
+  \setlength{\parskip}{#2\cslentryspacingunit}
+ }%
+ {}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{#1\hfill\break}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{#1}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{#1}\break}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
 
 \usepackage{booktabs}
 \usepackage{longtable}
@@ -100,7 +120,7 @@
 \newcommand{\class}[1]{`\code{#1}'}
 \newcommand{\fct}[1]{\code{#1()}}
 \makeatletter
-\@ifpackageloaded{tcolorbox}{}{\usepackage[skins,breakable]{tcolorbox}}
+\@ifpackageloaded{tcolorbox}{}{\usepackage[many]{tcolorbox}}
 \@ifpackageloaded{fontawesome5}{}{\usepackage{fontawesome5}}
 \definecolor{quarto-callout-color}{HTML}{909090}
 \definecolor{quarto-callout-note-color}{HTML}{0758E5}
@@ -157,6 +177,12 @@
 \makeatletter
 \@ifpackageloaded{caption}{}{\usepackage{caption}}
 \@ifpackageloaded{subcaption}{}{\usepackage{subcaption}}
+\makeatother
+\makeatletter
+\@ifpackageloaded{tcolorbox}{}{\usepackage[many]{tcolorbox}}
+\makeatother
+\makeatletter
+\@ifundefined{shadecolor}{\definecolor{shadecolor}{rgb}{.97, .97, .97}}
 \makeatother
 \makeatletter
 \makeatother
@@ -252,6 +278,8 @@ URL: \url{https://macartan.github.io/}\\
 
 \begin{document}
 \maketitle
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[breakable, borderline west={3pt}{0pt}{shadecolor}, frame hidden, interior hidden, enhanced, boxrule=0pt, sharp corners]}{\end{tcolorbox}}\fi
+
 \hypertarget{sec-intro}{%
 \section{Introduction: Causal models}\label{sec-intro}}
 
@@ -337,7 +365,7 @@ R> make_model("Z -> X -> Y; X <-> Y") |>
 
 \hypertarget{tbl-lipids}{}
 \begin{table}
-\caption{\label{tbl-lipids}Replication of \citet{chickering_clinicians_1996}. }\tabularnewline
+\caption{\label{tbl-lipids}Replication of . }\tabularnewline
 
 \centering
 \resizebox{\linewidth}{!}{
@@ -371,8 +399,8 @@ packages}\label{connections-to-existing-packages}}
 The literature on causal inference and its software ecosystem are rich
 and expansive; spanning the social and natural sciences as well as
 computer science and applied mathematics. In the interest of clarity we
-thus briefly contextualize \texttt{CausalQueries} scope and
-functionality within the subset of the causal inference domain
+thus briefly contextualize the scope and functionality of
+\texttt{CausalQueries} within the subset of the causal inference domain
 addressing the evaluation of causal queries on causal models encoded as
 directed acyclic graphs (DAGs) or structural equation models (SEMs).
 Table~\ref{tbl-software} provides an overview of relevant software and
@@ -387,7 +415,7 @@ discusses key connections, advantages and disadvantages with respect to
   >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1500}}
   >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.4000}}@{}}
 \caption{\label{tbl-software}Related software.}\tabularnewline
-\toprule\noalign{}
+\toprule()
 \begin{minipage}[b]{\linewidth}\raggedright
 Software
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
@@ -399,9 +427,9 @@ Availability
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 Scope
 \end{minipage} \\
-\midrule\noalign{}
+\midrule()
 \endfirsthead
-\toprule\noalign{}
+\toprule()
 \begin{minipage}[b]{\linewidth}\raggedright
 Software
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
@@ -413,10 +441,8 @@ Availability
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 Scope
 \end{minipage} \\
-\midrule\noalign{}
+\midrule()
 \endhead
-\bottomrule\noalign{}
-\endlastfoot
 \texttt{causalnex} & \citet{beaumont_causalnex_2021} & \proglang{Python}
 & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
@@ -513,20 +539,21 @@ Scope
   binary data
 \end{itemize}
 \end{minipage} \\
+\bottomrule()
 \end{longtable}
 
-\texttt{causalnex} is a highly comprehensive software in the domain of
-causal modeling, offering a suite rich in features and optimized for the
-learning, updating, and querying of causal models using discrete data.
-Its avoidance of the intricate model parametrization, characterized by
-principal strata (nodal types) in \texttt{CausalQueries}, enables
-\texttt{causalnex} to adeptly process non-binary data and scale to
-extensive causal models. However, this approach significantly constrains
+\texttt{causalnex} is a highly comprehensive software in the causal
+modeling domain, offering a suite of functions rich in features and
+optimized for the learning, updating, and querying of causal models
+using discrete data. Its avoidance of the intricate model
+parametrization, characterized by principal strata (nodal types),
+enables \texttt{causalnex} to adeptly process non-binary data and scale
+to large causal models. This approach; however, significantly constrains
 the variety of feasible queries and the extent of prior knowledge that
 can be incorporated into models. In this capacity, \texttt{causalnex}
 mirrors machine learning strategies in causal inference, prioritizing
 the learning of causal structures in environments abundant with
-variables yet potentially deficient in domain-specific knowledge, and
+variables yet potentially deficient in domain-specific knowledge; thus
 focusing on the assessment of basic queries over marginal distributions
 in learned DAGs. Conversely, the complex model structure utilized by
 \texttt{CausalQueries} is particularly advantageous for intricate causal
@@ -988,24 +1015,22 @@ detail later.
   >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.7000}}@{}}
 \caption{\label{tbl-core}Core Elements of a Causal
 Model.}\tabularnewline
-\toprule\noalign{}
+\toprule()
 \begin{minipage}[b]{\linewidth}\raggedright
 Element
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 Description
 \end{minipage} \\
-\midrule\noalign{}
+\midrule()
 \endfirsthead
-\toprule\noalign{}
+\toprule()
 \begin{minipage}[b]{\linewidth}\raggedright
 Element
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 Description
 \end{minipage} \\
-\midrule\noalign{}
+\midrule()
 \endhead
-\bottomrule\noalign{}
-\endlastfoot
 \texttt{statement} & A character string that describes directed causal
 relations between variables in a causal model, where arrows denote that
 one node is a potential cause of another. \\
@@ -1022,6 +1047,7 @@ belong. See Section~\ref{sec-param-df} for more details. \\
 \texttt{causal\_types} & A data frame listing causal types and the nodal
 types that produce them. (See Section~\ref{sec-causal-types}.)
 \textbar{} \\
+\bottomrule()
 \end{longtable}
 
 After updating a model, two additional components are attached to it:
@@ -1044,24 +1070,22 @@ after updating.
   >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.3000}}
   >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.7000}}@{}}
 \caption{\label{tbl-additional}Additional Elements.}\tabularnewline
-\toprule\noalign{}
+\toprule()
 \begin{minipage}[b]{\linewidth}\raggedright
 Element
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 Description
 \end{minipage} \\
-\midrule\noalign{}
+\midrule()
 \endfirsthead
-\toprule\noalign{}
+\toprule()
 \begin{minipage}[b]{\linewidth}\raggedright
 Element
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 Description
 \end{minipage} \\
-\midrule\noalign{}
+\midrule()
 \endhead
-\bottomrule\noalign{}
-\endlastfoot
 \texttt{posterior\_distribution} & The posterior distribution of the
 updated parameters generated by Stan. \\
 \texttt{stan\_objects} & A list of additional objects (see next
@@ -1074,6 +1098,7 @@ types, appended to \texttt{stan\_objects} by default. \\
 optionally appended to \texttt{stan\_objects}. \\
 \texttt{stan\_fit} & The \texttt{stanfit} object generated by Stan,
 optionally appended to \texttt{stan\_objects}. \\
+\bottomrule()
 \end{longtable}
 
 \hypertarget{sec-param-df}{%
@@ -1282,7 +1307,7 @@ Rows are parameters, grouped in parameter sets
 
 Columns are causal types
 
-Cell entries indicate whether a parameter probability is used
+Cell entries indicate whether a parameter probability isused
 in the calculation of causal type probability
 
      X0.Y00 X1.Y00 X0.Y10 X1.Y10 X0.Y01 X1.Y01 X0.Y11 X1.Y11
@@ -1411,7 +1436,7 @@ Table~\ref{tbl-joint}.
   >{\centering\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}@{}}
 \caption{\label{tbl-joint}Nodal types in \(X \rightarrow Y\)
 model.}\tabularnewline
-\toprule\noalign{}
+\toprule()
 \begin{minipage}[b]{\linewidth}\centering
 \end{minipage} & \begin{minipage}[b]{\linewidth}\centering
 \(\theta^X_{0}\)
@@ -1420,9 +1445,9 @@ model.}\tabularnewline
 \end{minipage} & \begin{minipage}[b]{\linewidth}\centering
 \(\sum\)
 \end{minipage} \\
-\midrule\noalign{}
+\midrule()
 \endfirsthead
-\toprule\noalign{}
+\toprule()
 \begin{minipage}[b]{\linewidth}\centering
 \end{minipage} & \begin{minipage}[b]{\linewidth}\centering
 \(\theta^X_{0}\)
@@ -1431,10 +1456,8 @@ model.}\tabularnewline
 \end{minipage} & \begin{minipage}[b]{\linewidth}\centering
 \(\sum\)
 \end{minipage} \\
-\midrule\noalign{}
+\midrule()
 \endhead
-\bottomrule\noalign{}
-\endlastfoot
 \(\theta^Y_{00}\) & \(\Pr(\theta^X_0, \theta^Y_{00})\) &
 \(\Pr(\theta^X_1, \theta^Y_{00})\) & \(\Pr(\theta^Y_{00})\) \\
 \(\theta^Y_{10}\) & \(\Pr(\theta^X_0, \theta^Y_{10})\) &
@@ -1444,6 +1467,7 @@ model.}\tabularnewline
 \(\theta^Y_{11}\) & \(\Pr(\theta^X_0, \theta^Y_{11})\) &
 \(\Pr(\theta^X_1, \theta^Y_{11})\) & \(\Pr(\theta^Y_{11})\) \\
 \(\sum\) & \(\Pr(\theta^X_0)\) & \(\Pr(\theta^X_1)\) & 1 \\
+\bottomrule()
 \end{longtable}
 
 Table~\ref{tbl-joint} has eight interior elements and so an
@@ -2626,10 +2650,8 @@ requirements}
 \begin{longtable}[]{@{}
   >{\raggedleft\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.3000}}
   >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.7000}}@{}}
-\toprule\noalign{}
+\toprule()
 \endhead
-\bottomrule\noalign{}
-\endlastfoot
 Version & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
@@ -2767,6 +2789,7 @@ R-Packages Imports & \begin{minipage}[t]{\linewidth}\raggedright
   lifecycle (\textgreater= 1.0.1)
 \end{itemize}
 \end{minipage} \\
+\bottomrule()
 \end{longtable}
 
 The results in this paper were obtained using
@@ -2779,7 +2802,7 @@ Network (CRAN) at \url{https://CRAN.R-project.org/}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, arc=.35mm, toprule=.15mm, opacityback=0, rightrule=.15mm, colback=white, leftrule=.75mm, left=2mm, breakable]
+\begin{tcolorbox}[enhanced jigsaw, breakable, colback=white, colframe=quarto-callout-color-frame, left=2mm, arc=.35mm, bottomrule=.15mm, rightrule=.15mm, toprule=.15mm, leftrule=.75mm, opacityback=0]
 
 We thank Ben Goodrich who provided generous insights on using
 \texttt{stan} for this project. We thank Alan M Jacobs for key work
@@ -2802,8 +2825,9 @@ improvements.
 \section*{References}\label{references}}
 \addcontentsline{toc}{section}{References}
 
-\renewcommand{\bibsection}{}
-\bibliography{supp/cq_jss.bib}
+\hypertarget{refs}{}
+\begin{CSLReferences}{0}{0}
+\end{CSLReferences}
 
 \newpage{}
 
@@ -2990,7 +3014,7 @@ respectively.
   >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3000}}
   >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3000}}@{}}
 \caption{\label{tbl-bench1}Benchmark 1.}\tabularnewline
-\toprule\noalign{}
+\toprule()
 \begin{minipage}[b]{\linewidth}\centering
 Model
 \end{minipage} & \begin{minipage}[b]{\linewidth}\centering
@@ -2998,9 +3022,9 @@ Number of Model Parameters
 \end{minipage} & \begin{minipage}[b]{\linewidth}\centering
 \texttt{update\_model()} Runt-Time (seconds)
 \end{minipage} \\
-\midrule\noalign{}
+\midrule()
 \endfirsthead
-\toprule\noalign{}
+\toprule()
 \begin{minipage}[b]{\linewidth}\centering
 Model
 \end{minipage} & \begin{minipage}[b]{\linewidth}\centering
@@ -3008,13 +3032,12 @@ Number of Model Parameters
 \end{minipage} & \begin{minipage}[b]{\linewidth}\centering
 \texttt{update\_model()} Runt-Time (seconds)
 \end{minipage} \\
-\midrule\noalign{}
+\midrule()
 \endhead
-\bottomrule\noalign{}
-\endlastfoot
 \(X1 \rightarrow Y\) & 6 & 10.85 \\
 \(X1 \rightarrow Y \leftarrow X2\) & 20 & 15.79 \\
 \(X1 \rightarrow Y \leftarrow X2; X3 \rightarrow Y\) & 262 & 77.56 \\
+\bottomrule()
 \end{longtable}
 
 \hypertarget{tbl-bench2}{}
@@ -3023,7 +3046,7 @@ Number of Model Parameters
   >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3000}}
   >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3000}}@{}}
 \caption{\label{tbl-bench2}Benchmark 2.}\tabularnewline
-\toprule\noalign{}
+\toprule()
 \begin{minipage}[b]{\linewidth}\centering
 Model
 \end{minipage} & \begin{minipage}[b]{\linewidth}\centering
@@ -3031,9 +3054,9 @@ Number of Observations
 \end{minipage} & \begin{minipage}[b]{\linewidth}\centering
 \texttt{update\_model()} Run-Time (seconds) \textbar{}
 \end{minipage} \\
-\midrule\noalign{}
+\midrule()
 \endfirsthead
-\toprule\noalign{}
+\toprule()
 \begin{minipage}[b]{\linewidth}\centering
 Model
 \end{minipage} & \begin{minipage}[b]{\linewidth}\centering
@@ -3041,15 +3064,14 @@ Number of Observations
 \end{minipage} & \begin{minipage}[b]{\linewidth}\centering
 \texttt{update\_model()} Run-Time (seconds) \textbar{}
 \end{minipage} \\
-\midrule\noalign{}
+\midrule()
 \endhead
-\bottomrule\noalign{}
-\endlastfoot
 \(X1 \rightarrow Y\) & 10 & 9.04 \\
 \(X1 \rightarrow Y\) & 100 & 9.31 \\
 \(X1 \rightarrow Y\) & 1000 & 10.56 \\
 \(X1 \rightarrow Y\) & 10000 & 14.57 \\
 \(X1 \rightarrow Y\) & 100000 & 17.25 \\
+\bottomrule()
 \end{longtable}
 
 Increasing the number of parents in a model greatly increases the number
@@ -3060,6 +3082,7 @@ causal models. Data size increases here have a more modest effect on
 computation time.
 
 
+  \bibliography{supp/cq\_jss.bib}
 
 
 \end{document}
