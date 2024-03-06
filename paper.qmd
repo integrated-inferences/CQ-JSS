@@ -1,7 +1,7 @@
 ---
 title: "Making, Updating, and Querying Causal Models using `CausalQueries`"
-abstract: "The [R]{.proglang} package `CausalQueries`  can be used to  make, update, and query causal models. Users provide a causal statement of the form `X -> M <- Y; M <-> Y` which is interpreted as a structural causal model over a collection of binary variables.  `CausalQueries` can then (1) identify the set of principal strata---causal types---required to characterize all possible types of causal relations between nodes consistent with the causal statement (2) determine a set of parameters needed to characterize distributions over these types (3) update beliefs over the distribution of causal types, using a `stan` model and (4) pose a wide range of causal queries of the model, using either the prior distribution, the posterior distribution, or a user-specified candidate vector of parameters."
-keywords-formatted: [causal model, bayesian updating, DAG, Stan]
+abstract: "The [R]{.proglang} package `CausalQueries`  can be used to  make, update, and query causal models defined on binary nodes. Users provide a causal statement of the form `X -> M <- Y; M <-> Y` which is interpreted as a structural causal model over a collection of binary nodes.  `CausalQueries` can then (1) identify the set of principal strata---causal types---required to characterize all possible types of causal relations between nodes consistent with the causal statement (2) determine a set of parameters needed to characterize distributions over these types (3) update beliefs over the distribution of causal types, using a `stan` model plus data and (4) pose a wide range of causal queries of the model, using either the prior distribution, the posterior distribution, or a user-specified candidate vector of parameters."
+keywords-formatted: [causal model, Bayesian updating, DAG, Stan]
 author:
   - name: Till Tietz
     affiliations:
@@ -86,13 +86,13 @@ set.seed(20231018)
 
 ## Introduction: Causal models {#sec-intro}
 
-`CausalQueries` is an [R]{.proglang} package that lets users make, update, and query causal models. Users provide a statement that reports a set of binary variables and the relations of causal ancestry between them: which variables are direct causes of other variables, given the other variables in the model. Once provided to `make_model()`, `CausalQueries` generates a parameter vector that fully describes a probability distribution over all possible types of causal relations between variables ("causal types"), given the causal structure. Given a prior over parameters and data over some or all nodes, `update_model()` deploys a Stan [@carpenter_stan_2017] model in order to generate a posterior distribution over causal models. The function `query_model()` can then be used to ask a wide range of causal queries of the model, using either the prior distribution, the posterior distribution, or a user-specified candidate vector of parameters.
+`CausalQueries` is an [R]{.proglang} package that lets users make, update, and query causal models. Users provide a statement that reports a set of binary variables and the relations of "causal ancestry" between them, that is, a  statement indicating which variables are direct causes of other variables, given the other variables in the model. Once such a statement is provided to `make_model()`, `CausalQueries` generates a parameter vector that fully describes a probability distribution over all possible types of causal relations between variables ("causal types"). Given a prior over parameters and data over some or all nodes, `update_model()` deploys a Stan [@carpenter_stan_2017] model in order to generate a posterior distribution over causal models. The function `query_model()` can then be used to ask a wide range of causal queries of the model, using either the prior distribution, the posterior distribution, or a user-specified candidate vector of parameters.
 
-In the next section we provide a short motivating example. We then describe how the package relates to existing available software. @sec-theory gives an overview of the statistical model behind the package. @sec-make, @sec-update, and @sec-query then describe the main functionality for the major operations using the package. We provide further computation details in the final section.
+In the next section we provide a motivating example. We then describe how the package relates to existing available software. @sec-theory gives an overview of the statistical model behind the package. @sec-make, @sec-update, and @sec-query then describe the main functionality for the major operations using the package. We provide further computation details in the final section.
 
 ## Motivating example
 
-Before providing details on package functionality we illustrate these three core functions by showing how to use `CuasalQueries` to replicate the analysis in [@chickering_clinicians_1996; see also @humphreys_integrated_2023]. @chickering_clinicians_1996 seek to draw inference on causal effects in the presence of imperfect compliance. We have access to an instrument $Z$ (a randomly assigned prescription for cholesterol medication), which is a cause of $X$ (treatment uptake) but otherwise unrelated to $Y$ (cholesterol). We imagine we are interested in three specific queries. The first is the average causal effect of $X$ on $Y$. The second is the average effect for units for which $X=0$ and $Y=0$. The last is the average treatment effect for "compliers": units for which $X$ responds positively to $Z$. Thus two of these queries are conditional queries, with one conditional on a counterfactual quantity.
+Before providing details on package functionality we illustrate these three core functions by showing how to use `CausalQueries` to replicate the analysis in [@chickering_clinicians_1996; see also @humphreys_integrated_2023]. @chickering_clinicians_1996 seek to draw inference on causal effects in the presence of imperfect compliance. We have access to an instrument $Z$ (a randomly assigned prescription for cholesterol medication), which is a cause of $X$ (treatment uptake) but otherwise unrelated to $Y$ (cholesterol). We imagine we are interested in three specific queries. The first is the average causal effect of $X$ on $Y$. The second is the average effect for units for which $X=0$ and $Y=0$. The last is the average treatment effect for "compliers": units for which $X$ responds positively to $Z$. Thus two of these queries are conditional queries, with one conditional on a counterfactual quantity.
 
 Our data on $Z$, $X$, and $Y$ is complete for all units and looks, in "compact form," as follows:
 
@@ -116,11 +116,17 @@ With `CausalQueries`, you can create the model, input data to update it, and the
 #| eval: false
 #| purl: false
 
-make_model("Z -> X -> Y; X <-> Y") |>
-  update_model(lipids_data, refresh = 0) |>
+lipids_model <-  
+  make_model("Z -> X -> Y; X <-> Y") |>
+  update_model(lipids_data, refresh = 0)
+
+lipids_queries <- 
+  lipids_model  |>
   query_model(query = "Y[X=1] - Y[X=0]",
               given = c("All",  "X==0 & Y==0", "X[Z=1] > X[Z=0]"),
               using = "posteriors") 
+
+lipids_queries
 ```
 
 ```{r}
@@ -148,9 +154,9 @@ if (params$run) {
 
 lipids_model <- read_rds("saved/lipids_model.rds")
 
-results <- read_rds("saved/lipids_results.rds")
+lipids_queries <- read_rds("saved/lipids_results.rds")
 
-results |>
+lipids_queries |>
   dplyr::select(query, given, mean, sd, starts_with("cred")) |>
   knitr::kable(
     digits = 2,
@@ -162,7 +168,7 @@ results |>
 
 ```
 
-The output is a data frame with estimates, posterior standard deviations, and credibility intervals. For example the data frame produced by the code above is shown in @tbl-lipids. In the table rows 1 and 2 replicate results in @chickering_clinicians_1996, while row 3 returns inferences for complier average effects.
+The output is a data frame with estimates, posterior standard deviations, and credibility intervals. @tbl-lipids shows the output from the analysis of the lipids data. In the table rows 1 and 2 replicate results in @chickering_clinicians_1996; row 3 returns inferences for complier average effects.
 
 As we describe below, the same basic procedure of making, updating, and querying models, can be used (up to computational constraints) for arbitrary causal models, for different types of data structures, and for all causal queries that can be posed of the causal model.
 
@@ -198,7 +204,7 @@ The literature on causal inference and its software ecosystem are rich and expan
 
 `causalnex` is a highly comprehensive software in the causal modeling domain, offering a suite of functions rich in features and optimized for the learning, updating, and querying of causal models using discrete data. Its avoidance of the intricate model parametrization, characterized by principal strata (nodal types), enables `causalnex` to adeptly process non-binary data and scale to large causal models. This approach; however, significantly constrains the variety of feasible queries and the extent of prior knowledge that can be incorporated into models. In this capacity, `causalnex` mirrors machine learning strategies in causal inference, prioritizing the learning of causal structures in environments abundant with variables yet potentially deficient in domain-specific knowledge; thus focusing on the assessment of basic queries over marginal distributions in learned DAGs. Conversely, the complex model structure utilized by `CausalQueries` is particularly advantageous for intricate causal queries in settings where domain knowledge is more prevalent.
 
-Like `causalnex`, `pclag` places particular emphasis on causal structure learning, utilizing the resultant DAGs to recover average treatment effects (ATEs) across all learned markov-equivalent classes implied by observed data that satisfy linearity of conditional expectations. This approach again is more restrictive than `CausalQueries` in the DAGs and particularly the queries it allows.
+Like `causalnex`, `pclag` places particular emphasis on causal structure learning, utilizing the resultant DAGs to recover average treatment effects (ATEs) across all learned Markov-equivalent classes implied by observed data that satisfy linearity of conditional expectations. This approach again is more restrictive than `CausalQueries` in the DAGs and particularly the queries it allows.
 
 `DoWhy` is a feature rich, mature inference framework emphasizing causal identification, causal effect estimation and assumption validation. Given a user specified DAG, it deploys do-calculus to find expressions that identify desired causal-effects via Back-door, Front-door, IV and mediation identification criteria and leverages the identified expression and standard estimators to estimate the desired estimand. Following estimation `DoWhy` deploys a comprehensive refutation engine implementing a large set of robustness tests. While this approach allows it to efficiently handle varied data types on large causal models; the decision to not parameterize the DAG itself places substantial limitations on the types of queries that can be posed.
 
@@ -279,7 +285,7 @@ $$p(\lambda|D) = \frac{p(D|\lambda)p(\lambda)}{\int_{\lambda^{'}} p(D|\lambda')p
 
 where $p(D|\lambda')$ is calculated under the assumption that units are exchangeable and independently drawn. In practice this means that the probability that two units have causal types $\theta_i$ and $\theta_j$ is simply $\lambda'_i\lambda'_j$. Since a causal type fully determines an outcome vector $d = \{y_1, y_2,\dots,y_n\}$, the probability of a given outcome ("event"), $w_d$, is given simply by the probability that the causal type is among those that yield outcome $d$. Thus from $\lambda$ we can calculate a vector of event probabilities, $w(\lambda)$, for each vector of outcomes, and under independence we have:
 
-$$D \sim \text{Mulitinomial}(w(\lambda), N)$$
+$$D \sim \text{Multinomial}(w(\lambda), N)$$
 
 Thus for instance in the case of a $X \rightarrow Y$ model, and letting $w_{xy}$ denote the probability of a data type $X=x, Y=y$, the event probabilities are:
 
@@ -317,9 +323,9 @@ From these we can calculate the probability of each data type. For instance the 
 
 $$w_{000}=\Pr(Z=0, X=0, Y=0) = \lambda^Z_0\left(\lambda^X_{00}(\lambda^{Y|\lambda^X_{00}}_{00}+\lambda^{Y|\lambda^X_{00}}_{01}) + \lambda^X_{01}(\lambda^{Y|\lambda^X_{01}}_{00}+\lambda^{Y|\lambda^X_{01}}_{01})\right)$$
 
-In practice `CausalQueries` uses a matrix `parmap` that maps from parameters into data types.
+In practice `CausalQueries` uses a matrix, `parmap`, that maps from parameters into data types.
 
-The value of the `CausalQueries` package is to allow users to specify *arbitrary* models of this form, figure out all the implied nodal types and causal types, and then update given priors and data by calculating event probabilities implied by all possible parameter vectors and in turn the likelihood of the data given the model. In addition, the package allows for arbitrary querying of a model to assess the values of estimands of interest that a re function of the values or counterfactual values of nodes conditional on values or counterfactual values of nodes.
+The value of the `CausalQueries` package is to allow users to specify *arbitrary* models of this form, figure out all the implied nodal types and causal types, and then update given priors and data by calculating event probabilities implied by all possible parameter vectors and in turn the likelihood of the data given the model. In addition, the package allows for arbitrary querying of a model to assess the values of estimands of interest that are a function of the values or counterfactual values of nodes, *conditional* on values or counterfactual values of nodes.
 
 In the next sections we review key functionality for making, updating and querying causal models.
 
@@ -352,33 +358,34 @@ The statement in quotes, `"X -> M -> Y <- X"`, provides the names of nodes. An a
 
 Function $f$ maps from the set of possible values of the parents of $i$ to values of node $i$ given $\theta^i$ as described above.
 
-In addition, as we did in the @chickering_clinicians_1996 example, it is possible to use two headed arrows (`<->`) to indicate "unobserved confounding", that is, the presence of an unobserved variable that might influence two or more observed variables. In this case condition 3 above is relaxed and the exogenous nodes associated with confounded variables have a joint distribution. We describe how this is done in greater detail in @sec-confounding.
+In addition, as we did in the @chickering_clinicians_1996 example, it is possible to use two headed arrows ("`<->`") to indicate "unobserved confounding", that is, the presence of an unobserved variable that might influence two or more observed variables. In this case condition 3 above is relaxed and the exogenous nodes associated with confounded variables have a joint distribution. We describe how this is done in greater detail in @sec-confounding.
 
 ### Graphing
 
 Plotting the model can be useful to check that you have defined the structure of the model correctly. `CausalQueries` provides simple graphing tools that draw on functionality from the `dagitty`, `ggplot2`, and `ggdag` packages.
 
-Once defined, a model can be graphed by calling the `plot()` method defined for the objects with class `causal_model` produced by `make_model()` function.
+Once defined, a model can be graphed by calling the `plot()` method defined for the objects with class `causal_model` produced by `make_model()` function. Options can be provided to `plot()` are passed to `CausalQueries:::plot_dag()`.
+
+@fig-plots shows figures generating by plotting `lipids_model` with and without options. The  plots  have class `c("gg", "ggplot")` and so will accept any additional modifications available via the `ggplot2` package.
+
 
 ```{r}
 #| echo: true
 #| eval: false
 #| purl: false
 
-make_model("X -> M -> Y <- X; Z -> Y") |>
-  plot()
+lipids_model|> plot()
 
 ```
 
-Alternatively you can provide a number of options to the `plot()` call that will be passed to `CausalQueries:::plot_dag()` via the method.
 
 ```{r}
 #| echo: true
 #| eval: false
 
-make_model("X -> M -> Y <- X; Z -> Y") |>
-  plot(x_coord = 1:4,
-       y_coord = c(1.5,2,1,2),
+lipids_model |>
+  plot(x_coord = 1:3,
+       y_coord = c(3,2,1),
        textcol = "white",
        textsize = 3,
        shape = 18,
@@ -387,7 +394,6 @@ make_model("X -> M -> Y <- X; Z -> Y") |>
 
 ```
 
-The graphs produced by the two calls above are shown in @fig-plots. In both cases the resulting plot will have class `c("gg", "ggplot")` and so will accept any additional modifications available via the `ggplot2` package.
 
 ```{r}
 #| label: fig-plots
@@ -399,12 +405,11 @@ The graphs produced by the two calls above are shown in @fig-plots. In both case
 #| fig-pos: 'h'
 #| layout-ncol: 2
 
-make_model("X -> M -> Y <- X; Z -> Y") |>
-  plot()
+lipids_model |> plot()
 
-make_model("X -> M -> Y <- X; Z -> Y") |>
-  plot(x_coord = 1:4,
-       y_coord = c(1.5,2,1,2),
+lipids_model |>
+  plot(x_coord = 1:3,
+       y_coord = c(3,2,1),
        textcol = "white",
        textsize = 3,
        shape = 18,
@@ -598,7 +603,7 @@ To illustrate, in analyses of data with imperfect compliance, like we saw in our
 #| eval: true
 
 model_restricted <- 
-  make_model("Z -> X -> Y; X <-> Y") |> 
+  lipids_model |> 
   set_restrictions("X[Z=1] < X[Z=0]")
 ```
 
@@ -614,8 +619,8 @@ In words: we restrict by removing types for which $X$ is decreasing in $Z$. If w
 #| eval: false
 #| purl: false
 
-make_model("S -> C -> Y <- R <- X; X -> C -> R") |>
-  set_restrictions(labels = list(C = "1000", R = "0001", Y = "0001"), 
+lipids_model |>
+  set_restrictions(labels = list(X = "01", Y = c("00", "01", "11")), 
                    keep = TRUE)
 ```
 
@@ -627,10 +632,10 @@ make_model("S -> C -> Y <- R <- X; X -> C -> R") |>
 #| eval: false
 #| purl: false
 
-make_model("X -> Y") |> set_restrictions(labels = list(Y = "?0"))
+lipids_model |> set_restrictions(labels = list(Y = "?0"))
 ```
 
--   In models with confounding restrictions can be added to nodal types conditional on the values of other nodal types; this is done using a `given` argument.
+-   In models with confounding, restrictions can be added to nodal types conditional on the values of other nodal types; this is done using a `given` argument.
 
 ```{r}
 #| label: set-restrictions3
@@ -638,9 +643,8 @@ make_model("X -> Y") |> set_restrictions(labels = list(Y = "?0"))
 #| eval: false
 #| purl: false
 model <- 
-  make_model("X -> Y -> Z; X <-> Z") |>
-  set_restrictions(labels = list(X = '0', Y = c('00', '11'), Z = '00'), 
-                   given = c(NA, NA, 'X.1'))
+  lipids_model |>
+  set_restrictions(labels = list(Y = c('00', '11')), given = 'X.00')
 ```
 
 Setting restrictions sometimes involves using causal syntax (see @sec-syntax for a guide the syntax used by `CausalQueries`). Help file in `?set_restrictions` provides further details and examples on restrictions users can set.
@@ -661,27 +665,9 @@ Unobserved confounding between two (or more) nodes arises when the nodal types f
 
 @tbl-joint has eight interior elements and so an unconstrained joint distribution would have $7$ degrees of freedom. A no-confounding assumption means that $\Pr(\theta^X | \theta^Y) = \Pr(\theta^X)$, or $\Pr(\theta^X, \theta^Y) = \Pr(\theta^X)\Pr(\theta^Y)$. In this case we just put a distribution on the marginals and there would be $3$ degrees of freedom for $Y$ and $1$ for $X$, totaling $4$ rather than $7$.
 
-```{r}
-#| label: tbl-confound-params-df
-#| tbl-cap: "Parameters data frame for model with confounding."
-#| echo: false
-#| eval: false
-
-confounded <- make_model("X -> Y ; X <-> Y")
-
-confounded$parameters_df |>
-  knitr::kable(
-    digits = 2,
-    booktabs = TRUE,
-    align = "c",
-    escape = TRUE, 
-    linesep = "") |> 
-  kableExtra::kable_classic_2(latex_options = c("scale_down", "HOLD_position"))
-```
-
 The parameters data frame for this model would have two parameter families for parameters associated with the node $Y$. Each family captures the conditional distribution of $Y$'s nodal types, given $X$. For instance the parameter `Y01_X.1` can be interpreted as $\Pr(\theta^Y = \theta^Y_{01} | \theta^X=1)$. See again @tbl-lipidspar for an example of a parameters matrix with confounding.
 
-To see exactly how the parameters map to causal types we can look at the parameter matrix for the model by calling `get_parameter_matrix(confounded)`.
+To see exactly how the parameters map to causal types we can look at the parameter matrix for the model by calling `get_parameter_matrix(confounded)`. We do that here for a small model.
 
 ```{r}
 #| label: confound-params-df
@@ -701,9 +687,8 @@ The resulting parameter matrix is shown in @tbl-confound-param-matrix. Important
 #| echo: false
 #| eval: true
 
-confounded <- make_model("X -> Y ; X <-> Y")
-
-get_parameter_matrix(confounded) |>
+make_model("X -> Y ; X <-> Y") |>
+  get_parameter_matrix() |>
   knitr::kable(
     digits = 2,
     booktabs = TRUE,
@@ -715,29 +700,17 @@ get_parameter_matrix(confounded) |>
 
 @tbl-dof illustrates more generally how the number of independent parameters depends on the nature of possible confounding.
 
-```{r}
-#| label: fig-confound
-#| echo: false
-#| fig-cap: "Graph of model with confounding."
-#| fig-pos: 't'
-#| fig-align: center
-#| out-width: "60%"
-#| eval: false
-#| purl: false
-make_model("A <- X -> B; A <-> X; B <-> X") |> 
-  plot()
-```
 
 ```{r}
 #| label: tbl-dof
-#| tbl-cap: "Number of different independent parameters (degrees of freedom) for different 3 node models."
+#| tbl-cap: "Number of different independent parameters (degrees of freedom) for different three node models."
 #| echo: false
 #| eval: true
 
 statements <- list("X -> Y <- W", 
                    "X -> Y <- W; X <-> W", 
                    "X -> Y <- W; X <-> Y; W <-> Y",
-                   "X -> Y <- W; X <-> Y; W <-> Y; X <->W", 
+                   "X -> Y <- W; X <-> Y; W <-> Y; X <-> W", 
                    "X -> W -> Y <- X",
                    "X -> W -> Y <- X; W <-> Y",
                    "X -> W -> Y <- X; X <-> W; W <-> Y", 
@@ -750,14 +723,18 @@ statements <- list("X -> Y <- W",
        pull(n) |>
        sum()
    
-data.frame(Model = statements |> unlist(),
+  
+   
+data.frame(Model = statements |> 
+             lapply(function(s) paste0("`", s, "`")) |> unlist(),
            dof = statements |> lapply(dof) |> unlist()) |>
   knitr::kable(
     digits = 2,
     booktabs = TRUE,
     align = c("l", "c"),
     escape = TRUE, 
-    linesep = "") 
+    linesep = "",
+    col.names = c("Model", "Degrees of freedom")) 
 
 ```
 
@@ -778,7 +755,7 @@ By default, priors are set to unity, corresponding to uniform priors. To retriev
 #| echo: true
 #| eval: true
 
-make_model("X -> Y") |> get_priors()
+lipids_model |> get_priors() |> head()
 ```
 
 Alternatively you could set Jeffreys priors using `set_priors()` as follows:
@@ -788,7 +765,7 @@ Alternatively you could set Jeffreys priors using `set_priors()` as follows:
 #| echo: true
 #| eval: false
 #| purl: false
-make_model("X -> Y") |> set_priors(distribution = "jeffreys")
+lipids_model |> set_priors(distribution = "jeffreys")
 ```
 
 You can also add custom priors. Custom priors are most simply specified by being added as a vector of numbers using `set_priors()`. For instance:
@@ -797,16 +774,15 @@ You can also add custom priors. Custom priors are most simply specified by being
 #| label: set-priors-custom
 #| echo: true
 #| eval: true
+#| message: FALSE
 
-make_model("X -> Y") |> 
-  set_priors(1:6) |> 
-  get_priors()
+lipids_model |> 
+  set_priors(node = "X", alphas = 1:4) |> 
+  get_priors() |> 
+  head()
 ```
 
-The priors here should be interpreted as indicating:
-
--   $\alpha_X = (1,2)$, which implies a distribution over $(\lambda^X_0, \lambda^X_1)$ centered on $(1/3, 2/3)$.
--   $\alpha_Y = (3,4,5,6)$, which implies a distribution over $(\lambda^Y_{00}, \lambda^Y_{10}, \lambda^Y_{01}, \lambda^Y_{11})$ centered on $(3/18, 4/18, 5/18, 6/18)$.
+The priors here should be interpreted as indicating $\alpha_X = (1,2, 3, 4)$, which implies a distribution over $(\lambda^X_{00},\lambda^X_{10}, \lambda^X_{01}, \lambda^X_{11})$ centered on $\left(\frac1{10}, \frac2{10}, \frac3{10} \frac4{10} \right)$.
 
 For larger models it can be hard to provide priors as a vector of numbers. For that reason `set_priors()` allows for more targeted modifications of the parameter vector. For instance:
 
@@ -815,62 +791,19 @@ For larger models it can be hard to provide priors as a vector of numbers. For t
 #| echo: true
 #| eval: true
 
-make_model("X -> Y") |>
-  set_priors(statement = "Y[X=1] > Y[X=0]", alphas = 3) |>
-  get_priors()
+lipids_model |>
+  set_priors(statement = "X[Z=1] > X[Z=0]", alphas = 3) |>
+  get_priors() |> head()
 ```
 
 As setting priors simply requires mapping alpha values to parameters, the process reduces to selecting rows of the `parmeters_df` data frame, at which to alter values. When specifying a causal statement as above, `CausalQueries` internally identifies nodal types that are consistent with the statement, which in turn identify parameters to alter priors for.
 
-We can achieve the same result as above by specifying nodal types for which we would like to adjust the priors:
-
-```{r}
-#| label: set-priors-nodal-type
-#| echo: true
-#| eval: false
-#| purl: false
-make_model("X -> Y") |>
-  set_priors(nodal_type = "01", alphas = 3) |>
-  get_priors()
-```
-
-Or even parameter names:
-
-```{r}
-#| label: set-priors-param-names
-#| echo: true
-#| eval: false
-#| purl: false
-make_model("X -> Y") |>
-  set_priors(param_names = "Y.01", alphas = 3) |>
-  get_priors()
-```
-
+We can achieve the same result as above by specifying nodal types for which we would like to adjust the priors. Indeed,
 `set_priors()` allows for the specification of any non-redundant combination of arguments on the `param_names`, `node`, `nodal_type`, `param_set` and `given` columns of `parameters_df` to uniquely identify parameters to set priors for. Alternatively a fully formed subsetting statement may be supplied to `alter_at`. Since all these arguments get mapped to the parameters they identify internally they may be used interchangeably.[^5] Thus the following two specifications of priors are equivalent:
 
 [^5]: See `?set_priors` and `?make_priors` for many more examples.
 
-```{r}
-#| label: set-priors-other
-#| echo: true
-#| eval: false
-#| purl: false
-model <- make_model("X -> M -> Y; X <-> Y")
-
-model |>
-  set_priors(node = "Y", 
-             nodal_type = c("01","11"), 
-             given = "X.1", 
-             alphas = c(3,2)) 
-
-model |>
-  set_priors(
-    alter_at = 
-      "node == 'Y' & nodal_type %in% c('01','11') & given == 'X.1'", 
-    alphas = c(3,2)) 
-```
-
-While highly targeted prior setting is convenient and flexible, they should be used with caution. Setting priors on specific parameters in complex models, especially models involving confounding, may strongly affect inferences.
+While highly targeted prior setting is convenient and flexible, it should be used with caution. Setting priors on specific parameters in complex models, especially models involving confounding, may strongly affect inferences.
 
 Furthermore, note that flat priors over nodal types do not necessarily translate into flat priors over queries. "Flat" priors over parameters in a parameter family put equal weight on each nodal type, but this in turn can translate into strong assumptions on causal quantities of interest. For instance in an $X \rightarrow Y$ model in which negative effects are ruled out, the average causal effect implied by "flat" priors is $1/3$. This can be seen by querying the model as follows:
 
@@ -975,13 +908,6 @@ make_model("X -> Y") |>
 
 Once a model has been defined it is possible to simulate data from the model using the `make_data()` function. This can be useful for instance for assessing the expected performance of a model given data drawn from some speculated set of parameter values.
 
-```{r}
-#| label: make-data-model
-#| eval: true
-
-model <- make_model("X -> M -> Y") 
-
-```
 
 #### Drawing data basics
 
@@ -993,7 +919,7 @@ By default, the parameters used are taken from `model$parameters_df`.
 #| eval: true
 
 sample_data_1 <- 
-  model |> 
+  lipids_model |> 
   make_data(n = 4)
 
 ```
@@ -1005,7 +931,8 @@ However you can also specify parameters directly or use parameter draws from a p
 #| echo: true
 #| eval: true
 
-make_data(model, n = 3, param_type = "prior_draw")
+lipids_model |>
+  make_data(n = 3, param_type = "prior_draw")
 
 ```
 
@@ -1024,11 +951,11 @@ The function `make_data` allows you to draw data like this if you specify a data
 #| message: false
 
 sample_data_2 <-
-  make_data(model,
-            n = 8,
-            nodes = list(c("X", "Y"), "M"),
+  lipids_model |>
+  make_data(n = 8,
+            nodes = list(c("Z", "Y"), "X"),
             probs = list(1, .5),
-            subsets = list(TRUE, "X==1 & Y==0"),
+            subsets = list(TRUE, "Z==1 & Y==0"),
             verbose = FALSE)
 
 sample_data_2
@@ -1043,7 +970,7 @@ Whereas data naturally comes in long form, with a row per observation, as in the
 #| echo: true
 #| eval: true
 
-sample_data_2 |> collapse_data(model)
+sample_data_2 |> collapse_data(lipids_model)
 ```
 
 In the same way it is possible to move from "compact data" to "long data" using `expand_data()`. Note that `NA`'s are interpreted as data not having been sought. So in the case of `sample_data_2` the interpretation is that there are two data strategies: data on $Y$, $M$ and $X$ was sought in two cases only; data on $Y$ and $X$ only was sought in six cases.
@@ -1074,8 +1001,8 @@ The internal function `prep_stan_data()` takes model and data as arguments and p
 #| eval: false
 #| purl: false
 sample_data_2 |> 
-  collapse_data(model = model) |> 
-  CausalQueries:::prep_stan_data(model = model)
+  collapse_data(model = lipids_model) |> 
+  CausalQueries:::prep_stan_data(model = lipids_model)
 ```
 
 ### How the Stan program works
@@ -1197,7 +1124,27 @@ list(uncensored =
 
 ### Output
 
-The primary output from `update_model()` is a model with an attached posterior distribution over model parameters, stored as a data frame in `model$posterior_distribution`. In addition, a distribution of causal types is stored by default and the `stanfit` object and a distribution over event probabilities are optionally saved. See again @tbl-additional for a description of the elements that the updated model contains.
+The primary output from `update_model()` is a model with an attached posterior distribution over model parameters, stored as a data frame in the model list. This posterior distribution can be directly accessed using `get_posterior_distribution()`.
+
+```{r}
+#| eval: true
+#| echo: true
+# snapshot of the posterior distribution
+get_posterior_distribution(lipids_model)[1:5, 1:5]
+
+```
+
+In addition, a distribution of causal types is stored by default and the `stanfit` object and a distribution over event probabilities are optionally saved. 
+
+
+
+```{r}
+lipids_model <- lipids_model |> update_model(keep_fit = TRUE)
+
+lipids_model$stan_objects$stan_fit |> print()
+```
+
+See again @tbl-additional for a description of the elements that the updated model contains.
 
 ## Queries {#sec-query}
 
@@ -1605,7 +1552,7 @@ library(parallel)
 options(mc.cores = parallel::detectCores())
 ```
 
-Additionally parallelizing across models or data while running MCMC chains in parallel can be achieved by setting up a nested parallel process. With 8 cores one can run 2 updating processes with 3 parallel chains each simultaneously. More generally the number of parallel processes at the upper level of the nested parallel structure are given by $\left \lfloor \frac{cores}{chains + 1} \right \rfloor$.
+Additionally parallelizing across models or data while running MCMC chains in parallel can be achieved by setting up a nested parallel process. With 8 cores one can run two updating processes with three parallel chains each simultaneously. More generally the number of parallel processes at the upper level of the nested parallel structure are given by $\left \lfloor \frac{cores}{chains + 1} \right \rfloor$.
 
 ```{r}
 #| echo: true
@@ -1639,7 +1586,7 @@ future.apply::future_lapply(data, function(d) {
 
 ## Appendix B: Stan code {#sec-stancode .unnumbered}
 
-Updating is performed using Stan model. The data provided to Stan is generated by the internal function `prep_stan_data()` which returns a list of objects that Stan expects to receive. The code for the Stan model is show below. After defining a helper function the code starts with a block declaring what input data is to be expected. Then there is a characterization of parameters and the transformed parameters. Then the likelihoods and priors are provided. At the end there is a block for generated quantities which can be used to append a posterior distribution of causal types to the model.
+Updating is performed using a generic Stan model. The data provided to Stan is generated by the internal function `prep_stan_data()` which returns a list of objects that Stan expects to receive. The code for the Stan model is shown below. After defining a helper function, the code starts with a block declaring what input data is to be expected. Then there is a characterization of parameters and the transformed parameters. Then the likelihoods and priors are provided. At the end there is a block for generated quantities which can be used to append a posterior distribution of causal types to the model.
 
 ```{r}
 #| echo: false

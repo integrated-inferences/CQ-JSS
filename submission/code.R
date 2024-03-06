@@ -24,7 +24,7 @@ library(tikzDevice)
 options(kableExtra.latex.load_packages = FALSE)
 options(mc.cores = parallel::detectCores())
 
-set.seed(20231018)
+set.seed(1, "L'Ecuyer-CMRG")
 
 ## SECTION 2: Motivating example
 #####################################################################

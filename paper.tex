@@ -194,22 +194,22 @@ CausalQueries} %% without formatting
 
 %% an abstract and keywords
 \Abstract{The \proglang{R} package \texttt{CausalQueries} can be used to
-make, update, and query causal models. Users provide a causal statement
-of the form
+make, update, and query causal models defined on binary nodes. Users
+provide a causal statement of the form
 \texttt{X\ -\textgreater{}\ M\ \textless{}-\ Y;\ M\ \textless{}-\textgreater{}\ Y}
 which is interpreted as a structural causal model over a collection of
-binary variables. \texttt{CausalQueries} can then (1) identify the set
-of principal strata---causal types---required to characterize all
-possible types of causal relations between nodes consistent with the
-causal statement (2) determine a set of parameters needed to
-characterize distributions over these types (3) update beliefs over the
-distribution of causal types, using a \texttt{stan} model and (4) pose a
+binary nodes. \texttt{CausalQueries} can then (1) identify the set of
+principal strata---causal types---required to characterize all possible
+types of causal relations between nodes consistent with the causal
+statement (2) determine a set of parameters needed to characterize
+distributions over these types (3) update beliefs over the distribution
+of causal types, using a \texttt{stan} model plus data and (4) pose a
 wide range of causal queries of the model, using either the prior
 distribution, the posterior distribution, or a user-specified candidate
 vector of parameters.}
 
 %% at least one keyword must be supplied
-\Keywords{causal model, bayesian updating, DAG, Stan}
+\Keywords{causal model, Bayesian updating, DAG, Stan}
 
 %% publication information
 %% NOTE: Typically, this can be left commented and will be filled out by the technical editor
@@ -257,22 +257,22 @@ URL: \url{https://macartan.github.io/}\\
 
 \texttt{CausalQueries} is an \proglang{R} package that lets users make,
 update, and query causal models. Users provide a statement that reports
-a set of binary variables and the relations of causal ancestry between
-them: which variables are direct causes of other variables, given the
-other variables in the model. Once provided to \texttt{make\_model()},
+a set of binary variables and the relations of ``causal ancestry''
+between them, that is, a statement indicating which variables are direct
+causes of other variables, given the other variables in the model. Once
+such a statement is provided to \texttt{make\_model()},
 \texttt{CausalQueries} generates a parameter vector that fully describes
 a probability distribution over all possible types of causal relations
-between variables (``causal types''), given the causal structure. Given
-a prior over parameters and data over some or all nodes,
-\texttt{update\_model()} deploys a Stan \citep{carpenter_stan_2017}
-model in order to generate a posterior distribution over causal models.
-The function \texttt{query\_model()} can then be used to ask a wide
-range of causal queries of the model, using either the prior
-distribution, the posterior distribution, or a user-specified candidate
-vector of parameters.
+between variables (``causal types''). Given a prior over parameters and
+data over some or all nodes, \texttt{update\_model()} deploys a Stan
+\citep{carpenter_stan_2017} model in order to generate a posterior
+distribution over causal models. The function \texttt{query\_model()}
+can then be used to ask a wide range of causal queries of the model,
+using either the prior distribution, the posterior distribution, or a
+user-specified candidate vector of parameters.
 
-In the next section we provide a short motivating example. We then
-describe how the package relates to existing available software.
+In the next section we provide a motivating example. We then describe
+how the package relates to existing available software.
 Section~\ref{sec-theory} gives an overview of the statistical model
 behind the package. Section~\ref{sec-make}, Section~\ref{sec-update},
 and Section~\ref{sec-query} then describe the main functionality for the
@@ -283,7 +283,7 @@ details in the final section.
 \section{Motivating example}\label{motivating-example}}
 
 Before providing details on package functionality we illustrate these
-three core functions by showing how to use \texttt{CuasalQueries} to
+three core functions by showing how to use \texttt{CausalQueries} to
 replicate the analysis in
 \citetext{\citealp{chickering_clinicians_1996}; \citealp[see
 also][]{humphreys_integrated_2023}}. \citet{chickering_clinicians_1996}
@@ -328,20 +328,23 @@ With \texttt{CausalQueries}, you can create the model, input data to
 update it, and then query the model for results thus:
 
 \begin{verbatim}
-R> make_model("Z -> X -> Y; X <-> Y") |>
-+  update_model(lipids_data, refresh = 0) |>
+R> lipids_model <-  
++  make_model("Z -> X -> Y; X <-> Y") |>
++  update_model(lipids_data, refresh = 0)
+R> 
+R> lipids_queries <- 
++  lipids_model  |>
 +  query_model(query = "Y[X=1] - Y[X=0]",
 +              given = c("All",  "X==0 & Y==0", "X[Z=1] > X[Z=0]"),
 +              using = "posteriors") 
+R> 
+R> lipids_queries
 \end{verbatim}
 
 \hypertarget{tbl-lipids}{}
-\begin{table}
+\begin{longtable}[t]{cccccc}
 \caption{\label{tbl-lipids}Replication of \citet{chickering_clinicians_1996}. }\tabularnewline
 
-\centering
-\resizebox{\linewidth}{!}{
-\begin{tabular}{cccccc}
 \toprule
 query & given & mean & sd & cred.low.2.5\% & cred.high.97.5\%\\
 \midrule
@@ -349,15 +352,13 @@ Y[X=1] - Y[X=0] & - & 0.56 & 0.10 & 0.38 & 0.73\\
 Y[X=1] - Y[X=0] & X==0 \& Y==0 & 0.64 & 0.15 & 0.38 & 0.89\\
 Y[X=1] - Y[X=0] & X[Z=1] > X[Z=0] & 0.70 & 0.05 & 0.60 & 0.80\\
 \bottomrule
-\end{tabular}}
-\end{table}
+\end{longtable}
 
 The output is a data frame with estimates, posterior standard
-deviations, and credibility intervals. For example the data frame
-produced by the code above is shown in Table~\ref{tbl-lipids}. In the
-table rows 1 and 2 replicate results in
-\citet{chickering_clinicians_1996}, while row 3 returns inferences for
-complier average effects.
+deviations, and credibility intervals. Table~\ref{tbl-lipids} shows the
+output from the analysis of the lipids data. In the table rows 1 and 2
+replicate results in \citet{chickering_clinicians_1996}; row 3 returns
+inferences for complier average effects.
 
 As we describe below, the same basic procedure of making, updating, and
 querying models, can be used (up to computational constraints) for
@@ -534,7 +535,7 @@ queries in settings where domain knowledge is more prevalent.
 
 Like \texttt{causalnex}, \texttt{pclag} places particular emphasis on
 causal structure learning, utilizing the resultant DAGs to recover
-average treatment effects (ATEs) across all learned markov-equivalent
+average treatment effects (ATEs) across all learned Markov-equivalent
 classes implied by observed data that satisfy linearity of conditional
 expectations. This approach again is more restrictive than
 \texttt{CausalQueries} in the DAGs and particularly the queries it
@@ -745,7 +746,7 @@ the probability that the causal type is among those that yield outcome
 probabilities, \(w(\lambda)\), for each vector of outcomes, and under
 independence we have:
 
-\[D \sim \text{Mulitinomial}(w(\lambda), N)\]
+\[D \sim \text{Multinomial}(w(\lambda), N)\]
 
 Thus for instance in the case of a \(X \rightarrow Y\) model, and
 letting \(w_{xy}\) denote the probability of a data type \(X=x, Y=y\),
@@ -770,7 +771,7 @@ nodal types for \(Y\) \emph{given} the nodal types for \(X\). We see
 there are four sets of these parameters.
 
 \hypertarget{tbl-lipidspar}{}
-\begin{longtable}{cccccc}
+\begin{longtable}[t]{cccccc}
 \caption{\label{tbl-lipidspar}Nodal types and parameters for Lipids model. }\tabularnewline
 
 \toprule
@@ -781,21 +782,25 @@ Z & 1 & Z & Z.1 & 0.29 & 1\\
 X & 00 & X & X.00 & 0.36 & 1\\
 X & 10 & X & X.10 & 0.03 & 1\\
 X & 01 & X & X.01 & 0.51 & 1\\
+\addlinespace
 X & 11 & X & X.11 & 0.10 & 1\\
 Y & 00 & Y.X.00 & Y.00\_X.00 & 0.43 & 1\\
 Y & 10 & Y.X.00 & Y.10\_X.00 & 0.08 & 1\\
 Y & 01 & Y.X.00 & Y.01\_X.00 & 0.34 & 1\\
 Y & 11 & Y.X.00 & Y.11\_X.00 & 0.15 & 1\\
+\addlinespace
 Y & 00 & Y.X.01 & Y.00\_X.01 & 0.43 & 1\\
 Y & 10 & Y.X.01 & Y.10\_X.01 & 0.05 & 1\\
 Y & 01 & Y.X.01 & Y.01\_X.01 & 0.39 & 1\\
 Y & 11 & Y.X.01 & Y.11\_X.01 & 0.13 & 1\\
 Y & 00 & Y.X.10 & Y.00\_X.10 & 0.24 & 1\\
+\addlinespace
 Y & 10 & Y.X.10 & Y.10\_X.10 & 0.45 & 1\\
 Y & 01 & Y.X.10 & Y.01\_X.10 & 0.12 & 1\\
 Y & 11 & Y.X.10 & Y.11\_X.10 & 0.19 & 1\\
 Y & 00 & Y.X.11 & Y.00\_X.11 & 0.61 & 1\\
 Y & 10 & Y.X.11 & Y.10\_X.11 & 0.11 & 1\\
+\addlinespace
 Y & 01 & Y.X.11 & Y.01\_X.11 & 0.03 & 1\\
 Y & 11 & Y.X.11 & Y.11\_X.11 & 0.25 & 1\\
 \bottomrule
@@ -810,7 +815,7 @@ instance the probability of data type \(Z=0, X=0, Y=0\) is:
 
 \[w_{000}=\Pr(Z=0, X=0, Y=0) = \lambda^Z_0\left(\lambda^X_{00}(\lambda^{Y|\lambda^X_{00}}_{00}+\lambda^{Y|\lambda^X_{00}}_{01}) + \lambda^X_{01}(\lambda^{Y|\lambda^X_{01}}_{00}+\lambda^{Y|\lambda^X_{01}}_{01})\right)\]
 
-In practice \texttt{CausalQueries} uses a matrix \texttt{parmap} that
+In practice \texttt{CausalQueries} uses a matrix, \texttt{parmap}, that
 maps from parameters into data types.
 
 The value of the \texttt{CausalQueries} package is to allow users to
@@ -819,9 +824,9 @@ nodal types and causal types, and then update given priors and data by
 calculating event probabilities implied by all possible parameter
 vectors and in turn the likelihood of the data given the model. In
 addition, the package allows for arbitrary querying of a model to assess
-the values of estimands of interest that a re function of the values or
-counterfactual values of nodes conditional on values or counterfactual
-values of nodes.
+the values of estimands of interest that are a function of the values or
+counterfactual values of nodes, \emph{conditional} on values or
+counterfactual values of nodes.
 
 In the next sections we review key functionality for making, updating
 and querying causal models.
@@ -881,7 +886,7 @@ Function \(f\) maps from the set of possible values of the parents of
 
 In addition, as we did in the \citet{chickering_clinicians_1996}
 example, it is possible to use two headed arrows
-(\texttt{\textless{}-\textgreater{}}) to indicate ``unobserved
+(``\texttt{\textless{}-\textgreater{}}'') to indicate ``unobserved
 confounding'', that is, the presence of an unobserved variable that
 might influence two or more observed variables. In this case condition 3
 above is relaxed and the exogenous nodes associated with confounded
@@ -898,32 +903,28 @@ graphing tools that draw on functionality from the \texttt{dagitty},
 
 Once defined, a model can be graphed by calling the \texttt{plot()}
 method defined for the objects with class \texttt{causal\_model}
-produced by \texttt{make\_model()} function.
+produced by \texttt{make\_model()} function. Options can be provided to
+\texttt{plot()} are passed to \texttt{CausalQueries:::plot\_dag()}.
+
+Figure~\ref{fig-plots} shows figures generating by plotting
+\texttt{lipids\_model} with and without options. The plots have class
+\texttt{c("gg",\ "ggplot")} and so will accept any additional
+modifications available via the \texttt{ggplot2} package.
 
 \begin{verbatim}
-R> make_model("X -> M -> Y <- X; Z -> Y") |>
-+  plot()
+R> lipids_model|> plot()
 \end{verbatim}
 
-Alternatively you can provide a number of options to the \texttt{plot()}
-call that will be passed to \texttt{CausalQueries:::plot\_dag()} via the
-method.
-
 \begin{verbatim}
-R> make_model("X -> M -> Y <- X; Z -> Y") |>
-+  plot(x_coord = 1:4,
-+       y_coord = c(1.5,2,1,2),
+R> lipids_model |>
++  plot(x_coord = 1:3,
++       y_coord = c(3,2,1),
 +       textcol = "white",
 +       textsize = 3,
 +       shape = 18,
 +       nodecol = "grey",
 +       nodesize = 12)
 \end{verbatim}
-
-The graphs produced by the two calls above are shown in
-Figure~\ref{fig-plots}. In both cases the resulting plot will have class
-\texttt{c("gg",\ "ggplot")} and so will accept any additional
-modifications available via the \texttt{ggplot2} package.
 
 \begin{figure}
 
@@ -1097,12 +1098,9 @@ R> make_model("X -> Y")$parameters_df
 \end{verbatim}
 
 \hypertarget{tbl-params-df}{}
-\begin{table}[H]
+\begin{longtable}[t]{cccccccc}
 \caption{\label{tbl-params-df}Example of parameters data frame. }\tabularnewline
 
-\centering
-\resizebox{\linewidth}{!}{
-\begin{tabular}{cccccccc}
 \toprule
 param\_names & node & gen & param\_set & nodal\_type & given & param\_value & priors\\
 \midrule
@@ -1111,10 +1109,10 @@ X.1 & X & 1 & X & 1 &  & 0.50 & 1\\
 Y.00 & Y & 2 & Y & 00 &  & 0.25 & 1\\
 Y.10 & Y & 2 & Y & 10 &  & 0.25 & 1\\
 Y.01 & Y & 2 & Y & 01 &  & 0.25 & 1\\
+\addlinespace
 Y.11 & Y & 2 & Y & 11 &  & 0.25 & 1\\
 \bottomrule
-\end{tabular}}
-\end{table}
+\end{longtable}
 
 As in Table~\ref{tbl-lipidspar}, each row in Table~\ref{tbl-params-df}
 corresponds to a single parameter. The columns of the parameters data
@@ -1339,7 +1337,7 @@ assumption as follows:
 
 \begin{verbatim}
 R> model_restricted <- 
-+  make_model("Z -> X -> Y; X <-> Y") |> 
++  lipids_model |> 
 +  set_restrictions("X[Z=1] < X[Z=0]")
 \end{verbatim}
 
@@ -1359,8 +1357,8 @@ causal types are restricted.
 \end{itemize}
 
 \begin{verbatim}
-R> make_model("S -> C -> Y <- R <- X; X -> C -> R") |>
-+  set_restrictions(labels = list(C = "1000", R = "0001", Y = "0001"), 
+R> lipids_model |>
++  set_restrictions(labels = list(X = "01", Y = c("00", "01", "11")), 
 +                   keep = TRUE)
 \end{verbatim}
 
@@ -1371,22 +1369,21 @@ R> make_model("S -> C -> Y <- R <- X; X -> C -> R") |>
 \end{itemize}
 
 \begin{verbatim}
-R> make_model("X -> Y") |> set_restrictions(labels = list(Y = "?0"))
+R> lipids_model |> set_restrictions(labels = list(Y = "?0"))
 \end{verbatim}
 
 \begin{itemize}
 \tightlist
 \item
-  In models with confounding restrictions can be added to nodal types
+  In models with confounding, restrictions can be added to nodal types
   conditional on the values of other nodal types; this is done using a
   \texttt{given} argument.
 \end{itemize}
 
 \begin{verbatim}
 R> model <- 
-+  make_model("X -> Y -> Z; X <-> Z") |>
-+  set_restrictions(labels = list(X = '0', Y = c('00', '11'), Z = '00'), 
-+                   given = c(NA, NA, 'X.1'))
++  lipids_model |>
++  set_restrictions(labels = list(Y = c('00', '11')), given = 'X.00')
 \end{verbatim}
 
 Setting restrictions sometimes involves using causal syntax (see
@@ -1455,10 +1452,6 @@ we just put a distribution on the marginals and there would be \(3\)
 degrees of freedom for \(Y\) and \(1\) for \(X\), totaling \(4\) rather
 than \(7\).
 
-\begin{table}
-
-\end{table}
-
 The parameters data frame for this model would have two parameter
 families for parameters associated with the node \(Y\). Each family
 captures the conditional distribution of \(Y\)'s nodal types, given
@@ -1469,7 +1462,8 @@ confounding.
 
 To see exactly how the parameters map to causal types we can look at the
 parameter matrix for the model by calling
-\texttt{get\_parameter\_matrix(confounded)}.
+\texttt{get\_parameter\_matrix(confounded)}. We do that here for a small
+model.
 
 \begin{verbatim}
 R> make_model("X -> Y ; X <-> Y") |>
@@ -1483,53 +1477,59 @@ causal types by multiplying the probabilities of the constituent
 parameters.
 
 \hypertarget{tbl-confound-param-matrix}{}
-\begin{table}
+\begin{longtable}[t]{lcccccccc}
 \caption{\label{tbl-confound-param-matrix}Parameter matrix for model with confounding. }\tabularnewline
 
-\centering
-\resizebox{\linewidth}{!}{
-\begin{tabular}{lcccccccc}
 \toprule
-  & X0.Y00 & X1.Y00 & X0.Y10 & X1.Y10 & X0.Y01 & X1.Y01 & X0.Y11 & X1.Y11\\
+ & X0.Y00 & X1.Y00 & X0.Y10 & X1.Y10 & X0.Y01 & X1.Y01 & X0.Y11 & X1.Y11\\
 \midrule
 X.0 & 1 & 0 & 1 & 0 & 1 & 0 & 1 & 0\\
 X.1 & 0 & 1 & 0 & 1 & 0 & 1 & 0 & 1\\
 Y.00\_X.0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
 Y.10\_X.0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0\\
 Y.01\_X.0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0\\
+\addlinespace
 Y.11\_X.0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0\\
 Y.00\_X.1 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0\\
 Y.10\_X.1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0\\
 Y.01\_X.1 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0\\
 Y.11\_X.1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1\\
 \bottomrule
-\end{tabular}}
-\end{table}
+\end{longtable}
 
 Table~\ref{tbl-dof} illustrates more generally how the number of
 independent parameters depends on the nature of possible confounding.
 
 \hypertarget{tbl-dof}{}
-\begin{table}
-\caption{\label{tbl-dof}Number of different independent parameters (degrees of freedom) for
-different 3 node models. }\tabularnewline
-
-\centering
-\begin{tabular}{lc}
-\toprule
-Model & dof\\
-\midrule
-X -> Y <- W & 17\\
-X -> Y <- W; X <-> W & 18\\
-X -> Y <- W; X <-> Y; W <-> Y & 62\\
-X -> Y <- W; X <-> Y; W <-> Y; X <->W & 63\\
-X -> W -> Y <- X & 19\\
-X -> W -> Y <- X; W <-> Y & 64\\
-X -> W -> Y <- X; X <-> W; W <-> Y & 67\\
-X -> W -> Y <- X; X <-> W; W <-> Y; X <-> Y & 127\\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{longtable}[]{@{}lc@{}}
+\caption{\label{tbl-dof}Number of different independent parameters
+(degrees of freedom) for different three node models.}\tabularnewline
+\toprule\noalign{}
+Model & Degrees of freedom \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+Model & Degrees of freedom \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{X\ -\textgreater{}\ Y\ \textless{}-\ W} & 17 \\
+\texttt{X\ -\textgreater{}\ Y\ \textless{}-\ W;\ X\ \textless{}-\textgreater{}\ W}
+& 18 \\
+\texttt{X\ -\textgreater{}\ Y\ \textless{}-\ W;\ X\ \textless{}-\textgreater{}\ Y;\ W\ \textless{}-\textgreater{}\ Y}
+& 62 \\
+\texttt{X\ -\textgreater{}\ Y\ \textless{}-\ W;\ X\ \textless{}-\textgreater{}\ Y;\ W\ \textless{}-\textgreater{}\ Y;\ X\ \textless{}-\textgreater{}\ W}
+& 63 \\
+\texttt{X\ -\textgreater{}\ W\ -\textgreater{}\ Y\ \textless{}-\ X} &
+19 \\
+\texttt{X\ -\textgreater{}\ W\ -\textgreater{}\ Y\ \textless{}-\ X;\ W\ \textless{}-\textgreater{}\ Y}
+& 64 \\
+\texttt{X\ -\textgreater{}\ W\ -\textgreater{}\ Y\ \textless{}-\ X;\ X\ \textless{}-\textgreater{}\ W;\ W\ \textless{}-\textgreater{}\ Y}
+& 67 \\
+\texttt{X\ -\textgreater{}\ W\ -\textgreater{}\ Y\ \textless{}-\ X;\ X\ \textless{}-\textgreater{}\ W;\ W\ \textless{}-\textgreater{}\ Y;\ X\ \textless{}-\textgreater{}\ Y}
+& 127 \\
+\end{longtable}
 
 \hypertarget{priors}{%
 \subsubsection{Setting Priors}\label{priors}}
@@ -1569,11 +1569,11 @@ By default, priors are set to unity, corresponding to uniform priors. To
 retrieve the model's priors we can run the following code:
 
 \begin{verbatim}
-R> make_model("X -> Y") |> get_priors()
+R> lipids_model |> get_priors() |> head()
 \end{verbatim}
 
 \begin{verbatim}
- X.0  X.1 Y.00 Y.10 Y.01 Y.11 
+ Z.0  Z.1 X.00 X.10 X.01 X.11 
    1    1    1    1    1    1 
 \end{verbatim}
 
@@ -1581,7 +1581,7 @@ Alternatively you could set Jeffreys priors using \texttt{set\_priors()}
 as follows:
 
 \begin{verbatim}
-R> make_model("X -> Y") |> set_priors(distribution = "jeffreys")
+R> lipids_model |> set_priors(distribution = "jeffreys")
 \end{verbatim}
 
 You can also add custom priors. Custom priors are most simply specified
@@ -1589,41 +1589,35 @@ by being added as a vector of numbers using \texttt{set\_priors()}. For
 instance:
 
 \begin{verbatim}
-R> make_model("X -> Y") |> 
-+  set_priors(1:6) |> 
-+  get_priors()
+R> lipids_model |> 
++  set_priors(node = "X", alphas = 1:4) |> 
++  get_priors() |> 
++  head()
 \end{verbatim}
 
 \begin{verbatim}
- X.0  X.1 Y.00 Y.10 Y.01 Y.11 
-   1    2    3    4    5    6 
+ Z.0  Z.1 X.00 X.10 X.01 X.11 
+   1    1    1    2    3    4 
 \end{verbatim}
 
-The priors here should be interpreted as indicating:
-
-\begin{itemize}
-\tightlist
-\item
-  \(\alpha_X = (1,2)\), which implies a distribution over
-  \((\lambda^X_0, \lambda^X_1)\) centered on \((1/3, 2/3)\).
-\item
-  \(\alpha_Y = (3,4,5,6)\), which implies a distribution over
-  \((\lambda^Y_{00}, \lambda^Y_{10}, \lambda^Y_{01}, \lambda^Y_{11})\)
-  centered on \((3/18, 4/18, 5/18, 6/18)\).
-\end{itemize}
+The priors here should be interpreted as indicating
+\(\alpha_X = (1,2, 3, 4)\), which implies a distribution over
+\((\lambda^X_{00},\lambda^X_{10}, \lambda^X_{01}, \lambda^X_{11})\)
+centered on
+\(\left(\frac1{10}, \frac2{10}, \frac3{10} \frac4{10} \right)\).
 
 For larger models it can be hard to provide priors as a vector of
 numbers. For that reason \texttt{set\_priors()} allows for more targeted
 modifications of the parameter vector. For instance:
 
 \begin{verbatim}
-R> make_model("X -> Y") |>
-+  set_priors(statement = "Y[X=1] > Y[X=0]", alphas = 3) |>
-+  get_priors()
+R> lipids_model |>
++  set_priors(statement = "X[Z=1] > X[Z=0]", alphas = 3) |>
++  get_priors() |> head()
 \end{verbatim}
 
 \begin{verbatim}
- X.0  X.1 Y.00 Y.10 Y.01 Y.11 
+ Z.0  Z.1 X.00 X.10 X.01 X.11 
    1    1    1    1    3    1 
 \end{verbatim}
 
@@ -1635,24 +1629,9 @@ consistent with the statement, which in turn identify parameters to
 alter priors for.
 
 We can achieve the same result as above by specifying nodal types for
-which we would like to adjust the priors:
-
-\begin{verbatim}
-R> make_model("X -> Y") |>
-+  set_priors(nodal_type = "01", alphas = 3) |>
-+  get_priors()
-\end{verbatim}
-
-Or even parameter names:
-
-\begin{verbatim}
-R> make_model("X -> Y") |>
-+  set_priors(param_names = "Y.01", alphas = 3) |>
-+  get_priors()
-\end{verbatim}
-
-\texttt{set\_priors()} allows for the specification of any non-redundant
-combination of arguments on the \texttt{param\_names}, \texttt{node},
+which we would like to adjust the priors. Indeed, \texttt{set\_priors()}
+allows for the specification of any non-redundant combination of
+arguments on the \texttt{param\_names}, \texttt{node},
 \texttt{nodal\_type}, \texttt{param\_set} and \texttt{given} columns of
 \texttt{parameters\_df} to uniquely identify parameters to set priors
 for. Alternatively a fully formed subsetting statement may be supplied
@@ -1662,23 +1641,7 @@ interchangeably.\footnote{See \texttt{?set\_priors} and
   \texttt{?make\_priors} for many more examples.} Thus the following two
 specifications of priors are equivalent:
 
-\begin{verbatim}
-R> model <- make_model("X -> M -> Y; X <-> Y")
-R> 
-R> model |>
-+  set_priors(node = "Y", 
-+             nodal_type = c("01","11"), 
-+             given = "X.1", 
-+             alphas = c(3,2)) 
-R> 
-R> model |>
-+  set_priors(
-+    alter_at = 
-+      "node == 'Y' & nodal_type %in% c('01','11') & given == 'X.1'", 
-+    alphas = c(3,2)) 
-\end{verbatim}
-
-While highly targeted prior setting is convenient and flexible, they
+While highly targeted prior setting is convenient and flexible, it
 should be used with caution. Setting priors on specific parameters in
 complex models, especially models involving confounding, may strongly
 affect inferences.
@@ -1795,10 +1758,6 @@ model using the \texttt{make\_data()} function. This can be useful for
 instance for assessing the expected performance of a model given data
 drawn from some speculated set of parameter values.
 
-\begin{verbatim}
-R> model <- make_model("X -> M -> Y") 
-\end{verbatim}
-
 \hypertarget{drawing-data-basics}{%
 \subsubsection{Drawing data basics}\label{drawing-data-basics}}
 
@@ -1807,7 +1766,7 @@ By default, the parameters used are taken from
 
 \begin{verbatim}
 R> sample_data_1 <- 
-+  model |> 
++  lipids_model |> 
 +  make_data(n = 4)
 \end{verbatim}
 
@@ -1815,14 +1774,15 @@ However you can also specify parameters directly or use parameter draws
 from a prior or posterior distribution. For instance:
 
 \begin{verbatim}
-R> make_data(model, n = 3, param_type = "prior_draw")
+R> lipids_model |>
++  make_data(n = 3, param_type = "prior_draw")
 \end{verbatim}
 
 \begin{verbatim}
-  X M Y
-1 0 0 1
+  Z X Y
+1 0 0 0
 2 0 0 1
-3 1 0 0
+3 0 1 1
 \end{verbatim}
 
 Note that the data is returned ordered by data type as in the example
@@ -1842,24 +1802,24 @@ data on different nodes, possibly as a function of prior nodes observed.
 
 \begin{verbatim}
 R> sample_data_2 <-
-+  make_data(model,
-+            n = 8,
-+            nodes = list(c("X", "Y"), "M"),
++  lipids_model |>
++  make_data(n = 8,
++            nodes = list(c("Z", "Y"), "X"),
 +            probs = list(1, .5),
-+            subsets = list(TRUE, "X==1 & Y==0"),
++            subsets = list(TRUE, "Z==1 & Y==0"),
 +            verbose = FALSE)
 R> 
 R> sample_data_2
 \end{verbatim}
 
 \begin{verbatim}
-  X  M Y
+  Z  X Y
 1 0 NA 0
 2 0 NA 1
 3 0 NA 1
 4 0 NA 1
-5 0 NA 0
-6 0 NA 1
+5 1  0 0
+6 1 NA 0
 7 1 NA 1
 8 1 NA 1
 \end{verbatim}
@@ -1875,15 +1835,23 @@ gathered. \texttt{CausalQueries} includes functions that lets you move
 between these two forms in case of need.
 
 \begin{verbatim}
-R> sample_data_2 |> collapse_data(model)
+R> sample_data_2 |> collapse_data(lipids_model)
 \end{verbatim}
 
 \begin{verbatim}
-  event strategy count
-1  X0Y0       XY     2
-2  X1Y0       XY     0
-3  X0Y1       XY     4
-4  X1Y1       XY     2
+    event strategy count
+1  Z0X0Y0      ZXY     0
+2  Z1X0Y0      ZXY     1
+3  Z0X1Y0      ZXY     0
+4  Z1X1Y0      ZXY     0
+5  Z0X0Y1      ZXY     0
+6  Z1X0Y1      ZXY     0
+7  Z0X1Y1      ZXY     0
+8  Z1X1Y1      ZXY     0
+9    Z0Y0       ZY     1
+10   Z1Y0       ZY     1
+11   Z0Y1       ZY     3
+12   Z1Y1       ZY     2
 \end{verbatim}
 
 In the same way it is possible to move from ``compact data'' to ``long
@@ -1944,8 +1912,8 @@ program is required, you can do so using the code below
 
 \begin{verbatim}
 R> sample_data_2 |> 
-+  collapse_data(model = model) |> 
-+  CausalQueries:::prep_stan_data(model = model)
++  collapse_data(model = lipids_model) |> 
++  CausalQueries:::prep_stan_data(model = lipids_model)
 \end{verbatim}
 
 \hypertarget{how-the-stan-program-works}{%
@@ -2006,23 +1974,21 @@ R> make_model("X -> Y") |>
 \end{verbatim}
 
 \hypertarget{tbl-parmap}{}
-\begin{table}
+\begin{longtable}[t]{lcccc}
 \caption{\label{tbl-parmap}Mapping from parameters to data types. }\tabularnewline
 
-\centering
-\begin{tabular}{lcccc}
 \toprule
-  & X0Y0 & X1Y0 & X0Y1 & X1Y1\\
+ & X0Y0 & X1Y0 & X0Y1 & X1Y1\\
 \midrule
 X.0 & 1 & 0 & 1 & 0\\
 X.1 & 0 & 1 & 0 & 1\\
 Y.00 & 1 & 1 & 0 & 0\\
 Y.10 & 0 & 1 & 1 & 0\\
 Y.01 & 1 & 0 & 0 & 1\\
+\addlinespace
 Y.11 & 0 & 0 & 1 & 1\\
 \bottomrule
-\end{tabular}
-\end{table}
+\end{longtable}
 
 For instance the probability of data type \texttt{X0Y0}, \(w_{00}\) is
 \(\lambda^X_0\times \lambda^Y_{00} + \lambda^X_0\times \lambda^Y_{01}\).
@@ -2120,30 +2086,175 @@ R> list(
 \end{verbatim}
 
 \hypertarget{tbl-censored}{}
-\begin{table}
+\begin{longtable}[t]{cccc}
 \caption{\label{tbl-censored}Posterior inferences taking account of censoring and not. }\tabularnewline
 
-\centering
-\begin{tabular}{cccc}
 \toprule
 model & query & mean & sd\\
 \midrule
-uncensored & (Y[X=1] - Y[X=0]) & 0.59 & 0.20\\
-censored & (Y[X=1] - Y[X=0]) & 0.01 & 0.32\\
+uncensored & (Y[X=1] - Y[X=0]) & 0.59 & 0.19\\
+censored & (Y[X=1] - Y[X=0]) & 0.02 & 0.32\\
 \bottomrule
-\end{tabular}
-\end{table}
+\end{longtable}
 
 \hypertarget{output}{%
 \subsection{Output}\label{output}}
 
 The primary output from \texttt{update\_model()} is a model with an
 attached posterior distribution over model parameters, stored as a data
-frame in \texttt{model\$posterior\_distribution}. In addition, a
-distribution of causal types is stored by default and the
+frame in the model list. This posterior distribution can be directly
+accessed using \texttt{get\_posterior\_distribution()}.
+
+\begin{verbatim}
+R> # snapshot of the posterior distribution
+R> get_posterior_distribution(lipids_model)[1:5, 1:5]
+\end{verbatim}
+
+\begin{verbatim}
+        Z.0       Z.1      X.00         X.10      X.01
+1 0.5172283 0.4827717 0.4052663 0.0042565697 0.5880170
+2 0.5255304 0.4744696 0.3799601 0.0055591871 0.6097304
+3 0.4674957 0.5325043 0.3865892 0.0021943051 0.5934770
+4 0.4387604 0.5612396 0.3709100 0.0117344012 0.6019160
+5 0.4947268 0.5052732 0.3889745 0.0001108514 0.6066322
+\end{verbatim}
+
+In addition, a distribution of causal types is stored by default and the
 \texttt{stanfit} object and a distribution over event probabilities are
-optionally saved. See again Table~\ref{tbl-additional} for a description
-of the elements that the updated model contains.
+optionally saved.
+
+\begin{verbatim}
+R> lipids_model <- lipids_model |> update_model(keep_fit = TRUE)
+R> 
+R> lipids_model$stan_objects$stan_fit |> print()
+\end{verbatim}
+
+\begin{verbatim}
+Inference for Stan model: simplexes.
+4 chains, each with iter=2000; warmup=1000; thin=1; 
+post-warmup draws per chain=1000, total post-warmup draws=4000.
+
+                    mean se_mean   sd   2.5%    25%    50%    75%  97.5% n_eff
+lambdas[1]          0.50     0.0 0.29   0.02   0.25   0.49   0.75   0.97  5371
+lambdas[2]          0.50     0.0 0.29   0.03   0.25   0.51   0.75   0.98  5371
+lambdas[3]          0.24     0.0 0.19   0.01   0.09   0.20   0.36   0.69  3395
+lambdas[4]          0.25     0.0 0.19   0.01   0.09   0.21   0.37   0.72  6330
+lambdas[5]          0.26     0.0 0.20   0.01   0.09   0.21   0.38   0.72  6494
+lambdas[6]          0.25     0.0 0.20   0.01   0.09   0.21   0.37   0.72  6321
+lambdas[7]          0.25     0.0 0.19   0.01   0.09   0.20   0.36   0.70  2899
+lambdas[8]          0.25     0.0 0.19   0.01   0.09   0.20   0.37   0.72  6041
+lambdas[9]          0.26     0.0 0.19   0.01   0.10   0.22   0.37   0.72  5866
+lambdas[10]         0.25     0.0 0.20   0.01   0.09   0.21   0.38   0.71  6183
+lambdas[11]         0.25     0.0 0.19   0.01   0.10   0.21   0.37   0.71  3484
+lambdas[12]         0.25     0.0 0.19   0.01   0.09   0.20   0.37   0.71  6538
+lambdas[13]         0.25     0.0 0.20   0.01   0.09   0.21   0.38   0.72  5956
+lambdas[14]         0.25     0.0 0.19   0.01   0.09   0.20   0.36   0.69  5932
+lambdas[15]         0.24     0.0 0.19   0.01   0.09   0.20   0.36   0.69  3226
+lambdas[16]         0.26     0.0 0.20   0.01   0.09   0.21   0.38   0.72  6505
+lambdas[17]         0.25     0.0 0.20   0.01   0.09   0.21   0.37   0.71  6635
+lambdas[18]         0.25     0.0 0.19   0.01   0.09   0.20   0.37   0.70  6223
+lambdas[19]         0.25     0.0 0.20   0.01   0.09   0.20   0.37   0.72  2930
+lambdas[20]         0.25     0.0 0.19   0.01   0.09   0.21   0.37   0.71  5834
+lambdas[21]         0.25     0.0 0.19   0.01   0.09   0.20   0.37   0.70  5909
+lambdas[22]         0.25     0.0 0.20   0.01   0.09   0.20   0.37   0.71  5895
+prob_of_types[1]    0.03     0.0 0.04   0.00   0.00   0.01   0.04   0.15  3536
+prob_of_types[2]    0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.16  3467
+prob_of_types[3]    0.03     0.0 0.05   0.00   0.00   0.01   0.03   0.17  3604
+prob_of_types[4]    0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.17  3760
+prob_of_types[5]    0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.18  3749
+prob_of_types[6]    0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.18  4301
+prob_of_types[7]    0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.17  3661
+prob_of_types[8]    0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.18  3772
+prob_of_types[9]    0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.17  3878
+prob_of_types[10]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.17  3484
+prob_of_types[11]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.18  3988
+prob_of_types[12]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.18  4245
+prob_of_types[13]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.18  4055
+prob_of_types[14]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.18  2898
+prob_of_types[15]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.17  3581
+prob_of_types[16]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.17  3966
+prob_of_types[17]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.17  3262
+prob_of_types[18]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.17  4136
+prob_of_types[19]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.17  3787
+prob_of_types[20]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.19  4100
+prob_of_types[21]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.18  3838
+prob_of_types[22]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.19  4823
+prob_of_types[23]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.17  4073
+prob_of_types[24]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.17  4467
+prob_of_types[25]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.16  4325
+prob_of_types[26]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.17  3959
+prob_of_types[27]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.17  3998
+prob_of_types[28]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.16  4688
+prob_of_types[29]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.18  4472
+prob_of_types[30]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.17  4218
+prob_of_types[31]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.18  4177
+prob_of_types[32]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.18  3603
+lp__              -29.87     0.1 3.40 -37.47 -31.91 -29.42 -27.40 -24.39  1270
+                  Rhat
+lambdas[1]           1
+lambdas[2]           1
+lambdas[3]           1
+lambdas[4]           1
+lambdas[5]           1
+lambdas[6]           1
+lambdas[7]           1
+lambdas[8]           1
+lambdas[9]           1
+lambdas[10]          1
+lambdas[11]          1
+lambdas[12]          1
+lambdas[13]          1
+lambdas[14]          1
+lambdas[15]          1
+lambdas[16]          1
+lambdas[17]          1
+lambdas[18]          1
+lambdas[19]          1
+lambdas[20]          1
+lambdas[21]          1
+lambdas[22]          1
+prob_of_types[1]     1
+prob_of_types[2]     1
+prob_of_types[3]     1
+prob_of_types[4]     1
+prob_of_types[5]     1
+prob_of_types[6]     1
+prob_of_types[7]     1
+prob_of_types[8]     1
+prob_of_types[9]     1
+prob_of_types[10]    1
+prob_of_types[11]    1
+prob_of_types[12]    1
+prob_of_types[13]    1
+prob_of_types[14]    1
+prob_of_types[15]    1
+prob_of_types[16]    1
+prob_of_types[17]    1
+prob_of_types[18]    1
+prob_of_types[19]    1
+prob_of_types[20]    1
+prob_of_types[21]    1
+prob_of_types[22]    1
+prob_of_types[23]    1
+prob_of_types[24]    1
+prob_of_types[25]    1
+prob_of_types[26]    1
+prob_of_types[27]    1
+prob_of_types[28]    1
+prob_of_types[29]    1
+prob_of_types[30]    1
+prob_of_types[31]    1
+prob_of_types[32]    1
+lp__                 1
+
+Samples were drawn using NUTS(diag_e) at Wed Mar  6 18:26:43 2024.
+For each parameter, n_eff is a crude measure of effective sample size,
+and Rhat is the potential scale reduction factor on split chains (at 
+convergence, Rhat=1).
+\end{verbatim}
+
+See again Table~\ref{tbl-additional} for a description of the elements
+that the updated model contains.
 
 \hypertarget{sec-query}{%
 \section{Queries}\label{sec-query}}
@@ -2473,19 +2584,15 @@ R> lipids_model |>
 \end{verbatim}
 
 \hypertarget{tbl-case-level-query}{}
-\begin{table}[!h]
+\begin{longtable}[t]{cccccc}
 \caption{\label{tbl-case-level-query}Case level query example. }\tabularnewline
 
-\centering
-\resizebox{\linewidth}{!}{
-\begin{tabular}{cccccc}
 \toprule
 query & given & mean & sd & cred.low & cred.high\\
 \midrule
-Y[X=1] - Y[X=0] & X==1 \& Y==1 \& Z==1 & 0.95 & 0.04 & 0.87 & 1\\
+Y[X=1] - Y[X=0] & X==1 \& Y==1 \& Z==1 & 0.5 & 0.24 & 0.07 & 0.93\\
 \bottomrule
-\end{tabular}}
-\end{table}
+\end{longtable}
 
 The answer we get in Table~\ref{tbl-case-level-query} is what we now
 believe for all cases in which \(Z=1\), \(X=1\) and \(Y=1\). It is in
@@ -2528,7 +2635,7 @@ R> make_model("X -> M -> Y") |>
 \end{verbatim}
 
 \hypertarget{tbl-case-level}{}
-\begin{longtable}{ccccc}
+\begin{longtable}[t]{ccccc}
 \caption{\label{tbl-case-level}Results for a case level query. }\tabularnewline
 
 \toprule
@@ -2572,7 +2679,7 @@ R> query_model(
 \end{verbatim}
 
 \hypertarget{tbl-batch-query}{}
-\begin{longtable}{ccccccc}
+\begin{longtable}[t]{ccccccc}
 \caption{\label{tbl-batch-query}Results for two queries on two models. }\tabularnewline
 
 \toprule
@@ -2580,34 +2687,40 @@ model & query & given & using & case\_level & mean & sd\\
 \midrule
 1 & ATE & - & priors & FALSE & 0.00 & 0.31\\
 2 & ATE & - & priors & FALSE & 0.33 & 0.24\\
-1 & ATE & - & posteriors & FALSE & 0.76 & 0.12\\
-2 & ATE & - & posteriors & FALSE & 0.84 & 0.11\\
+1 & ATE & - & posteriors & FALSE & 0.76 & 0.13\\
+2 & ATE & - & posteriors & FALSE & 0.83 & 0.11\\
 1 & ATE & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29\\
+\addlinespace
 2 & ATE & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29\\
-1 & ATE & Y==1 \& X==1 & posteriors & FALSE & 0.91 & 0.08\\
+1 & ATE & Y==1 \& X==1 & posteriors & FALSE & 0.91 & 0.09\\
 2 & ATE & Y==1 \& X==1 & posteriors & FALSE & 0.91 & 0.09\\
 1 & POS & - & priors & FALSE & 0.25 & 0.19\\
 2 & POS & - & priors & FALSE & 0.33 & 0.24\\
+\addlinespace
 1 & POS & - & posteriors & FALSE & 0.80 & 0.11\\
-2 & POS & - & posteriors & FALSE & 0.84 & 0.11\\
+2 & POS & - & posteriors & FALSE & 0.83 & 0.11\\
 1 & POS & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29\\
 2 & POS & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29\\
-1 & POS & Y==1 \& X==1 & posteriors & FALSE & 0.91 & 0.08\\
+1 & POS & Y==1 \& X==1 & posteriors & FALSE & 0.91 & 0.09\\
+\addlinespace
 2 & POS & Y==1 \& X==1 & posteriors & FALSE & 0.91 & 0.09\\
 1 & ATE & - & priors & TRUE & 0.00 & NA\\
 2 & ATE & - & priors & TRUE & 0.33 & NA\\
 1 & ATE & - & posteriors & TRUE & 0.76 & NA\\
-2 & ATE & - & posteriors & TRUE & 0.84 & NA\\
+2 & ATE & - & posteriors & TRUE & 0.83 & NA\\
+\addlinespace
 1 & ATE & Y==1 \& X==1 & priors & TRUE & 0.50 & NA\\
 2 & ATE & Y==1 \& X==1 & priors & TRUE & 0.50 & NA\\
 1 & ATE & Y==1 \& X==1 & posteriors & TRUE & 0.91 & NA\\
 2 & ATE & Y==1 \& X==1 & posteriors & TRUE & 0.91 & NA\\
 1 & POS & - & priors & TRUE & 0.25 & NA\\
+\addlinespace
 2 & POS & - & priors & TRUE & 0.33 & NA\\
 1 & POS & - & posteriors & TRUE & 0.80 & NA\\
-2 & POS & - & posteriors & TRUE & 0.84 & NA\\
+2 & POS & - & posteriors & TRUE & 0.83 & NA\\
 1 & POS & Y==1 \& X==1 & priors & TRUE & 0.50 & NA\\
 2 & POS & Y==1 \& X==1 & priors & TRUE & 0.50 & NA\\
+\addlinespace
 1 & POS & Y==1 \& X==1 & posteriors & TRUE & 0.91 & NA\\
 2 & POS & Y==1 \& X==1 & posteriors & TRUE & 0.91 & NA\\
 \bottomrule
@@ -2779,7 +2892,7 @@ Network (CRAN) at \url{https://CRAN.R-project.org/}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, rightrule=.15mm, toprule=.15mm, opacityback=0, breakable, leftrule=.75mm, arc=.35mm, colback=white, bottomrule=.15mm, left=2mm]
+\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, opacityback=0, arc=.35mm, colback=white, rightrule=.15mm, left=2mm, bottomrule=.15mm, toprule=.15mm, breakable]
 
 We thank Ben Goodrich who provided generous insights on using
 \texttt{stan} for this project. We thank Alan M Jacobs for key work
@@ -2822,10 +2935,10 @@ R> options(mc.cores = parallel::detectCores())
 
 Additionally parallelizing across models or data while running MCMC
 chains in parallel can be achieved by setting up a nested parallel
-process. With 8 cores one can run 2 updating processes with 3 parallel
-chains each simultaneously. More generally the number of parallel
-processes at the upper level of the nested parallel structure are given
-by \(\left \lfloor \frac{cores}{chains + 1} \right \rfloor\).
+process. With 8 cores one can run two updating processes with three
+parallel chains each simultaneously. More generally the number of
+parallel processes at the upper level of the nested parallel structure
+are given by \(\left \lfloor \frac{cores}{chains + 1} \right \rfloor\).
 
 \begin{verbatim}
 R> library(future)
@@ -2858,12 +2971,12 @@ R> future.apply::future_lapply(data, function(d) {
 \section*{Appendix B: Stan code}\label{sec-stancode}}
 \addcontentsline{toc}{section}{Appendix B: Stan code}
 
-Updating is performed using Stan model. The data provided to Stan is
-generated by the internal function \texttt{prep\_stan\_data()} which
-returns a list of objects that Stan expects to receive. The code for the
-Stan model is show below. After defining a helper function the code
-starts with a block declaring what input data is to be expected. Then
-there is a characterization of parameters and the transformed
+Updating is performed using a generic Stan model. The data provided to
+Stan is generated by the internal function \texttt{prep\_stan\_data()}
+which returns a list of objects that Stan expects to receive. The code
+for the Stan model is shown below. After defining a helper function, the
+code starts with a block declaring what input data is to be expected.
+Then there is a characterization of parameters and the transformed
 parameters. Then the likelihoods and priors are provided. At the end
 there is a block for generated quantities which can be used to append a
 posterior distribution of causal types to the model.

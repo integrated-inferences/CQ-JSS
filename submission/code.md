@@ -49,8 +49,17 @@ lipids_data
 lipids_model <-
   make_model("Z -> X -> Y; X <-> Y") |>
   update_model(lipids_data, refresh = 0)
+```
 
+```
+## Warning in data.frame(., stringsAsFactors = FALSE): internal error -3 in R_decompress1
+```
 
+```
+## Error in data.frame(., stringsAsFactors = FALSE): lazy-load database 'C:/Users/humphreys/AppData/Local/R/win-library/4.2/dagitty/R/dagitty.rdb' is corrupt
+```
+
+```r
 results <-
   lipids_model |>
   query_model(
@@ -58,8 +67,13 @@ results <-
     given = c("All",  "X==0 & Y==0", "X[Z=1] > X[Z=0]"),
     using = "posteriors"
   )
+```
 
+```
+## Error in is(model, "causal_model"): object 'lipids_model' not found
+```
 
+```r
 results |>
   dplyr::select(query, given, mean, sd, starts_with("cred")) |>
   knitr::kable(
@@ -72,44 +86,9 @@ results |>
   kableExtra::kable_classic_2(latex_options = c("scale_down"))
 ```
 
-<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
- <thead>
-  <tr>
-   <th style="text-align:center;"> query </th>
-   <th style="text-align:center;"> given </th>
-   <th style="text-align:center;"> mean </th>
-   <th style="text-align:center;"> sd </th>
-   <th style="text-align:center;"> cred.low </th>
-   <th style="text-align:center;"> cred.high </th>
-  </tr>
- </thead>
-<tbody>
-  <tr>
-   <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
-   <td style="text-align:center;"> - </td>
-   <td style="text-align:center;"> 0.55 </td>
-   <td style="text-align:center;"> 0.10 </td>
-   <td style="text-align:center;"> 0.37 </td>
-   <td style="text-align:center;"> 0.73 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
-   <td style="text-align:center;"> X==0 &amp; Y==0 </td>
-   <td style="text-align:center;"> 0.64 </td>
-   <td style="text-align:center;"> 0.15 </td>
-   <td style="text-align:center;"> 0.37 </td>
-   <td style="text-align:center;"> 0.90 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
-   <td style="text-align:center;"> X[Z=1] &gt; X[Z=0] </td>
-   <td style="text-align:center;"> 0.70 </td>
-   <td style="text-align:center;"> 0.06 </td>
-   <td style="text-align:center;"> 0.59 </td>
-   <td style="text-align:center;"> 0.80 </td>
-  </tr>
-</tbody>
-</table>
+```
+## Error in dplyr::select(results, query, given, mean, sd, starts_with("cred")): object 'results' not found
+```
 
 ```r
 ## SECTION 4: Statistical Model
@@ -120,7 +99,13 @@ results |>
 with_pars <-
   lipids_model |>
   set_parameters(param_type = "prior_draw")
+```
 
+```
+## Error in get_parameters(model): object 'lipids_model' not found
+```
+
+```r
 with_pars$parameters_df |>
   dplyr::select(node,  nodal_type, param_set, 
                 param_names, param_value, priors) |>
@@ -135,196 +120,9 @@ with_pars$parameters_df |>
   kableExtra::kable_classic_2(latex_options = c("hold_position"))
 ```
 
-<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
- <thead>
-  <tr>
-   <th style="text-align:center;"> node </th>
-   <th style="text-align:center;"> nodal_type </th>
-   <th style="text-align:center;"> param_set </th>
-   <th style="text-align:center;"> param_names </th>
-   <th style="text-align:center;"> param_value </th>
-   <th style="text-align:center;"> priors </th>
-  </tr>
- </thead>
-<tbody>
-  <tr>
-   <td style="text-align:center;"> Z </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> Z </td>
-   <td style="text-align:center;"> Z.0 </td>
-   <td style="text-align:center;"> 0.37 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Z </td>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> Z </td>
-   <td style="text-align:center;"> Z.1 </td>
-   <td style="text-align:center;"> 0.63 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> X </td>
-   <td style="text-align:center;"> 00 </td>
-   <td style="text-align:center;"> X </td>
-   <td style="text-align:center;"> X.00 </td>
-   <td style="text-align:center;"> 0.02 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> X </td>
-   <td style="text-align:center;"> 10 </td>
-   <td style="text-align:center;"> X </td>
-   <td style="text-align:center;"> X.10 </td>
-   <td style="text-align:center;"> 0.31 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> X </td>
-   <td style="text-align:center;"> 01 </td>
-   <td style="text-align:center;"> X </td>
-   <td style="text-align:center;"> X.01 </td>
-   <td style="text-align:center;"> 0.06 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> X </td>
-   <td style="text-align:center;"> 11 </td>
-   <td style="text-align:center;"> X </td>
-   <td style="text-align:center;"> X.11 </td>
-   <td style="text-align:center;"> 0.62 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 00 </td>
-   <td style="text-align:center;"> Y.X.00 </td>
-   <td style="text-align:center;"> Y.00_X.00 </td>
-   <td style="text-align:center;"> 0.09 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 10 </td>
-   <td style="text-align:center;"> Y.X.00 </td>
-   <td style="text-align:center;"> Y.10_X.00 </td>
-   <td style="text-align:center;"> 0.42 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 01 </td>
-   <td style="text-align:center;"> Y.X.00 </td>
-   <td style="text-align:center;"> Y.01_X.00 </td>
-   <td style="text-align:center;"> 0.19 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 11 </td>
-   <td style="text-align:center;"> Y.X.00 </td>
-   <td style="text-align:center;"> Y.11_X.00 </td>
-   <td style="text-align:center;"> 0.30 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 00 </td>
-   <td style="text-align:center;"> Y.X.01 </td>
-   <td style="text-align:center;"> Y.00_X.01 </td>
-   <td style="text-align:center;"> 0.05 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 10 </td>
-   <td style="text-align:center;"> Y.X.01 </td>
-   <td style="text-align:center;"> Y.10_X.01 </td>
-   <td style="text-align:center;"> 0.41 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 01 </td>
-   <td style="text-align:center;"> Y.X.01 </td>
-   <td style="text-align:center;"> Y.01_X.01 </td>
-   <td style="text-align:center;"> 0.13 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 11 </td>
-   <td style="text-align:center;"> Y.X.01 </td>
-   <td style="text-align:center;"> Y.11_X.01 </td>
-   <td style="text-align:center;"> 0.41 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 00 </td>
-   <td style="text-align:center;"> Y.X.10 </td>
-   <td style="text-align:center;"> Y.00_X.10 </td>
-   <td style="text-align:center;"> 0.26 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 10 </td>
-   <td style="text-align:center;"> Y.X.10 </td>
-   <td style="text-align:center;"> Y.10_X.10 </td>
-   <td style="text-align:center;"> 0.07 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 01 </td>
-   <td style="text-align:center;"> Y.X.10 </td>
-   <td style="text-align:center;"> Y.01_X.10 </td>
-   <td style="text-align:center;"> 0.11 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 11 </td>
-   <td style="text-align:center;"> Y.X.10 </td>
-   <td style="text-align:center;"> Y.11_X.10 </td>
-   <td style="text-align:center;"> 0.55 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 00 </td>
-   <td style="text-align:center;"> Y.X.11 </td>
-   <td style="text-align:center;"> Y.00_X.11 </td>
-   <td style="text-align:center;"> 0.22 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 10 </td>
-   <td style="text-align:center;"> Y.X.11 </td>
-   <td style="text-align:center;"> Y.10_X.11 </td>
-   <td style="text-align:center;"> 0.06 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 01 </td>
-   <td style="text-align:center;"> Y.X.11 </td>
-   <td style="text-align:center;"> Y.01_X.11 </td>
-   <td style="text-align:center;"> 0.54 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 11 </td>
-   <td style="text-align:center;"> Y.X.11 </td>
-   <td style="text-align:center;"> Y.11_X.11 </td>
-   <td style="text-align:center;"> 0.18 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-</tbody>
-</table>
+```
+## Error in dplyr::select(with_pars$parameters_df, node, nodal_type, param_set, : object 'with_pars' not found
+```
 
 ```r
 ## SECTION 5: Making models
@@ -335,12 +133,34 @@ with_pars$parameters_df |>
 model <- make_model("X -> M -> Y <- X")
 ```
 
+```
+## Warning in data.frame(., stringsAsFactors = FALSE): restarting interrupted promise evaluation
+```
+
+```
+## Warning in data.frame(., stringsAsFactors = FALSE): internal error -3 in R_decompress1
+```
+
+```
+## Error in data.frame(., stringsAsFactors = FALSE): lazy-load database 'C:/Users/humphreys/AppData/Local/R/win-library/4.2/dagitty/R/dagitty.rdb' is corrupt
+```
+
 ```r
 make_model("X -> M -> Y <- X; Z -> Y") |>
   plot()
 ```
 
-![Examples of model graphs.](figure/fig-plots-1.png)
+```
+## Warning in data.frame(., stringsAsFactors = FALSE): restarting interrupted promise evaluation
+```
+
+```
+## Warning in data.frame(., stringsAsFactors = FALSE): internal error -3 in R_decompress1
+```
+
+```
+## Error in h(simpleError(msg, call)): error in evaluating the argument 'x' in selecting a method for function 'plot': lazy-load database 'C:/Users/humphreys/AppData/Local/R/win-library/4.2/dagitty/R/dagitty.rdb' is corrupt
+```
 
 ```r
 make_model("X -> M -> Y <- X; Z -> Y") |>
@@ -355,7 +175,15 @@ make_model("X -> M -> Y <- X; Z -> Y") |>
   )
 ```
 
-![Examples of model graphs.](figure/fig-plots-2.png)
+```
+## Warning in data.frame(., stringsAsFactors = FALSE): restarting interrupted promise evaluation
+
+## Warning in data.frame(., stringsAsFactors = FALSE): internal error -3 in R_decompress1
+```
+
+```
+## Error in h(simpleError(msg, call)): error in evaluating the argument 'x' in selecting a method for function 'plot': lazy-load database 'C:/Users/humphreys/AppData/Local/R/win-library/4.2/dagitty/R/dagitty.rdb' is corrupt
+```
 
 ```r
 ## Parameters data frame
@@ -375,82 +203,17 @@ make_model("X -> Y")$parameters_df |>
   kableExtra::kable_classic_2(latex_options = c("scale_down", "HOLD_position"))
 ```
 
-<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
- <thead>
-  <tr>
-   <th style="text-align:center;"> param_names </th>
-   <th style="text-align:center;"> node </th>
-   <th style="text-align:center;"> gen </th>
-   <th style="text-align:center;"> param_set </th>
-   <th style="text-align:center;"> nodal_type </th>
-   <th style="text-align:center;"> given </th>
-   <th style="text-align:center;"> param_value </th>
-   <th style="text-align:center;"> priors </th>
-  </tr>
- </thead>
-<tbody>
-  <tr>
-   <td style="text-align:center;"> X.0 </td>
-   <td style="text-align:center;"> X </td>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> X </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;">  </td>
-   <td style="text-align:center;"> 0.50 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> X.1 </td>
-   <td style="text-align:center;"> X </td>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> X </td>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;">  </td>
-   <td style="text-align:center;"> 0.50 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y.00 </td>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 2 </td>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 00 </td>
-   <td style="text-align:center;">  </td>
-   <td style="text-align:center;"> 0.25 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y.10 </td>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 2 </td>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 10 </td>
-   <td style="text-align:center;">  </td>
-   <td style="text-align:center;"> 0.25 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y.01 </td>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 2 </td>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 01 </td>
-   <td style="text-align:center;">  </td>
-   <td style="text-align:center;"> 0.25 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y.11 </td>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 2 </td>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 11 </td>
-   <td style="text-align:center;">  </td>
-   <td style="text-align:center;"> 0.25 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-</tbody>
-</table>
+```
+## Warning in data.frame(., stringsAsFactors = FALSE): restarting interrupted promise evaluation
+```
+
+```
+## Warning in data.frame(., stringsAsFactors = FALSE): internal error -3 in R_decompress1
+```
+
+```
+## Error in data.frame(., stringsAsFactors = FALSE): lazy-load database 'C:/Users/humphreys/AppData/Local/R/win-library/4.2/dagitty/R/dagitty.rdb' is corrupt
+```
 
 ```r
 ## Interpreting nodal types
@@ -459,20 +222,24 @@ make_model("X -> Y")$parameters_df |>
 interpretations <-
   make_model("X -> Y <- M; W -> Y") |>
   interpret_type()
+```
 
+```
+## Warning in data.frame(., stringsAsFactors = FALSE): restarting interrupted promise evaluation
+
+## Warning in data.frame(., stringsAsFactors = FALSE): internal error -3 in R_decompress1
+```
+
+```
+## Error in data.frame(., stringsAsFactors = FALSE): lazy-load database 'C:/Users/humphreys/AppData/Local/R/win-library/4.2/dagitty/R/dagitty.rdb' is corrupt
+```
+
+```r
 interpretations$Y
 ```
 
 ```
-##   node position     display            interpretation
-## 1    Y        1 Y[*]******* Y | M = 0 & W = 0 & X = 0
-## 2    Y        2 Y*[*]****** Y | M = 1 & W = 0 & X = 0
-## 3    Y        3 Y**[*]***** Y | M = 0 & W = 1 & X = 0
-## 4    Y        4 Y***[*]**** Y | M = 1 & W = 1 & X = 0
-## 5    Y        5 Y****[*]*** Y | M = 0 & W = 0 & X = 1
-## 6    Y        6 Y*****[*]** Y | M = 1 & W = 0 & X = 1
-## 7    Y        7 Y******[*]* Y | M = 0 & W = 1 & X = 1
-## 8    Y        8 Y*******[*] Y | M = 1 & W = 1 & X = 1
+## Error in eval(expr, envir, enclos): object 'interpretations' not found
 ```
 
 ```r
@@ -483,13 +250,7 @@ lipids_model$causal_types |> head()
 ```
 
 ```
-##            Z  X  Y
-## Z0.X00.Y00 0 00 00
-## Z1.X00.Y00 1 00 00
-## Z0.X10.Y00 0 10 00
-## Z1.X10.Y00 1 10 00
-## Z0.X01.Y00 0 01 00
-## Z1.X01.Y00 1 01 00
+## Error in head(lipids_model$causal_types): object 'lipids_model' not found
 ```
 
 ```r
@@ -497,25 +258,15 @@ make_model("X -> Y") |> get_parameter_matrix()
 ```
 
 ```
-## 
-## Rows are parameters, grouped in parameter sets
-## 
-## Columns are causal types
-## 
-## Cell entries indicate whether a parameter probability is used
-## in the calculation of causal type probability
-## 
-##      X0.Y00 X1.Y00 X0.Y10 X1.Y10 X0.Y01 X1.Y01 X0.Y11 X1.Y11
-## X.0       1      0      1      0      1      0      1      0
-## X.1       0      1      0      1      0      1      0      1
-## Y.00      1      1      0      0      0      0      0      0
-## Y.10      0      0      1      1      0      0      0      0
-## Y.01      0      0      0      0      1      1      0      0
-## Y.11      0      0      0      0      0      0      1      1
-## 
-##  
-##  param_set  (P)
-## 
+## Warning in data.frame(., stringsAsFactors = FALSE): restarting interrupted promise evaluation
+```
+
+```
+## Warning in data.frame(., stringsAsFactors = FALSE): internal error -3 in R_decompress1
+```
+
+```
+## Error in data.frame(., stringsAsFactors = FALSE): lazy-load database 'C:/Users/humphreys/AppData/Local/R/win-library/4.2/dagitty/R/dagitty.rdb' is corrupt
 ```
 
 ```r
@@ -527,9 +278,33 @@ model_restricted <-
   set_restrictions("X[Z=1] < X[Z=0]")
 ```
 
+```
+## Warning in data.frame(., stringsAsFactors = FALSE): restarting interrupted promise evaluation
+
+## Warning in data.frame(., stringsAsFactors = FALSE): internal error -3 in R_decompress1
+```
+
+```
+## Error in data.frame(., stringsAsFactors = FALSE): lazy-load database 'C:/Users/humphreys/AppData/Local/R/win-library/4.2/dagitty/R/dagitty.rdb' is corrupt
+```
+
 ```r
 confounded <- make_model("X -> Y ; X <-> Y")
+```
 
+```
+## Warning in data.frame(., stringsAsFactors = FALSE): restarting interrupted promise evaluation
+```
+
+```
+## Warning in data.frame(., stringsAsFactors = FALSE): internal error -3 in R_decompress1
+```
+
+```
+## Error in data.frame(., stringsAsFactors = FALSE): lazy-load database 'C:/Users/humphreys/AppData/Local/R/win-library/4.2/dagitty/R/dagitty.rdb' is corrupt
+```
+
+```r
 confounded$parameters_df |>
   knitr::kable(
     digits = 2,
@@ -541,122 +316,9 @@ confounded$parameters_df |>
   kableExtra::kable_classic_2(latex_options = c("scale_down", "HOLD_position"))
 ```
 
-<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
- <thead>
-  <tr>
-   <th style="text-align:center;"> param_names </th>
-   <th style="text-align:center;"> node </th>
-   <th style="text-align:center;"> gen </th>
-   <th style="text-align:center;"> param_set </th>
-   <th style="text-align:center;"> nodal_type </th>
-   <th style="text-align:center;"> given </th>
-   <th style="text-align:center;"> param_value </th>
-   <th style="text-align:center;"> priors </th>
-  </tr>
- </thead>
-<tbody>
-  <tr>
-   <td style="text-align:center;"> X.0 </td>
-   <td style="text-align:center;"> X </td>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> X </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;">  </td>
-   <td style="text-align:center;"> 0.50 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> X.1 </td>
-   <td style="text-align:center;"> X </td>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> X </td>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;">  </td>
-   <td style="text-align:center;"> 0.50 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y.00_X.0 </td>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 2 </td>
-   <td style="text-align:center;"> Y.X.0 </td>
-   <td style="text-align:center;"> 00 </td>
-   <td style="text-align:center;"> X.0 </td>
-   <td style="text-align:center;"> 0.25 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y.10_X.0 </td>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 2 </td>
-   <td style="text-align:center;"> Y.X.0 </td>
-   <td style="text-align:center;"> 10 </td>
-   <td style="text-align:center;"> X.0 </td>
-   <td style="text-align:center;"> 0.25 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y.01_X.0 </td>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 2 </td>
-   <td style="text-align:center;"> Y.X.0 </td>
-   <td style="text-align:center;"> 01 </td>
-   <td style="text-align:center;"> X.0 </td>
-   <td style="text-align:center;"> 0.25 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y.11_X.0 </td>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 2 </td>
-   <td style="text-align:center;"> Y.X.0 </td>
-   <td style="text-align:center;"> 11 </td>
-   <td style="text-align:center;"> X.0 </td>
-   <td style="text-align:center;"> 0.25 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y.00_X.1 </td>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 2 </td>
-   <td style="text-align:center;"> Y.X.1 </td>
-   <td style="text-align:center;"> 00 </td>
-   <td style="text-align:center;"> X.1 </td>
-   <td style="text-align:center;"> 0.25 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y.10_X.1 </td>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 2 </td>
-   <td style="text-align:center;"> Y.X.1 </td>
-   <td style="text-align:center;"> 10 </td>
-   <td style="text-align:center;"> X.1 </td>
-   <td style="text-align:center;"> 0.25 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y.01_X.1 </td>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 2 </td>
-   <td style="text-align:center;"> Y.X.1 </td>
-   <td style="text-align:center;"> 01 </td>
-   <td style="text-align:center;"> X.1 </td>
-   <td style="text-align:center;"> 0.25 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y.11_X.1 </td>
-   <td style="text-align:center;"> Y </td>
-   <td style="text-align:center;"> 2 </td>
-   <td style="text-align:center;"> Y.X.1 </td>
-   <td style="text-align:center;"> 11 </td>
-   <td style="text-align:center;"> X.1 </td>
-   <td style="text-align:center;"> 0.25 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-</tbody>
-</table>
+```
+## Error in knitr::kable(confounded$parameters_df, digits = 2, booktabs = TRUE, : object 'confounded' not found
+```
 
 ```r
 get_parameter_matrix(confounded) |>
@@ -670,133 +332,9 @@ get_parameter_matrix(confounded) |>
   kableExtra::kable_classic_2(latex_options = c("scale_down"))
 ```
 
-<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
- <thead>
-  <tr>
-   <th style="text-align:left;">   </th>
-   <th style="text-align:center;"> X0.Y00 </th>
-   <th style="text-align:center;"> X1.Y00 </th>
-   <th style="text-align:center;"> X0.Y10 </th>
-   <th style="text-align:center;"> X1.Y10 </th>
-   <th style="text-align:center;"> X0.Y01 </th>
-   <th style="text-align:center;"> X1.Y01 </th>
-   <th style="text-align:center;"> X0.Y11 </th>
-   <th style="text-align:center;"> X1.Y11 </th>
-  </tr>
- </thead>
-<tbody>
-  <tr>
-   <td style="text-align:left;"> X.0 </td>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> 0 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> X.1 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> Y.00_X.0 </td>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> Y.10_X.0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> Y.01_X.0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> Y.11_X.0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> 0 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> Y.00_X.1 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> Y.10_X.1 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> Y.01_X.1 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> Y.11_X.1 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-</tbody>
-</table>
+```
+## Error in get_parameter_matrix(confounded): object 'confounded' not found
+```
 
 ```r
 ## Degrees of freedom
@@ -832,48 +370,17 @@ data.frame(Model = statements |> unlist(),
   )
 ```
 
-<table>
- <thead>
-  <tr>
-   <th style="text-align:left;"> Model </th>
-   <th style="text-align:center;"> dof </th>
-  </tr>
- </thead>
-<tbody>
-  <tr>
-   <td style="text-align:left;"> X -&gt; Y &lt;- W </td>
-   <td style="text-align:center;"> 17 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> X -&gt; Y &lt;- W; X &lt;-&gt; W </td>
-   <td style="text-align:center;"> 18 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> X -&gt; Y &lt;- W; X &lt;-&gt; Y; W &lt;-&gt; Y </td>
-   <td style="text-align:center;"> 62 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> X -&gt; Y &lt;- W; X &lt;-&gt; Y; W &lt;-&gt; Y; X &lt;-&gt;W </td>
-   <td style="text-align:center;"> 63 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> X -&gt; W -&gt; Y &lt;- X </td>
-   <td style="text-align:center;"> 19 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> X -&gt; W -&gt; Y &lt;- X; W &lt;-&gt; Y </td>
-   <td style="text-align:center;"> 64 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> X -&gt; W -&gt; Y &lt;- X; X &lt;-&gt; W; W &lt;-&gt; Y </td>
-   <td style="text-align:center;"> 67 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> X -&gt; W -&gt; Y &lt;- X; X &lt;-&gt; W; W &lt;-&gt; Y; X &lt;-&gt; Y </td>
-   <td style="text-align:center;"> 127 </td>
-  </tr>
-</tbody>
-</table>
+```
+## Warning in data.frame(., stringsAsFactors = FALSE): restarting interrupted promise evaluation
+```
+
+```
+## Warning in data.frame(., stringsAsFactors = FALSE): internal error -3 in R_decompress1
+```
+
+```
+## Error in data.frame(., stringsAsFactors = FALSE): lazy-load database 'C:/Users/humphreys/AppData/Local/R/win-library/4.2/dagitty/R/dagitty.rdb' is corrupt
+```
 
 ```r
 # get-priors
@@ -882,8 +389,13 @@ make_model("X -> Y") |> get_priors()
 ```
 
 ```
-##  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
-##    1    1    1    1    1    1
+## Warning in data.frame(., stringsAsFactors = FALSE): restarting interrupted promise evaluation
+
+## Warning in data.frame(., stringsAsFactors = FALSE): internal error -3 in R_decompress1
+```
+
+```
+## Error in data.frame(., stringsAsFactors = FALSE): lazy-load database 'C:/Users/humphreys/AppData/Local/R/win-library/4.2/dagitty/R/dagitty.rdb' is corrupt
 ```
 
 ```r
@@ -895,8 +407,13 @@ make_model("X -> Y") |>
 ```
 
 ```
-##  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
-##    1    2    3    4    5    6
+## Warning in data.frame(., stringsAsFactors = FALSE): restarting interrupted promise evaluation
+
+## Warning in data.frame(., stringsAsFactors = FALSE): internal error -3 in R_decompress1
+```
+
+```
+## Error in data.frame(., stringsAsFactors = FALSE): lazy-load database 'C:/Users/humphreys/AppData/Local/R/win-library/4.2/dagitty/R/dagitty.rdb' is corrupt
 ```
 
 ```r
@@ -908,8 +425,13 @@ make_model("X -> Y") |>
 ```
 
 ```
-##  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
-##    1    1    1    1    3    1
+## Warning in data.frame(., stringsAsFactors = FALSE): restarting interrupted promise evaluation
+
+## Warning in data.frame(., stringsAsFactors = FALSE): internal error -3 in R_decompress1
+```
+
+```
+## Error in data.frame(., stringsAsFactors = FALSE): lazy-load database 'C:/Users/humphreys/AppData/Local/R/win-library/4.2/dagitty/R/dagitty.rdb' is corrupt
 ```
 
 ```r
@@ -921,8 +443,13 @@ make_model("X -> Y") |>
 ```
 
 ```
-##  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
-## 0.50 0.50 0.25 0.25 0.25 0.25
+## Warning in data.frame(., stringsAsFactors = FALSE): restarting interrupted promise evaluation
+
+## Warning in data.frame(., stringsAsFactors = FALSE): internal error -3 in R_decompress1
+```
+
+```
+## Error in data.frame(., stringsAsFactors = FALSE): lazy-load database 'C:/Users/humphreys/AppData/Local/R/win-library/4.2/dagitty/R/dagitty.rdb' is corrupt
 ```
 
 ```r
@@ -934,8 +461,13 @@ make_model("X -> Y") |>
 ```
 
 ```
-##       X.0       X.1      Y.00      Y.10      Y.01      Y.11 
-## 0.5000000 0.5000000 0.1666667 0.1666667 0.5000000 0.1666667
+## Warning in data.frame(., stringsAsFactors = FALSE): restarting interrupted promise evaluation
+
+## Warning in data.frame(., stringsAsFactors = FALSE): internal error -3 in R_decompress1
+```
+
+```
+## Error in data.frame(., stringsAsFactors = FALSE): lazy-load database 'C:/Users/humphreys/AppData/Local/R/win-library/4.2/dagitty/R/dagitty.rdb' is corrupt
 ```
 
 ```r
@@ -943,20 +475,34 @@ make_model("X -> Y") |>
 
 
 model <- make_model("X -> M -> Y")
+```
 
+```
+## Warning in data.frame(., stringsAsFactors = FALSE): restarting interrupted promise evaluation
+
+## Warning in data.frame(., stringsAsFactors = FALSE): internal error -3 in R_decompress1
+```
+
+```
+## Error in data.frame(., stringsAsFactors = FALSE): lazy-load database 'C:/Users/humphreys/AppData/Local/R/win-library/4.2/dagitty/R/dagitty.rdb' is corrupt
+```
+
+```r
 sample_data_1 <-
   model |>
   make_data(n = 4)
+```
 
+```
+## Error in get_parameters(model): object 'model' not found
+```
 
+```r
 make_data(model, n = 3, param_type = "prior_draw")
 ```
 
 ```
-##   X M Y
-## 1 0 0 1
-## 2 0 1 0
-## 3 0 1 1
+## Error in minimum_components %in% names(model): object 'model' not found
 ```
 
 ```r
@@ -971,20 +517,18 @@ sample_data_2 <-
     subsets = list(TRUE, "X==1 & Y==0"),
     verbose = FALSE
   )
+```
 
+```
+## Error in get_parameters(model): object 'model' not found
+```
+
+```r
 sample_data_2
 ```
 
 ```
-##   X  M Y
-## 1 0 NA 1
-## 2 1  0 0
-## 3 1 NA 0
-## 4 1 NA 0
-## 5 1 NA 0
-## 6 1  1 0
-## 7 1  1 0
-## 8 1 NA 1
+## Error in eval(expr, envir, enclos): object 'sample_data_2' not found
 ```
 
 ```r
@@ -994,19 +538,7 @@ sample_data_2 |> collapse_data(model)
 ```
 
 ```
-##     event strategy count
-## 1  X0M0Y0      XMY     0
-## 2  X1M0Y0      XMY     1
-## 3  X0M1Y0      XMY     0
-## 4  X1M1Y0      XMY     2
-## 5  X0M0Y1      XMY     0
-## 6  X1M0Y1      XMY     0
-## 7  X0M1Y1      XMY     0
-## 8  X1M1Y1      XMY     0
-## 9    X0Y0       XY     0
-## 10   X1Y0       XY     3
-## 11   X0Y1       XY     1
-## 12   X1Y1       XY     1
+## Error in collapse_data(sample_data_2, model): object 'model' not found
 ```
 
 ```r
@@ -1028,61 +560,15 @@ make_model("X -> Y") |>
   kableExtra::kable_classic_2()
 ```
 
-<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
- <thead>
-  <tr>
-   <th style="text-align:left;">   </th>
-   <th style="text-align:center;"> X0Y0 </th>
-   <th style="text-align:center;"> X1Y0 </th>
-   <th style="text-align:center;"> X0Y1 </th>
-   <th style="text-align:center;"> X1Y1 </th>
-  </tr>
- </thead>
-<tbody>
-  <tr>
-   <td style="text-align:left;"> X.0 </td>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> 0 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> X.1 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> Y.00 </td>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> Y.10 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> 0 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> Y.01 </td>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> Y.11 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 0 </td>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-</tbody>
-</table>
+```
+## Warning in data.frame(., stringsAsFactors = FALSE): restarting interrupted promise evaluation
+
+## Warning in data.frame(., stringsAsFactors = FALSE): internal error -3 in R_decompress1
+```
+
+```
+## Error in data.frame(., stringsAsFactors = FALSE): lazy-load database 'C:/Users/humphreys/AppData/Local/R/win-library/4.2/dagitty/R/dagitty.rdb' is corrupt
+```
 
 ```r
 # censored data
@@ -1116,30 +602,15 @@ list(
   kableExtra::kable_classic_2()
 ```
 
-<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
- <thead>
-  <tr>
-   <th style="text-align:center;"> model </th>
-   <th style="text-align:center;"> query </th>
-   <th style="text-align:center;"> mean </th>
-   <th style="text-align:center;"> sd </th>
-  </tr>
- </thead>
-<tbody>
-  <tr>
-   <td style="text-align:center;"> uncensored </td>
-   <td style="text-align:center;"> (Y[X=1] - Y[X=0]) </td>
-   <td style="text-align:center;"> 0.59 </td>
-   <td style="text-align:center;"> 0.20 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> censored </td>
-   <td style="text-align:center;"> (Y[X=1] - Y[X=0]) </td>
-   <td style="text-align:center;"> 0.01 </td>
-   <td style="text-align:center;"> 0.32 </td>
-  </tr>
-</tbody>
-</table>
+```
+## Warning in data.frame(., stringsAsFactors = FALSE): restarting interrupted promise evaluation
+
+## Warning in data.frame(., stringsAsFactors = FALSE): internal error -3 in R_decompress1
+```
+
+```
+## Error in data.frame(., stringsAsFactors = FALSE): lazy-load database 'C:/Users/humphreys/AppData/Local/R/win-library/4.2/dagitty/R/dagitty.rdb' is corrupt
+```
 
 ```r
 ## SECTION 7: Querying models
@@ -1153,15 +624,13 @@ make_model("X -> Y") |> realise_outcomes()
 ```
 
 ```
-##      X Y
-## 0.00 0 0
-## 1.00 1 0
-## 0.10 0 1
-## 1.10 1 0
-## 0.01 0 0
-## 1.01 1 1
-## 0.11 0 1
-## 1.11 1 1
+## Warning in data.frame(., stringsAsFactors = FALSE): restarting interrupted promise evaluation
+
+## Warning in data.frame(., stringsAsFactors = FALSE): internal error -3 in R_decompress1
+```
+
+```
+## Error in data.frame(., stringsAsFactors = FALSE): lazy-load database 'C:/Users/humphreys/AppData/Local/R/win-library/4.2/dagitty/R/dagitty.rdb' is corrupt
 ```
 
 ```r
@@ -1169,15 +638,13 @@ make_model("X -> Y") |> realise_outcomes(dos = list(X = 1))
 ```
 
 ```
-##      X Y
-## 0.00 1 0
-## 1.00 1 0
-## 0.10 1 0
-## 1.10 1 0
-## 0.01 1 1
-## 1.01 1 1
-## 0.11 1 1
-## 1.11 1 1
+## Warning in data.frame(., stringsAsFactors = FALSE): restarting interrupted promise evaluation
+
+## Warning in data.frame(., stringsAsFactors = FALSE): internal error -3 in R_decompress1
+```
+
+```
+## Error in data.frame(., stringsAsFactors = FALSE): lazy-load database 'C:/Users/humphreys/AppData/Local/R/win-library/4.2/dagitty/R/dagitty.rdb' is corrupt
 ```
 
 ```r
@@ -1187,17 +654,13 @@ make_model("X -> Y")  |> get_query_types("Y==1")
 ```
 
 ```
-## 
-## Causal types satisfying query's condition(s)  
-## 
-##  query =  Y==1 
-## 
-## X0.Y10  X1.Y01
-## X0.Y11  X1.Y11
-## 
-## 
-##  Number of causal types that meet condition(s) =  4
-##  Total number of causal types in model =  8
+## Warning in data.frame(., stringsAsFactors = FALSE): restarting interrupted promise evaluation
+
+## Warning in data.frame(., stringsAsFactors = FALSE): internal error -3 in R_decompress1
+```
+
+```
+## Error in data.frame(., stringsAsFactors = FALSE): lazy-load database 'C:/Users/humphreys/AppData/Local/R/win-library/4.2/dagitty/R/dagitty.rdb' is corrupt
 ```
 
 ```r
@@ -1205,17 +668,13 @@ make_model("X -> Y")  |> get_query_types("Y[X=1]==1")
 ```
 
 ```
-## 
-## Causal types satisfying query's condition(s)  
-## 
-##  query =  Y[X=1]==1 
-## 
-## X0.Y01  X1.Y01
-## X0.Y11  X1.Y11
-## 
-## 
-##  Number of causal types that meet condition(s) =  4
-##  Total number of causal types in model =  8
+## Warning in data.frame(., stringsAsFactors = FALSE): restarting interrupted promise evaluation
+
+## Warning in data.frame(., stringsAsFactors = FALSE): internal error -3 in R_decompress1
+```
+
+```
+## Error in data.frame(., stringsAsFactors = FALSE): lazy-load database 'C:/Users/humphreys/AppData/Local/R/win-library/4.2/dagitty/R/dagitty.rdb' is corrupt
 ```
 
 ```r
@@ -1224,17 +683,13 @@ make_model("X1 -> Y <- X2")  |>
 ```
 
 ```
-## 
-## Causal types satisfying query's condition(s)  
-## 
-##  query =  X1==1&X2==1&(Y[X1=1,X2=1]>Y[X1=0,X2=0]) 
-## 
-## X11.X21.Y0001  X11.X21.Y0101
-## X11.X21.Y0011  X11.X21.Y0111
-## 
-## 
-##  Number of causal types that meet condition(s) =  4
-##  Total number of causal types in model =  64
+## Warning in data.frame(., stringsAsFactors = FALSE): restarting interrupted promise evaluation
+
+## Warning in data.frame(., stringsAsFactors = FALSE): internal error -3 in R_decompress1
+```
+
+```
+## Error in data.frame(., stringsAsFactors = FALSE): lazy-load database 'C:/Users/humphreys/AppData/Local/R/win-library/4.2/dagitty/R/dagitty.rdb' is corrupt
 ```
 
 ```r
@@ -1242,8 +697,13 @@ make_model("X -> Y")  |> get_query_types("Y[X=1] - Y[X=0]")
 ```
 
 ```
-## X0.Y00 X1.Y00 X0.Y10 X1.Y10 X0.Y01 X1.Y01 X0.Y11 X1.Y11 
-##      0      0     -1     -1      1      1      0      0
+## Warning in data.frame(., stringsAsFactors = FALSE): restarting interrupted promise evaluation
+
+## Warning in data.frame(., stringsAsFactors = FALSE): internal error -3 in R_decompress1
+```
+
+```
+## Error in data.frame(., stringsAsFactors = FALSE): lazy-load database 'C:/Users/humphreys/AppData/Local/R/win-library/4.2/dagitty/R/dagitty.rdb' is corrupt
 ```
 
 ```r
@@ -1254,20 +714,28 @@ data  <- data.frame(X = rep(0:1, 50), Y = rep(0:1, 50))
 model <-
   make_model("X -> Y") |>
   update_model(data, iter  = 4000, refresh = 0)
+```
 
+```
+## Warning in data.frame(., stringsAsFactors = FALSE): restarting interrupted promise evaluation
+```
 
+```
+## Warning in data.frame(., stringsAsFactors = FALSE): internal error -3 in R_decompress1
+```
+
+```
+## Error in data.frame(., stringsAsFactors = FALSE): lazy-load database 'C:/Users/humphreys/AppData/Local/R/win-library/4.2/dagitty/R/dagitty.rdb' is corrupt
+```
+
+```r
 model$posterior_distribution |>
   ggplot(aes(Y.01 - Y.10)) + geom_histogram() + theme_bw()
 ```
 
 ```
-## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+## Error in ggplot(model$posterior_distribution, aes(Y.01 - Y.10)): object 'model' not found
 ```
-
-<div class="figure" style="text-align: center">
-<img src="figure/fig-posterior-dist-1.png" alt="Posterior on "Probability $Y$ is increasing in $X$"." width="60%" />
-<p class="caption">Posterior on "Probability $Y$ is increasing in $X$".</p>
-</div>
 
 ```r
 # case level queries
@@ -1287,28 +755,9 @@ lipids_model |>
   kableExtra::kable_classic_2(latex_options = c("scale_down", "hold_position"))
 ```
 
-<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
- <thead>
-  <tr>
-   <th style="text-align:center;"> query </th>
-   <th style="text-align:center;"> given </th>
-   <th style="text-align:center;"> mean </th>
-   <th style="text-align:center;"> sd </th>
-   <th style="text-align:center;"> cred.low </th>
-   <th style="text-align:center;"> cred.high </th>
-  </tr>
- </thead>
-<tbody>
-  <tr>
-   <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
-   <td style="text-align:center;"> X==1 &amp; Y==1 &amp; Z==1 </td>
-   <td style="text-align:center;"> 0.95 </td>
-   <td style="text-align:center;"> 0.04 </td>
-   <td style="text-align:center;"> 0.86 </td>
-   <td style="text-align:center;"> 1 </td>
-  </tr>
-</tbody>
-</table>
+```
+## Error in is(model, "causal_model"): object 'lipids_model' not found
+```
 
 ```r
 set.seed(1)
@@ -1335,33 +784,17 @@ make_model("X -> M -> Y") |>
   kableExtra::kable_classic_2()
 ```
 
-<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
- <thead>
-  <tr>
-   <th style="text-align:center;"> query </th>
-   <th style="text-align:center;"> given </th>
-   <th style="text-align:center;"> case_level </th>
-   <th style="text-align:center;"> mean </th>
-   <th style="text-align:center;"> sd </th>
-  </tr>
- </thead>
-<tbody>
-  <tr>
-   <td style="text-align:center;"> Y[X=1] &gt; Y[X=0] </td>
-   <td style="text-align:center;"> X==1 &amp; Y==1 &amp; M==1 </td>
-   <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.67 </td>
-   <td style="text-align:center;"> NA </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Y[X=1] &gt; Y[X=0] </td>
-   <td style="text-align:center;"> X==1 &amp; Y==1 &amp; M==1 </td>
-   <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.43 </td>
-   <td style="text-align:center;"> 0.33 </td>
-  </tr>
-</tbody>
-</table>
+```
+## Warning in data.frame(., stringsAsFactors = FALSE): restarting interrupted promise evaluation
+```
+
+```
+## Warning in data.frame(., stringsAsFactors = FALSE): internal error -3 in R_decompress1
+```
+
+```
+## Error in data.frame(., stringsAsFactors = FALSE): lazy-load database 'C:/Users/humphreys/AppData/Local/R/win-library/4.2/dagitty/R/dagitty.rdb' is corrupt
+```
 
 ```r
 # batch queries
@@ -1380,8 +813,21 @@ models <- list(
       Y = rep(0:1, 10)
     ), refresh = 0)
 )
+```
 
+```
+## Warning in data.frame(., stringsAsFactors = FALSE): restarting interrupted promise evaluation
+```
 
+```
+## Warning in data.frame(., stringsAsFactors = FALSE): internal error -3 in R_decompress1
+```
+
+```
+## Error in data.frame(., stringsAsFactors = FALSE): lazy-load database 'C:/Users/humphreys/AppData/Local/R/win-library/4.2/dagitty/R/dagitty.rdb' is corrupt
+```
+
+```r
 query_model(
   models,
   query = list(ATE = "Y[X=1] - Y[X=0]",
@@ -1403,309 +849,9 @@ query_model(
   kableExtra::kable_classic_2(latex_options = c("hold_position"))
 ```
 
-<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
- <thead>
-  <tr>
-   <th style="text-align:center;"> model </th>
-   <th style="text-align:center;"> query </th>
-   <th style="text-align:center;"> given </th>
-   <th style="text-align:center;"> using </th>
-   <th style="text-align:center;"> case_level </th>
-   <th style="text-align:center;"> mean </th>
-   <th style="text-align:center;"> sd </th>
-  </tr>
- </thead>
-<tbody>
-  <tr>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> ATE </td>
-   <td style="text-align:center;"> - </td>
-   <td style="text-align:center;"> priors </td>
-   <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> -0.01 </td>
-   <td style="text-align:center;"> 0.31 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 2 </td>
-   <td style="text-align:center;"> ATE </td>
-   <td style="text-align:center;"> - </td>
-   <td style="text-align:center;"> priors </td>
-   <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.33 </td>
-   <td style="text-align:center;"> 0.24 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> ATE </td>
-   <td style="text-align:center;"> - </td>
-   <td style="text-align:center;"> posteriors </td>
-   <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.76 </td>
-   <td style="text-align:center;"> 0.13 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 2 </td>
-   <td style="text-align:center;"> ATE </td>
-   <td style="text-align:center;"> - </td>
-   <td style="text-align:center;"> posteriors </td>
-   <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.83 </td>
-   <td style="text-align:center;"> 0.11 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> ATE </td>
-   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
-   <td style="text-align:center;"> priors </td>
-   <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.49 </td>
-   <td style="text-align:center;"> 0.29 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 2 </td>
-   <td style="text-align:center;"> ATE </td>
-   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
-   <td style="text-align:center;"> priors </td>
-   <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.50 </td>
-   <td style="text-align:center;"> 0.29 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> ATE </td>
-   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
-   <td style="text-align:center;"> posteriors </td>
-   <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.91 </td>
-   <td style="text-align:center;"> 0.08 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 2 </td>
-   <td style="text-align:center;"> ATE </td>
-   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
-   <td style="text-align:center;"> posteriors </td>
-   <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.91 </td>
-   <td style="text-align:center;"> 0.09 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> - </td>
-   <td style="text-align:center;"> priors </td>
-   <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.24 </td>
-   <td style="text-align:center;"> 0.19 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 2 </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> - </td>
-   <td style="text-align:center;"> priors </td>
-   <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.33 </td>
-   <td style="text-align:center;"> 0.24 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> - </td>
-   <td style="text-align:center;"> posteriors </td>
-   <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.80 </td>
-   <td style="text-align:center;"> 0.11 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 2 </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> - </td>
-   <td style="text-align:center;"> posteriors </td>
-   <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.83 </td>
-   <td style="text-align:center;"> 0.11 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
-   <td style="text-align:center;"> priors </td>
-   <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.49 </td>
-   <td style="text-align:center;"> 0.29 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 2 </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
-   <td style="text-align:center;"> priors </td>
-   <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.50 </td>
-   <td style="text-align:center;"> 0.29 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
-   <td style="text-align:center;"> posteriors </td>
-   <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.91 </td>
-   <td style="text-align:center;"> 0.08 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 2 </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
-   <td style="text-align:center;"> posteriors </td>
-   <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.91 </td>
-   <td style="text-align:center;"> 0.09 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> ATE </td>
-   <td style="text-align:center;"> - </td>
-   <td style="text-align:center;"> priors </td>
-   <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> -0.01 </td>
-   <td style="text-align:center;"> NA </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 2 </td>
-   <td style="text-align:center;"> ATE </td>
-   <td style="text-align:center;"> - </td>
-   <td style="text-align:center;"> priors </td>
-   <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.33 </td>
-   <td style="text-align:center;"> NA </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> ATE </td>
-   <td style="text-align:center;"> - </td>
-   <td style="text-align:center;"> posteriors </td>
-   <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.76 </td>
-   <td style="text-align:center;"> NA </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 2 </td>
-   <td style="text-align:center;"> ATE </td>
-   <td style="text-align:center;"> - </td>
-   <td style="text-align:center;"> posteriors </td>
-   <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.83 </td>
-   <td style="text-align:center;"> NA </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> ATE </td>
-   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
-   <td style="text-align:center;"> priors </td>
-   <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.48 </td>
-   <td style="text-align:center;"> NA </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 2 </td>
-   <td style="text-align:center;"> ATE </td>
-   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
-   <td style="text-align:center;"> priors </td>
-   <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.50 </td>
-   <td style="text-align:center;"> NA </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> ATE </td>
-   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
-   <td style="text-align:center;"> posteriors </td>
-   <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.91 </td>
-   <td style="text-align:center;"> NA </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 2 </td>
-   <td style="text-align:center;"> ATE </td>
-   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
-   <td style="text-align:center;"> posteriors </td>
-   <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.91 </td>
-   <td style="text-align:center;"> NA </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> - </td>
-   <td style="text-align:center;"> priors </td>
-   <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.24 </td>
-   <td style="text-align:center;"> NA </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 2 </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> - </td>
-   <td style="text-align:center;"> priors </td>
-   <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.33 </td>
-   <td style="text-align:center;"> NA </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> - </td>
-   <td style="text-align:center;"> posteriors </td>
-   <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.80 </td>
-   <td style="text-align:center;"> NA </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 2 </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> - </td>
-   <td style="text-align:center;"> posteriors </td>
-   <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.83 </td>
-   <td style="text-align:center;"> NA </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
-   <td style="text-align:center;"> priors </td>
-   <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.48 </td>
-   <td style="text-align:center;"> NA </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 2 </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
-   <td style="text-align:center;"> priors </td>
-   <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.50 </td>
-   <td style="text-align:center;"> NA </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 1 </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
-   <td style="text-align:center;"> posteriors </td>
-   <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.91 </td>
-   <td style="text-align:center;"> NA </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> 2 </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
-   <td style="text-align:center;"> posteriors </td>
-   <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.91 </td>
-   <td style="text-align:center;"> NA </td>
-  </tr>
-</tbody>
-</table>
+```
+## Error in is(model, "causal_model"): object 'models' not found
+```
 
 ```r
 ## Appendix C: Benchmarks
@@ -1721,6 +867,16 @@ model <- list(
 )
 ```
 
+```
+## Warning in data.frame(., stringsAsFactors = FALSE): restarting interrupted promise evaluation
+
+## Warning in data.frame(., stringsAsFactors = FALSE): internal error -3 in R_decompress1
+```
+
+```
+## Error in data.frame(., stringsAsFactors = FALSE): lazy-load database 'C:/Users/humphreys/AppData/Local/R/win-library/4.2/dagitty/R/dagitty.rdb' is corrupt
+```
+
 ```r
 benchmark_model <- microbenchmark::microbenchmark(
   m1 = CausalQueries::update_model(model[[1]]),
@@ -1728,42 +884,39 @@ benchmark_model <- microbenchmark::microbenchmark(
   m3 = CausalQueries::update_model(model[[3]]),
   times = 5
 )
+```
 
+```
+## Error in collapse_data(., model): object 'model' not found
+```
+
+```r
 summary(benchmark_model) |> select(expr, mean) |>
   kable(digits = 0)
 ```
 
-<table>
- <thead>
-  <tr>
-   <th style="text-align:left;"> expr </th>
-   <th style="text-align:right;"> mean </th>
-  </tr>
- </thead>
-<tbody>
-  <tr>
-   <td style="text-align:left;"> m1 </td>
-   <td style="text-align:right;"> 7 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> m2 </td>
-   <td style="text-align:right;"> 9 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> m3 </td>
-   <td style="text-align:right;"> 49 </td>
-  </tr>
-</tbody>
-</table>
+```
+## Error in h(simpleError(msg, call)): error in evaluating the argument 'object' in selecting a method for function 'summary': object 'benchmark_model' not found
+```
 
 ```r
 # effect of data size on run-time
 
 model <- CausalQueries::make_model("X -> Y")
+```
 
+```
+## Error in data.frame(., stringsAsFactors = FALSE): lazy-load database 'C:/Users/humphreys/AppData/Local/R/win-library/4.2/dagitty/R/dagitty.rdb' is corrupt
+```
+
+```r
 data <- lapply(10 ^ c(1:5), function(n) {
   CausalQueries::make_data(model, n)
 })
+```
+
+```
+## Error in get_parameters(model): object 'model' not found
 ```
 
 ```r
@@ -1775,39 +928,18 @@ benchmark_data <- microbenchmark::microbenchmark(
   d4 = CausalQueries::update_model(model, data[[5]]),
   times = 5
 )
+```
 
+```
+## Error in .subset2(x, i, exact = exact): subscript out of bounds
+```
+
+```r
 summary(benchmark_data) |> select(expr, mean) |>
   kable(digits = 0)
 ```
 
-<table>
- <thead>
-  <tr>
-   <th style="text-align:left;"> expr </th>
-   <th style="text-align:right;"> mean </th>
-  </tr>
- </thead>
-<tbody>
-  <tr>
-   <td style="text-align:left;"> d0 </td>
-   <td style="text-align:right;"> 10 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> d1 </td>
-   <td style="text-align:right;"> 11 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> d2 </td>
-   <td style="text-align:right;"> 12 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> d3 </td>
-   <td style="text-align:right;"> 14 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> d4 </td>
-   <td style="text-align:right;"> 23 </td>
-  </tr>
-</tbody>
-</table>
+```
+## Error in h(simpleError(msg, call)): error in evaluating the argument 'object' in selecting a method for function 'summary': object 'benchmark_data' not found
+```
 
