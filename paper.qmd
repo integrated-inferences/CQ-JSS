@@ -200,13 +200,13 @@ The literature on causal inference and its software ecosystem are rich and expan
 |               |                          |                     |              | -   binary data                                                        |
 +---------------+--------------------------+---------------------+--------------+------------------------------------------------------------------------+
 
-: Related software. {#tbl-software tbl-colwidths="\[20,15,10,15,40\]"}
+: Related software. {#tbl-software tbl-colwidths="\[20,15,10,17,40\]"}
 
 `causalnex` is a highly comprehensive software in the causal modeling domain, offering a suite of functions rich in features and optimized for the learning, updating, and querying of causal models using discrete data. Its avoidance of the intricate model parametrization, characterized by principal strata (nodal types), enables `causalnex` to adeptly process non-binary data and scale to large causal models. This approach; however, significantly constrains the variety of feasible queries and the extent of prior knowledge that can be incorporated into models. In this capacity, `causalnex` mirrors machine learning strategies in causal inference, prioritizing the learning of causal structures in environments abundant with variables yet potentially deficient in domain-specific knowledge; thus focusing on the assessment of basic queries over marginal distributions in learned DAGs. Conversely, the complex model structure utilized by `CausalQueries` is particularly advantageous for intricate causal queries in settings where domain knowledge is more prevalent.
 
 Like `causalnex`, `pclag` places particular emphasis on causal structure learning, utilizing the resultant DAGs to recover average treatment effects (ATEs) across all learned Markov-equivalent classes implied by observed data that satisfy linearity of conditional expectations. This approach again is more restrictive than `CausalQueries` in the DAGs and particularly the queries it allows.
 
-`DoWhy` is a feature rich, mature inference framework emphasizing causal identification, causal effect estimation and assumption validation. Given a user specified DAG, it deploys do-calculus to find expressions that identify desired causal-effects via Back-door, Front-door, IV and mediation identification criteria and leverages the identified expression and standard estimators to estimate the desired estimand. Following estimation `DoWhy` deploys a comprehensive refutation engine implementing a large set of robustness tests. While this approach allows it to efficiently handle varied data types on large causal models; the decision to not parameterize the DAG itself places substantial limitations on the types of queries that can be posed.
+`DoWhy` is a feature rich, mature inference framework emphasizing causal identification, causal effect estimation and assumption validation. Given a user specified DAG, it deploys do-calculus to find expressions that identify desired causal-effects via Back-door, Front-door, IV and mediation identification criteria and leverages the identified expression and standard estimators to estimate the desired estimand. Following estimation `DoWhy` deploys a comprehensive refutation engine implementing a large set of robustness tests. While this approach allows it to efficiently handle varied data types on large causal models, the decision to not parameterize the DAG itself places substantial limitations on the types of queries that can be posed.
 
 The software bearing the highest resemblance to `CausalQueries` with respect to model definition are `autobounds` and `causaloptim`. Dealing with binary causal models, their definitions of principal strata (nodal types) and the resultant set of causal relations on the DAG (causal types) are very close to those of `CausalQueries`. Differences in model definition arise with respect to disturbance terms and confounding being defined implicitly via main nodes and edges in `CausalQueries` vs explicitly via separate disturbance nodes in `autobounds` and `causaloptim`. While `CausalQueries` assumes canonical form for input DAGs, `autobounds` and `causaloptim` facilitate canonicalization. The essential difference between the methods; however, lies in their approach to evaluating queries.
 
@@ -294,7 +294,7 @@ w_{01} & = & \lambda^X_0(\lambda^Y_{11} + \lambda^Y_{10})\\
 w_{10} & = & \lambda^X_1(\lambda^Y_{00} + \lambda^Y_{10})\\
 w_{11} & = & \lambda^X_1(\lambda^Y_{11} + \lambda^Y_{01})\end{array} \right.$$
 
-For concreteness: @tbl-lipidspar illustrates key values for the Lipids model. We see here that we have two types for node $Z$, four for $X$ (representing the strata familiar from instrumental variables analysis: never takers, always takers, defiers, and compliers) and 4 for $Y$. For $Z$ and $X$ we have parameters corresponding to probability of these nodal types. For instance `Z.0` is the probability that $Z=1$. `Z.1` is the complementary probability that $Z=1$. Things are little more complicated for distributions on nodal types for $Y$ however: because of confounding between $X$ and $Y$ we have parameters that capture the conditional probability of the nodal types for $Y$ *given* the nodal types for $X$. We see there are four sets of these parameters.
+For concreteness: @tbl-lipidspar illustrates key values for the Lipids model. We see here that we have two types for node $Z$, four for $X$ (representing the strata familiar from instrumental variables analysis: never takers, always takers, defiers, and compliers) and 4 for $Y$. For $Z$ and $X$ we have parameters corresponding to probability of these nodal types. For instance `Z.0` is the probability that $Z=0$. `Z.1` is the complementary probability that $Z=1$. Things are a little more complicated for distributions on nodal types for $Y$ however: because of confounding between $X$ and $Y$ we have parameters that capture the conditional probability of the nodal types for $Y$ *given* the nodal types for $X$. We see there are four sets of these parameters.
 
 ```{r}
 #| label: tbl-lipidspar
@@ -364,7 +364,7 @@ In addition, as we did in the @chickering_clinicians_1996 example, it is possibl
 
 Plotting the model can be useful to check that you have defined the structure of the model correctly. `CausalQueries` provides simple graphing tools that draw on functionality from the `dagitty`, `ggplot2`, and `ggdag` packages.
 
-Once defined, a model can be graphed by calling the `plot()` method defined for the objects with class `causal_model` produced by `make_model()` function. Options can be provided to `plot()` are passed to `CausalQueries:::plot_dag()`.
+Once defined, a model can be graphed by calling the `plot()` method defined for the objects with class `causal_model` produced by  `make_model()` function. Options can be provided to `plot()` are passed to `CausalQueries:::plot_dag()`.
 
 @fig-plots shows figures generating by plotting `lipids_model` with and without options. The  plots  have class `c("gg", "ggplot")` and so will accept any additional modifications available via the `ggplot2` package.
 
@@ -428,13 +428,13 @@ The model includes additional elements, `nodal_types,` `parameters_df,` and `cau
 
 | Element         | Description                                                                                                                                                         |
 |-----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `statement`     | A character string that describes directed causal relations between variables in a causal model, where arrows denote that one node is a potential cause of another. |
+| `statement`     | A character string using `dagitty` syntax that describes directed causal relations between variables in a causal model, where arrows denote that one node is a potential cause of another. |
 | `dag`           | A data frame with columns 'parent' and 'children' indicating how nodes relate to each other.                                                                        |
 | `nodes`         | A list containing the nodes in the model.                                                                                                                           |
 | `parents_df`    | A table listing nodes, whether they are root nodes or not, and the number of parents they have.                                                                     |
-| `nodal_types`   | A list with the nodal types in the model. See @sec-nodal-types for more details.                                                                                    |
+| `nodal_types`   | A list with the nodal types of the model. See @sec-nodal-types for more details.                                                                                    |
 | `parameters_df` | A data frame linking the model's parameters with the nodal types of the model, as well as the family to which they belong. See @sec-param-df for more details.      |
-| `causal_types`  | A data frame listing causal types and the nodal types that produce them. (See @sec-causal-types.) \|                                                                |
+| `causal_types`  | A data frame listing causal types and the nodal types that produce them. (See @sec-causal-types.)                                                                 |
 
 : Core Elements of a Causal Model. {#tbl-core tbl-colwidths="\[30,70\]"}
 
