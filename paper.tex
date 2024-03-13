@@ -342,9 +342,12 @@ R> lipids_queries
 \end{verbatim}
 
 \hypertarget{tbl-lipids}{}
-\begin{longtable}[t]{cccccc}
+\begin{table}
 \caption{\label{tbl-lipids}Replication of \citet{chickering_clinicians_1996}. }\tabularnewline
 
+\centering
+\resizebox{\linewidth}{!}{
+\begin{tabular}{cccccc}
 \toprule
 query & given & mean & sd & cred.low.2.5\% & cred.high.97.5\%\\
 \midrule
@@ -352,7 +355,8 @@ Y[X=1] - Y[X=0] & - & 0.56 & 0.10 & 0.38 & 0.73\\
 Y[X=1] - Y[X=0] & X==0 \& Y==0 & 0.64 & 0.15 & 0.38 & 0.89\\
 Y[X=1] - Y[X=0] & X[Z=1] > X[Z=0] & 0.70 & 0.05 & 0.60 & 0.80\\
 \bottomrule
-\end{longtable}
+\end{tabular}}
+\end{table}
 
 The output is a data frame with estimates, posterior standard
 deviations, and credibility intervals. Table~\ref{tbl-lipids} shows the
@@ -385,8 +389,8 @@ discusses key connections, advantages and disadvantages with respect to
   >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
   >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1500}}
   >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1000}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1500}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.4000}}@{}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1700}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.3900}}@{}}
 \caption{\label{tbl-software}Related software.}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
@@ -550,7 +554,7 @@ identified expression and standard estimators to estimate the desired
 estimand. Following estimation \texttt{DoWhy} deploys a comprehensive
 refutation engine implementing a large set of robustness tests. While
 this approach allows it to efficiently handle varied data types on large
-causal models; the decision to not parameterize the DAG itself places
+causal models, the decision to not parameterize the DAG itself places
 substantial limitations on the types of queries that can be posed.
 
 The software bearing the highest resemblance to \texttt{CausalQueries}
@@ -763,15 +767,15 @@ four for \(X\) (representing the strata familiar from instrumental
 variables analysis: never takers, always takers, defiers, and compliers)
 and 4 for \(Y\). For \(Z\) and \(X\) we have parameters corresponding to
 probability of these nodal types. For instance \texttt{Z.0} is the
-probability that \(Z=1\). \texttt{Z.1} is the complementary probability
-that \(Z=1\). Things are little more complicated for distributions on
+probability that \(Z=0\). \texttt{Z.1} is the complementary probability
+that \(Z=1\). Things are a little more complicated for distributions on
 nodal types for \(Y\) however: because of confounding between \(X\) and
 \(Y\) we have parameters that capture the conditional probability of the
 nodal types for \(Y\) \emph{given} the nodal types for \(X\). We see
 there are four sets of these parameters.
 
 \hypertarget{tbl-lipidspar}{}
-\begin{longtable}[t]{cccccc}
+\begin{longtable}{cccccc}
 \caption{\label{tbl-lipidspar}Nodal types and parameters for Lipids model. }\tabularnewline
 
 \toprule
@@ -782,25 +786,21 @@ Z & 1 & Z & Z.1 & 0.29 & 1\\
 X & 00 & X & X.00 & 0.36 & 1\\
 X & 10 & X & X.10 & 0.03 & 1\\
 X & 01 & X & X.01 & 0.51 & 1\\
-\addlinespace
 X & 11 & X & X.11 & 0.10 & 1\\
 Y & 00 & Y.X.00 & Y.00\_X.00 & 0.43 & 1\\
 Y & 10 & Y.X.00 & Y.10\_X.00 & 0.08 & 1\\
 Y & 01 & Y.X.00 & Y.01\_X.00 & 0.34 & 1\\
 Y & 11 & Y.X.00 & Y.11\_X.00 & 0.15 & 1\\
-\addlinespace
 Y & 00 & Y.X.01 & Y.00\_X.01 & 0.43 & 1\\
 Y & 10 & Y.X.01 & Y.10\_X.01 & 0.05 & 1\\
 Y & 01 & Y.X.01 & Y.01\_X.01 & 0.39 & 1\\
 Y & 11 & Y.X.01 & Y.11\_X.01 & 0.13 & 1\\
 Y & 00 & Y.X.10 & Y.00\_X.10 & 0.24 & 1\\
-\addlinespace
 Y & 10 & Y.X.10 & Y.10\_X.10 & 0.45 & 1\\
 Y & 01 & Y.X.10 & Y.01\_X.10 & 0.12 & 1\\
 Y & 11 & Y.X.10 & Y.11\_X.10 & 0.19 & 1\\
 Y & 00 & Y.X.11 & Y.00\_X.11 & 0.61 & 1\\
 Y & 10 & Y.X.11 & Y.10\_X.11 & 0.11 & 1\\
-\addlinespace
 Y & 01 & Y.X.11 & Y.01\_X.11 & 0.03 & 1\\
 Y & 11 & Y.X.11 & Y.11\_X.11 & 0.25 & 1\\
 \bottomrule
@@ -1007,22 +1007,22 @@ Description
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\texttt{statement} & A character string that describes directed causal
-relations between variables in a causal model, where arrows denote that
-one node is a potential cause of another. \\
+\texttt{statement} & A character string using \texttt{dagitty} syntax
+that describes directed causal relations between variables in a causal
+model, where arrows denote that one node is a potential cause of
+another. \\
 \texttt{dag} & A data frame with columns `parent' and `children'
 indicating how nodes relate to each other. \\
 \texttt{nodes} & A list containing the nodes in the model. \\
 \texttt{parents\_df} & A table listing nodes, whether they are root
 nodes or not, and the number of parents they have. \\
-\texttt{nodal\_types} & A list with the nodal types in the model. See
+\texttt{nodal\_types} & A list with the nodal types of the model. See
 Section~\ref{sec-nodal-types} for more details. \\
 \texttt{parameters\_df} & A data frame linking the model's parameters
 with the nodal types of the model, as well as the family to which they
 belong. See Section~\ref{sec-param-df} for more details. \\
 \texttt{causal\_types} & A data frame listing causal types and the nodal
-types that produce them. (See Section~\ref{sec-causal-types}.)
-\textbar{} \\
+types that produce them. (See Section~\ref{sec-causal-types}.) \\
 \end{longtable}
 
 After updating a model, two additional components are attached to it:
@@ -1098,9 +1098,12 @@ R> make_model("X -> Y")$parameters_df
 \end{verbatim}
 
 \hypertarget{tbl-params-df}{}
-\begin{longtable}[t]{cccccccc}
+\begin{table}[H]
 \caption{\label{tbl-params-df}Example of parameters data frame. }\tabularnewline
 
+\centering
+\resizebox{\linewidth}{!}{
+\begin{tabular}{cccccccc}
 \toprule
 param\_names & node & gen & param\_set & nodal\_type & given & param\_value & priors\\
 \midrule
@@ -1109,10 +1112,10 @@ X.1 & X & 1 & X & 1 &  & 0.50 & 1\\
 Y.00 & Y & 2 & Y & 00 &  & 0.25 & 1\\
 Y.10 & Y & 2 & Y & 10 &  & 0.25 & 1\\
 Y.01 & Y & 2 & Y & 01 &  & 0.25 & 1\\
-\addlinespace
 Y.11 & Y & 2 & Y & 11 &  & 0.25 & 1\\
 \bottomrule
-\end{longtable}
+\end{tabular}}
+\end{table}
 
 As in Table~\ref{tbl-lipidspar}, each row in Table~\ref{tbl-params-df}
 corresponds to a single parameter. The columns of the parameters data
@@ -1477,59 +1480,53 @@ causal types by multiplying the probabilities of the constituent
 parameters.
 
 \hypertarget{tbl-confound-param-matrix}{}
-\begin{longtable}[t]{lcccccccc}
+\begin{table}
 \caption{\label{tbl-confound-param-matrix}Parameter matrix for model with confounding. }\tabularnewline
 
+\centering
+\resizebox{\linewidth}{!}{
+\begin{tabular}{lcccccccc}
 \toprule
- & X0.Y00 & X1.Y00 & X0.Y10 & X1.Y10 & X0.Y01 & X1.Y01 & X0.Y11 & X1.Y11\\
+  & X0.Y00 & X1.Y00 & X0.Y10 & X1.Y10 & X0.Y01 & X1.Y01 & X0.Y11 & X1.Y11\\
 \midrule
 X.0 & 1 & 0 & 1 & 0 & 1 & 0 & 1 & 0\\
 X.1 & 0 & 1 & 0 & 1 & 0 & 1 & 0 & 1\\
 Y.00\_X.0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
 Y.10\_X.0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0\\
 Y.01\_X.0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0\\
-\addlinespace
 Y.11\_X.0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0\\
 Y.00\_X.1 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0\\
 Y.10\_X.1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0\\
 Y.01\_X.1 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0\\
 Y.11\_X.1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1\\
 \bottomrule
-\end{longtable}
+\end{tabular}}
+\end{table}
 
 Table~\ref{tbl-dof} illustrates more generally how the number of
 independent parameters depends on the nature of possible confounding.
 
 \hypertarget{tbl-dof}{}
-\begin{longtable}[]{@{}lc@{}}
-\caption{\label{tbl-dof}Number of different independent parameters
-(degrees of freedom) for different three node models.}\tabularnewline
-\toprule\noalign{}
-Model & Degrees of freedom \\
-\midrule\noalign{}
-\endfirsthead
-\toprule\noalign{}
-Model & Degrees of freedom \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-\texttt{X\ -\textgreater{}\ Y\ \textless{}-\ W} & 17 \\
-\texttt{X\ -\textgreater{}\ Y\ \textless{}-\ W;\ X\ \textless{}-\textgreater{}\ W}
-& 18 \\
-\texttt{X\ -\textgreater{}\ Y\ \textless{}-\ W;\ X\ \textless{}-\textgreater{}\ Y;\ W\ \textless{}-\textgreater{}\ Y}
-& 62 \\
-\texttt{X\ -\textgreater{}\ Y\ \textless{}-\ W;\ X\ \textless{}-\textgreater{}\ Y;\ W\ \textless{}-\textgreater{}\ Y;\ X\ \textless{}-\textgreater{}\ W}
-& 63 \\
-\texttt{X\ -\textgreater{}\ W\ -\textgreater{}\ Y\ \textless{}-\ X} &
-19 \\
-\texttt{X\ -\textgreater{}\ W\ -\textgreater{}\ Y\ \textless{}-\ X;\ W\ \textless{}-\textgreater{}\ Y}
-& 64 \\
-\texttt{X\ -\textgreater{}\ W\ -\textgreater{}\ Y\ \textless{}-\ X;\ X\ \textless{}-\textgreater{}\ W;\ W\ \textless{}-\textgreater{}\ Y}
-& 67 \\
-\texttt{X\ -\textgreater{}\ W\ -\textgreater{}\ Y\ \textless{}-\ X;\ X\ \textless{}-\textgreater{}\ W;\ W\ \textless{}-\textgreater{}\ Y;\ X\ \textless{}-\textgreater{}\ Y}
-& 127 \\
-\end{longtable}
+\begin{table}
+\caption{\label{tbl-dof}Number of different independent parameters (degrees of freedom) for
+different three node models. }\tabularnewline
+
+\centering
+\begin{tabular}{lc}
+\toprule
+Model & Degrees of freedom\\
+\midrule
+`X -> Y <- W` & 17\\
+`X -> Y <- W; X <-> W` & 18\\
+`X -> Y <- W; X <-> Y; W <-> Y` & 62\\
+`X -> Y <- W; X <-> Y; W <-> Y; X <-> W` & 63\\
+`X -> W -> Y <- X` & 19\\
+`X -> W -> Y <- X; W <-> Y` & 64\\
+`X -> W -> Y <- X; X <-> W; W <-> Y` & 67\\
+`X -> W -> Y <- X; X <-> W; W <-> Y; X <-> Y` & 127\\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \hypertarget{priors}{%
 \subsubsection{Setting Priors}\label{priors}}
@@ -1780,9 +1777,9 @@ R> lipids_model |>
 
 \begin{verbatim}
   Z X Y
-1 0 0 0
-2 0 0 1
-3 0 1 1
+1 0 1 1
+2 1 1 1
+3 1 1 1
 \end{verbatim}
 
 Note that the data is returned ordered by data type as in the example
@@ -1817,10 +1814,10 @@ R> sample_data_2
 1 0 NA 0
 2 0 NA 1
 3 0 NA 1
-4 0 NA 1
-5 1  0 0
+4 0 NA 0
+5 0 NA 1
 6 1 NA 0
-7 1 NA 1
+7 1  1 0
 8 1 NA 1
 \end{verbatim}
 
@@ -1841,17 +1838,17 @@ R> sample_data_2 |> collapse_data(lipids_model)
 \begin{verbatim}
     event strategy count
 1  Z0X0Y0      ZXY     0
-2  Z1X0Y0      ZXY     1
+2  Z1X0Y0      ZXY     0
 3  Z0X1Y0      ZXY     0
-4  Z1X1Y0      ZXY     0
+4  Z1X1Y0      ZXY     1
 5  Z0X0Y1      ZXY     0
 6  Z1X0Y1      ZXY     0
 7  Z0X1Y1      ZXY     0
 8  Z1X1Y1      ZXY     0
-9    Z0Y0       ZY     1
+9    Z0Y0       ZY     2
 10   Z1Y0       ZY     1
 11   Z0Y1       ZY     3
-12   Z1Y1       ZY     2
+12   Z1Y1       ZY     1
 \end{verbatim}
 
 In the same way it is possible to move from ``compact data'' to ``long
@@ -1974,21 +1971,23 @@ R> make_model("X -> Y") |>
 \end{verbatim}
 
 \hypertarget{tbl-parmap}{}
-\begin{longtable}[t]{lcccc}
+\begin{table}
 \caption{\label{tbl-parmap}Mapping from parameters to data types. }\tabularnewline
 
+\centering
+\begin{tabular}{lcccc}
 \toprule
- & X0Y0 & X1Y0 & X0Y1 & X1Y1\\
+  & X0Y0 & X1Y0 & X0Y1 & X1Y1\\
 \midrule
 X.0 & 1 & 0 & 1 & 0\\
 X.1 & 0 & 1 & 0 & 1\\
 Y.00 & 1 & 1 & 0 & 0\\
 Y.10 & 0 & 1 & 1 & 0\\
 Y.01 & 1 & 0 & 0 & 1\\
-\addlinespace
 Y.11 & 0 & 0 & 1 & 1\\
 \bottomrule
-\end{longtable}
+\end{tabular}
+\end{table}
 
 For instance the probability of data type \texttt{X0Y0}, \(w_{00}\) is
 \(\lambda^X_0\times \lambda^Y_{00} + \lambda^X_0\times \lambda^Y_{01}\).
@@ -2086,16 +2085,19 @@ R> list(
 \end{verbatim}
 
 \hypertarget{tbl-censored}{}
-\begin{longtable}[t]{cccc}
+\begin{table}
 \caption{\label{tbl-censored}Posterior inferences taking account of censoring and not. }\tabularnewline
 
+\centering
+\begin{tabular}{cccc}
 \toprule
 model & query & mean & sd\\
 \midrule
-uncensored & (Y[X=1] - Y[X=0]) & 0.59 & 0.19\\
+uncensored & (Y[X=1] - Y[X=0]) & 0.59 & 0.20\\
 censored & (Y[X=1] - Y[X=0]) & 0.02 & 0.32\\
 \bottomrule
-\end{longtable}
+\end{tabular}
+\end{table}
 
 \hypertarget{output}{%
 \subsection{Output}\label{output}}
@@ -2135,61 +2137,61 @@ Inference for Stan model: simplexes.
 post-warmup draws per chain=1000, total post-warmup draws=4000.
 
                     mean se_mean   sd   2.5%    25%    50%    75%  97.5% n_eff
-lambdas[1]          0.50     0.0 0.29   0.02   0.25   0.49   0.75   0.97  5371
-lambdas[2]          0.50     0.0 0.29   0.03   0.25   0.51   0.75   0.98  5371
-lambdas[3]          0.24     0.0 0.19   0.01   0.09   0.20   0.36   0.69  3395
-lambdas[4]          0.25     0.0 0.19   0.01   0.09   0.21   0.37   0.72  6330
-lambdas[5]          0.26     0.0 0.20   0.01   0.09   0.21   0.38   0.72  6494
-lambdas[6]          0.25     0.0 0.20   0.01   0.09   0.21   0.37   0.72  6321
-lambdas[7]          0.25     0.0 0.19   0.01   0.09   0.20   0.36   0.70  2899
-lambdas[8]          0.25     0.0 0.19   0.01   0.09   0.20   0.37   0.72  6041
-lambdas[9]          0.26     0.0 0.19   0.01   0.10   0.22   0.37   0.72  5866
-lambdas[10]         0.25     0.0 0.20   0.01   0.09   0.21   0.38   0.71  6183
-lambdas[11]         0.25     0.0 0.19   0.01   0.10   0.21   0.37   0.71  3484
-lambdas[12]         0.25     0.0 0.19   0.01   0.09   0.20   0.37   0.71  6538
-lambdas[13]         0.25     0.0 0.20   0.01   0.09   0.21   0.38   0.72  5956
-lambdas[14]         0.25     0.0 0.19   0.01   0.09   0.20   0.36   0.69  5932
-lambdas[15]         0.24     0.0 0.19   0.01   0.09   0.20   0.36   0.69  3226
-lambdas[16]         0.26     0.0 0.20   0.01   0.09   0.21   0.38   0.72  6505
-lambdas[17]         0.25     0.0 0.20   0.01   0.09   0.21   0.37   0.71  6635
-lambdas[18]         0.25     0.0 0.19   0.01   0.09   0.20   0.37   0.70  6223
-lambdas[19]         0.25     0.0 0.20   0.01   0.09   0.20   0.37   0.72  2930
-lambdas[20]         0.25     0.0 0.19   0.01   0.09   0.21   0.37   0.71  5834
-lambdas[21]         0.25     0.0 0.19   0.01   0.09   0.20   0.37   0.70  5909
-lambdas[22]         0.25     0.0 0.20   0.01   0.09   0.20   0.37   0.71  5895
-prob_of_types[1]    0.03     0.0 0.04   0.00   0.00   0.01   0.04   0.15  3536
-prob_of_types[2]    0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.16  3467
-prob_of_types[3]    0.03     0.0 0.05   0.00   0.00   0.01   0.03   0.17  3604
-prob_of_types[4]    0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.17  3760
-prob_of_types[5]    0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.18  3749
-prob_of_types[6]    0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.18  4301
-prob_of_types[7]    0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.17  3661
-prob_of_types[8]    0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.18  3772
-prob_of_types[9]    0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.17  3878
-prob_of_types[10]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.17  3484
-prob_of_types[11]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.18  3988
-prob_of_types[12]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.18  4245
-prob_of_types[13]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.18  4055
-prob_of_types[14]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.18  2898
-prob_of_types[15]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.17  3581
-prob_of_types[16]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.17  3966
-prob_of_types[17]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.17  3262
-prob_of_types[18]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.17  4136
-prob_of_types[19]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.17  3787
-prob_of_types[20]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.19  4100
-prob_of_types[21]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.18  3838
-prob_of_types[22]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.19  4823
-prob_of_types[23]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.17  4073
-prob_of_types[24]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.17  4467
-prob_of_types[25]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.16  4325
-prob_of_types[26]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.17  3959
-prob_of_types[27]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.17  3998
-prob_of_types[28]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.16  4688
-prob_of_types[29]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.18  4472
-prob_of_types[30]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.17  4218
-prob_of_types[31]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.18  4177
-prob_of_types[32]   0.03     0.0 0.05   0.00   0.00   0.01   0.04   0.18  3603
-lp__              -29.87     0.1 3.40 -37.47 -31.91 -29.42 -27.40 -24.39  1270
+lambdas[1]          0.50    0.00 0.29   0.02   0.25   0.50   0.75   0.98  6227
+lambdas[2]          0.50    0.00 0.29   0.02   0.25   0.50   0.75   0.98  6227
+lambdas[3]          0.24    0.00 0.19   0.01   0.09   0.20   0.36   0.69  3693
+lambdas[4]          0.25    0.00 0.19   0.01   0.09   0.21   0.37   0.71  5912
+lambdas[5]          0.25    0.00 0.19   0.01   0.10   0.21   0.37   0.70  5741
+lambdas[6]          0.26    0.00 0.19   0.01   0.10   0.22   0.37   0.71  5894
+lambdas[7]          0.25    0.00 0.19   0.01   0.09   0.21   0.37   0.70  3350
+lambdas[8]          0.25    0.00 0.20   0.01   0.09   0.20   0.37   0.72  6290
+lambdas[9]          0.25    0.00 0.19   0.01   0.09   0.21   0.38   0.70  6557
+lambdas[10]         0.25    0.00 0.19   0.01   0.10   0.21   0.36   0.70  5707
+lambdas[11]         0.25    0.00 0.19   0.01   0.09   0.20   0.36   0.71  3542
+lambdas[12]         0.25    0.00 0.19   0.01   0.10   0.21   0.37   0.71  6434
+lambdas[13]         0.25    0.00 0.20   0.01   0.09   0.20   0.38   0.72  5791
+lambdas[14]         0.25    0.00 0.20   0.01   0.09   0.21   0.37   0.71  6504
+lambdas[15]         0.25    0.00 0.19   0.01   0.09   0.21   0.37   0.70  3593
+lambdas[16]         0.25    0.00 0.20   0.01   0.09   0.20   0.38   0.71  5929
+lambdas[17]         0.25    0.00 0.20   0.01   0.09   0.20   0.37   0.72  5622
+lambdas[18]         0.25    0.00 0.19   0.01   0.09   0.21   0.37   0.70  6250
+lambdas[19]         0.24    0.00 0.19   0.01   0.09   0.20   0.36   0.69  3269
+lambdas[20]         0.25    0.00 0.19   0.01   0.10   0.21   0.38   0.70  5821
+lambdas[21]         0.25    0.00 0.19   0.01   0.09   0.21   0.38   0.71  6292
+lambdas[22]         0.25    0.00 0.19   0.01   0.10   0.21   0.37   0.69  5955
+prob_of_types[1]    0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  3255
+prob_of_types[2]    0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.16  3410
+prob_of_types[3]    0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.16  4376
+prob_of_types[4]    0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  3868
+prob_of_types[5]    0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.18  3904
+prob_of_types[6]    0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  4262
+prob_of_types[7]    0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.16  3865
+prob_of_types[8]    0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  4233
+prob_of_types[9]    0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  3795
+prob_of_types[10]   0.03    0.00 0.05   0.00   0.00   0.01   0.03   0.17  3661
+prob_of_types[11]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  3581
+prob_of_types[12]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.18  4364
+prob_of_types[13]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.18  4084
+prob_of_types[14]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  4624
+prob_of_types[15]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.18  3896
+prob_of_types[16]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.18  4644
+prob_of_types[17]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  4009
+prob_of_types[18]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.18  4113
+prob_of_types[19]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.18  4062
+prob_of_types[20]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  3547
+prob_of_types[21]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.16  4496
+prob_of_types[22]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.19  3478
+prob_of_types[23]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  4323
+prob_of_types[24]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.18  4473
+prob_of_types[25]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  4152
+prob_of_types[26]   0.03    0.00 0.04   0.00   0.00   0.01   0.03   0.17  3960
+prob_of_types[27]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  4239
+prob_of_types[28]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  4705
+prob_of_types[29]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  4038
+prob_of_types[30]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  4246
+prob_of_types[31]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  4085
+prob_of_types[32]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  4350
+lp__              -29.71    0.09 3.35 -37.06 -31.78 -29.34 -27.24 -24.37  1313
                   Rhat
 lambdas[1]           1
 lambdas[2]           1
@@ -2247,7 +2249,7 @@ prob_of_types[31]    1
 prob_of_types[32]    1
 lp__                 1
 
-Samples were drawn using NUTS(diag_e) at Wed Mar  6 18:26:43 2024.
+Samples were drawn using NUTS(diag_e) at Wed Mar 13 11:32:14 2024.
 For each parameter, n_eff is a crude measure of effective sample size,
 and Rhat is the potential scale reduction factor on split chains (at 
 convergence, Rhat=1).
@@ -2584,15 +2586,19 @@ R> lipids_model |>
 \end{verbatim}
 
 \hypertarget{tbl-case-level-query}{}
-\begin{longtable}[t]{cccccc}
+\begin{table}[!h]
 \caption{\label{tbl-case-level-query}Case level query example. }\tabularnewline
 
+\centering
+\resizebox{\linewidth}{!}{
+\begin{tabular}{cccccc}
 \toprule
 query & given & mean & sd & cred.low & cred.high\\
 \midrule
-Y[X=1] - Y[X=0] & X==1 \& Y==1 \& Z==1 & 0.5 & 0.24 & 0.07 & 0.93\\
+Y[X=1] - Y[X=0] & X==1 \& Y==1 \& Z==1 & 0.51 & 0.24 & 0.08 & 0.93\\
 \bottomrule
-\end{longtable}
+\end{tabular}}
+\end{table}
 
 The answer we get in Table~\ref{tbl-case-level-query} is what we now
 believe for all cases in which \(Z=1\), \(X=1\) and \(Y=1\). It is in
@@ -2635,7 +2641,7 @@ R> make_model("X -> M -> Y") |>
 \end{verbatim}
 
 \hypertarget{tbl-case-level}{}
-\begin{longtable}[t]{ccccc}
+\begin{longtable}{ccccc}
 \caption{\label{tbl-case-level}Results for a case level query. }\tabularnewline
 
 \toprule
@@ -2679,48 +2685,42 @@ R> query_model(
 \end{verbatim}
 
 \hypertarget{tbl-batch-query}{}
-\begin{longtable}[t]{ccccccc}
+\begin{longtable}{ccccccc}
 \caption{\label{tbl-batch-query}Results for two queries on two models. }\tabularnewline
 
 \toprule
 model & query & given & using & case\_level & mean & sd\\
 \midrule
-1 & ATE & - & priors & FALSE & 0.00 & 0.31\\
-2 & ATE & - & priors & FALSE & 0.33 & 0.24\\
+1 & ATE & - & priors & FALSE & 0.00 & 0.32\\
+2 & ATE & - & priors & FALSE & 0.34 & 0.24\\
 1 & ATE & - & posteriors & FALSE & 0.76 & 0.13\\
 2 & ATE & - & posteriors & FALSE & 0.83 & 0.11\\
 1 & ATE & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29\\
-\addlinespace
 2 & ATE & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29\\
-1 & ATE & Y==1 \& X==1 & posteriors & FALSE & 0.91 & 0.09\\
+1 & ATE & Y==1 \& X==1 & posteriors & FALSE & 0.91 & 0.08\\
 2 & ATE & Y==1 \& X==1 & posteriors & FALSE & 0.91 & 0.09\\
 1 & POS & - & priors & FALSE & 0.25 & 0.19\\
-2 & POS & - & priors & FALSE & 0.33 & 0.24\\
-\addlinespace
+2 & POS & - & priors & FALSE & 0.34 & 0.24\\
 1 & POS & - & posteriors & FALSE & 0.80 & 0.11\\
 2 & POS & - & posteriors & FALSE & 0.83 & 0.11\\
 1 & POS & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29\\
 2 & POS & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29\\
-1 & POS & Y==1 \& X==1 & posteriors & FALSE & 0.91 & 0.09\\
-\addlinespace
+1 & POS & Y==1 \& X==1 & posteriors & FALSE & 0.91 & 0.08\\
 2 & POS & Y==1 \& X==1 & posteriors & FALSE & 0.91 & 0.09\\
 1 & ATE & - & priors & TRUE & 0.00 & NA\\
-2 & ATE & - & priors & TRUE & 0.33 & NA\\
+2 & ATE & - & priors & TRUE & 0.34 & NA\\
 1 & ATE & - & posteriors & TRUE & 0.76 & NA\\
 2 & ATE & - & posteriors & TRUE & 0.83 & NA\\
-\addlinespace
 1 & ATE & Y==1 \& X==1 & priors & TRUE & 0.50 & NA\\
 2 & ATE & Y==1 \& X==1 & priors & TRUE & 0.50 & NA\\
 1 & ATE & Y==1 \& X==1 & posteriors & TRUE & 0.91 & NA\\
 2 & ATE & Y==1 \& X==1 & posteriors & TRUE & 0.91 & NA\\
 1 & POS & - & priors & TRUE & 0.25 & NA\\
-\addlinespace
-2 & POS & - & priors & TRUE & 0.33 & NA\\
+2 & POS & - & priors & TRUE & 0.34 & NA\\
 1 & POS & - & posteriors & TRUE & 0.80 & NA\\
 2 & POS & - & posteriors & TRUE & 0.83 & NA\\
 1 & POS & Y==1 \& X==1 & priors & TRUE & 0.50 & NA\\
 2 & POS & Y==1 \& X==1 & priors & TRUE & 0.50 & NA\\
-\addlinespace
 1 & POS & Y==1 \& X==1 & posteriors & TRUE & 0.91 & NA\\
 2 & POS & Y==1 \& X==1 & posteriors & TRUE & 0.91 & NA\\
 \bottomrule
@@ -2892,7 +2892,7 @@ Network (CRAN) at \url{https://CRAN.R-project.org/}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, opacityback=0, arc=.35mm, colback=white, rightrule=.15mm, left=2mm, bottomrule=.15mm, toprule=.15mm, breakable]
+\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, opacityback=0, arc=.35mm, rightrule=.15mm, left=2mm, bottomrule=.15mm, breakable, leftrule=.75mm, colback=white]
 
 We thank Ben Goodrich who provided generous insights on using
 \texttt{stan} for this project. We thank Alan M Jacobs for key work
