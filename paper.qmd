@@ -535,17 +535,8 @@ Interpretations are automatically provided as part of the model object. A user c
 #| eval: false
 #| purl: false
 
-make_model("X -> Y")$nodal_types
-```
-
-```{r}
-#| label: nodal-types-nointerpret
-#| echo: false
-#| eval: false
-#| purl: false
-
-# make_model("X -> Y")$nodal_types |> `attr<-`("interpret", NULL)
-make_model("X -> Y")$nodal_types 
+make_model("X -> Y") |>
+  grab("nodal_types")
 ```
 
 #### Causal types {#sec-causal-types}
@@ -558,7 +549,9 @@ When a model is created, the full set of causal types is identified. These are s
 #| label: causal-types
 #| echo: true
 
-lipids_model$causal_types |> head()
+lipids_model |> 
+  grab("causal_types")
+
 ```
 
 In the Lipids model there are $2\times 4\times 4 = 32$ causal types. A model with $n_j$ nodal types at node $j$ has $\prod_jn_j$ causal types. Thus the set of causal types can be large.
@@ -911,7 +904,7 @@ Once a model has been defined it is possible to simulate data from the model usi
 
 #### Drawing data basics
 
-By default, the parameters used are taken from `model$parameters_df`.
+Generating data requires a specification of parameter values. These can be provided by users; if not provided default values are used that place equal weight on all nodal types.
 
 ```{r}
 #| label: make-data
@@ -1130,7 +1123,8 @@ The primary output from `update_model()` is a model with an attached posterior d
 #| eval: true
 #| echo: true
 # snapshot of the posterior distribution
-get_posterior_distribution(lipids_model)[1:5, 1:5]
+get_posterior_distribution(lipids_model) |>
+  select(starts_with("X")) |> head() |> kable()
 
 ```
 
@@ -1141,7 +1135,8 @@ In addition, a distribution of causal types is stored by default and the `stanfi
 ```{r}
 lipids_model <- lipids_model |> update_model(keep_fit = TRUE)
 
-lipids_model$stan_objects$stan_fit |> print()
+lipids_model |>
+  grab("stan_summary")
 ```
 
 See again @tbl-additional for a description of the elements that the updated model contains.
@@ -1271,7 +1266,7 @@ model <-
   make_model("X -> Y") |>
   update_model(data, iter  = 4000)
 
-model$posterior_distribution  |> 
+model |> grab("posterior_distribution")  |> 
   ggplot(aes(Y.01 - Y.10)) + geom_histogram()
 ```
 
@@ -1295,7 +1290,7 @@ if (params$run) {
 
 model <- read_rds("saved/app_2_illus.rds")
 
-model$posterior_distribution |> 
+model |> grab("posterior_distribution")  |> 
   ggplot(aes(Y.01 - Y.10)) + geom_histogram() + theme_bw()
 ```
 
