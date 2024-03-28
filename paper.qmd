@@ -219,9 +219,13 @@ Both `autobounds` and `causaloptim` build on seminal approaches in @balke_bounds
 #| include: false
 #| purl: false
 
-make_model("A -> B -> C -> D -> E")$parameters_df |> nrow()
+make_model("A -> B -> C -> D -> E") |>
+  grab("parameters_df") |> 
+  nrow()
 
-make_model("A -> E <- B; C->E<-D")$parameters_df |> nrow()
+make_model("A -> E <- B; C-> E <- D") |>
+  grab("parameters_df") |> 
+  nrow()
 ```
 
 Summarizing, the particular strength of `CausalQueries` is to allow users to specify arbitrary DAGs, arbitrary queries over nodes in those DAGs, and use the same canonical procedure to form Bayesian posteriors over those queries whether or not the queries are identified. Thus in principle if researchers are interested in learning about a quantity like the local average treatment effect and their model in fact satisfies the conditions in @angrist_identification_1996, then updating will recover valid estimates even if researchers are unaware that the local average treatment effect is identified and are ignorant of the estimation procedure proposed by @angrist_identification_1996.
@@ -469,7 +473,9 @@ When a model is created, `CausalQueries` attaches a "parameters data frame" whic
 #| eval: false
 #| purl: false
 
-make_model("X -> Y")$parameters_df
+make_model("X -> Y") |> 
+  grab("parameters_df") 
+
 ```
 
 ```{r}
@@ -479,7 +485,8 @@ make_model("X -> Y")$parameters_df
 #| tbl-cap: "Example of parameters data frame."
 
 latex_options = "HOLD_position"
-make_model("X -> Y")$parameters_df |>
+make_model("X -> Y")|> 
+  grab("parameters_df")|>
   knitr::kable(
     digits = 2,
     booktabs = TRUE,
@@ -520,11 +527,9 @@ The `interpret_type()` function can be called by the user to obtain interpretati
 #| label: lookup-types2
 #| echo: true
 
-interpretations <- 
-  make_model("X -> Y <- M; W -> Y") |> 
-  interpret_type()
+make_model("X -> Y <- M; W -> Y") |> 
+  interpret_type(nodes = "Y")
 
-interpretations$Y
 ```
 
 Interpretations are automatically provided as part of the model object. A user can see them like this.
@@ -566,7 +571,8 @@ The parameters data frame keeps track of parameter values and priors for paramet
 #| label: get-param-matrix
 #| echo: true
 
-make_model("X -> Y") |> get_parameter_matrix()
+make_model("X -> Y") |> 
+  grab("parameter_matrix")
 ```
 
 The probability of a causal type is given by the product of the parameter values for parameters whose row in the $P$ matrix contains a $1$. Later (e.g. @tbl-confound-param-matrix) we will see examples where the $P$ matrix helps keep track of parameters that are created when confounding is added to a model.
@@ -668,7 +674,7 @@ To see exactly how the parameters map to causal types we can look at the paramet
 #| eval: false
 #| purl: false
 make_model("X -> Y ; X <-> Y") |>
-  get_parameter_matrix()
+  grab("parameter_matrix")
 
 ```
 
@@ -681,7 +687,7 @@ The resulting parameter matrix is shown in @tbl-confound-param-matrix. Important
 #| eval: true
 
 make_model("X -> Y ; X <-> Y") |>
-  get_parameter_matrix() |>
+  grab("parameter_matrix") |>
   knitr::kable(
     digits = 2,
     booktabs = TRUE,
@@ -710,7 +716,8 @@ statements <- list("X -> Y <- W",
                    "X -> W -> Y <- X; X <-> W; W <-> Y; X <-> Y")
 
    dof <- function(statement)
-       make_model(statement, add_causal_types = FALSE)$parameters_df |>
+     make_model(statement, add_causal_types = FALSE)|>
+     grab("parameters_df")  |>
        group_by(param_set) |>
        summarize(n  = n() - 1) |>
        pull(n) |>
@@ -741,14 +748,14 @@ Implicitly priors are independent across families. Thus for instance in an $X \r
 
 [^4]: Of course, if a model involves possible confounding, users can specify beliefs about $\lambda^Y$ given $\theta^X$. But this is a statement about beliefs over a joint distribution not jointly distributed beliefs.
 
-By default, priors are set to unity, corresponding to uniform priors. To retrieve the model's priors we can run the following code:
+By default, prior hyperparameters are set to unity, corresponding to uniform priors. To retrieve the model's priors we can run the following code:
 
 ```{r}
 #| label: get-priors
 #| echo: true
 #| eval: true
 
-lipids_model |> get_priors() |> head()
+lipids_model |> grab("prior_hyperparameters", "X") 
 ```
 
 Alternatively you could set Jeffreys priors using `set_priors()` as follows:
@@ -771,8 +778,7 @@ You can also add custom priors. Custom priors are most simply specified by being
 
 lipids_model |> 
   set_priors(node = "X", alphas = 1:4) |> 
-  get_priors() |> 
-  head()
+  grab("prior_hyperparameters", "X")
 ```
 
 The priors here should be interpreted as indicating $\alpha_X = (1,2, 3, 4)$, which implies a distribution over $(\lambda^X_{00},\lambda^X_{10}, \lambda^X_{01}, \lambda^X_{11})$ centered on $\left(\frac1{10}, \frac2{10}, \frac3{10} \frac4{10} \right)$.
@@ -786,7 +792,7 @@ For larger models it can be hard to provide priors as a vector of numbers. For t
 
 lipids_model |>
   set_priors(statement = "X[Z=1] > X[Z=0]", alphas = 3) |>
-  get_priors() |> head()
+  grab("prior_hyperparameters", "X")
 ```
 
 As setting priors simply requires mapping alpha values to parameters, the process reduces to selecting rows of the `parmeters_df` data frame, at which to alter values. When specifying a causal statement as above, `CausalQueries` internally identifies nodal types that are consistent with the statement, which in turn identify parameters to alter priors for.
@@ -880,7 +886,7 @@ Consider the causal model below. It has two parameter sets, one for $X$ and one 
 #| eval: true
 
 make_model("X -> Y") |> 
-  get_parameters()
+  grab("prior_hyperparameters")
 ```
 
 The example below illustrates a change in the value of the parameter $Y$ in the case it is increasing in $X$. Here nodal type `Y.Y01` is set to be 0.5, while the other nodal types of this parameter set were re-normalized so that the parameters in the set still sum to one.
@@ -892,7 +898,8 @@ The example below illustrates a change in the value of the parameter $Y$ in the 
 
 make_model("X -> Y") |>
   set_parameters(statement = "Y[X=1] > Y[X=0]", parameters = .5) |>
-  get_parameters()
+  grab("prior_hyperparameters")
+
 ```
 
 <!-- # both setting priors and parameters offers a lot of options beyond causal statements now >> might be useful to show an example of a subset of those options at work for users to whom using causal statements is alien >> i.e. showcase the idea that under the hood a lot of this just comes down to filtering the parameters dataframe in various ways i.e. we have options: alter_at, node, nodal_type, param_set, given, statement, param_names -->
@@ -1000,7 +1007,7 @@ sample_data_2 |>
 
 ### How the Stan program works
 
-The Stan model involves the following elements: (1) a specification of priors over sets of parameters, (2) a mapping from parameters to event probabilities, $w$, and (3) a likelihood function. Below we describe each of those elements in more details.
+The Stan model involves the following elements: (1) a specification of priors over sets of parameters, (2) a mapping from parameters to event probabilities,  and (3) a likelihood function. Below we describe each of those elements in more details.
 
 #### Probability distributions over parameter sets
 
@@ -1021,7 +1028,7 @@ The following code yields @tbl-parmap, which can be used to calculate event prob
 #| eval: false
 #| purl: false 
 make_model("X -> Y") |> 
-  get_parmap() 
+  grab("parameter_mapping") 
 ```
 
 ```{r}
@@ -1031,7 +1038,7 @@ make_model("X -> Y") |>
 #| eval: true
 
 make_model("X -> Y") |> 
-  get_parmap() |>   
+    grab("parameter_mapping")  |>   
   knitr::kable(
     digits = 2,
     booktabs = TRUE,
@@ -1123,8 +1130,9 @@ The primary output from `update_model()` is a model with an attached posterior d
 #| eval: true
 #| echo: true
 # snapshot of the posterior distribution
-get_posterior_distribution(lipids_model) |>
-  select(starts_with("X")) |> head() |> kable()
+lipids_model |>
+  grab("posterior_distribution") |>
+  select(starts_with("X")) |> head() |> kable(digits = 3)
 
 ```
 
@@ -1133,7 +1141,9 @@ In addition, a distribution of causal types is stored by default and the `stanfi
 
 
 ```{r}
-lipids_model <- lipids_model |> update_model(keep_fit = TRUE)
+lipids_model <- 
+  lipids_model |> 
+  update_model(keep_type_distribution = FALSE)
 
 lipids_model |>
   grab("stan_summary")

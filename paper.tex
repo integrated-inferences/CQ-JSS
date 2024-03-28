@@ -342,12 +342,9 @@ R> lipids_queries
 \end{verbatim}
 
 \hypertarget{tbl-lipids}{}
-\begin{table}
+\begin{longtable}[t]{cccccc}
 \caption{\label{tbl-lipids}Replication of \citet{chickering_clinicians_1996}. }\tabularnewline
 
-\centering
-\resizebox{\linewidth}{!}{
-\begin{tabular}{cccccc}
 \toprule
 query & given & mean & sd & cred.low.2.5\% & cred.high.97.5\%\\
 \midrule
@@ -355,8 +352,7 @@ Y[X=1] - Y[X=0] & - & 0.56 & 0.10 & 0.38 & 0.73\\
 Y[X=1] - Y[X=0] & X==0 \& Y==0 & 0.64 & 0.15 & 0.38 & 0.89\\
 Y[X=1] - Y[X=0] & X[Z=1] > X[Z=0] & 0.70 & 0.05 & 0.60 & 0.80\\
 \bottomrule
-\end{tabular}}
-\end{table}
+\end{longtable}
 
 The output is a data frame with estimates, posterior standard
 deviations, and credibility intervals. Table~\ref{tbl-lipids} shows the
@@ -775,7 +771,7 @@ nodal types for \(Y\) \emph{given} the nodal types for \(X\). We see
 there are four sets of these parameters.
 
 \hypertarget{tbl-lipidspar}{}
-\begin{longtable}{cccccc}
+\begin{longtable}[t]{cccccc}
 \caption{\label{tbl-lipidspar}Nodal types and parameters for Lipids model. }\tabularnewline
 
 \toprule
@@ -786,21 +782,25 @@ Z & 1 & Z & Z.1 & 0.29 & 1\\
 X & 00 & X & X.00 & 0.36 & 1\\
 X & 10 & X & X.10 & 0.03 & 1\\
 X & 01 & X & X.01 & 0.51 & 1\\
+\addlinespace
 X & 11 & X & X.11 & 0.10 & 1\\
 Y & 00 & Y.X.00 & Y.00\_X.00 & 0.43 & 1\\
 Y & 10 & Y.X.00 & Y.10\_X.00 & 0.08 & 1\\
 Y & 01 & Y.X.00 & Y.01\_X.00 & 0.34 & 1\\
 Y & 11 & Y.X.00 & Y.11\_X.00 & 0.15 & 1\\
+\addlinespace
 Y & 00 & Y.X.01 & Y.00\_X.01 & 0.43 & 1\\
 Y & 10 & Y.X.01 & Y.10\_X.01 & 0.05 & 1\\
 Y & 01 & Y.X.01 & Y.01\_X.01 & 0.39 & 1\\
 Y & 11 & Y.X.01 & Y.11\_X.01 & 0.13 & 1\\
 Y & 00 & Y.X.10 & Y.00\_X.10 & 0.24 & 1\\
+\addlinespace
 Y & 10 & Y.X.10 & Y.10\_X.10 & 0.45 & 1\\
 Y & 01 & Y.X.10 & Y.01\_X.10 & 0.12 & 1\\
 Y & 11 & Y.X.10 & Y.11\_X.10 & 0.19 & 1\\
 Y & 00 & Y.X.11 & Y.00\_X.11 & 0.61 & 1\\
 Y & 10 & Y.X.11 & Y.10\_X.11 & 0.11 & 1\\
+\addlinespace
 Y & 01 & Y.X.11 & Y.01\_X.11 & 0.03 & 1\\
 Y & 11 & Y.X.11 & Y.11\_X.11 & 0.25 & 1\\
 \bottomrule
@@ -1098,12 +1098,9 @@ R> make_model("X -> Y")$parameters_df
 \end{verbatim}
 
 \hypertarget{tbl-params-df}{}
-\begin{table}[H]
+\begin{longtable}[t]{cccccccc}
 \caption{\label{tbl-params-df}Example of parameters data frame. }\tabularnewline
 
-\centering
-\resizebox{\linewidth}{!}{
-\begin{tabular}{cccccccc}
 \toprule
 param\_names & node & gen & param\_set & nodal\_type & given & param\_value & priors\\
 \midrule
@@ -1112,10 +1109,10 @@ X.1 & X & 1 & X & 1 &  & 0.50 & 1\\
 Y.00 & Y & 2 & Y & 00 &  & 0.25 & 1\\
 Y.10 & Y & 2 & Y & 10 &  & 0.25 & 1\\
 Y.01 & Y & 2 & Y & 01 &  & 0.25 & 1\\
+\addlinespace
 Y.11 & Y & 2 & Y & 11 &  & 0.25 & 1\\
 \bottomrule
-\end{tabular}}
-\end{table}
+\end{longtable}
 
 As in Table~\ref{tbl-lipidspar}, each row in Table~\ref{tbl-params-df}
 corresponds to a single parameter. The columns of the parameters data
@@ -1195,14 +1192,12 @@ The \texttt{interpret\_type()} function can be called by the user to
 obtain interpretations for the nodal types of each node in the model.
 
 \begin{verbatim}
-R> interpretations <- 
-+  make_model("X -> Y <- M; W -> Y") |> 
-+  interpret_type()
-R> 
-R> interpretations$Y
+R> make_model("X -> Y <- M; W -> Y") |> 
++  interpret_type(nodes = "Y")
 \end{verbatim}
 
 \begin{verbatim}
+$Y
   node position     display            interpretation
 1    Y        1 Y[*]******* Y | M = 0 & W = 0 & X = 0
 2    Y        2 Y*[*]****** Y | M = 1 & W = 0 & X = 0
@@ -1218,7 +1213,8 @@ Interpretations are automatically provided as part of the model object.
 A user can see them like this.
 
 \begin{verbatim}
-R> make_model("X -> Y")$nodal_types
+R> make_model("X -> Y") |>
++  grab("nodal_types")
 \end{verbatim}
 
 \hypertarget{sec-causal-types}{%
@@ -1235,7 +1231,8 @@ When a model is created, the full set of causal types is identified.
 These are stored in the model object:
 
 \begin{verbatim}
-R> lipids_model$causal_types |> head()
+R> lipids_model |> 
++  grab("causal_types")
 \end{verbatim}
 
 \begin{verbatim}
@@ -1246,6 +1243,32 @@ Z0.X10.Y00 0 10 00
 Z1.X10.Y00 1 10 00
 Z0.X01.Y00 0 01 00
 Z1.X01.Y00 1 01 00
+Z0.X11.Y00 0 11 00
+Z1.X11.Y00 1 11 00
+Z0.X00.Y10 0 00 10
+Z1.X00.Y10 1 00 10
+Z0.X10.Y10 0 10 10
+Z1.X10.Y10 1 10 10
+Z0.X01.Y10 0 01 10
+Z1.X01.Y10 1 01 10
+Z0.X11.Y10 0 11 10
+Z1.X11.Y10 1 11 10
+Z0.X00.Y01 0 00 01
+Z1.X00.Y01 1 00 01
+Z0.X10.Y01 0 10 01
+Z1.X10.Y01 1 10 01
+Z0.X01.Y01 0 01 01
+Z1.X01.Y01 1 01 01
+Z0.X11.Y01 0 11 01
+Z1.X11.Y01 1 11 01
+Z0.X00.Y11 0 00 11
+Z1.X00.Y11 1 00 11
+Z0.X10.Y11 0 10 11
+Z1.X10.Y11 1 10 11
+Z0.X01.Y11 0 01 11
+Z1.X01.Y11 1 01 11
+Z0.X11.Y11 0 11 11
+Z1.X11.Y11 1 11 11
 \end{verbatim}
 
 In the Lipids model there are \(2\times 4\times 4 = 32\) causal types. A
@@ -1274,7 +1297,8 @@ matrix has a row for each parameter and a column for each causal type.
 For instance:
 
 \begin{verbatim}
-R> make_model("X -> Y") |> get_parameter_matrix()
+R> make_model("X -> Y") |> 
++  grab("parameter_matrix")
 \end{verbatim}
 
 \begin{verbatim}
@@ -1470,7 +1494,7 @@ model.
 
 \begin{verbatim}
 R> make_model("X -> Y ; X <-> Y") |>
-+  get_parameter_matrix()
++  grab("parameter_matrix")
 \end{verbatim}
 
 The resulting parameter matrix is shown in
@@ -1480,53 +1504,59 @@ causal types by multiplying the probabilities of the constituent
 parameters.
 
 \hypertarget{tbl-confound-param-matrix}{}
-\begin{table}
+\begin{longtable}[t]{lcccccccc}
 \caption{\label{tbl-confound-param-matrix}Parameter matrix for model with confounding. }\tabularnewline
 
-\centering
-\resizebox{\linewidth}{!}{
-\begin{tabular}{lcccccccc}
 \toprule
-  & X0.Y00 & X1.Y00 & X0.Y10 & X1.Y10 & X0.Y01 & X1.Y01 & X0.Y11 & X1.Y11\\
+ & X0.Y00 & X1.Y00 & X0.Y10 & X1.Y10 & X0.Y01 & X1.Y01 & X0.Y11 & X1.Y11\\
 \midrule
 X.0 & 1 & 0 & 1 & 0 & 1 & 0 & 1 & 0\\
 X.1 & 0 & 1 & 0 & 1 & 0 & 1 & 0 & 1\\
 Y.00\_X.0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
 Y.10\_X.0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0\\
 Y.01\_X.0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0\\
+\addlinespace
 Y.11\_X.0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0\\
 Y.00\_X.1 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0\\
 Y.10\_X.1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0\\
 Y.01\_X.1 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0\\
 Y.11\_X.1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1\\
 \bottomrule
-\end{tabular}}
-\end{table}
+\end{longtable}
 
 Table~\ref{tbl-dof} illustrates more generally how the number of
 independent parameters depends on the nature of possible confounding.
 
 \hypertarget{tbl-dof}{}
-\begin{table}
-\caption{\label{tbl-dof}Number of different independent parameters (degrees of freedom) for
-different three node models. }\tabularnewline
-
-\centering
-\begin{tabular}{lc}
-\toprule
-Model & Degrees of freedom\\
-\midrule
-`X -> Y <- W` & 17\\
-`X -> Y <- W; X <-> W` & 18\\
-`X -> Y <- W; X <-> Y; W <-> Y` & 62\\
-`X -> Y <- W; X <-> Y; W <-> Y; X <-> W` & 63\\
-`X -> W -> Y <- X` & 19\\
-`X -> W -> Y <- X; W <-> Y` & 64\\
-`X -> W -> Y <- X; X <-> W; W <-> Y` & 67\\
-`X -> W -> Y <- X; X <-> W; W <-> Y; X <-> Y` & 127\\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{longtable}[]{@{}lc@{}}
+\caption{\label{tbl-dof}Number of different independent parameters
+(degrees of freedom) for different three node models.}\tabularnewline
+\toprule\noalign{}
+Model & Degrees of freedom \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+Model & Degrees of freedom \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{X\ -\textgreater{}\ Y\ \textless{}-\ W} & 17 \\
+\texttt{X\ -\textgreater{}\ Y\ \textless{}-\ W;\ X\ \textless{}-\textgreater{}\ W}
+& 18 \\
+\texttt{X\ -\textgreater{}\ Y\ \textless{}-\ W;\ X\ \textless{}-\textgreater{}\ Y;\ W\ \textless{}-\textgreater{}\ Y}
+& 62 \\
+\texttt{X\ -\textgreater{}\ Y\ \textless{}-\ W;\ X\ \textless{}-\textgreater{}\ Y;\ W\ \textless{}-\textgreater{}\ Y;\ X\ \textless{}-\textgreater{}\ W}
+& 63 \\
+\texttt{X\ -\textgreater{}\ W\ -\textgreater{}\ Y\ \textless{}-\ X} &
+19 \\
+\texttt{X\ -\textgreater{}\ W\ -\textgreater{}\ Y\ \textless{}-\ X;\ W\ \textless{}-\textgreater{}\ Y}
+& 64 \\
+\texttt{X\ -\textgreater{}\ W\ -\textgreater{}\ Y\ \textless{}-\ X;\ X\ \textless{}-\textgreater{}\ W;\ W\ \textless{}-\textgreater{}\ Y}
+& 67 \\
+\texttt{X\ -\textgreater{}\ W\ -\textgreater{}\ Y\ \textless{}-\ X;\ X\ \textless{}-\textgreater{}\ W;\ W\ \textless{}-\textgreater{}\ Y;\ X\ \textless{}-\textgreater{}\ Y}
+& 127 \\
+\end{longtable}
 
 \hypertarget{priors}{%
 \subsubsection{Setting Priors}\label{priors}}
@@ -1562,16 +1592,21 @@ let users specify correlated beliefs over these parameters.\footnote{Of
   statement about beliefs over a joint distribution not jointly
   distributed beliefs.}
 
-By default, priors are set to unity, corresponding to uniform priors. To
-retrieve the model's priors we can run the following code:
+By default, prior hyperparameters are set to unity, corresponding to
+uniform priors. To retrieve the model's priors we can run the following
+code:
 
 \begin{verbatim}
-R> lipids_model |> get_priors() |> head()
+R> lipids_model |> grab("prior_hyperparameters", "X") 
 \end{verbatim}
 
 \begin{verbatim}
- Z.0  Z.1 X.00 X.10 X.01 X.11 
-   1    1    1    1    1    1 
+      Z.0       Z.1      X.00      X.10      X.01      X.11 Y.00_X.00 Y.10_X.00 
+        1         1         1         1         1         1         1         1 
+Y.01_X.00 Y.11_X.00 Y.00_X.01 Y.10_X.01 Y.01_X.01 Y.11_X.01 Y.00_X.10 Y.10_X.10 
+        1         1         1         1         1         1         1         1 
+Y.01_X.10 Y.11_X.10 Y.00_X.11 Y.10_X.11 Y.01_X.11 Y.11_X.11 
+        1         1         1         1         1         1 
 \end{verbatim}
 
 Alternatively you could set Jeffreys priors using \texttt{set\_priors()}
@@ -1588,13 +1623,16 @@ instance:
 \begin{verbatim}
 R> lipids_model |> 
 +  set_priors(node = "X", alphas = 1:4) |> 
-+  get_priors() |> 
-+  head()
++  grab("prior_hyperparameters", "X")
 \end{verbatim}
 
 \begin{verbatim}
- Z.0  Z.1 X.00 X.10 X.01 X.11 
-   1    1    1    2    3    4 
+      Z.0       Z.1      X.00      X.10      X.01      X.11 Y.00_X.00 Y.10_X.00 
+        1         1         1         2         3         4         1         1 
+Y.01_X.00 Y.11_X.00 Y.00_X.01 Y.10_X.01 Y.01_X.01 Y.11_X.01 Y.00_X.10 Y.10_X.10 
+        1         1         1         1         1         1         1         1 
+Y.01_X.10 Y.11_X.10 Y.00_X.11 Y.10_X.11 Y.01_X.11 Y.11_X.11 
+        1         1         1         1         1         1 
 \end{verbatim}
 
 The priors here should be interpreted as indicating
@@ -1610,12 +1648,16 @@ modifications of the parameter vector. For instance:
 \begin{verbatim}
 R> lipids_model |>
 +  set_priors(statement = "X[Z=1] > X[Z=0]", alphas = 3) |>
-+  get_priors() |> head()
++  grab("prior_hyperparameters", "X")
 \end{verbatim}
 
 \begin{verbatim}
- Z.0  Z.1 X.00 X.10 X.01 X.11 
-   1    1    1    1    3    1 
+      Z.0       Z.1      X.00      X.10      X.01      X.11 Y.00_X.00 Y.10_X.00 
+        1         1         1         1         3         1         1         1 
+Y.01_X.00 Y.11_X.00 Y.00_X.01 Y.10_X.01 Y.01_X.01 Y.11_X.01 Y.00_X.10 Y.10_X.10 
+        1         1         1         1         1         1         1         1 
+Y.01_X.10 Y.11_X.10 Y.00_X.11 Y.10_X.11 Y.01_X.11 Y.11_X.11 
+        1         1         1         1         1         1 
 \end{verbatim}
 
 As setting priors simply requires mapping alpha values to parameters,
@@ -1721,12 +1763,12 @@ is that they must sum to 1 within each parameter set.
 
 \begin{verbatim}
 R> make_model("X -> Y") |> 
-+  get_parameters()
++  grab("prior_hyperparameters")
 \end{verbatim}
 
 \begin{verbatim}
  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
-0.50 0.50 0.25 0.25 0.25 0.25 
+   1    1    1    1    1    1 
 \end{verbatim}
 
 The example below illustrates a change in the value of the parameter
@@ -1738,12 +1780,12 @@ sum to one.
 \begin{verbatim}
 R> make_model("X -> Y") |>
 +  set_parameters(statement = "Y[X=1] > Y[X=0]", parameters = .5) |>
-+  get_parameters()
++  grab("prior_hyperparameters")
 \end{verbatim}
 
 \begin{verbatim}
-      X.0       X.1      Y.00      Y.10      Y.01      Y.11 
-0.5000000 0.5000000 0.1666667 0.1666667 0.5000000 0.1666667 
+ X.0  X.1 Y.00 Y.10 Y.01 Y.11 
+   1    1    1    1    1    1 
 \end{verbatim}
 
 \hypertarget{drawing-and-manipulating-data}{%
@@ -1758,8 +1800,9 @@ drawn from some speculated set of parameter values.
 \hypertarget{drawing-data-basics}{%
 \subsubsection{Drawing data basics}\label{drawing-data-basics}}
 
-By default, the parameters used are taken from
-\texttt{model\$parameters\_df}.
+Generating data requires a specification of parameter values. These can
+be provided by users; if not provided default values are used that place
+equal weight on all nodal types.
 
 \begin{verbatim}
 R> sample_data_1 <- 
@@ -1777,9 +1820,9 @@ R> lipids_model |>
 
 \begin{verbatim}
   Z X Y
-1 0 1 1
-2 1 1 1
-3 1 1 1
+1 0 0 0
+2 0 0 1
+3 0 1 1
 \end{verbatim}
 
 Note that the data is returned ordered by data type as in the example
@@ -1814,10 +1857,10 @@ R> sample_data_2
 1 0 NA 0
 2 0 NA 1
 3 0 NA 1
-4 0 NA 0
-5 0 NA 1
+4 0 NA 1
+5 1  0 0
 6 1 NA 0
-7 1  1 0
+7 1 NA 1
 8 1 NA 1
 \end{verbatim}
 
@@ -1838,17 +1881,17 @@ R> sample_data_2 |> collapse_data(lipids_model)
 \begin{verbatim}
     event strategy count
 1  Z0X0Y0      ZXY     0
-2  Z1X0Y0      ZXY     0
+2  Z1X0Y0      ZXY     1
 3  Z0X1Y0      ZXY     0
-4  Z1X1Y0      ZXY     1
+4  Z1X1Y0      ZXY     0
 5  Z0X0Y1      ZXY     0
 6  Z1X0Y1      ZXY     0
 7  Z0X1Y1      ZXY     0
 8  Z1X1Y1      ZXY     0
-9    Z0Y0       ZY     2
+9    Z0Y0       ZY     1
 10   Z1Y0       ZY     1
 11   Z0Y1       ZY     3
-12   Z1Y1       ZY     1
+12   Z1Y1       ZY     2
 \end{verbatim}
 
 In the same way it is possible to move from ``compact data'' to ``long
@@ -1967,27 +2010,25 @@ calculate event probabilities.
 
 \begin{verbatim}
 R> make_model("X -> Y") |> 
-+  get_parmap() 
++  grab("parameter_mapping") 
 \end{verbatim}
 
 \hypertarget{tbl-parmap}{}
-\begin{table}
+\begin{longtable}[t]{lcccc}
 \caption{\label{tbl-parmap}Mapping from parameters to data types. }\tabularnewline
 
-\centering
-\begin{tabular}{lcccc}
 \toprule
-  & X0Y0 & X1Y0 & X0Y1 & X1Y1\\
+ & X0Y0 & X1Y0 & X0Y1 & X1Y1\\
 \midrule
 X.0 & 1 & 0 & 1 & 0\\
 X.1 & 0 & 1 & 0 & 1\\
 Y.00 & 1 & 1 & 0 & 0\\
 Y.10 & 0 & 1 & 1 & 0\\
 Y.01 & 1 & 0 & 0 & 1\\
+\addlinespace
 Y.11 & 0 & 0 & 1 & 1\\
 \bottomrule
-\end{tabular}
-\end{table}
+\end{longtable}
 
 For instance the probability of data type \texttt{X0Y0}, \(w_{00}\) is
 \(\lambda^X_0\times \lambda^Y_{00} + \lambda^X_0\times \lambda^Y_{01}\).
@@ -2085,19 +2126,16 @@ R> list(
 \end{verbatim}
 
 \hypertarget{tbl-censored}{}
-\begin{table}
+\begin{longtable}[t]{cccc}
 \caption{\label{tbl-censored}Posterior inferences taking account of censoring and not. }\tabularnewline
 
-\centering
-\begin{tabular}{cccc}
 \toprule
 model & query & mean & sd\\
 \midrule
-uncensored & (Y[X=1] - Y[X=0]) & 0.59 & 0.20\\
+uncensored & (Y[X=1] - Y[X=0]) & 0.59 & 0.19\\
 censored & (Y[X=1] - Y[X=0]) & 0.02 & 0.32\\
 \bottomrule
-\end{tabular}
-\end{table}
+\end{longtable}
 
 \hypertarget{output}{%
 \subsection{Output}\label{output}}
@@ -2109,26 +2147,37 @@ accessed using \texttt{get\_posterior\_distribution()}.
 
 \begin{verbatim}
 R> # snapshot of the posterior distribution
-R> get_posterior_distribution(lipids_model)[1:5, 1:5]
+R> lipids_model |>
++  grab("posterior_distribution") |>
++  select(starts_with("X")) |> head() |> kable(digits = 3)
 \end{verbatim}
 
-\begin{verbatim}
-        Z.0       Z.1      X.00         X.10      X.01
-1 0.5172283 0.4827717 0.4052663 0.0042565697 0.5880170
-2 0.5255304 0.4744696 0.3799601 0.0055591871 0.6097304
-3 0.4674957 0.5325043 0.3865892 0.0021943051 0.5934770
-4 0.4387604 0.5612396 0.3709100 0.0117344012 0.6019160
-5 0.4947268 0.5052732 0.3889745 0.0001108514 0.6066322
-\end{verbatim}
+\begin{longtable}[]{@{}rrrr@{}}
+\toprule\noalign{}
+X.00 & X.10 & X.01 & X.11 \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+0.405 & 0.004 & 0.588 & 0.002 \\
+0.380 & 0.006 & 0.610 & 0.005 \\
+0.387 & 0.002 & 0.593 & 0.018 \\
+0.371 & 0.012 & 0.602 & 0.015 \\
+0.389 & 0.000 & 0.607 & 0.004 \\
+0.396 & 0.004 & 0.596 & 0.004 \\
+\end{longtable}
 
 In addition, a distribution of causal types is stored by default and the
 \texttt{stanfit} object and a distribution over event probabilities are
 optionally saved.
 
 \begin{verbatim}
-R> lipids_model <- lipids_model |> update_model(keep_fit = TRUE)
+R> lipids_model <- 
++  lipids_model |> 
++  update_model(keep_type_distribution = FALSE)
 R> 
-R> lipids_model$stan_objects$stan_fit |> print()
+R> lipids_model |>
++  grab("stan_summary")
 \end{verbatim}
 
 \begin{verbatim}
@@ -2136,120 +2185,32 @@ Inference for Stan model: simplexes.
 4 chains, each with iter=2000; warmup=1000; thin=1; 
 post-warmup draws per chain=1000, total post-warmup draws=4000.
 
-                    mean se_mean   sd   2.5%    25%    50%    75%  97.5% n_eff
-lambdas[1]          0.50    0.00 0.29   0.02   0.25   0.50   0.75   0.98  6227
-lambdas[2]          0.50    0.00 0.29   0.02   0.25   0.50   0.75   0.98  6227
-lambdas[3]          0.24    0.00 0.19   0.01   0.09   0.20   0.36   0.69  3693
-lambdas[4]          0.25    0.00 0.19   0.01   0.09   0.21   0.37   0.71  5912
-lambdas[5]          0.25    0.00 0.19   0.01   0.10   0.21   0.37   0.70  5741
-lambdas[6]          0.26    0.00 0.19   0.01   0.10   0.22   0.37   0.71  5894
-lambdas[7]          0.25    0.00 0.19   0.01   0.09   0.21   0.37   0.70  3350
-lambdas[8]          0.25    0.00 0.20   0.01   0.09   0.20   0.37   0.72  6290
-lambdas[9]          0.25    0.00 0.19   0.01   0.09   0.21   0.38   0.70  6557
-lambdas[10]         0.25    0.00 0.19   0.01   0.10   0.21   0.36   0.70  5707
-lambdas[11]         0.25    0.00 0.19   0.01   0.09   0.20   0.36   0.71  3542
-lambdas[12]         0.25    0.00 0.19   0.01   0.10   0.21   0.37   0.71  6434
-lambdas[13]         0.25    0.00 0.20   0.01   0.09   0.20   0.38   0.72  5791
-lambdas[14]         0.25    0.00 0.20   0.01   0.09   0.21   0.37   0.71  6504
-lambdas[15]         0.25    0.00 0.19   0.01   0.09   0.21   0.37   0.70  3593
-lambdas[16]         0.25    0.00 0.20   0.01   0.09   0.20   0.38   0.71  5929
-lambdas[17]         0.25    0.00 0.20   0.01   0.09   0.20   0.37   0.72  5622
-lambdas[18]         0.25    0.00 0.19   0.01   0.09   0.21   0.37   0.70  6250
-lambdas[19]         0.24    0.00 0.19   0.01   0.09   0.20   0.36   0.69  3269
-lambdas[20]         0.25    0.00 0.19   0.01   0.10   0.21   0.38   0.70  5821
-lambdas[21]         0.25    0.00 0.19   0.01   0.09   0.21   0.38   0.71  6292
-lambdas[22]         0.25    0.00 0.19   0.01   0.10   0.21   0.37   0.69  5955
-prob_of_types[1]    0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  3255
-prob_of_types[2]    0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.16  3410
-prob_of_types[3]    0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.16  4376
-prob_of_types[4]    0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  3868
-prob_of_types[5]    0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.18  3904
-prob_of_types[6]    0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  4262
-prob_of_types[7]    0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.16  3865
-prob_of_types[8]    0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  4233
-prob_of_types[9]    0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  3795
-prob_of_types[10]   0.03    0.00 0.05   0.00   0.00   0.01   0.03   0.17  3661
-prob_of_types[11]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  3581
-prob_of_types[12]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.18  4364
-prob_of_types[13]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.18  4084
-prob_of_types[14]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  4624
-prob_of_types[15]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.18  3896
-prob_of_types[16]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.18  4644
-prob_of_types[17]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  4009
-prob_of_types[18]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.18  4113
-prob_of_types[19]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.18  4062
-prob_of_types[20]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  3547
-prob_of_types[21]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.16  4496
-prob_of_types[22]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.19  3478
-prob_of_types[23]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  4323
-prob_of_types[24]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.18  4473
-prob_of_types[25]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  4152
-prob_of_types[26]   0.03    0.00 0.04   0.00   0.00   0.01   0.03   0.17  3960
-prob_of_types[27]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  4239
-prob_of_types[28]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  4705
-prob_of_types[29]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  4038
-prob_of_types[30]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  4246
-prob_of_types[31]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  4085
-prob_of_types[32]   0.03    0.00 0.05   0.00   0.00   0.01   0.04   0.17  4350
-lp__              -29.71    0.09 3.35 -37.06 -31.78 -29.34 -27.24 -24.37  1313
-                  Rhat
-lambdas[1]           1
-lambdas[2]           1
-lambdas[3]           1
-lambdas[4]           1
-lambdas[5]           1
-lambdas[6]           1
-lambdas[7]           1
-lambdas[8]           1
-lambdas[9]           1
-lambdas[10]          1
-lambdas[11]          1
-lambdas[12]          1
-lambdas[13]          1
-lambdas[14]          1
-lambdas[15]          1
-lambdas[16]          1
-lambdas[17]          1
-lambdas[18]          1
-lambdas[19]          1
-lambdas[20]          1
-lambdas[21]          1
-lambdas[22]          1
-prob_of_types[1]     1
-prob_of_types[2]     1
-prob_of_types[3]     1
-prob_of_types[4]     1
-prob_of_types[5]     1
-prob_of_types[6]     1
-prob_of_types[7]     1
-prob_of_types[8]     1
-prob_of_types[9]     1
-prob_of_types[10]    1
-prob_of_types[11]    1
-prob_of_types[12]    1
-prob_of_types[13]    1
-prob_of_types[14]    1
-prob_of_types[15]    1
-prob_of_types[16]    1
-prob_of_types[17]    1
-prob_of_types[18]    1
-prob_of_types[19]    1
-prob_of_types[20]    1
-prob_of_types[21]    1
-prob_of_types[22]    1
-prob_of_types[23]    1
-prob_of_types[24]    1
-prob_of_types[25]    1
-prob_of_types[26]    1
-prob_of_types[27]    1
-prob_of_types[28]    1
-prob_of_types[29]    1
-prob_of_types[30]    1
-prob_of_types[31]    1
-prob_of_types[32]    1
-lp__                 1
+              mean se_mean   sd   2.5%    25%    50%    75%  97.5% n_eff Rhat
+Z.0           0.50     0.0 0.29   0.02   0.25   0.49   0.75   0.97  5371    1
+Z.1           0.50     0.0 0.29   0.03   0.25   0.51   0.75   0.98  5371    1
+X.00          0.24     0.0 0.19   0.01   0.09   0.20   0.36   0.69  3395    1
+X.10          0.25     0.0 0.19   0.01   0.09   0.21   0.37   0.72  6330    1
+X.01          0.26     0.0 0.20   0.01   0.09   0.21   0.38   0.72  6494    1
+X.11          0.25     0.0 0.20   0.01   0.09   0.21   0.37   0.72  6321    1
+Y.00_X.00     0.25     0.0 0.19   0.01   0.09   0.20   0.36   0.70  2899    1
+Y.10_X.00     0.25     0.0 0.19   0.01   0.09   0.20   0.37   0.72  6041    1
+Y.01_X.00     0.26     0.0 0.19   0.01   0.10   0.22   0.37   0.72  5866    1
+Y.11_X.00     0.25     0.0 0.20   0.01   0.09   0.21   0.38   0.71  6183    1
+Y.00_X.01     0.25     0.0 0.19   0.01   0.10   0.21   0.37   0.71  3484    1
+Y.10_X.01     0.25     0.0 0.19   0.01   0.09   0.20   0.37   0.71  6538    1
+Y.01_X.01     0.25     0.0 0.20   0.01   0.09   0.21   0.38   0.72  5956    1
+Y.11_X.01     0.25     0.0 0.19   0.01   0.09   0.20   0.36   0.69  5932    1
+Y.00_X.10     0.24     0.0 0.19   0.01   0.09   0.20   0.36   0.69  3226    1
+Y.10_X.10     0.26     0.0 0.20   0.01   0.09   0.21   0.38   0.72  6505    1
+Y.01_X.10     0.25     0.0 0.20   0.01   0.09   0.21   0.37   0.71  6635    1
+Y.11_X.10     0.25     0.0 0.19   0.01   0.09   0.20   0.37   0.70  6223    1
+Y.00_X.11     0.25     0.0 0.20   0.01   0.09   0.20   0.37   0.72  2930    1
+Y.10_X.11     0.25     0.0 0.19   0.01   0.09   0.21   0.37   0.71  5834    1
+Y.01_X.11     0.25     0.0 0.19   0.01   0.09   0.20   0.37   0.70  5909    1
+Y.11_X.11     0.25     0.0 0.20   0.01   0.09   0.20   0.37   0.71  5895    1
+lp__        -29.87     0.1 3.40 -37.47 -31.91 -29.42 -27.40 -24.39  1270    1
 
-Samples were drawn using NUTS(diag_e) at Wed Mar 13 11:32:14 2024.
+Samples were drawn using NUTS(diag_e) at Thu Mar 28 18:26:36 2024.
 For each parameter, n_eff is a crude measure of effective sample size,
 and Rhat is the potential scale reduction factor on split chains (at 
 convergence, Rhat=1).
@@ -2539,7 +2500,7 @@ R> model <-
 +  make_model("X -> Y") |>
 +  update_model(data, iter  = 4000)
 R> 
-R> model$posterior_distribution  |> 
+R> model |> grab("posterior_distribution")  |> 
 +  ggplot(aes(Y.01 - Y.10)) + geom_histogram()
 \end{verbatim}
 
@@ -2586,19 +2547,15 @@ R> lipids_model |>
 \end{verbatim}
 
 \hypertarget{tbl-case-level-query}{}
-\begin{table}[!h]
+\begin{longtable}[t]{cccccc}
 \caption{\label{tbl-case-level-query}Case level query example. }\tabularnewline
 
-\centering
-\resizebox{\linewidth}{!}{
-\begin{tabular}{cccccc}
 \toprule
 query & given & mean & sd & cred.low & cred.high\\
 \midrule
-Y[X=1] - Y[X=0] & X==1 \& Y==1 \& Z==1 & 0.51 & 0.24 & 0.08 & 0.93\\
+Y[X=1] - Y[X=0] & X==1 \& Y==1 \& Z==1 & 0.5 & 0.24 & 0.07 & 0.93\\
 \bottomrule
-\end{tabular}}
-\end{table}
+\end{longtable}
 
 The answer we get in Table~\ref{tbl-case-level-query} is what we now
 believe for all cases in which \(Z=1\), \(X=1\) and \(Y=1\). It is in
@@ -2641,7 +2598,7 @@ R> make_model("X -> M -> Y") |>
 \end{verbatim}
 
 \hypertarget{tbl-case-level}{}
-\begin{longtable}{ccccc}
+\begin{longtable}[t]{ccccc}
 \caption{\label{tbl-case-level}Results for a case level query. }\tabularnewline
 
 \toprule
@@ -2685,42 +2642,48 @@ R> query_model(
 \end{verbatim}
 
 \hypertarget{tbl-batch-query}{}
-\begin{longtable}{ccccccc}
+\begin{longtable}[t]{ccccccc}
 \caption{\label{tbl-batch-query}Results for two queries on two models. }\tabularnewline
 
 \toprule
 model & query & given & using & case\_level & mean & sd\\
 \midrule
-1 & ATE & - & priors & FALSE & 0.00 & 0.32\\
-2 & ATE & - & priors & FALSE & 0.34 & 0.24\\
+1 & ATE & - & priors & FALSE & 0.00 & 0.31\\
+2 & ATE & - & priors & FALSE & 0.33 & 0.24\\
 1 & ATE & - & posteriors & FALSE & 0.76 & 0.13\\
 2 & ATE & - & posteriors & FALSE & 0.83 & 0.11\\
 1 & ATE & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29\\
+\addlinespace
 2 & ATE & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29\\
-1 & ATE & Y==1 \& X==1 & posteriors & FALSE & 0.91 & 0.08\\
+1 & ATE & Y==1 \& X==1 & posteriors & FALSE & 0.91 & 0.09\\
 2 & ATE & Y==1 \& X==1 & posteriors & FALSE & 0.91 & 0.09\\
 1 & POS & - & priors & FALSE & 0.25 & 0.19\\
-2 & POS & - & priors & FALSE & 0.34 & 0.24\\
+2 & POS & - & priors & FALSE & 0.33 & 0.24\\
+\addlinespace
 1 & POS & - & posteriors & FALSE & 0.80 & 0.11\\
 2 & POS & - & posteriors & FALSE & 0.83 & 0.11\\
 1 & POS & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29\\
 2 & POS & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.29\\
-1 & POS & Y==1 \& X==1 & posteriors & FALSE & 0.91 & 0.08\\
+1 & POS & Y==1 \& X==1 & posteriors & FALSE & 0.91 & 0.09\\
+\addlinespace
 2 & POS & Y==1 \& X==1 & posteriors & FALSE & 0.91 & 0.09\\
 1 & ATE & - & priors & TRUE & 0.00 & NA\\
-2 & ATE & - & priors & TRUE & 0.34 & NA\\
+2 & ATE & - & priors & TRUE & 0.33 & NA\\
 1 & ATE & - & posteriors & TRUE & 0.76 & NA\\
 2 & ATE & - & posteriors & TRUE & 0.83 & NA\\
+\addlinespace
 1 & ATE & Y==1 \& X==1 & priors & TRUE & 0.50 & NA\\
 2 & ATE & Y==1 \& X==1 & priors & TRUE & 0.50 & NA\\
 1 & ATE & Y==1 \& X==1 & posteriors & TRUE & 0.91 & NA\\
 2 & ATE & Y==1 \& X==1 & posteriors & TRUE & 0.91 & NA\\
 1 & POS & - & priors & TRUE & 0.25 & NA\\
-2 & POS & - & priors & TRUE & 0.34 & NA\\
+\addlinespace
+2 & POS & - & priors & TRUE & 0.33 & NA\\
 1 & POS & - & posteriors & TRUE & 0.80 & NA\\
 2 & POS & - & posteriors & TRUE & 0.83 & NA\\
 1 & POS & Y==1 \& X==1 & priors & TRUE & 0.50 & NA\\
 2 & POS & Y==1 \& X==1 & priors & TRUE & 0.50 & NA\\
+\addlinespace
 1 & POS & Y==1 \& X==1 & posteriors & TRUE & 0.91 & NA\\
 2 & POS & Y==1 \& X==1 & posteriors & TRUE & 0.91 & NA\\
 \bottomrule
@@ -2892,7 +2855,7 @@ Network (CRAN) at \url{https://CRAN.R-project.org/}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, opacityback=0, arc=.35mm, rightrule=.15mm, left=2mm, bottomrule=.15mm, breakable, leftrule=.75mm, colback=white]
+\begin{tcolorbox}[enhanced jigsaw, colback=white, bottomrule=.15mm, leftrule=.75mm, opacityback=0, left=2mm, rightrule=.15mm, arc=.35mm, toprule=.15mm, breakable]
 
 We thank Ben Goodrich who provided generous insights on using
 \texttt{stan} for this project. We thank Alan M Jacobs for key work
@@ -3000,7 +2963,7 @@ array[n_param_sets] int<lower=1> n_param_each;
 int<lower=1> n_data;
 int<lower=1> n_events;
 int<lower=1> n_strategies;
-int<lower=0, upper=1> keep_transformed;
+int<lower=0, upper=1> keep_type_distribution;
 vector<lower=0>[n_params] lambdas_prior;
 array[n_param_sets] int<lower=1> l_starts;
 array[n_param_sets] int<lower=1> l_ends;
@@ -3075,13 +3038,13 @@ for (i in 1:n_strategies) {
 }
 // Option to export distribution of causal types
 generated quantities{
-vector[n_types] prob_of_types;
-if (keep_transformed == 1){
+vector[n_types] types;
+if (keep_type_distribution == 1){
 for (i in 1:n_types) {
-   prob_of_types[i] = prod(P[, i].*lambdas + 1 - P[,i]);
+   types[i] = prod(P[, i].*lambdas + 1 - P[,i]);
 }}
- if (keep_transformed == 0){
-    prob_of_types = rep_vector(1, n_types);
+ if (keep_type_distribution == 0){
+    types = rep_vector(1, n_types);
  }
 } 
 \end{verbatim}
