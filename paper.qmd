@@ -716,7 +716,8 @@ Alternatively you could set Jeffreys priors using `set_priors()` as follows:
 #| eval: false
 #| purl: false
 
-lipids_model |> set_priors(distribution = "jeffreys")
+lipids_model |> 
+  set_priors(distribution = "jeffreys")
 
 ```
 
