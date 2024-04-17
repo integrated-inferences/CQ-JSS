@@ -10,6 +10,7 @@
 
 ## -----------------------------------------------------------------------------------------------
 #| label: preamble
+#| include: false
 
 # knitr::purl("paper.qmd")
 # knitr::spin("submission/code.R")
@@ -29,15 +30,13 @@ library(kableExtra)
 options(mc.cores = parallel::detectCores())
 
 
-theme_set(theme_bw())
 set.seed(1, "L'Ecuyer-CMRG")
+theme_set(theme_bw())
 
-
-/* SECTION 2: Motivating example */
-#####################################################################
 
 
 ## -----------------------------------------------------------------------------------------------
+#| echo: true
 
 data("lipids_data")
 
@@ -46,7 +45,9 @@ lipids_data
 
 
 ## -----------------------------------------------------------------------------------------------
-
+#| echo: true
+#| eval: true
+#| purl: true
 
 lipids_model <-  
   make_model("Z -> X -> Y; X <-> Y") |>
@@ -55,7 +56,9 @@ lipids_model <-
 
 
 ## -----------------------------------------------------------------------------------------------
-
+#| echo: true
+#| eval: true
+#| purl: true
 
 lipids_queries <- 
   lipids_model  |>
@@ -63,12 +66,12 @@ lipids_queries <-
               given = c("All",  "X==0 & Y==0", "X[Z=1] > X[Z=0]"),
               using = "posteriors") 
 
-lipids_queries
 
 
 ## -----------------------------------------------------------------------------------------------
 #| label: tbl-lipids
 #| tbl-cap: "Replication of \\citet{chickering_clinicians_1996}."
+#| 
 
 lipids_queries |>
   dplyr::select(query, given, mean, sd, starts_with("cred")) |>
@@ -83,26 +86,26 @@ lipids_queries |>
 
 
 ## -----------------------------------------------------------------------------------------------
-
+#| echo: true
 #| results: markup
-
+#| include: false
+#| purl: true
 
 ## # Calculation of parameter lengths cited in text
 ## 
-## make_model("A -> B -> C -> D -> E") |>
-##   grab("parameters_df") |>
-##   nrow()
-## 
-## make_model("A -> E <- B; C-> E <- D") |>
-##   grab("parameters_df") |>
-##   nrow()
+ make_model("A -> B -> C -> D -> E") |>
+   grab("parameters_df") |>
+   nrow()
+ 
+ make_model("A -> E <- B; C-> E <- D") |>
+   grab("parameters_df") |>
+   nrow()
 
-
-# Table 3: Nodal types and parameters for Lipids model.
 
 ## -----------------------------------------------------------------------------------------------
 #| label: tbl-lipidspar
 #| tbl-cap: "Nodal types and parameters for Lipids model."
+#| 
 
 with_pars <- 
   lipids_model |>
@@ -121,7 +124,7 @@ with_pars$parameters_df |>
 
 
 ## -----------------------------------------------------------------------------------------------
-
+#| echo: true
 #| results: markup
 
 model <- make_model("X -> M -> Y <- X")
@@ -129,7 +132,7 @@ model <- make_model("X -> M -> Y <- X")
 
 ## -----------------------------------------------------------------------------------------------
 #| label: fig-plots
-
+#| echo: true
 #| fig-cap: "Examples of model graphs."
 #| fig-subcap:
 #|   - "Without options"
@@ -137,7 +140,7 @@ model <- make_model("X -> M -> Y <- X")
 #| fig-pos: 'h'
 #| layout-ncol: 2
 #| results: hold
-
+#| purl: true
 
 lipids_model |> plot()
 
@@ -154,9 +157,9 @@ lipids_model |>
 
 ## -----------------------------------------------------------------------------------------------
 #| label: params-df
-
-
-
+#| echo: true
+#| eval: true
+#| purl: true
 
 make_model("X -> Y") |> 
   grab("parameters_df") 
@@ -165,7 +168,7 @@ make_model("X -> Y") |>
 
 ## -----------------------------------------------------------------------------------------------
 #| label: lookup-types2
-
+#| echo: true
 
 make_model("X -> Y <- M; W -> Y") |> 
   interpret_type(nodes = "Y")
@@ -174,9 +177,9 @@ make_model("X -> Y <- M; W -> Y") |>
 
 ## -----------------------------------------------------------------------------------------------
 #| label: causal-types
-
-
-
+#| echo: true
+#| eval: true
+#| purl: true
 
 lipids_model |> 
   grab("causal_types")
@@ -185,9 +188,9 @@ lipids_model |>
 
 ## -----------------------------------------------------------------------------------------------
 #| label: get-param-matrix
-
-
-
+#| echo: true
+#| eval: true
+#| purl: true
 
 make_model("X -> Y") |> 
   grab("parameter_matrix")
@@ -195,18 +198,14 @@ make_model("X -> Y") |>
 
 
 ## -----------------------------------------------------------------------------------------------
-
-
-
-
-## make_model("X -> Y") |>
-##   set_parameter_matrix()
-## 
+ make_model("X -> Y") |>
+   set_parameter_matrix()
+ 
 
 
 ## -----------------------------------------------------------------------------------------------
-
-
+#| echo: true
+#| eval: true
 
 model_restricted <- 
   lipids_model |> 
@@ -215,39 +214,35 @@ model_restricted <-
 
 ## -----------------------------------------------------------------------------------------------
 #| label: set-restrictions1
+#| echo: true
+#| purl: true
 
-
-
-
-## model <- lipids_model |>
-##   set_restrictions(labels = list(X = "01", Y = c("00", "01", "11")),
-##                    keep = TRUE)
-## 
+ model <- lipids_model |>
+   set_restrictions(labels = list(X = "01", Y = c("00", "01", "11")),
+                    keep = TRUE)
+ 
 
 
 ## -----------------------------------------------------------------------------------------------
 #| label: set-restrictions2
+#| echo: true
+#| purl: true
 
-
-
-
-## model <- lipids_model |>
-##   set_restrictions(labels = list(Y = "?0"))
+ model <- lipids_model |>
+   set_restrictions(labels = list(Y = "?0"))
 
 
 ## -----------------------------------------------------------------------------------------------
 #| label: set-restrictions3
-
-
-
-## model <- lipids_model |>
-##   set_restrictions(labels = list(Y = c('00', '11')), given = 'X.00')
+#| echo: true
+model <- lipids_model |>
+   set_restrictions(labels = list(Y = c('00', '11')), given = 'X.00')
 
 
 ## -----------------------------------------------------------------------------------------------
 #| label: tbl-dof
 #| tbl-cap: "Number of different independent parameters (degrees of freedom) for different three-node models."
-
+#| eval: true
 
 statements <- list("X -> Y <- W", 
                    "X -> Y <- W; X <-> W", 
@@ -286,8 +281,8 @@ statements |>
 
 ## -----------------------------------------------------------------------------------------------
 #| label: get-priors
-
-
+#| echo: true
+#| eval: true
 
 lipids_model |> grab("prior_hyperparameters", "X") 
 
@@ -295,19 +290,17 @@ lipids_model |> grab("prior_hyperparameters", "X")
 
 ## -----------------------------------------------------------------------------------------------
 #| label: set-priors
+#| echo: true
 
-
-
-
-## model <- lipids_model |>
-##   set_priors(distribution = "jeffreys")
-## 
+ model <- lipids_model |>
+   set_priors(distribution = "jeffreys")
+ 
 
 
 ## -----------------------------------------------------------------------------------------------
 #| label: set-priors-custom
-
-
+#| echo: true
+#| eval: true
 #| message: FALSE
 
 lipids_model |> 
@@ -318,8 +311,8 @@ lipids_model |>
 
 ## -----------------------------------------------------------------------------------------------
 #| label: set-priors-statement
-
-
+#| echo: true
+#| eval: true
 
 lipids_model |>
   set_priors(statement = "X[Z=1] > X[Z=0]", alphas = 3) |>
@@ -331,40 +324,39 @@ lipids_model |>
 
 ## -----------------------------------------------------------------------------------------------
 #| label: compare-flat-priors
-
-
-
-## make_model("X -> Y") |>
-##   query_model("Y[X=1] > Y[X=0]", using = "priors")
-## 
-## make_model("X -> M -> Y") |>
-##   query_model("Y[X=1] > Y[X=0]", using = "priors")
+#| echo: true
+#| purl: true
+ make_model("X -> Y") |>
+   query_model("Y[X=1] > Y[X=0]", using = "priors")
+ 
+ make_model("X -> M -> Y") |>
+   query_model("Y[X=1] > Y[X=0]", using = "priors")
 
 
 ## -----------------------------------------------------------------------------------------------
 #| label: get-parameters
-
-
+#| echo: true
+#| eval: true
 
 make_model("X -> Y") |> 
-  grab("prior_hyperparameters")
+  grab("parameters")
 
 
 ## -----------------------------------------------------------------------------------------------
 #| label: set-parameters
-
-
+#| echo: true
+#| eval: true
 
 make_model("X -> Y") |>
-  set_parameters(statement = "Y[X=1] > Y[X=0]", parameters = .5) |>
-  grab("prior_hyperparameters")
+  set_parameters(statement = "Y[X=1] > Y[X=0]", parameters = .7) |>
+  grab("parameters")
 
 
 
 ## -----------------------------------------------------------------------------------------------
 #| label: make-data
-
-
+#| echo: true
+#| eval: true
 
 sample_data_1 <- 
   lipids_model |> 
@@ -374,8 +366,8 @@ sample_data_1 <-
 
 ## -----------------------------------------------------------------------------------------------
 #| label: make-data-draw
-
-
+#| echo: true
+#| eval: true
 
 lipids_model |>
   make_data(n = 3, param_type = "prior_draw")
@@ -384,8 +376,8 @@ lipids_model |>
 
 ## -----------------------------------------------------------------------------------------------
 #| label: make-data-incomplete
-
-
+#| echo: true
+#| eval: true
 #| message: false
 
 sample_data_2 <-
@@ -401,16 +393,16 @@ sample_data_2
 
 ## -----------------------------------------------------------------------------------------------
 #| label: collapse-data
-
-
+#| echo: true
+#| eval: true
 
 sample_data_2 |> collapse_data(lipids_model)
 
 
 ## -----------------------------------------------------------------------------------------------
-
-
-
+#| echo: true
+#| eval: true
+#| purl: true
 
 make_model("X -> Y") |> 
   grab("parameter_mapping") 
@@ -419,10 +411,9 @@ make_model("X -> Y") |>
 
 ## -----------------------------------------------------------------------------------------------
 #| label: update-model
+#| echo: true
 
-
-
-## model <- update_model(model, data)
+model <- update_model(model, data)
 
 
 
@@ -430,8 +421,8 @@ make_model("X -> Y") |>
 ## -----------------------------------------------------------------------------------------------
 #| label: tbl-censored
 #| tbl-cap: "Posterior inferences taking account of censoring and not."
-
-
+#| eval: true
+#| purl: true
 
 list(uncensored = 
        make_model("X -> Y") |> 
@@ -454,47 +445,64 @@ list(uncensored =
 
 
 ## -----------------------------------------------------------------------------------------------
+#| echo: true
+#| purl: true
 
-
-
-
-## lipids_model |>
-##   grab("posterior_distribution")
-## 
-
-
-## -----------------------------------------------------------------------------------------------
-
-
-
-
-## lipids_model <-
-##   lipids_model |>
-##   update_model(keep_fit = TRUE,
-##                keep_event_probabilities = TRUE)
-## 
+ make_model("X -> Y")  |>
+   update_model() |>
+   grab("posterior_distribution")
+ 
 
 
 ## -----------------------------------------------------------------------------------------------
+#| echo: true
+#| purl: true
+
+ lipids_model <-
+   lipids_model |>
+   update_model(keep_fit = TRUE,
+                keep_event_probabilities = TRUE)
+ 
+
+
+## -----------------------------------------------------------------------------------------------
+#| eval: true
+#| echo: true
+#| purl: true
+
+make_model("X -> Y")  |> 
+  update_model(keep_type_distribution = FALSE) |>
+  grab("stan_summary") 
 
 
 
+## -----------------------------------------------------------------------------------------------
+model <- make_model("X -> Y") |> 
+  update_model(refresh = 0, keep_fit = TRUE)
 
-## lipids_model |>
-##   grab("stan_summary")
-## 
+
+## -----------------------------------------------------------------------------------------------
+model |> grab("stan_fit")
+
+
+## -----------------------------------------------------------------------------------------------
+np <- model |> grab("stan_fit") |> bayesplot::nuts_params()
+
+model |> grab("stan_fit") |>
+  bayesplot::mcmc_trace(pars = "lambdas[5]", np = np) +
+  ylab("trace for fifth element of lambda")
 
 
 ## -----------------------------------------------------------------------------------------------
 #| label: realise-outcomes
-
+#| echo: true
 
 make_model("X -> Y") |> realise_outcomes()
 
 
 ## -----------------------------------------------------------------------------------------------
 #| label: realise-outcomes-do
-
+#| echo: true
 
 make_model("X -> Y") |> realise_outcomes(dos = list(X = 1))
 
@@ -508,8 +516,8 @@ make_model("X -> Y")  |> get_query_types("Y[X=1]==1")
 
 
 ## -----------------------------------------------------------------------------------------------
-
-
+#| eval: true
+#| echo: true
 
 make_model("X1 -> Y <- X2")  |>
   get_query_types("X1==1 & X2==1 & (Y[X1=1, X2=1] > Y[X1=0, X2=0])")
@@ -527,7 +535,7 @@ make_model("X -> Y")  |> get_query_types("Y[X=1] - Y[X=0]")
 #| fig-pos: "t"
 #| fig-align: center
 #| out-width: "60%"
-
+#| purl: true
 
 data  <- data.frame(X = rep(0:1, 50), Y = rep(0:1, 50))
 
@@ -544,64 +552,29 @@ model |> grab("posterior_distribution")  |>
 
 
 ## -----------------------------------------------------------------------------------------------
-#| label: tbl-case-level-query
-#| tbl-cap: "Case level query example."
+#| echo: true
+#| eval: true
 
-
-lipids_model |>
-  query_model(query = "Y[X=1] - Y[X=0]",
-              given = c("X==1 & Y==1 & Z==1"),
-              using = "posteriors") |> 
-  dplyr::select(query, given, mean, sd, starts_with("cred")) |>
-  knitr::kable(
-    digits = 2,
-    booktabs = TRUE,
-    align = "c",
-    escape = TRUE, 
-    linesep = "") |> 
-  kableExtra::kable_classic_2(latex_options = c("scale_down", "hold_position"))
-
-
-
-
-## -----------------------------------------------------------------------------------------------
-#| label: tbl-case-level
-#| tbl-cap: "Results for a case level query."
-
+# "Results for a case level query"
 
 make_model("X -> M -> Y") |>
   update_model(data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)), iter = 4000) |>
   query_model("Y[X=1] > Y[X=0]", 
-              given = "X==1 & Y==1 & M==1", 
-              using = "posteriors",
-              case_level = c(TRUE, FALSE)) 
+            given = "X==1 & Y==1 & M==1", 
+            using = "posteriors",
+            case_level = c(TRUE, FALSE)) 
+
 
 
 
 ## -----------------------------------------------------------------------------------------------
 #| label: tbl-batch-query
 #| tbl-cap: "Results for two queries on two models."
-
+#| eval: true
 #| message: false
 
 
-models <- list(
- `1` = make_model("X -> Y")  |> 
-        update_model( data.frame(X = rep(0:1, 10), 
-                                 Y = rep(0:1,10)), refresh = 0),
- `2` = make_model("X -> Y")  |>  set_restrictions("Y[X=1] < Y[X=0]") |>
-        update_model( data.frame(X = rep(0:1, 10), 
-                                 Y = rep(0:1,10)), refresh = 0))
-
-
-query_model(
-  models,
-  query = list(ATE = "Y[X=1] - Y[X=0]", 
-               POS = "Y[X=1] > Y[X=0]"),
-  given = c(TRUE,  "Y==1 & X==1"),
-  case_level = c(FALSE, TRUE),
-  using = c("priors", "posteriors"),
-  expand_grid = TRUE) |>
+queries |>
   dplyr::select(-starts_with("cred")) |> 
   knitr::kable(
     digits = 2,
@@ -618,6 +591,7 @@ query_model(
 
 
 ## -----------------------------------------------------------------------------------------------
+#| 
 #| results: markup
 #| comment: ""
 
