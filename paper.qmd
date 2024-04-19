@@ -115,10 +115,11 @@ With `CausalQueries`, you can create the model, input data, and update the model
 #| echo: true
 #| eval: true
 #| purl: true
+#| message: false
 
 lipids_model <-  
   make_model("Z -> X -> Y; X <-> Y") |>
-  update_model(lipids_data, refresh = 0)
+  update_model(lipids_data)
 
 ```
 
@@ -137,7 +138,7 @@ lipids_queries <-
 
 ```
 
-The output is a data frame with estimates, posterior standard deviations, and credibility intervals. @tbl-lipids shows the output from the analysis of the lipids data. In the table rows 1 and 2 replicate results in @chickering_clinicians_1996; row 3 returns inferences for complier average effects.
+The output is a data frame with estimates, posterior standard deviations, and credibility intervals. @tbl-lipids shows the output from the analysis of the lipids data. Rows 1 and 2 in the table replicate results in @chickering_clinicians_1996; row 3 returns inferences for complier average effects.
 
 
 
@@ -164,31 +165,31 @@ As we describe below, the same basic procedure of making, updating, and querying
 
 The literature on causal inference and its software ecosystem is large, spanning the social and natural sciences as well as computer science and applied mathematics. Here we contextualize the scope and functionality of `CausalQueries` within the subset of the causal inference domain addressing the evaluation of causal queries on causal models encoded as directed acyclic graphs (DAGs) or structural equation models (SEMs). @tbl-software provides an overview of relevant software and discusses key connections, advantages and disadvantages with respect to `CausalQueries`.
 
-+---------------+--------------------------+---------------------+--------------+------------------------------------------------------------------------+
-| Software      | Source                   | Language            | Availability | Scope                                                                  |
-+===============+==========================+=====================+==============+========================================================================+
-| `causalnex`   | @beaumont_causalnex_2021 | [Python]{.proglang} | -   pip      | -   causal structure learning                                          |
-|               |                          |                     |              | -   querying marginal distributions                                    |
-|               |                          |                     |              | -   discrete data                                                      |
-+---------------+--------------------------+---------------------+--------------+------------------------------------------------------------------------+
-| `pclag`       | @kalisch_causal_2012     | [R]{.proglang}      | -   CRAN     | -   causal structure learning                                          |
-|               |                          |                     | -   GitHub   | -   ATEs under linear conditional expectations and no hidden selection |
-+---------------+--------------------------+---------------------+--------------+------------------------------------------------------------------------+
-| `DoWhy`       | @dowhy                   | [Python]{.proglang} | -   pip      | -   identification                                                     |
-|               |                          |                     |              | -   average and conditional causal effects                             |
-|               |                          |                     |              | -   robustness checks                                                  |
-+---------------+--------------------------+---------------------+--------------+------------------------------------------------------------------------+
-| `autobounds`  | @duarte_automated_2023   | [Python]{.proglang} | -   Docker   | -   bounding causal effects                                            |
-|               |                          |                     | -   GitHub   | -   partial identification                                             |
-|               |                          |                     |              | -   DAG canonicalization                                               |
-|               |                          |                     |              | -   binary data                                                        |
-+---------------+--------------------------+---------------------+--------------+------------------------------------------------------------------------+
-| `causaloptim` | @sachs_general_2023      | [R]{.proglang}      | -   CRAN     | -   bounding causal effects                                            |
-|               |                          |                     | -   GitHub   | -   non-identified queries                                             |
-|               |                          |                     |              | -   binary data                                                        |
-+---------------+--------------------------+---------------------+--------------+------------------------------------------------------------------------+
++--------------+--------------------------+---------------------+--------------+---------------------------------------------------------------------+
+| Software     | Source                   | Language            | Availability | Scope                                                               |
++==============+==========================+=====================+==============+=====================================================================+
+| `causalnex`  | @beaumont_causalnex_2021 | [Python]{.proglang} | -   pip      | -   causal structure learning                                       |
+|              |                          |                     |              | -   querying marginal distributions                                 |
+|              |                          |                     |              | -   discrete data                                                   |
++--------------+--------------------------+---------------------+--------------+---------------------------------------------------------------------+
+| `pclag`      | @kalisch_causal_2012     | [R]{.proglang}      | -   CRAN     | -   causal structure learning                                       |
+|              |                          |                     | -   GitHub   | -   ATEs under linear conditional expectations, no hidden selection |
++--------------+--------------------------+---------------------+--------------+---------------------------------------------------------------------+
+| `DoWhy       | @dowhy                   | [Python]{.proglang} | -   pip      | -   identification                                                  |
+|              |                          |                     |              | -   average and conditional causal effects                          |
+|              |                          |                     |              | -   robustness checks                                               |
++--------------+--------------------------+---------------------+--------------+---------------------------------------------------------------------+
+| `autobounds` | @duarte_automated_2023   | [Python]{.proglang} | -   Docker   | -   bounding causal effects                                         |
+|              |                          |                     | -   GitHub   | -   partial identification                                          |
+|              |                          |                     |              | -   DAG canonicalization                                            |
+|              |                          |                     |              | -   binary data                                                     |
++--------------+--------------------------+---------------------+--------------+---------------------------------------------------------------------+
+| `causaloptim`| @sachs_general_2023      | [R]{.proglang}      | -   CRAN     | -   bounding causal effects                                         |
+|              |                          |                     | -   GitHub   | -   non-identified queries                                          |
+|              |                          |                     |              | -   binary data                                                     |
++--------------+--------------------------+---------------------+--------------+---------------------------------------------------------------------+
 
-: Related software. {#tbl-software tbl-colwidths="\[20,15,10,17,40\]"}
+: Related software. {#tbl-software tbl-colwidths="\[19,20,10,18,38\]"}
 
 `causalnex` is a highly comprehensive software in the causal modeling domain, offering a suite of functions rich in features and optimized for the learning, updating, and querying of causal models using discrete data. Its avoidance of the intricate model parametrization, characterized by principal strata (nodal types), enables `causalnex` to adeptly process non-binary data and scale to large causal models. This approach; however, significantly constrains the variety of feasible queries and the extent of prior knowledge that can be incorporated into models. In this capacity, `causalnex` mirrors machine learning strategies in causal inference, prioritizing the learning of causal structures in environments abundant with variables yet potentially deficient in domain-specific knowledge; thus focusing on the assessment of basic queries over marginal distributions in learned DAGs. Conversely, the complex model structure utilized by `CausalQueries` is particularly advantageous for causal queries in settings where domain knowledge is more prevalent.
 
@@ -389,11 +390,13 @@ lipids_model |>
 
 ### Model characterization
 
-When a model is defined, a set of objects is generated. These are the key quantities that are used for all inferential tasks. @tbl-core summarizes the core components of a model, providing a brief explanation for each one.
+When a model is defined, a set of objects is generated. These are the key quantities that are used for all inferential tasks. These objects can all be accessed by using the `grab()` function.
 
-The first element is a `statement` which defines how the nodes in the model are related, specified by the user using `dagitty` syntax. The second element, `dag`, is a data frame that outlines the parent-child relationships within the model. The element `nodes` is simply a list of the names of the nodes in the model. Lastly, `parents_df,` is a table listing the nodes, indicating if they are "root" nodes (nodes with no parents among the set of specified nodes), and showing how many parents each node has.
+@tbl-core summarizes the core components of a model, providing a brief explanation for each one.
 
-The model includes additional elements, `nodal_types,` `parameters_df,` and `causal_types,` which we explain in detail later.
+The first element is a `statement` which defines how the nodes in the model are related, specified by the user using `dagitty` syntax. The second element, `dag`, is a data frame that characterizes the parent-child relationships within the model. The element `nodes` is simply a list of the names of the nodes in the model. Fourth the, `parents_df,` is a table listing the nodes, indicating if they are "root" nodes (nodes with no parents among the set of specified nodes), and showing how many parents each node has.
+
+The model includes additional elements, `parameters_df,``nodal_types,`  and `causal_types,` which we explain in detail later.
 
 | Element         | Description                                                                                                                                                         |
 |-----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -401,8 +404,8 @@ The model includes additional elements, `nodal_types,` `parameters_df,` and `cau
 | `dag`           | A data frame with columns 'parent' and 'children' indicating how nodes relate to each other.                                                                        |
 | `nodes`         | A list containing the nodes in the model.                                                                                                                           |
 | `parents_df`    | A table listing nodes, whether they are root nodes or not, and the number of parents they have.                                                                     |
-| `nodal_types`   | A list with the nodal types of the model. See @sec-nodal-types for more details.                                                                                    |
 | `parameters_df` | A data frame linking the model's parameters with the nodal types of the model, as well as the family to which they belong. See @sec-param-df for more details.      |
+| `nodal_types`   | A list with the nodal types of the model. See @sec-nodal-types for more details.                                                                                    |
 | `causal_types`  | A data frame listing causal types and the nodal types that produce them. (See @sec-causal-types.)                                                                 |
 
 : Core Elements of a Causal Model. {#tbl-core tbl-colwidths="\[30,70\]"}
@@ -415,14 +418,14 @@ After updating a model, two additional components are attached to it:
 
 @tbl-additional summarizes the objects attached to the model after updating.
 
-| Element                  | Description                                                                              |
-|--------------------------|------------------------------------------------------------------------------------------|
-| `posterior_distribution` | The posterior distribution of the updated parameters generated by Stan.                  |
-| `stan_objects`           | A list of additional objects (see next rows).                                            |
+| Element                  | Description                                                                              | Access code |
+|--------------------|------------------------------------------------------------------------------------------|
+| `posterior_distribution` | The posterior distribution of the updated parameters generated by Stan.                  | 
+| `stan_objects`           | A list of additional objects (see next rows).                                            | 
 | `data`                   | The data used for updating the model, always included in `stan_objects.`                 |
 | `type_distribution`      | The updated distribution of the nodal types, appended to `stan_objects` by default.      |
-| `event_probabilities`                      | A mapping from parameters to event probabilities, optionally appended to `stan_objects`. |
-| `stan_fit`               | The `stanfit` object generated by Stan, optionally appended to `stan_objects`.           |
+| `event_probabilities`                      | A mapping from parameters to event probabilities, optionally appended to `stan_objects`. |  
+| `stan_fit`               | The `stanfit` object generated by Stan, optionally appended to `stan_objects`.           | 
 
 : Additional Elements. {#tbl-additional tbl-colwidths="\[30,70\]"}
 
@@ -443,7 +446,7 @@ make_model("X -> Y") |>
 
 As in @tbl-lipidspar, each row in the parameters data frame corresponds to a single parameter. The `print()` method for the objects of `parameters_df` class also includes short description of each of the columns included in the data frame. More precisely, the columns of the parameters data frame are:
 
--   `param_names` gives the name of the parameter, in shorthand. For instance the parameter $\lambda^X_0 = \Pr(\theta^X = \theta^X_0)$ has `par_name` `X.0`.
+-   `param_names` gives the name of the parameter, in shorthand. For instance the parameter $\lambda^X_0 = \Pr(\theta^X = \theta^X_0)$ has names `X.0`.
 -   `node` indicates the node associated with the parameter.
 -   `gen` indicates the place in the partial causal ordering (generation) of the node associated with the parameter
 -   `param_set` indicates which parameters group together to form a simplex. The parameters in a set have parameter values that sum to 1. In this example $\lambda^X_0 + \lambda^X_1 = 1$.
@@ -904,7 +907,7 @@ make_model("X -> Y") |>
 
 ```
 
-In this model, the probability of data type `X0Y0`, $w_{00}$ is $\lambda^X_0\times \lambda^Y_{00} + \lambda^X_0\times \lambda^Y_{01}$. This formaula can be read from the parameter mapping matrix  by combining a parameter vector with the first column of the matrix, taking the product of the probability of `X.0` and the *sum* of the probabilities for `Y.00` and `Y.01`.
+In this model, the probability of data type `X0Y0`, $w_{00}$ is $\lambda^X_0\times \lambda^Y_{00} + \lambda^X_0\times \lambda^Y_{01}$. This formula can be read from the parameter mapping matrix  by combining a parameter vector with the first column of the matrix, taking the product of the probability of `X.0` and the *sum* of the probabilities for `Y.00` and `Y.01`.
 
 In cases with confounding the approach is similar except that the parameter mapping matrix can contain multiple columns for each data type to capture non-independence between nodes.
 
@@ -930,7 +933,7 @@ The `data` argument provides a data frame containing some or all of the nodes in
 
 ### Incomplete and censored data
 
-`CausalQueries` assumes that missing data is missing at random, conditional on observed data. For instance in an $X \rightarrow M \rightarrow Y$ model, a researcher might have chosen to observe $M$ in a random set of cases in which $X=1$ and $Y=1$. In that case if there are positive relations at each stage you may be more likely to observe $M$ in cases in which $M=1$. However observation of $M$ is still random conditional on the observed $X$ and $Y$ data. The Stan model in `CausalQueries` takes account of this kind of sampling naturally by asseevent_probabilitiesssing the probability of observing a particular pattern of data within each data strategy. For a discussion see Section 9.2.3.2 of @humphreys_integrated_2023.
+`CausalQueries` assumes that missing data is missing at random, conditional on observed data. For instance in an $X \rightarrow M \rightarrow Y$ model, a researcher might have chosen to observe $M$ in a random set of cases in which $X=1$ and $Y=1$. In that case if there are positive relations at each stage you may be more likely to observe $M$ in cases in which $M=1$. However observation of $M$ is still random conditional on the observed $X$ and $Y$ data. The Stan model in `CausalQueries` takes account of this kind of sampling naturally by assessing the probability of observing a particular pattern of data within each data strategy. For a discussion see Section 9.2.3.2 of @humphreys_integrated_2023.
 
 In addition, it is possible to indicate when data has been censored and for the Stan model to take this into account also. Say for instance that we only get to observe $X$ in cases where $X=1$ and not when $X=0$. This kind of sampling is non random conditional on observables. It is taken account however by indicating to Stan that the probability of observing a particular data type is 0, regardless of parameter values. This is done using the `censored_types` argument in `update_model()`.
 
@@ -951,7 +954,7 @@ list(
     update_model(data, censored_types = c("X1Y0",  "X0Y1"))
   ) |>
   
-  query_model(te("X", "Y"), using = "posteriors") 
+  query_model("Y[X=1] - Y[X=0]", using = "posteriors") 
 ```
 
 ```{r}

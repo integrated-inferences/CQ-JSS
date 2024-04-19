@@ -333,7 +333,7 @@ update the model thus.
 \begin{verbatim}
 R> lipids_model <-  
 +  make_model("Z -> X -> Y; X <-> Y") |>
-+  update_model(lipids_data, refresh = 0)
++  update_model(lipids_data)
 \end{verbatim}
 
 The model can then be queried thus:
@@ -348,7 +348,7 @@ R> lipids_queries <-
 
 The output is a data frame with estimates, posterior standard
 deviations, and credibility intervals. Table~\ref{tbl-lipids} shows the
-output from the analysis of the lipids data. In the table rows 1 and 2
+output from the analysis of the lipids data. Rows 1 and 2 in the table
 replicate results in \citet{chickering_clinicians_1996}; row 3 returns
 inferences for complier average effects.
 
@@ -386,11 +386,11 @@ with respect to \texttt{CausalQueries}.
 
 \hypertarget{tbl-software}{}
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.2000}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1800}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1900}}
   >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1000}}
   >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1700}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.3900}}@{}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.3600}}@{}}
 \caption{\label{tbl-software}Related software.}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
@@ -455,10 +455,10 @@ Scope
 \item
   causal structure learning
 \item
-  ATEs under linear conditional expectations and no hidden selection
+  ATEs under linear conditional expectations, no hidden selection
 \end{itemize}
 \end{minipage} \\
-\texttt{DoWhy} & \citet{dowhy} & \proglang{Python} &
+`DoWhy & \citet{dowhy} & \proglang{Python} &
 \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
@@ -968,22 +968,24 @@ R> lipids_model |>
 \subsection{Model characterization}\label{model-characterization}}
 
 When a model is defined, a set of objects is generated. These are the
-key quantities that are used for all inferential tasks.
+key quantities that are used for all inferential tasks. These objects
+can all be accessed by using the \texttt{grab()} function.
+
 Table~\ref{tbl-core} summarizes the core components of a model,
 providing a brief explanation for each one.
 
 The first element is a \texttt{statement} which defines how the nodes in
 the model are related, specified by the user using \texttt{dagitty}
-syntax. The second element, \texttt{dag}, is a data frame that outlines
-the parent-child relationships within the model. The element
-\texttt{nodes} is simply a list of the names of the nodes in the model.
-Lastly, \texttt{parents\_df,} is a table listing the nodes, indicating
-if they are ``root'' nodes (nodes with no parents among the set of
-specified nodes), and showing how many parents each node has.
+syntax. The second element, \texttt{dag}, is a data frame that
+characterizes the parent-child relationships within the model. The
+element \texttt{nodes} is simply a list of the names of the nodes in the
+model. Fourth the, \texttt{parents\_df,} is a table listing the nodes,
+indicating if they are ``root'' nodes (nodes with no parents among the
+set of specified nodes), and showing how many parents each node has.
 
-The model includes additional elements, \texttt{nodal\_types,}
-\texttt{parameters\_df,} and \texttt{causal\_types,} which we explain in
-detail later.
+The model includes additional elements,
+\texttt{parameters\_df,\textasciigrave{}\textasciigrave{}nodal\_types,}
+and \texttt{causal\_types,} which we explain in detail later.
 
 \hypertarget{tbl-core}{}
 \begin{longtable}[]{@{}
@@ -1018,11 +1020,11 @@ indicating how nodes relate to each other. \\
 \texttt{nodes} & A list containing the nodes in the model. \\
 \texttt{parents\_df} & A table listing nodes, whether they are root
 nodes or not, and the number of parents they have. \\
-\texttt{nodal\_types} & A list with the nodal types of the model. See
-Section~\ref{sec-nodal-types} for more details. \\
 \texttt{parameters\_df} & A data frame linking the model's parameters
 with the nodal types of the model, as well as the family to which they
 belong. See Section~\ref{sec-param-df} for more details. \\
+\texttt{nodal\_types} & A list with the nodal types of the model. See
+Section~\ref{sec-nodal-types} for more details. \\
 \texttt{causal\_types} & A data frame listing causal types and the nodal
 types that produce them. (See Section~\ref{sec-causal-types}.) \\
 \end{longtable}
@@ -1133,8 +1135,7 @@ columns of the parameters data frame are:
 \item
   \texttt{param\_names} gives the name of the parameter, in shorthand.
   For instance the parameter
-  \(\lambda^X_0 = \Pr(\theta^X = \theta^X_0)\) has \texttt{par\_name}
-  \texttt{X.0}.
+  \(\lambda^X_0 = \Pr(\theta^X = \theta^X_0)\) has names \texttt{X.0}.
 \item
   \texttt{node} indicates the node associated with the parameter.
 \item
@@ -1301,10 +1302,6 @@ R> make_model("X -> Y") |>
 #> Y.10      0      0      1      1      0      0      0      0
 #> Y.01      0      0      0      0      1      1      0      0
 #> Y.11      0      0      0      0      0      0      1      1
-#> 
-#>  
-#>  param_set  (P)
-#> 
 \end{verbatim}
 
 The probability of a causal type is given by the product of the
@@ -1550,12 +1547,8 @@ R> lipids_model |> grab("prior_hyperparameters", "X")
 \end{verbatim}
 
 \begin{verbatim}
-#>       Z.0       Z.1      X.00      X.10      X.01      X.11 Y.00_X.00 Y.10_X.00 
-#>         1         1         1         1         1         1         1         1 
-#> Y.01_X.00 Y.11_X.00 Y.00_X.01 Y.10_X.01 Y.01_X.01 Y.11_X.01 Y.00_X.10 Y.10_X.10 
-#>         1         1         1         1         1         1         1         1 
-#> Y.01_X.10 Y.11_X.10 Y.00_X.11 Y.10_X.11 Y.01_X.11 Y.11_X.11 
-#>         1         1         1         1         1         1
+#> X.00 X.10 X.01 X.11 
+#>    1    1    1    1
 \end{verbatim}
 
 Alternatively you could set Jeffreys priors using \texttt{set\_priors()}
@@ -1577,12 +1570,8 @@ R> lipids_model |>
 \end{verbatim}
 
 \begin{verbatim}
-#>       Z.0       Z.1      X.00      X.10      X.01      X.11 Y.00_X.00 Y.10_X.00 
-#>         1         1         1         2         3         4         1         1 
-#> Y.01_X.00 Y.11_X.00 Y.00_X.01 Y.10_X.01 Y.01_X.01 Y.11_X.01 Y.00_X.10 Y.10_X.10 
-#>         1         1         1         1         1         1         1         1 
-#> Y.01_X.10 Y.11_X.10 Y.00_X.11 Y.10_X.11 Y.01_X.11 Y.11_X.11 
-#>         1         1         1         1         1         1
+#> X.00 X.10 X.01 X.11 
+#>    1    2    3    4
 \end{verbatim}
 
 The priors here should be interpreted as indicating
@@ -1602,12 +1591,8 @@ R> lipids_model |>
 \end{verbatim}
 
 \begin{verbatim}
-#>       Z.0       Z.1      X.00      X.10      X.01      X.11 Y.00_X.00 Y.10_X.00 
-#>         1         1         1         1         3         1         1         1 
-#> Y.01_X.00 Y.11_X.00 Y.00_X.01 Y.10_X.01 Y.01_X.01 Y.11_X.01 Y.00_X.10 Y.10_X.10 
-#>         1         1         1         1         1         1         1         1 
-#> Y.01_X.10 Y.11_X.10 Y.00_X.11 Y.10_X.11 Y.01_X.11 Y.11_X.11 
-#>         1         1         1         1         1         1
+#> X.00 X.10 X.01 X.11 
+#>    1    1    3    1
 \end{verbatim}
 
 Setting priors requires mapping alpha values to parameters, and so the
@@ -1945,6 +1930,13 @@ R> make_model("X -> Y") |>
 \end{verbatim}
 
 \begin{verbatim}
+#> 
+#> Parameter mapping matrix: 
+#> 
+#> Maps from parameters to data types, with 
+#> possibly multiple columns for each data type 
+#> in cases with confounding. 
+#> 
 #>      X0Y0 X1Y0 X0Y1 X1Y1
 #> X.0     1    0    1    0
 #> X.1     0    1    0    1
@@ -1952,17 +1944,11 @@ R> make_model("X -> Y") |>
 #> Y.10    0    1    1    0
 #> Y.01    1    0    0    1
 #> Y.11    0    0    1    1
-#> attr(,"map")
-#>      X0Y0 X1Y0 X0Y1 X1Y1
-#> X0Y0    1    0    0    0
-#> X1Y0    0    1    0    0
-#> X0Y1    0    0    1    0
-#> X1Y1    0    0    0    1
 \end{verbatim}
 
 In this model, the probability of data type \texttt{X0Y0}, \(w_{00}\) is
 \(\lambda^X_0\times \lambda^Y_{00} + \lambda^X_0\times \lambda^Y_{01}\).
-This formaula can be read from the parameter mapping matrix by combining
+This formula can be read from the parameter mapping matrix by combining
 a parameter vector with the first column of the matrix, taking the
 product of the probability of \texttt{X.0} and the \emph{sum} of the
 probabilities for \texttt{Y.00} and \texttt{Y.01}.
@@ -2022,10 +2008,9 @@ In that case if there are positive relations at each stage you may be
 more likely to observe \(M\) in cases in which \(M=1\). However
 observation of \(M\) is still random conditional on the observed \(X\)
 and \(Y\) data. The Stan model in \texttt{CausalQueries} takes account
-of this kind of sampling naturally by asseevent\_probabilitiesssing the
-probability of observing a particular pattern of data within each data
-strategy. For a discussion see Section 9.2.3.2 of
-\citet{humphreys_integrated_2023}.
+of this kind of sampling naturally by assessing the probability of
+observing a particular pattern of data within each data strategy. For a
+discussion see Section 9.2.3.2 of \citet{humphreys_integrated_2023}.
 
 In addition, it is possible to indicate when data has been censored and
 for the Stan model to take this into account also. Say for instance that
@@ -2053,7 +2038,7 @@ R> list(
 +    update_model(data, censored_types = c("X1Y0",  "X0Y1"))
 +  ) |>
 +  
-+  query_model(te("X", "Y"), using = "posteriors") 
++  query_model("Y[X=1] - Y[X=0]", using = "posteriors") 
 \end{verbatim}
 
 \hypertarget{tbl-censored}{}
@@ -2118,7 +2103,7 @@ R> make_model("X -> Y")  |>
 #> Y.11        0.25    0.00 0.19   0.01  0.10  0.21  0.37  0.70  4395    1
 #> lp__       -7.53    0.05 1.66 -11.72 -8.35 -7.16 -6.30 -5.43  1284    1
 #> 
-#> Samples were drawn using NUTS(diag_e) at Wed Apr 17 18:13:54 2024.
+#> Samples were drawn using NUTS(diag_e) at Fri Apr 19 11:24:57 2024.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).
@@ -2177,7 +2162,7 @@ R> model |> grab("stan_fit")
 #> types[8]    0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.48  3774    1
 #> lp__       -7.55    0.04 1.64 -11.53 -8.44 -7.21 -6.29 -5.45  1490    1
 #> 
-#> Samples were drawn using NUTS(diag_e) at Wed Apr 17 18:13:59 2024.
+#> Samples were drawn using NUTS(diag_e) at Fri Apr 19 11:25:02 2024.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).
@@ -2190,7 +2175,7 @@ R> np <- model |> grab("stan_fit") |> bayesplot::nuts_params()
 R> 
 R> model |> grab("stan_fit") |>
 +  bayesplot::mcmc_trace(pars = "lambdas[5]", np = np) +
-+  ylab("lambdas-5")
++  ylab("trace for fifth element of lambda")
 \end{verbatim}
 
 \begin{figure}[H]
@@ -2834,7 +2819,7 @@ Network (CRAN) at \url{https://CRAN.R-project.org/}.
 \section*{Acknowledgments}\label{acknowledgments}}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, breakable, colback=white, left=2mm, bottomrule=.15mm, rightrule=.15mm, opacityback=0, arc=.35mm, toprule=.15mm]
+\begin{tcolorbox}[enhanced jigsaw, left=2mm, leftrule=.75mm, breakable, opacityback=0, colback=white, arc=.35mm, toprule=.15mm, rightrule=.15mm, bottomrule=.15mm]
 
 We thank Ben Goodrich who provided generous insights on using
 \texttt{stan} for this project. We thank Alan M Jacobs for key work
