@@ -171,7 +171,7 @@ The literature on causal inference and its software ecosystem is large, spanning
 | `pclag`      | @kalisch_causal_2012     | [R]{.proglang}      | -   CRAN     | -   causal structure learning                                       |
 |              |                          |                     | -   GitHub   | -   ATEs under linear conditional expectations, no hidden selection |
 +--------------+--------------------------+---------------------+--------------+---------------------------------------------------------------------+
-| `DoWhy       | @dowhy                   | [Python]{.proglang} | -   pip      | -   identification                                                  |
+| `DoWhy`      | @dowhy                   | [Python]{.proglang} | -   pip      | -   identification                                                  |
 |              |                          |                     |              | -   average and conditional causal effects                          |
 |              |                          |                     |              | -   robustness checks                                               |
 +--------------+--------------------------+---------------------+--------------+---------------------------------------------------------------------+
@@ -943,47 +943,23 @@ To illustrate, in the example below, we observe perfectly correlated data for $X
 
 ```{r}
 #| echo: true
-#| eval: false
-#| purl: false
+#| eval: true
+#| purl: true
+
 data <- data.frame(X = rep(0:1, 5), Y = rep(0:1, 5))
 
 list(
   uncensored = 
-    make_model("X -> Y") |>
-    update_model(data),
+    update_model(make_model("X -> Y"),
+                 data),
   censored = 
-    make_model("X -> Y") |>
-    update_model(data, censored_types = c("X1Y0",  "X0Y1"))
+    update_model(make_model("X -> Y"), 
+                 data, 
+                 censored_types = c("X1Y0",  "X0Y1"))
   ) |>
-  
-  query_model("Y[X=1] - Y[X=0]", using = "posteriors") 
-```
+  query_model("Y[X=1] - Y[X=0]", using = "posteriors") |> 
+  subset(select = c("model", "query", "mean", "sd"))
 
-```{r}
-#| label: tbl-censored
-#| tbl-cap: "Posterior inferences taking account of censoring and not."
-#| echo: false
-#| eval: true
-#| purl: true
-
-list(uncensored = 
-       make_model("X -> Y") |> 
-       update_model(data.frame(X = rep(0:1,5), Y = rep(0:1,5)),
-                    refresh = 0, iter = 3000),
-     censored = 
-       make_model("X -> Y") |> 
-       update_model(data.frame(X = rep(0:1,5), Y = rep(0:1,5)),
-                    censored_types = c("X1Y0",  "X0Y1"),
-                    refresh = 0, iter = 3000))  |>
-  query_model(te("X", "Y"), using = "posteriors") |>
-  dplyr::select(model, query, mean, sd) |>
-  knitr::kable(
-    digits = 2,
-    booktabs = TRUE,
-    align = "c",
-    escape = TRUE, 
-    linesep = "") |> 
-  kableExtra::kable_classic_2()
 ```
 
 ### Output
@@ -1044,7 +1020,7 @@ model <-
 
 ```
 
-Note that the raw output uses labels from the generic Stan model: `lambda` for the vector of parameters, corresponding to the parameters in the parameters data frame (`grab(model, "parameters_df")`), a vector `types` for the causal types (see `grab(model, "causal_types")`) and `event_probabilities` for the event probabilities (`grab(model, "event_probabilities")`). 
+Note that the raw output uses labels from the generic Stan model: `lambda` for the vector of parameters, corresponding to the parameters in the parameters data frame (`grab(model, "parameters_df")`), a vector `types` for the causal types (`grab(model, "causal_types")`) and `event_probabilities` for the event probabilities (`grab(model, "event_probabilities")`). 
 
 ```{r}
 #| eval: true
@@ -1087,6 +1063,7 @@ Calling `realise_outcomes()` on this model yields the outcomes implied by all ca
 
 make_model("X -> Y") |> 
   realise_outcomes()
+
 ```
 
 The output above shows realized values with row names indicating corresponding nodal types. Intervening on $X$ [see @pearl_causality_2009] with $do(X=1)$ yields:
@@ -1097,11 +1074,12 @@ The output above shows realized values with row names indicating corresponding n
 
 make_model("X -> Y") |> 
   realise_outcomes(dos = list(X = 1))
+
 ```
 
 In the same way, `realise_outcomes()` can return the realized values on all nodes for each causal type given arbitrary interventions.
 
-### Causal Syntax {#sec-syntax}
+### Causal syntax {#sec-syntax}
 
 `CausalQueries` provides syntax for the formulation of various causal queries including queries on all rungs of the "causal ladder" [@pearl_causality_2009]: prediction, such as the proportion of units where $Y$ equals $1$; intervention, such as the probability that $Y = 1$ when $X$ is *set* to $1$; counterfactuals, such as the probability that $Y$ would be $1$ were $X = 1$ given we know $Y$ is $0$ when $X$ was observed to be $0$. Queries can be posed at the population level or case level and can be unconditional (e.g., what is the effect of $X$ on $Y$ for all units) or conditional (for example, the effect of $X$ on $Y$ for units for whom $Z$ affects $X$). This syntax enables users to write arbitrary causal queries to interrogate their models.
 
@@ -1110,8 +1088,10 @@ The heart of querying is figuring out which causal types correspond to particula
 [^6]: `CausalQueries` also accepts = as a shorthand for ==. However, == is preferred as it is the conventional logical operator to express a condition of strict equality.
 
 ```{r}
+
 make_model("X -> Y")  |> 
   get_query_types("Y==1")
+
 ```
 
 The key to forming causal queries is being able to ask about the values of variables, given that the values of some other variables are "controlled." This corresponds to the application of the $do$ operator in @pearl_causality_2009. In `CausalQueries`, this is done by putting square brackets `[ ]` around variables that should be intervened upon.
@@ -1119,7 +1099,10 @@ The key to forming causal queries is being able to ask about the values of varia
 For instance, consider the query `Y[X=0]==1`. This query asks about the types for which $Y$ equals $1$ when $X$ is set to $0$. Since $X$ is being intervened to be zero, $X$ is placed inside the brackets. Given that $Y$ equaling $1$ is a condition about potentially observed values, it is expressed using the logical operator `==`. The set of causal types that meets this query is quite different:
 
 ```{r}
-make_model("X -> Y")  |> get_query_types("Y[X=1]==1")
+
+make_model("X -> Y")  |> 
+  get_query_types("Y[X=1]==1")
+
 ```
 
 When a node has multiple parents, it is possible to set the values of none, some, or all of the parents. For instance if $X1$ and $X2$ are parents of $Y$ then `Y==1`, `Y[X1=1]==1`, and `Y[X1=1,X2=1]==1` queries cases for which $Y=1$ when, respectively, neither parents values are controlled, when $X1$ is set to $1$ but $X2$ is not controlled, and when both $X1$ and $X2$ are set to $1$. For instance:
@@ -1130,6 +1113,7 @@ When a node has multiple parents, it is possible to set the values of none, some
 
 make_model("X1 -> Y <- X2")  |>
   get_query_types("X1==1 & X2==1 & (Y[X1=1, X2=1] > Y[X1=0, X2=0])")
+
 ```
 
 In this case, the aim is to identify the types for which $X1=X2=1$ *and at the same time* $Y=0$ when $X1 = X2 = 0$, and $Y = 1$ when $X1 = X2 = 1$.
@@ -1152,6 +1136,7 @@ given <- model |> get_query_types(query = "Y==1 & X==1")
 model$causal_types |> 
   mutate(query = query$types,
          given = given$types)
+
 ```
 
 #### Complex expressions
@@ -1163,6 +1148,7 @@ Linear operators can also be used over a set of simple statements. Thus `"Y[X=1]
 ```{r}
 make_model("X -> Y") |> 
   get_query_types("Y[X=1] - Y[X=0]")
+
 ```
 
 #### Nested queries
@@ -1191,8 +1177,10 @@ model <-
   make_model("X -> Y") |>
   update_model(data, iter  = 4000, refresh = 0)
 
-model |> grab("posterior_distribution")  |> 
+model |> 
+  grab("posterior_distribution")  |> 
   ggplot(aes(Y.01 - Y.10)) + geom_histogram() 
+
 ```
 
 
@@ -1206,10 +1194,12 @@ It is generally helpful to use causal syntax to define the query and calculate t
 #| eval: false
 #| echo: true
 #| purl: false
+
 make_model("X -> Y") |> 
   query_distribution(
     query = list(increasing = "(Y[X=1] > Y[X=0])"), 
     using = "priors")
+
 ```
 
 `query_distribution()` can also be used when one is interested in assessing the value of a query for a *particular case*. In a sense, this is equivalent to posing a conditional query, querying conditional on values in a case. For instance, we might consult our posterior for the Lipids model and ask about the effect of $X$ on $Y$ for a case in which $Z=1$, $X=1$ and $Y=1$.
@@ -1218,11 +1208,14 @@ make_model("X -> Y") |>
 #| label: case-level-query
 #| echo: true
 #| eval: true
-#| purl: false
+#| purl: true
+
 lipids_model |>
-    query_model(query = "Y[X=1] - Y[X=0]",
-                given = "X==1 & Y==1 & Z==1",
-                using = "posteriors")
+  query_model(query = "Y[X=1] - Y[X=0]",
+              given = "X==1 & Y==1 & Z==1",
+              using = "posteriors")  |> 
+  subset(select = c("query", "mean", "sd"))
+
 ```
 
 The result is what we now believe for all cases in which $Z=1$, $X=1$, and $Y=1$. It is the expected average effect among cases with this data type, so this expectation has an uncertainty attached.
@@ -1235,15 +1228,16 @@ To simplify, consider a model where it is clear that $X$ causes $Y$, but it is u
 ```{r}
 #| echo: true
 #| eval: true
-
-# "Results for a case-level query"
+#| purl: true
 
 make_model("X -> M -> Y") |>
   update_model(data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)), iter = 4000) |>
   query_model("Y[X=1] > Y[X=0]", 
             given = "X==1 & Y==1 & M==1", 
             using = "posteriors",
-            case_level = c(TRUE, FALSE)) 
+            case_level = c(TRUE, FALSE))  |> 
+  subset(select = c("query", "case_level", "mean", "sd"))
+
 ```
 
 #### Batch queries
@@ -1257,7 +1251,6 @@ The function `query_model()` can also be used to query multiple models. The func
 #| echo: true
 #| eval: true
 #| purl: false
-
 
 models <- list(
   A = lipids_model |> 
@@ -1274,6 +1267,7 @@ queries <-
   case_level = c(FALSE, TRUE),
   using = c("priors", "posteriors"),
   expand_grid = TRUE)
+
 ```
 
 ```{r}
