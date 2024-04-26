@@ -1303,7 +1303,7 @@ queries |>
 ## Computational details and software requirements {.unnumbered}
 
 +------------------------:+:-------------------------------------------------------------------------------------+
-| Version                 | -   1.21                                                                            |
+| Version                 | -   1.1.1                                                                            |
 +-------------------------+--------------------------------------------------------------------------------------+
 | Availability            | -   Stable Release: <https://cran.rstudio.com/web/packages/CausalQueries/index.html> |
 |                         | -   Development: <https://github.com/integrated-inferences/CausalQueries>            |
