@@ -423,7 +423,7 @@ After updating a model, two additional components are attached to it:
 
 #### Parameters data frame {#sec-param-df}
 
-When a model is created, `CausalQueries` attaches a "parameters data frame," which keeps track of model parameters, and how they relate to causal types. This becomes especially important for more complex models with confounding that might involve more complicated mappings between parameters and nodal types. In the case with no confounding, the nodal types *are* the parameters; in cases with confounding, there are generally more parameters than nodal types. We already saw a segment of a parameters data frame for a model with confounding in @tbl-lipidspar. To access the full parameters data frame, we can call the `grab()` function as follows
+When a model is created, `CausalQueries` attaches a "parameters data frame," which keeps track of model parameters, and how they relate to causal types. This becomes especially important for more complex models with confounding that might involve more complicated mappings between parameters and nodal types. In the case with no confounding, the nodal types *are* the parameters; in cases with confounding, there are generally more parameters than nodal types. We already saw a segment of a parameters data frame for a model with confounding in @tbl-lipidspar. To access the full parameters data frame, we can call the `grab()` function as follows:
 
 ```{r}
 #| label: params-df
@@ -438,7 +438,7 @@ make_model("X -> Y") |>
 
 As in @tbl-lipidspar, each row in the parameters data frame corresponds to a single parameter. The `print()` method for the objects of the `parameters_df` class also includes a short description of each of the columns included in the data frame. More precisely, the columns of the parameters data frame are:
 
--   `param_names` gives the name of the parameter in shorthand. For instance the parameter $\lambda^X_0 = \Pr(\theta^X = \theta^X_0)$ has names `X.0`.
+-   `param_names` gives the name of the parameter in shorthand. For instance the parameter $\lambda^X_0 = \Pr(\theta^X = \theta^X_0)$ has the name `X.0`.
 -   `node` indicates the node associated with the parameter.
 -   `gen` indicates the place in the partial causal ordering (generation) of the node associated with the parameter.
 -   `param_set` indicates which parameters group together to form a simplex. The parameters in a set have parameter values that sum to 1. In this example $\lambda^X_0 + \lambda^X_1 = 1$.
@@ -768,7 +768,7 @@ make_model("X -> Y") |>
   grab("parameters")
 ```
 
-The example below illustrates a change in the value of the parameter $Y$ if it increases in $X$. Here, the nodal type `Y.Y01` is set to be $0.5$, while the other nodal types of this parameter set were re-normalized so that the parameters in the set still sum up to one.
+The example below illustrates a change in the value of the parameter $Y$ if it increases in $X$. Here, the nodal type `Y.Y01` is set to be $0.7$, while the other nodal types of this parameter set were re-normalized so that the parameters in the set still sum up to one.
 
 ```{r}
 #| label: set-parameters
