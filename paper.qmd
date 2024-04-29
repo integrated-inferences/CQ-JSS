@@ -405,7 +405,7 @@ The model includes additional elements: `parameters_df`, `nodal_types`, and `cau
 +-----------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | `parameters_df` | A data frame linking the model's parameters with the nodal types of the model, as well as the family to which they belong. See @sec-param-df for more details.      |
 +-----------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| `causal_types`  | A data frame listing causal types and the nodal types that produce them. (See @sec-causal-types.) \|                                                                |
+| `causal_types`  | A data frame listing causal types and the nodal types that produce them. (See @sec-causal-types.)                 
 +-----------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 : Core Elements of a Causal Model. {#tbl-core tbl-colwidths="\[30,70\]"}
@@ -716,7 +716,7 @@ lipids_model |>
 
 ```
 
-The priors here should be interpreted as indicating $\alpha_X = (1,2, 3, 4)$, which implies a distribution over $(\lambda^X_{00},\lambda^X_{10}, \lambda^X_{01}, \lambda^X_{11})$ centered on $\left(\frac1{10}, \frac2{10}, \frac3{10} \frac4{10} \right)$.
+The priors here should be interpreted as indicating $\alpha_X = (1,2, 3, 4)$, which implies a distribution over $(\lambda^X_{00},\lambda^X_{10}, \lambda^X_{01}, \lambda^X_{11})$ centered on $\left(\frac1{10}, \frac2{10}, \frac3{10}, \frac4{10} \right)$.
 
 Providing priors as a vector of numbers for larger models can be hard. For that reason, `set_priors()` allows for more targeted modifications of the parameter vector. For instance:
 
@@ -916,7 +916,7 @@ In cases with confounding, the approach is similar, except that the parameter ma
 In the case of incomplete data, we first identify the set of data strategies, where a collection of a data strategy might be of the form "gather data on $X$ and $M$, but not $Y$, for $n_1$ cases and gather data on $X$ and $Y$, but not $M$, for $n_2$ cases." Within a data strategy, the probability of an observed event is given by summing the probabilities of the types that could give rise to incomplete data. 
 
 #### Data probability
-there 
+
 Once we have the event probabilities in hand for each data strategy, we are ready to calculate the probability of the data. For a given data strategy, this is given by a multinomial distribution with these event probabilities. When there is incomplete data, and so there are multiple data strategies, the product of the multinomial probabilities for each strategy gives this.
 
 ### Implementation
@@ -1105,7 +1105,7 @@ make_model("X -> Y")  |>
 
 ```
 
-When a node has multiple parents, it is possible to set the values of none, some, or all of the parents. For instance if $X1$ and $X2$ are parents of $Y$ then `Y==1`, `Y[X1=1]==1`, and `Y[X1=1,X2=1]==1` queries cases for which $Y=1$ when, respectively, neither parents values are controlled, when $X1$ is set to $1$ but $X2$ is not controlled, and when both $X1$ and $X2$ are set to $1$. For instance:
+When a node has multiple parents, it is possible to set the values of none, some, or all of the parents. For instance if $X1$ and $X2$ are parents of $Y$ then `Y==1`, `Y[X1=1]==1`, and `Y[X1=1, X2=1]==1` queries cases for which $Y=1$ when, respectively, neither parents values are controlled, when $X1$ is set to $1$ but $X2$ is not controlled, and when both $X1$ and $X2$ are set to $1$. For instance:
 
 ```{r}
 #| eval: true
@@ -1122,7 +1122,7 @@ In general, as if conducting an experiment, the variables to be intervened upon 
 
 #### Conditional queries
 
-Many queries of interest are "conditional" queries. For example, the effect of $X$ on $Y$ for units for which $W= 1$ or the effect of $X$ on $Y$ for units for which $Z$ positively affects $X$. Such conditional queries are posed in `CausalQueries` by providing a `given` statement and the `query` statement. The entire query then becomes: for what units does the `query` condition hold among those units for which the `given` condition holds? The two parts can each be calculated using `get_query_types`. Thus, for instance, in an $X \rightarrow Y$ model, the probability that $X$ causes $Y$ given $X=1 \& Y=1$ is the probability of causal `X1.Y11` type divided by the sum of the probabilities of types `X1.Y11` and `X1.Y01`. In practice, this is done automatically for users when they call `query_model()` or `query_distribution()`.
+Many queries of interest are "conditional" queries. For example, the effect of $X$ on $Y$ for units for which $W= 1$ or the effect of $X$ on $Y$ for units for which $Z$ positively affects $X$. Such conditional queries are posed in `CausalQueries` by providing a `given` statement and the `query` statement. The entire query then becomes: for what units does the `query` condition hold among those units for which the `given` condition holds? The two parts can each be calculated using `get_query_types`. Thus, for instance, in an $X \rightarrow Y$ model, the probability that $X$ causes $Y$ given $X=1 \, \& \, Y=1$ is the probability of causal `X1.Y11` type divided by the sum of the probabilities of types `X1.Y11` and `X1.Y01`. In practice, this is done automatically for users when they call `query_model()` or `query_distribution()`.
 
 ```{r}
 #| eval: false
