@@ -78,7 +78,6 @@ options(kableExtra.latex.load_packages = FALSE)
 library(kableExtra)
 options(mc.cores = parallel::detectCores())
 
-
 set.seed(1, "L'Ecuyer-CMRG")
 theme_set(theme_bw())
 
@@ -311,7 +310,6 @@ The next to final column shows a sample set of parameter values. Together, the p
 These parameters again imply a  probability distribution over data types. For instance the probability of data type $Z=0, X=0, Y=0$ is:
 
 $$w_{000}=\Pr(Z=0, X=0, Y=0) = \lambda^Z_0\left(\lambda^X_{00}(\lambda^{Y|\lambda^X_{00}}_{00}+\lambda^{Y|\lambda^X_{00}}_{01}) + \lambda^X_{01}(\lambda^{Y|\lambda^X_{01}}_{00}+\lambda^{Y|\lambda^X_{01}}_{01})\right)$$
-
 
 The value of the `CausalQueries` package is to allow users to specify arbitrary models of this form, figure out all the implied nodal types and causal types, and then update given priors and data by calculating event probabilities implied by all possible parameter vectors and in turn the likelihood of the data given the model. In addition, the package allows for arbitrary querying of a model to assess the values of estimands of interest that are a function of the values or counterfactual values of nodes, *conditional* on values or counterfactual values of nodes.
 
@@ -561,41 +559,41 @@ Restrictions in `CausalQueries` can be set in many other ways:
 
 -   Using nodal type labels:
 
-```{r}
-#| label: set-restrictions1
-#| echo: true
-#| eval: false
-#| purl: true
-
-model <- 
-  lipids_model |>
-  set_restrictions(labels = list(X = "01", Y = c("00", "01", "11")), 
-                   keep = TRUE)
-
-```
+    ```{r}
+    #| label: set-restrictions1
+    #| echo: true
+    #| eval: false
+    #| purl: true
+    
+    model <- 
+      lipids_model |>
+      set_restrictions(labels = list(X = "01", Y = c("00", "01", "11")), 
+                       keep = TRUE)
+    ```
 
 -   Using wildcards in nodal type labels:
 
-```{r}
-#| label: set-restrictions2
-#| echo: true
-#| eval: false
-#| purl: true
-
-model <- lipids_model |>
-  set_restrictions(labels = list(Y = "?0"))
-```
+    ```{r}
+    #| label: set-restrictions2
+    #| echo: true
+    #| eval: false
+    #| purl: true
+    
+    model <- lipids_model |>
+      set_restrictions(labels = list(Y = "?0"))
+    ```
 
 -   In models with confounding, restrictions can be added to nodal types conditional on the values of other nodal types using a `given` argument:
 
-```{r}
-#| label: set-restrictions3
-#| echo: true
-#| eval: false
-#| purl: true
-model <- lipids_model |>
-  set_restrictions(labels = list(Y = c('00', '11')), given = 'X.00')
-```
+    ```{r}
+    #| label: set-restrictions3
+    #| echo: true
+    #| eval: false
+    #| purl: true
+    
+    model <- lipids_model |>
+      set_restrictions(labels = list(Y = c('00', '11')), given = 'X.00')
+    ```
 
 Setting restrictions sometimes involves using causal syntax (see @sec-syntax for a guide to the syntax used by `CausalQueries`). The help file in `?set_restrictions` provides further details and examples of restrictions users can set.
 
