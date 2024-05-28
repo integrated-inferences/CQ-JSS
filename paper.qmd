@@ -1,13 +1,11 @@
 ---
 title: "Making, Updating, and Querying Causal Models using `CausalQueries`"
-abstract: "The [R]{.proglang} package `CausalQueries`  can be used to make, update, and query causal models defined on binary nodes. Users provide a causal statement of the form `X -> M <- Y; M <-> Y` which is interpreted as a structural causal model over a collection of binary nodes.  Then `CausalQueries` allows users to (1) identify the set of principal strata---causal types---required to characterize all possible causal relations between nodes that are consistent with the causal statement (2) determine a set of parameters needed to characterize distributions over these types (3) update beliefs over distributions of causal types, using a `stan` model plus data and (4) pose a wide range of causal queries of the model, using either the prior distribution, the posterior distribution, or a user-specified candidate vector of parameters."
+abstract: "The [R]{.proglang} package `CausalQueries`  can be used to make, update, and query causal models defined on binary nodes. Users provide a causal statement of the form `X -> M <- Y; M <-> Y` which is interpreted as a structural causal model over a collection of binary nodes.  Then `CausalQueries` allows users to (1) identify the set of principal strata---causal types---required to characterize all possible causal relations between nodes that are consistent with the causal statement (2) determine a set of parameters needed to characterize distributions over these causal types (3) update beliefs over distributions of causal types, using a `stan` model plus data and (4) pose a wide range of causal queries of the model, using either the prior distribution, the posterior distribution, or a user-specified candidate vector of parameters."
 keywords-formatted: [causal model, Bayesian updating, DAG, Stan]
 author:
   - name: Till Tietz
     affiliations:
-      - name: WZB
-        department: IPI
-        address: Reichpietschufer 50
+      - name: Humboldt University
         city: Berlin
         country: Germany
         postal-code: 10785
@@ -85,9 +83,9 @@ theme_set(theme_bw())
 
 ## Introduction: Causal models {#sec-intro}
 
-`CausalQueries` is an [R]{.proglang} package that lets users make, update, and query causal models. Users provide a structural causal model in the form of a statement that reports a set of binary variables and the relations of "causal ancestry" between them. Once such a statement is provided to `make_model()`, `CausalQueries` generates a parameter vector that fully describes a probability distribution over all possible types of causal relations between variables ("causal types"). Given a prior over parameters---equivalently, over causal models consistent with the structural model--- and data over some or all nodes, `update_model()` deploys a Stan [@carpenter_stan_2017] model to generate a posterior distribution over causal models. The function `query_model()` can then be used to ask a wide range of causal queries, using either the prior distribution, the posterior distribution, or a user-specified candidate vector of parameters.
+`CausalQueries` is an [R]{.proglang} package that lets users make, update, and query causal models. Users provide a structural causal model in the form of a statement that reports a set of binary variables and the relations of causal ancestry between them. Once such a statement is provided to `make_model()`, `CausalQueries` generates a parameter vector that fully describes a probability distribution over all possible types of causal relations between variables ("causal types"). Given a prior distribution over parameters---equivalently, over causal models consistent with the structural model--- and data on some or all nodes, `update_model()` deploys a Stan [@carpenter_stan_2017] model to generate a posterior distribution over causal models. The function `query_model()` can then be used to ask a wide range of causal queries, using either the prior distribution, the posterior distribution, or a user-specified candidate vector of parameters.
 
-In the next section we provide a motivating example. We then describe how the package relates to existing available software. @sec-theory gives an overview of the statistical model behind the package. @sec-make, @sec-update, and @sec-query then describe the main functionality for the major operations using the package. We provide further computation details in the final section.
+In the next section we provide a motivating example. We then describe how the package relates to existing available software. @sec-theory gives an overview of the statistical model behind the package. @sec-make, @sec-update, and @sec-query then describe, in turn, the functionality for making, updating, and querying causal models. We provide further computation details in the final section.
 
 ## Motivating example
 
@@ -186,15 +184,15 @@ The literature on causal inference and its software ecosystem is large, spanning
 
 : Related software. {#tbl-software tbl-colwidths="\[19,20,10,18,38\]"}
 
-`causalnex` is a highly comprehensive software in the causal modeling domain, offering a suite of functions rich in features and optimized for the learning, updating, and querying of causal models using discrete data. Its avoidance of the intricate model parametrization, characterized by principal strata (nodal types), enables `causalnex` to adeptly process non-binary data and scale to large causal models. This approach; however, significantly constrains the variety of feasible queries and the extent of prior knowledge that can be incorporated into models. In this capacity, `causalnex` mirrors machine learning strategies in causal inference, prioritizing the learning of causal structures in environments abundant with variables yet potentially deficient in domain-specific knowledge; thus focusing on the assessment of basic queries over marginal distributions in learned DAGs. Conversely, the complex model structure utilized by `CausalQueries` is particularly advantageous for causal queries in settings where domain knowledge is more prevalent.
+`causalnex` is a  comprehensive software that offers a suite of functions for the discovery and querying of causal models. Like `CausalQueries` it uses Bayesian methods and allows users to use `do` calculus. The parameters of focus are condition probability distribution tables rather than principal strata (causal types). This approach limits the types of queries that can be posed and the kinds of expert information that can be incorporated. For instance knowledge of conditional probability distributions are not sufficient to make claims about (or provide priors with respect to) effect monotonicity, complier effects, or the probability of causation. However it makes it possible to address simple queries efficiently with much larger models.    
 
-Like `causalnex`, `pclag` places particular emphasis on causal structure learning, utilizing the resultant DAGs to recover average treatment effects (ATEs) across all learned Markov-equivalent classes implied by observed data that satisfy linearity of conditional expectations. This approach again is more restrictive than `CausalQueries` in the DAGs and particularly the queries it allows.
+Like `causalnex`, `pclag` places particular emphasis on causal structure learning, utilizing the resultant DAGs to recover average treatment effects (ATEs) across all learned Markov-equivalent classes implied by observed data that satisfy linearity of conditional expectations. This approach again is more restrictive than `CausalQueries` in the queries it allows.
 
-`DoWhy` is a feature-rich, mature inference framework that emphasizes causal identification, causal effect estimation, and assumption validation. Given a user-specified DAG, it deploys do-calculus to find expressions that identify desired causal-effects via Back-door, Front-door, IV and mediation identification criteria and leverages the identified expression and standard estimators to estimate the desired estimand. Following estimation, `DoWhy` deploys a comprehensive refutation engine implementing a large set of robustness tests. While this approach allows it to efficiently handle varied data types on large causal models, the decision to not parameterize the DAG itself places substantial limitations on the types of queries that can be posed.
+`DoWhy` is a feature-rich  framework that emphasizes causal identification, causal effect estimation, and assumption validation. Given a user-specified DAG, it deploys do-calculus to find expressions that identify desired causal-effects via Back-door, Front-door, IV and mediation identification criteria and leverages the identified expression and standard estimators to estimate the desired estimand. Following estimation, `DoWhy` deploys a comprehensive refutation engine implementing a large set of robustness tests. While this approach allows it to efficiently handle varied data types on large causal models, the decision to not parameterize the DAG itself places substantial limitations on the types of queries that can be posed.
 
-The packages bearing the greatest resemblance to `CausalQueries` for model definition are `autobounds` and `causaloptim`. Dealing with binary causal models, their definitions of principal strata (nodal types) and the resultant set of causal relations on the DAG (causal types) are very close to those of `CausalQueries`. Differences in model definition arise for disturbance terms and confounding being defined implicitly via main nodes and edges in `CausalQueries` vs explicitly via separate disturbance nodes in `autobounds` and `causaloptim`. While `CausalQueries` assumes canonical form for input DAGs, `autobounds` and `causaloptim` facilitate canonicalization. The essential difference between the methods; however, lies in their approach to evaluating queries.
+The packages bearing the greatest resemblance to `CausalQueries` for model definition are `autobounds` and `causaloptim`. Dealing with discrete causal models, their definitions of principal strata (causal types) and the resultant set of causal relations on the DAG are very close to those of `CausalQueries`. Differences in model definition arise for disturbance terms and confounding being defined implicitly via main nodes and edges in `CausalQueries` vs explicitly via separate disturbance nodes in `autobounds` and `causaloptim`. While `CausalQueries` assumes canonical form for input DAGs, `autobounds` and `causaloptim` facilitate canonicalization. The essential difference between the methods; however, lies in their approach to evaluating queries.
 
-Both `autobounds` and `causaloptim` build on seminal approaches in @balke_bounds_1997 to construct bounds of queries, using constrained polynomial and linear optimization respectively. In contrast, `CausalQueries` utilizes Bayesian inference to generate a posterior over the causal model which is then queried [consistent with @chickering_clinicians_1996; @zhang_partial_2022]. A key difference is the target of inference. The polynomial and linear programming approach to querying is in principle suited to handling larger causal models, though given their similarity in model parametrization, `autobounds`, `causaloptim` and `CausalQueries` face similar constraints induced by parameter spaces expanding rapidly with model size. The Bayesian approach to model updating and querying holds the efficiency advantage that a model can be updated once and queried arbitrarily, while expensive optimization runs are required for each separate query in `autobounds` and `causaloptim`.
+Both `autobounds` and `causaloptim` build on seminal approaches in @balke_bounds_1997 to construct bounds on queries, using constrained polynomial and linear optimization respectively. In contrast, `CausalQueries` utilizes Bayesian inference to generate a posterior over the causal model which is then queried [consistent with @chickering_clinicians_1996; @zhang_partial_2022]. A key difference is the target of inference. The polynomial and linear programming approach to querying is in principle suited to handling larger causal models, though given their similarity in model parametrization, `autobounds`, `causaloptim` and `CausalQueries` face similar constraints induced by parameter spaces expanding rapidly with model size. The Bayesian approach to model updating and querying holds the efficiency advantage that a model can be updated once and queried arbitrarily, while expensive optimization runs are required for each separate query in `autobounds` and `causaloptim`.
 
 ```{r}
 #| echo: true
@@ -214,9 +212,9 @@ make_model("A -> E <- B; C-> E <- D") |>
   nrow()
 ```
 
-Summarizing, the particular strength of `CausalQueries` is to allow users to specify arbitrary DAGs, to specify arbitrary queries defined on the DAG, and use the same canonical procedure to form Bayesian posteriors over those queries whether or not the queries are identified. Thus, for example, if researchers are interested in learning about a quantity like the local average treatment effect and their model satisfies the conditions in @angrist_identification_1996, then updating will recover valid estimates as data grows even if researchers are unaware that the local average treatment effect is identified and are ignorant of the estimation procedure proposed by @angrist_identification_1996.
+Summarizing, the particular strength of `CausalQueries` is to allow users to specify arbitrary DAGs, to specify arbitrary queries defined on the DAG, and use the same canonical procedure to form Bayesian posteriors over those queries whether or not the queries are identified. Thus, for example, if researchers are interested in learning about a quantity like the local average treatment effect and their model satisfies the conditions in @angrist_identification_1996, then updating will recover valid estimates as data grows even if researchers are unaware that the local average treatment effect is identified and are ignorant of bespoke estimation procedure proposed by @angrist_identification_1996.
 
-There are two broad limitations on the sets of models handled natively by `CausalQueries`. First `CausalQueries` is designed for models with a relatively small number of binary nodes. Because there is no compromise made on the space of possible causal relations implied by a given model, the parameter space grows very rapidly with the complexity of the causal model. The complexity also depends on the causal structure and grows rapidly with the number of parents affecting a given child. A chain model of the form $A \rightarrow B \rightarrow C \rightarrow D \rightarrow E$ has just 40 parameters. A model in which $A, B, C, D$ are all direct ancestors of $E$ has $65,544$ parameters. Moving from binary to nonbinary nodes has similar effects. The restriction to binary nodes is for computational and not conceptual reasons. In fact, it is possible to employ `CausalQueries` to answer queries from models with non-binary nodes but in general, the computational complexity makes analysis of these models prohibitively costly.[^2]
+There are two broad limitations on the sets of models handled natively by `CausalQueries`. First `CausalQueries` is designed for models with a relatively small number of binary nodes. Because there is no compromise made on the space of possible causal relations implied by a given model, the parameter space grows very rapidly with the complexity of the causal model. The complexity also depends on the causal structure and grows rapidly with the number of parents affecting a given child. A chain model of the form $A \rightarrow B \rightarrow C \rightarrow D \rightarrow E$ has just 40 parameters. A model in which $A, B, C, D$ are all direct ancestors of $E$ has $65,544$ parameters. Moving from binary to nonbinary nodes has similar effects. The restriction to binary nodes is for computational and not conceptual reasons. In fact, it is possible to employ `CausalQueries` to query models with non-binary nodes but, in general, the computational complexity makes analysis of these models prohibitively costly.[^2]
 
 [^2]: For more on computation constraints and strategies to update and query large models see the associated package `CausalQueriesTools` available via `devtools::install_github("till-tietz/CausalQueriesTools")`. The core approach used here is to divide large causal models into modules, update on modules and reassemble to pose queries. Also, see section 9.4.1 of @humphreys_integrated_2023 for an approach that codes non-binary data as a profile of outcomes on multiple binary nodes.
 
@@ -224,7 +222,7 @@ Second, the package is geared towards learning about populations from independen
 
 ## Statistical model {#sec-theory}
 
-The core conceptual framework is described in Pearl's *Causality* [@pearl_causality_2009] but can be summarized as follows [using notation from @humphreys_integrated_2023]:
+The core conceptual framework used by `CausalQueries` is that described in Pearl's *Causality* [@pearl_causality_2009]. It can be summarized as follows [using notation from @humphreys_integrated_2023]:
 
 ```{=tex}
 \begin{definition}
@@ -233,21 +231,22 @@ The core conceptual framework is described in Pearl's *Causality* [@pearl_causal
   \begin{enumerate}
     \item an ordered collection of ``endogenous nodes" $Y = \{Y_1, Y_2, \dots, Y_n\}$
     \item an ordered collection of ``exogenous nodes" $\Theta = \{\theta^{Y_1}, \theta^{Y_1}, \dots, \theta^{Y_n}\}$
-    \item a collection of functions $F = \{f_{Y_1}, f_{Y_2}, \dots, f_{Y_n}\}$ specifying, for each $j$, how outcome $y_j$ depends on $\theta_j$ and realizations of endogenous nodes prior to $j$.
-    \item a probability distribution over $\Theta$, $\lambda$.
+    \item a collection of functions $F = \{f_{Y_1}, f_{Y_2}, \dots, f_{Y_n}\}$ with $f_{Y_j}$ specifying, for each $j$, how outcome $Y_j$ depends on $\theta_j$ and realizations of endogenous nodes prior to $Y_j$.
+    \item a probability distribution, $\lambda$, over $\Theta$.
   \end{enumerate}
   
 \end{definition}
 ```
-By default, `CausalQueries` assumes endogenous nodes to be binary. When we specify a causal structure we specify which endogenous nodes are (possibly) direct causes of a node, $Y_j$, given other nodes in the model. These nodes are called the parents of $Y_j$, $PA_j$ (we use upper case $PA_j$ to indicate the collection of nodes and use lower case $pa_j$ to indicate a particular set of values that these nodes might take on). With discrete valued nodes, it is possible to identify all possible ways that a node might respond to its parents. We refer to the ways that a node responds as "nodal type." The set of nodal types corresponds to principal strata, familiar, for instance, in the study of instrumental variables [@frangakis_principal_2002].
+
+By default, `CausalQueries` assumes endogenous nodes to be binary. When we specify a causal structure we specify which endogenous nodes are (possibly) direct causes of a node, $Y_j$, given other nodes in the model. These nodes are called the parents of $Y_j$, $PA_j$ (we use upper case $PA_j$ to indicate the collection of nodes and use lower case $pa_j$ to indicate a particular set of values that these nodes might take on). With discrete valued nodes, it is possible to identify all possible ways that a node might respond to its parents. We refer to the ways that a node responds as "nodal type." The set of nodal types corresponds to principal strata, or causal types, familiar, for instance, from the study of instrumental variables [@frangakis_principal_2002].
 
 If node $i$ can take on $k_i$ possible values then the set of possible values that can be taken on by parents of $j$ is $m_j :=\prod_{i\in PA_j}k_i$. Then there are $k_j^{m_j}$ different ways that node $j$ might respond to its parents. In the case of binary nodes, this becomes $2^{\left(2^{|PA_j|}\right)}$. Thus for an endogenous node with no parents, there are 2 nodal types, for a binary node with one binary parent there are four types, for a binary node with 2 parents there are 16, and so on.
 
 The set of all possible causal reactions of a given unit to all possible values of parents is then given by its collection of nodal types at each node. We call this collection a unit's "causal type", $\theta$.
 
-The approach used by `CausalQueries` is to let the domain of exogenous nodes $\theta^{Y_j}$ be coextensive with the number of nodal types for $Y_j$. Function $f^j$ then determines the value of $y$ by simply reporting the value of $Y_j$ implied by the nodal type and the values of the parents of $Y_j$. Thus if $\theta^j_{pa_j}$ is the value for $j$ when parents have values $pa_j$, then we have simply that $f_{Y_j}(\theta^{j}, pa_j) = \theta^j_{pa_j}$. The practical implication is that, given the causal structure, learning about the model reduces to learning about the distribution, $\lambda$, over the nodal types.
+The approach used by `CausalQueries` is to let the domain of exogenous nodes $\theta^{Y_j}$ be coextensive with the number of nodal types for $Y_j$. Function $f^j$ then determines the value of $y$ by simply reporting the value of $Y_j$ implied by the nodal type and the values of the parents of $Y_j$. Thus if $\theta^j_{pa_j}$ is the value for $j$ when parents have values $pa_j$, then we have  that $f_{Y_j}(\theta^{j}, pa_j) = \theta^j_{pa_j}$. The practical implication is that, given the causal structure, learning about the model reduces to learning about the distribution, $\lambda$, over the nodal types.
 
-In cases in which there is no unobserved confounding, we take the probability distributions over the nodal types for different nodes to be independent: $\theta^i \perp\!\!\! \perp \theta^j, i\neq j$. In this case we use a categorical distribution to specify ${\lambda^j_x} := \Pr(\theta^j = {\theta^j_x})$. From independence then we have that the probability of a given causal type $\theta_x$ is simply $\prod_{i=1}^n {\lambda^i_x}$. For instance $\Pr(\theta = (\theta^X_1, \theta^Y_{01})) = \Pr(\theta^X = \theta^X_1)\Pr(\theta^Y = \theta^Y_{01}) = \lambda^X_1\lambda^Y_{01}$.
+In cases in which there is no unobserved confounding, we take the probability distributions over the nodal types for different nodes to be independent: $\theta^i \perp\!\!\! \perp \theta^j, i\neq j$. In this case we use a categorical distribution to specify ${\lambda^j_x} := \Pr(\theta^j = {\theta^j_x})$. From independence then we have that the probability of a given causal type $\theta_x$ is  $\prod_{i=1}^n {\lambda^i_x}$. For instance $\Pr(\theta = (\theta^X_1, \theta^Y_{01})) = \Pr(\theta^X = \theta^X_1)\Pr(\theta^Y = \theta^Y_{01}) = \lambda^X_1\lambda^Y_{01}$.
 
 In cases in which there is confounding, the logic is the same except that we need to specify enough parameters to capture the joint distribution over nodal types for different nodes. We do this by making use of the causal structure. 
 
@@ -267,7 +266,7 @@ $$ {#eq-join2}
 
 Representing beliefs *over causal models* thus requires specifying a probability distribution over $\lambda$. This might be a degenerate distribution if users want to specify a particular model. `CausalQueries` also allows users to specify parameters, $\alpha$ of a Dirichlet distribution over $\lambda^j$, for each node $Y^j$ (and similarly for conditional distributions in the case of confounding). If all entries of $\alpha$ are 0.5 this corresponds to Jeffreys priors. The default behavior is for `CausalQueries` to assume a uniform distribution -- that is, that all nodal types are equally likely -- which corresponds to $\alpha$ being a vector of 1s.
 
-Updating is then done with respect to beliefs over $\lambda$. In the Bayesian approach we have simply:
+Updating is then done with respect to beliefs over $\lambda$. In the Bayesian approach we have:
 
 $$p(\lambda|D) = \frac{p(D|\lambda)p(\lambda)}{\int_{\lambda^{'}} p(D|\lambda')p(\lambda')}$$
 
@@ -311,7 +310,8 @@ These parameters again imply a  probability distribution over data types. For in
 
 $$w_{000}=\Pr(Z=0, X=0, Y=0) = \lambda^Z_0\left(\lambda^X_{00}(\lambda^{Y|\lambda^X_{00}}_{00}+\lambda^{Y|\lambda^X_{00}}_{01}) + \lambda^X_{01}(\lambda^{Y|\lambda^X_{01}}_{00}+\lambda^{Y|\lambda^X_{01}}_{01})\right)$$
 
-The value of the `CausalQueries` package is to allow users to specify arbitrary models of this form, figure out all the implied nodal types and causal types, and then update given priors and data by calculating event probabilities implied by all possible parameter vectors and in turn the likelihood of the data given the model. In addition, the package allows for arbitrary querying of a model to assess the values of estimands of interest that are a function of the values or counterfactual values of nodes, *conditional* on values or counterfactual values of nodes.
+
+The value of the `CausalQueries` package is that it allows users to specify arbitrary models of this form, figure out all the implied nodal types and causal types, and then update given priors and data by calculating event probabilities implied by all possible parameter vectors and in turn the likelihood of the data given the model. In addition, the package allows for arbitrary querying of a model to assess the values of estimands of interest that are a function of the values or counterfactual values of nodes, *conditional* on values or counterfactual values of nodes.
 
 The following sections review key functionality for making, updating, and querying causal models.
 
@@ -330,9 +330,9 @@ The statement in quotes, `"X -> M -> Y <- X"`, provides the names of nodes. An a
 
 1.  Functional equations:
 
-    -   $Y = f(M, X, \theta^Y)$
-    -   $M = f(X, \theta^M)$
-    -   $X = \theta^X$
+    -   $Y = f_Y(M, X, \theta^Y)$
+    -   $M = f_M(X, \theta^M)$
+    -   $X = f_X(\theta^X)$
 
 2.  Distributions on $\Theta$:
 
@@ -370,7 +370,7 @@ lipids_model |> plot()
 
 lipids_model |>
   plot(x_coord = 1:3,
-       y_coord = c(3,2,1),
+       y_coord = 3:1,
        textcol = "white",
        textsize = 3,
        shape = 18,
@@ -383,7 +383,7 @@ lipids_model |>
 
 When a model is defined, a set of objects is generated. These are the key quantities that are used for all inferential tasks. These objects can all be accessed by using the `grab()` function; for example `grab(model, statement`). @tbl-core summarizes the core components of a model, providing a brief explanation for each one.
 
-The first element is a `statement` which defines how the nodes in the model are related, specified by the user using `dagitty` syntax. The second element, `dag`, is a data frame that characterizes the parent-child relationships within the model. The element `nodes` is simply a list of the names of the nodes in the model. Fourth, the `parents_df,` is a table listing the nodes, indicating if they are "root" nodes (nodes with no parents among the set of specified nodes) and showing how many parents each node has.
+The first element is a `statement` which defines  the relations of causal ancestry between nodes. The second element, `dag`, is a data frame that characterizes the parent-child relationships within the model. The element `nodes` is simply a list of the names of the nodes in the model. Fourth, the `parents_df,` is a table listing the nodes, indicating if they are "root" nodes (nodes with no parents among the set of specified nodes) and showing how many parents each node has.
 
 The model includes additional elements: `parameters_df`, `nodal_types`, and `causal_types,` which we will explain later.
 
@@ -455,15 +455,11 @@ As in @tbl-lipidspar, each row in the parameters data frame corresponds to a sin
 -   `gen` indicates the place in the partial causal ordering (generation) of the node associated with the parameter.
 -   `param_set` indicates which parameters group together to form a simplex. The parameters in a set have parameter values that sum to 1. In this example $\lambda^X_0 + \lambda^X_1 = 1$.
 -   `nodal_type` indicates the nodal types associated with the parameter.
--   `given` indicates nodal types that are conditioned for parameters to are used to characterize conditional distributions. 
+-   `given` indicates nodal types that are conditioned upon for cases in which parameters are needed to characterize joint distributions of nodal types. 
 -   `param_value` gives the (possibly default) parameter values (probabilities).
--   `priors` gives (possibly default) Dirichlet priors arguments for parameters in a set. Values of $1$ ($.5$) for all parameters in a set imply uniform (Jeffreys) priors over this set.
+-   `priors` gives (possibly default) Dirichlet priors arguments (hyperparameters) for parameters in a set. Values of $1$ ($.5$) for all parameters in a set imply uniform (Jeffreys) priors over this set.
 
 #### Nodal types {#sec-nodal-types}
-
-As described above, two units have the same *nodal type* at node $Y$, $\theta^Y$, if their outcome at $Y$ responds similarly to parents of $Y$.
-
-A binary node with $k$ binary parents has $2^{2^k}$ nodal types because there are $2^k$ possible values of the $k$ parents and so $2^{2^k}$ ways to respond to these possible parental values. 
 
 The full set of nodal types is identified and stored in the model object when a model is created. The labels for these nodal types indicate how the unit responds to parents' values. For instance, consider the model with two parents $X \rightarrow Y \leftarrow M.$ In such a case, the nodal types of $Y$ will have subscripts with four digits, each representing one of the possible combinations of values that $Y$ can take, given the values of its parents $X$ and $M.$ These combinations include the value of $Y$ when:
 
@@ -482,11 +478,10 @@ make_model("X -> Y <- M; W -> Y") |>
   interpret_type(nodes = "Y")
 
 ```
-These interpretations are automatically provided the nodal types are accessed via `grab(model, "nodal_types")`. 
+
+These interpretations are automatically provided when the nodal types are accessed via `grab(model, "nodal_types")`. 
 
 #### Causal types {#sec-causal-types}
-
-Causal types are collections of nodal types. Two units are of the same *causal type* if they have the same nodal type at every node. For example in a $X \rightarrow M \rightarrow Y$ model, $\theta = (\theta^X_0, \theta^M_{01}, \theta^Y_{10})$ is a type that has $X=0$, $M$ responds positively to $X$, and $Y$ responds negatively to $M$.
 
 The full set of causal types is identified and stored in the model object when a model is created. Users can access causal types using `grab()` function as follows:
 
@@ -507,7 +502,7 @@ lipids_model |>
 
 #### Parameter matrix
 
-The parameters data frame keeps track of parameter values and priors for parameters but does not provide a mapping between parameters and the probability of causal types. The parameter matrix---the "$P$ matrix"---can be added to the model to provide this mapping. The $P$ matrix has a row for each parameter and a column for each causal type. For instance:
+The parameters data frame keeps track of parameter values and priors for parameters but does not provide a mapping between parameters and the probability of causal types. The parameter matrix provides this mapping. The parameters matrix has a row for each parameter and a column for each causal type. For instance:
 
 ```{r}
 #| label: get-param-matrix
@@ -520,7 +515,7 @@ make_model("X -> Y") |>
 
 ```
 
-The probability of a causal type is given by the product of the parameter values for parameters whose row in the $P$ matrix contains a $1$. Later (e.g., in @sec-confounding), we will see examples where the $P$ matrix helps track parameters created when confounding is added to a model.
+The probability of a causal type is given by the product of the parameter values for parameters whose row in the parameters matrix contains a $1$. Later (e.g., in @sec-confounding), we will see examples where the parameters matrix helps track parameters created when confounding is added to a model.
 
 The parameter matrix is generated automatically as needed, but to speed up operation it might be useful to add it to the model manually. This can be done using the `set_parameter_matrix()` function as follows:
 
@@ -536,7 +531,7 @@ make_model("X -> Y") |>
 
 ### Tailoring models
 
-When a `dagitty` statement is provided to `make_data()`, a model is formed with a set of default assumptions: in particular, no restrictions are placed on nodal types and flat priors are assumed over all parameters. These features can be adjusted after a model is formed.
+When a `dagitty` statement is provided to `make_model()`, a model is formed with a set of default assumptions: in particular, no restrictions are placed on nodal types and flat priors are assumed over all parameters. These features can be adjusted after a model is formed.
 
 #### Setting restrictions {#restrictions}
 
@@ -617,7 +612,7 @@ Unobserved confounding between two (or more) nodes arises when the nodal types f
 
 : Nodal types in $X \rightarrow Y$ model. {#tbl-joint tbl-colwidths="\[25,25,25,25\]"}
 
-@tbl-joint has eight interior elements so that an unconstrained joint distribution would have seven degrees of freedom. A no-confounding assumption means that $\Pr(\theta^X | \theta^Y) = \Pr(\theta^X)$, or $\Pr(\theta^X, \theta^Y) = \Pr(\theta^X)\Pr(\theta^Y)$. In this case, it is sufficient to put a distribution on the marginals, and there would be $3$ degrees of freedom for $Y$ and $1$ for $X$, totaling $4$ rather than $7$.
+@tbl-joint has eight interior elements so that an unconstrained joint distribution would have seven degrees of freedom. A no-confounding assumption means that  $\Pr(\theta^X, \theta^Y) = \Pr(\theta^X)\Pr(\theta^Y)$. In this case, it is sufficient to put a distribution on the marginals, and there would be $3$ degrees of freedom for $Y$ and $1$ for $X$, totaling $4$ rather than $7$.
 
 To allow for an unconstrained joint distribution the parameters data frame for this model would have two parameter families for parameters associated with the node $Y$. Each family captures the conditional distribution of $Y$'s nodal types, given $X$. For instance the parameter `Y01_X.1` can be interpreted as $\Pr(\theta^Y = \theta^Y_{01} | \theta^X=1)$. See again @tbl-lipidspar for an example of a parameters matrix with confounding.
 
@@ -754,29 +749,14 @@ More subtly, the *structure* of a model, coupled with flat priors, has substanti
 
 Caution regarding priors is essential when models are not identified, as is the case for many models considered here. For some quantities, the marginal posterior distribution reflects the marginal prior distribution [@poirier_revising_1998].
 
-The crucial aspect we emphasize is the necessity of avoiding the misconception that "uninformative" priors are devoid of implications concerning the values of causal quantities of interest. In reality, these priors do carry certain presumptions. The impact of flat priors on causal quantities is contingent on the structural configuration of the model. Moreover, for some inferences from causal models, the priors can matter a lot even if you have a lot of data. In such cases, it can be helpful to know what priors on parameters imply for priors on causal quantities of interest (by using `query_model()`) and to assess how much conclusions depend on priors (by comparing results across models that vary in their priors).
-
-The following code gives an example where a change in model structure and uniform priors imply different beliefs over causal quantities.
-
-```{r}
-#| label: compare-flat-priors
-#| echo: true
-#| eval: false
-#| purl: true
-make_model("X -> Y") |>
-  query_model("Y[X=1] > Y[X=0]", using = "priors")
-
-make_model("X -> M -> Y") |>
-  query_model("Y[X=1] > Y[X=0]", using = "priors")
-```
 
 #### Setting Parameters {#parameters}
 
 By default, models have a vector of parameter values included in the `parameters_df` data frame. These are useful for generating data or for situations, such as process tracing, when one wants to make inferences about causal types ($\theta$), given case-level data, under the assumption that the model is known.
 
-The logic for setting parameters is similar to setting priors: we need to place values on the probability of nodal types. The critical difference is that whereas the $\alpha$ value placed on nodal types can be any positive number---capturing our certainty over the parameter value---the parameter values must lie in the unit interval, $[0,1]$. If passed parameter values do not lie in the unit interval, they are normalized so that they do.
+The logic for setting parameters is similar to that for setting priors. The critical difference is that whereas the $\alpha$ value placed on nodal types can be any positive number---capturing our certainty over the parameter value---the parameter values must lie in the unit interval, $[0,1]$. If passed parameter values do not lie in the unit interval, they are normalized so that they do.
 
-Consider the causal model below. It has two parameter sets, one for $X$ and one for $Y$, with six nodal types, two corresponding to $X$ and four corresponding to $Y$. The key feature of the parameters is that they must sum to $1$ within each parameter set.
+The causal model below  has two parameter sets, one for $X$ and one for $Y$, with two nodal types for  $X$ and four for $Y$. The key feature of the parameters is that they must sum to $1$ within each parameter set.
 
 ```{r}
 #| label: get-parameters
@@ -806,7 +786,7 @@ Once a model has been defined, it is possible to simulate data from the model us
 
 #### Drawing data basics
 
-Generating data requires a specification of parameter values. If not provided, the parameter values in the parameters dataframe are used.
+Generating data requires a specification of parameter values. The parameter values in the parameters dataframe are used by default. Otherwise users can provide parameters on the fly.
 
 ```{r}
 #| label: make-data
@@ -848,15 +828,14 @@ sample_data_2 <-
   make_data(n = 8,
             nodes = list(c("Z", "Y"), "X"),
             probs = list(1, .5),
-            subsets = list(TRUE, "Z==1 & Y==0"),
-            verbose = FALSE)
+            subsets = list(TRUE, "Z==1 & Y==0"))
 
 sample_data_2
 ```
 
 #### Reshaping data
 
-Whereas data usually comes in "long form", with a row per observation, the data passed to Stan during model updating is in a "compact" form. The latter records only the number of units of each data type, grouped by data "strategy"---an indicator of the nodes for which researchers gathered data. `CausalQueries` includes functions that let users move between these two forms.
+Whereas data usually comes in "long form", with one row per observation, the data passed to Stan during model updating is in a "compact" form. The latter records only the number of units of each data type, grouped by data "strategy"---an indicator of the nodes for which researchers gathered data. `CausalQueries` includes functions that let users move between these two forms.
 
 ```{r}
 #| label: collapse-data
@@ -867,7 +846,7 @@ sample_data_2 |>
   collapse_data(lipids_model)
 ```
 
-In the same way, it is possible to move from compact to long data using `expand_data()`. Note that `NA`'s are interpreted as data not being sought. So in the case of `sample_data_2`, the interpretation is that there are two data strategies: data on $Y$, $M$, and $X$ was sought in two cases only while in six cases only data on $Y$ and $X$ was sought.
+In the same way, it is possible to move from compact to long data using `expand_data()`. Note that `NA`'s are interpreted as data not being sought. 
 
 ## Updating models {#sec-update}
 
@@ -875,9 +854,9 @@ The approach used by the `CausalQueries` package to update parameter values give
 
 ### Data for Stan
 
-We use a generic Stan program that works for all binary causal models. The main advantage of the generic program we implement is that it allows us to pass the details of the causal model as data inputs to Stan instead of generating individual Stan programs for each causal model. [Appendix B](#sec-stancode) provides the complete Stan model code.
+We use a generic Stan program that works for all binary causal models. The main advantage of the generic program is that it allows us to pass the details of the causal model as data inputs to Stan instead of generating individual Stan programs for each causal model. [Appendix B](#sec-stancode) provides the complete Stan model code.
 
-The data required by the Stan program includes vectors of observed data and priors on parameters, as well as a set of matrices needed for the mapping between events, data types, causal types, and parameters. In addition, data includes counts of all relevant quantities as well as start and end positions of parameters pertaining to specific nodes and distinct data strategies.
+The data required by the Stan program includes vectors of observed data and priors on parameters, as well as a set of matrices needed for the mapping between events, data types, causal types, and parameters. In addition, data passed to `stan` includes counts of all relevant quantities as well as start and end positions of parameters pertaining to specific nodes and distinct data strategies.
 
 The internal function `prep_stan_data()` takes the model and data as arguments and produces a list with all objects that are required by the generic Stan program. Package users do not need to call the `prep_stan_data()` function directly.
 
@@ -887,11 +866,12 @@ The Stan model involves the following elements: (1) a specification of priors ov
 
 #### Probability distributions over parameter sets
 
-The causal structure provided by a DAG allows us to reduce the problem of generating a probability distribution over all parameters to one of generating distributions over  "sets" of parameters. Without unobserved confounding, these sets correspond to the nodal types for each node: we have a probability distribution over the set of nodal types. In cases with confounding, these are sets of nodal types for a given node *given* values of other nodes: we have to characterize the probability of each nodal type in a set given the values of nodal types for other nodes.
+The causal structure provided by a DAG allows us to reduce the problem of generating a probability distribution over all parameters to one of generating distributions over  "sets" of parameters. Without unobserved confounding, these sets correspond to the nodal types for each node: we have a probability distribution over the set of nodal types. 
 
-To illustrate, we have two parameter sets in the $X \rightarrow Y$ model. The first is $\lambda^X \in \{\lambda^X_0, \lambda^X_1\}$ whose elements give the probability that $X$ is $0$ or $1$. These two probabilities sum up to one. The second parameter set is $\lambda^Y \in \{\lambda^Y_{00}, \lambda^Y_{10}, \lambda^Y_{01} \lambda^Y_{11}\}$. These are also probabilities, and their values sum up to one. Note that we have $6$ parameters, but just $1 + 3 = 4$ degrees of freedom.
+Thus for instance we have two parameter sets in the $X \rightarrow Y$ model. We have a $2$-dimensional Dirichlet distribution over the $X$ nodal types, $(\lambda^X_0, \lambda^X_1) \sim Dirichlet(\alpha^X_0, \alpha^X_1).$ ,  and a $4$-dimensional Dirichlet over the $Y$ nodal types, $(\lambda^Y_{00}, \lambda^Y_{10}, \lambda^Y_{01}, \lambda^Y_{11}) \sim Dirichlet(\alpha^Y_{00}, \alpha^Y_{10}, \alpha^Y_{01}, \alpha^Y_{11}).$ 
 
-We express priors over these parameter sets using multiple Dirichlet distributions. Thus for instance we have $(\lambda^X_0, \lambda^X_1) \sim Dirichlet(\alpha^X_0, \alpha^X_1).$ Overall, in the $X \rightarrow Y$ model, we have a $2$-dimensional Dirichlet distribution over the $X$ nodal types and a $4$-dimensional Dirichlet over the $Y$ nodal types.
+In cases with confounding, these are sets of nodal types for a given node *given* values of other nodes.
+
 
 #### Event probabilities
 
@@ -913,15 +893,15 @@ In this model, the probability of data type `X0Y0`, $w_{00}$ is $\lambda^X_0\tim
 
 In cases with confounding, the approach is similar, except that the parameter mapping matrix can contain multiple columns for each data type to capture non-independence between nodes.
 
-In the case of incomplete data, we first identify the set of data strategies, where a collection of a data strategy might be of the form "gather data on $X$ and $M$, but not $Y$, for $n_1$ cases and gather data on $X$ and $Y$, but not $M$, for $n_2$ cases." Within a data strategy, the probability of an observed event is given by summing the probabilities of the types that could give rise to incomplete data. 
+In the case of incomplete data, we first identify the set of data strategies, where a collection of a data strategy might be of the form "gather data on $X$ and $M$, but not $Y$, for $n_1$ cases and gather data on $X$ and $Y$, but not $M$, for $n_2$ cases." Within a data strategy, the probability of an observed event is given by summing the probabilities of the types that could give rise to a particular pattern of incomplete data. 
 
 #### Data probability
 
-Once we have the event probabilities in hand for each data strategy, we are ready to calculate the probability of the data. For a given data strategy, this is given by a multinomial distribution with these event probabilities. When there is incomplete data, and so there are multiple data strategies, the product of the multinomial probabilities for each strategy gives this.
+Once we have the event probabilities in hand for each data strategy, we are ready to calculate the probability of the data. For a given data strategy, this is given by a multinomial distribution with these event probabilities. When there is incomplete data, and so there are multiple data strategies, the probability of the data is given by the product of the multinomial probabilities for data generated by each strategy.
 
 ### Implementation
 
-The function `update_model()` can be used to update model as follows:
+The function `update_model()` can be used to update a model as follows:
 
 ```{r}
 #| label: update-model
@@ -931,13 +911,13 @@ The function `update_model()` can be used to update model as follows:
 model <- update_model(model, data)
 ```
 
-The `data` argument provides a data frame containing some or all of the nodes in the model. The function `update_model()` relies on `rstan::sampling()` to draw from the posterior distribution, and one can pass any additional arguments accepted by `rstan::sampling()` in `...`. Given that the model updating can sometimes be slow for complex models in [Appendix A](#sec-parallel), we show how users can utilize parallelization to improve computation speed. [Appendix C](#sec-benchmark) provides an overview of model updating benchmarks, evaluating the effects of model complexity and data size on updating times.
+The `data` argument provides a data frame containing some or all of the nodes in the model. The function `update_model()` relies on `rstan::sampling()` to draw from the posterior distribution, and one can pass any additional arguments accepted by `rstan::sampling()`. Given that model updating can sometimes be slow for complex models, we show in [Appendix A](#sec-parallel)  how users can utilize parallelization to improve computation speed. [Appendix C](#sec-benchmark) provides an overview of model updating benchmarks, evaluating the effects of model complexity and data size on updating times.
 
 ### Incomplete and censored data
 
-`CausalQueries` assumes that missing data is missing at random, conditional on observed data. For instance, in an $X \rightarrow M \rightarrow Y$ model, a researcher might have chosen to collect data on $M$ in a random set of cases in which $X=1$ and $Y=1$. If there are positive relations at each stage, you may be more likely to observe $M$ in cases in which $M=1$. However, the observation of $M$ is still random and conditional on the observed $X$ and $Y$ data. The Stan model in `CausalQueries` takes account of this kind of sampling by assessing the probability of observing a particular pattern of data within each data strategy.^[For further discussion, see Section 9.2.3.2 in @humphreys_integrated_2023.]
+`CausalQueries` assumes that missing data is missing at random, conditional on observed data. For instance, in an $X \rightarrow M \rightarrow Y$ model, a researcher might have chosen to collect data on $M$ in a random set of cases in which $X=1$ and $Y=1$. If there are positive relations at each stage, one may be more likely to observe $M$ in cases in which $M=1$. However, the observation of $M$ is still random and conditional on the observed $X$ and $Y$ data. The Stan model in `CausalQueries` takes account of this kind of sampling by assessing the probability of observing a particular pattern of data within each data strategy.^[For further discussion, see Section 9.2.3.2 in @humphreys_integrated_2023.]
 
-In addition, it is possible to indicate when data has been censored and for the Stan model to take this into account also. For instance, consider a situation where we only observe $X$ in cases where $X=1$ and not where $X=0$. This kind of sampling is non-random and conditional on observables. It can be taken into account, however, by indicating to Stan that the probability of observing a particular data type is $0$, regardless of parameter values. This can done using the `censored_types` argument in `update_model()`.
+In addition, it is possible to indicate when data has been censored and for the Stan model to take this into account also. For instance, consider a situation in which we only observe $X$ in cases when $X=1$ and not when $X=0$. This kind of sampling is non-random and conditional on observables. It can be taken into account, however, by indicating to Stan that the probability of observing a particular data type is $0$, regardless of parameter values. This can done using the `censored_types` argument in `update_model()`.
 
 To illustrate, in the example below, we observe perfectly correlated data for $X$ and $Y$. If we are aware that data in which $X \neq Y$ has been censored, then when we update, we do not move towards a belief that $X$ causes $Y$.
 
@@ -991,7 +971,7 @@ lipids_model <-
 
 ```
 
-The summary of the Stan model can be accessed using `grab()` function and is saved in updated model object by default. This provides two measures to help assess convergence.
+The summary of the Stan model can be accessed using `grab()` function and is saved in the updated model object by default. This provides two measures to help assess convergence.
 
 ```{r}
 #| eval: true
@@ -1032,7 +1012,7 @@ model |>
 
 ```
 
-Users can pass the Stan fit object to other diagnostic packages such as `bayesplot`.
+Users can then pass the Stan fit object to other diagnostic packages such as `bayesplot`.
 
 <!-- ```{r}
 np <- model |> grab("stan_fit") |> bayesplot::nuts_params()
@@ -1066,7 +1046,7 @@ make_model("X -> Y") |>
 
 ```
 
-The output above shows realized values with row names indicating corresponding nodal types. Intervening on $X$ [see @pearl_causality_2009] with $do(X=1)$ yields:
+The output above shows realized values with row names indicating corresponding causal types. Intervening on $X$ [see @pearl_causality_2009] with $do(X=1)$ yields:
 
 ```{r}
 #| label: realise-outcomes-do
@@ -1081,11 +1061,11 @@ In the same way, `realise_outcomes()` can return the realized values on all node
 
 ### Causal syntax {#sec-syntax}
 
-`CausalQueries` provides syntax for the formulation of various causal queries including queries on all rungs of the "causal ladder" [@pearl_causality_2009]: prediction, such as the proportion of units where $Y$ equals $1$; intervention, such as the probability that $Y = 1$ when $X$ is *set* to $1$; counterfactuals, such as the probability that $Y$ would be $1$ were $X = 1$ given we know $Y$ is $0$ when $X$ was observed to be $0$. Queries can be posed at the population level or case level and can be unconditional (e.g., what is the effect of $X$ on $Y$ for all units) or conditional (for example, the effect of $X$ on $Y$ for units for whom $Z$ affects $X$). This syntax enables users to write arbitrary causal queries to interrogate their models.
+`CausalQueries` provides syntax for the formulation of various causal queries including queries on all rungs of the "causal ladder" [@pearl_causality_2009]: prediction, such as the proportion of units where $Y$ equals $1$; intervention, such as the probability that $Y = 1$ when $X$ is *set* to $1$; counterfactuals, such as the probability that $Y$ would be $1$ were $X = 1$ given we know $Y$ is $0$ when $X$ was observed to be $0$. Queries can be posed at the population level or case level and can be unconditional (e.g., what is the effect of $X$ on $Y$ for all units) or conditional (for example, the effect of $X$ on $Y$ for units for which $Z$ affects $X$). This syntax enables users to write arbitrary causal queries to interrogate their models.
 
 The heart of querying is figuring out which causal types correspond to particular queries. Users may employ logical statements to ask questions about observed conditions without intervention for factual queries. Take, for example, the query mentioned above about the proportion of units where $Y$ equals $1$, expressed as `"Y == 1"`. In this case, the logical operator `==` indicates that `CausalQueries` should consider units that fulfill the condition of strict equality where $Y$ equals $1$.[^6] When this query is posed, the `get_query_types()` function identifies all types that give rise to $Y=1$, absent any interventions.
 
-[^6]: `CausalQueries` also accepts = as a shorthand for ==. However, == is preferred as it is the conventional logical operator to express a condition of strict equality.
+[^6]: `CausalQueries` also accepts = as a shorthand for ==. However, == is preferred as it is the conventional logical operator.
 
 ```{r}
 
@@ -1094,9 +1074,11 @@ make_model("X -> Y")  |>
 
 ```
 
-The key to forming causal queries is being able to ask about the values of variables, given that the values of some other variables are "controlled." This corresponds to the application of the $do$ operator in @pearl_causality_2009. In `CausalQueries`, this is done by putting square brackets `[ ]` around variables that should be intervened upon.
+The key to forming causal queries is being able to ask about the values of variables, given that the values of some other variables are "controlled." This corresponds to the application of the $do$ operator in @pearl_causality_2009. In `CausalQueries`, this is done by putting square brackets, `[ ]`, around variables that are intervened upon.
 
-For instance, consider the query `Y[X=0]==1`. This query asks about the types for which $Y$ equals $1$ when $X$ is set to $0$. Since $X$ is being intervened to be zero, $X$ is placed inside the brackets. Given that $Y$ equaling $1$ is a condition about potentially observed values, it is expressed using the logical operator `==`. The set of causal types that meets this query is quite different:
+For instance, consider the query `Y[X=0]==1`. This query asks about the types for which $Y$ equals $1$ when $X$ is set to $0$. Since $X$ is set to zero, $X$ is placed inside the brackets. Given that $Y$ equals $1$ is a condition about potentially observed values, it is expressed using the logical operator `==`. 
+
+The set of causal types that meets this query is quite different:
 
 ```{r}
 
@@ -1116,9 +1098,8 @@ make_model("X1 -> Y <- X2")  |>
 
 ```
 
-In this case, the aim is to identify the types for which $X1=X2=1$ *and at the same time* $Y=0$ when $X1 = X2 = 0$, and $Y = 1$ when $X1 = X2 = 1$.
+In this case, the aim is to identify the types for which in fact $X1=1$ and $X2=1$ *in addition* $Y=0$ when $X1 = X2 = 0$, and $Y = 1$ when $X1 = X2 = 1$.
 
-In general, as if conducting an experiment, the variables to be intervened upon are placed inside square brackets, followed by an equal sign and the value to which we want to set them, either $1$ or $0$. The variable whose value is observed should be placed before the square brackets. Thus `"Y[X=1]"` queries the values of $Y$ when $X$ is set to $1$. Finally, conditions related to observed or potentially observed values, in the context of an intervention, are expressed outside the brackets, along with the logical condition that defines the observed values, as in `"Y==1"`, `"Y[X=1]==1` or `"Y[X=1] > Y[X=0]"`.
 
 #### Conditional queries
 
@@ -1161,7 +1142,7 @@ Giving a *quantitative* answer to a query requires placing probabilities over th
 
 #### Queries by hand
 
-Queries can be calculated directly from the prior distribution or the posterior distribution provided by Stan. For instance, the following call plots the posterior distribution for the query that the probability of $Y$ is increasing in $X$ for the $X \rightarrow Y$ model. The resulting plot is shown in @fig-posterior-dist.
+Queries can be calculated directly from the prior distribution or the posterior distribution provided by Stan. For instance, the following call plots the posterior distribution for the  probability that $Y$ is increasing in $X$ for the $X \rightarrow Y$ model. The resulting plot is shown in @fig-posterior-dist.
 
 ```{r}
 #| label: fig-posterior-dist
@@ -1202,7 +1183,7 @@ make_model("X -> Y") |>
 
 ```
 
-`query_distribution()` can also be used when one is interested in assessing the value of a query for a *particular case*. In a sense, this is equivalent to posing a conditional query, querying conditional on values in a case. For instance, we might consult our posterior for the Lipids model and ask about the effect of $X$ on $Y$ for a case in which $Z=1$, $X=1$ and $Y=1$.
+The command `query_distribution()` can also be used when one is interested in assessing the value of a query for a *particular case*. In a sense, this is equivalent to posing a conditional query, querying conditional on values in a case. For instance, we might consult our posterior for the Lipids model and ask about the effect of $X$ on $Y$ for a case in which $Z=1$, $X=1$ and $Y=1$. 
 
 ```{r}
 #| label: case-level-query
@@ -1218,11 +1199,11 @@ lipids_model |>
 
 ```
 
-The result is what we now believe for all cases in which $Z=1$, $X=1$, and $Y=1$. It is the expected average effect among cases with this data type, so this expectation has an uncertainty attached.
+The result is what we should now believe for all cases in which $Z=1$, $X=1$, and $Y=1$. It is the expected average effect among cases with this data type, so this expectation has an uncertainty attached reflecting our uncertainty about the expectation.
 
-This is, in principle, different from what we would infer for a "new case" that we wonder about. When inquiring about a new case, the case-level query *updates* on the given information observed in the new case. The resulting inference can be different from the inference that would be made from the posterior *given* the case features. This new case-level inference is calculated if the `case_level = TRUE` argument is specified. For a query $Q$ and given $D$ this returns the value $\frac{\int\pi(Q \& D | \lambda_i)p(\lambda_i)d\lambda_i}{\int\pi(D | \lambda_i)p(\lambda_i)d\lambda_i}$ which may differ from the mean of the distribution $\frac{\pi(Q \& D | \lambda)}{\pi(D | \lambda)}$, $\int \frac{\pi(Q \& D | \lambda_i)}{\pi(D | \lambda_i)} p(\lambda_i)d\lambda_i$.
+This is, in principle, different from what we would infer if we were presented with a new case. When inquiring about a new case, we need to *update* on the given information observed in the new case.  This *new* case-level inference is calculated if the `case_level = TRUE` argument is specified. For a query $Q$ and given $D$ this returns the value $\frac{\int\pi(Q \& D | \lambda_i)p(\lambda_i)d\lambda_i}{\int\pi(D | \lambda_i)p(\lambda_i)d\lambda_i}$ which may differ from the mean of the distribution $\frac{\pi(Q \& D | \lambda)}{\pi(D | \lambda)}$, $\int \frac{\pi(Q \& D | \lambda_i)}{\pi(D | \lambda_i)} p(\lambda_i)d\lambda_i$.
 
-To simplify, consider a model where it is clear that $X$ causes $Y$, but it is uncertain if this is through two positive or two negative effects. If we encounter a case with $M=0$, it is unclear whether this indicates an effect. However, if we randomly find a case with $M=0$, our understanding of the causal model evolves, leading us to believe there is an effect in this specific case, which would not be the case if $M=1$. The case-level query gives a single value without posterior standard deviation, representing the belief about this new case. The non case-level query summarizes the posterior distribution for cases with similar data.
+To illustrate the difference, consider a $X \rightarrow M \rightarrow Y$ model where we are quite certain that $X$ causes $Y$, but unsure whether this effect works through two positive or two negative effects. If asked what we would think  about effects in cases $M=0$ (or with $M=1$), we have little basis to know whether these are cases in which effects are more or less likely. However, if we randomly find a case and we observe that  $M=0$, our understanding of the causal model evolves, leading us to believe there is (or is not) an effect in this specific case. The case-level query gives a single value without posterior standard deviation, representing the belief about this new case. 
 
 
 ```{r}
@@ -1242,7 +1223,7 @@ make_model("X -> M -> Y") |>
 
 #### Batch queries
 
-The function `query_model()` can also be used to query multiple models. The function takes a list of models, causal queries, and conditions as input. It then calculates population or case level estimands given prior or posterior distributions and reports summaries of these distributions. The result is a data frame that can be displayed as a table or used for graphing. 
+The function `query_model()` can also be used to query multiple models. The function takes a list of models, causal queries, and conditions as inputs. It then calculates population or case level estimands given prior or posterior distributions and reports summaries of these distributions. The result is a data frame that can be displayed as a table or used for graphing. 
 
 @tbl-batch-query returns to the Lipids data and shows the output from a single call to `query_model()` with the `expand_grid` argument set to `TRUE` to generate all combinations of list elements.
 
@@ -1368,7 +1349,7 @@ We thank Ben Goodrich, who provided generous insights on using `stan` for this p
 
 ## Appendix A: Parallelization {#sec-parallel .unnumbered}
 
-If you have multiple cores, you can do parallel processing by including this line before running `CausalQueries`:
+If users have access to multiple cores,  parallel processing can be implemented by including this line before running `CausalQueries`:
 
 ```{r}
 #| eval: false
@@ -1425,7 +1406,7 @@ CausalQueries:::stanmodels$simplexes
 
 ## Appendix C: Benchmarks {#sec-benchmark .unnumbered}
 
-We present a brief summary of model updating benchmarks. Note that these benchmarks are not generally reproducible and are specific to the specifications of the hardware system used to produce them. The first benchmark considers the effect of model complexity on updating time. The second benchmark considers the effect of data size on updating time. We run $4$ parallel chains for each model. The results of the benchmarks are presented in @tbl-bench1 and @tbl-bench2.
+We present a brief summary of model updating benchmarks. Note that these benchmarks are not generally reproducible and depend on the specifications of the hardware system used to produce them. The first benchmark considers the effect of model complexity on updating time. The second benchmark considers the effect of data size on updating time. We run $4$ parallel chains for each model. The results of the benchmarks are presented in @tbl-bench1 and @tbl-bench2.
 
 +----------------------------------------------------+----------------------------+--------------------------------------+
 | Model                                              | Number of Model Parameters | `update_model()` Runt-Time (seconds) |
