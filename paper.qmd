@@ -158,6 +158,14 @@ lipids_queries |>
 
 ```
 
+The output can also be plotted directly:
+
+```{r, fig.cap = "Illustration of queries plotted", fig.width = 8, fig.height = 3}
+
+lipids_queries |> plot()
+
+```
+
 As we describe below, the same basic procedure of making, updating, and querying models, can be used (up to computational constraints) for arbitrary causal models, for different types of data structures, and for all causal queries that can be posed of the causal model.
 
 ## Connections to existing packages
@@ -1088,7 +1096,7 @@ make_model("X -> M -> Y") |>
 
 #### Batch queries
 
-The function `query_model()` can also be used to query multiple models. The function takes a list of models, causal queries, and conditions as inputs. It then calculates population or case level estimands given prior or posterior distributions and reports summaries of these distributions. The result is a data frame that can be displayed as a table or used for graphing. 
+The function `query_model()` can also be used to query multiple models. The function takes a list of models, causal queries, and conditions as inputs. It then calculates population or case level estimands given prior or posterior distributions and reports summaries of these distributions. The result is a data frame that can be displayed as a table or used for graphing. The associated `plot` method produces plots with class `c("gg", "ggplot")`.
 
 @tbl-batch-query returns to the Lipids data and shows the output from a single call to `query_model()` with the `expand_grid` argument set to `TRUE` to generate all combinations of list elements.
 
