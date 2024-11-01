@@ -48,7 +48,7 @@ format:
       opts_chunk:
         prompt: true
         comment: "#>"
-        dev: "tikz"
+#        dev: "tikz"
 bibliography: supp/cq_jss.bib
 fontsize: 11pt
 execute: 
@@ -907,7 +907,7 @@ make_model("X -> Y")  |>
 ```
 
 
-This summary provides information on the distribution of parameters and convergence diagnostics, summarized in the `Rhat` column. The last row shows the unnormalized log density on Stan's unconstrained space, which is intended to diagnose sampling efficiency and evaluate approximations.^[See [Stan documentation](https://mc-stan.org/cmdstanr/reference/fit-method-lp.html) for more details.] This summary can also include summaries for the transformed parameters if users retain these.^[See @tbl-additional for options.]
+This summary provides information on the distribution of parameters and convergence diagnostics, summarized in the `Rhat` column. The last row shows the unnormalized log density on Stan's unconstrained space, which is intended to diagnose sampling efficiency and evaluate approximations.^[See [Stan documentation](https://mc-stan.org/cmdstanr/reference/fit-method-lp.html) for more details.] This summary can also include summaries for the transformed parameters if users retain these.
 
 If users wish to run more advanced diagnostics of performance, they can retain and access the "raw" Stan output as follows: 
 
@@ -1184,9 +1184,9 @@ queries |>
 
 `CausalQueries` provides an intuitive user interface to generate, update, and query causal models.
 
-A particular strength is the flexibility users enjoy in specifying the structure of causal models and querying them using an integrated framework. Rather than requiring bespoke functions for different types of problems---studying treatment effects in randomized experiments, complier effects in encouragement designs, or mediation quantities in more complex causal structures---a unified procedure is used both for defining models and for updating on model parameters. With updated models in hand, queries involving arbitrary do operations can be posed using an intuitive syntax. 
+A particular strength is the flexibility users enjoy in specifying the structure of causal models and querying them using an integrated framework. Rather than requiring bespoke functions for different types of problems---studying treatment effects in randomized experiments, complier effects in encouragement designs, or mediation quantities in more complex causal structures---a unified procedure is used both for defining models and for updating on model parameters. With updated models in hand, queries involving arbitrary `do` operations can be posed using an intuitive syntax. 
 
-We see a set of areas for expansion. One involves extending the class of models that can be passed to `make_model` to allow for non binary data and  hierarchical data structures. Proofs of concept for both extensions exist in @humphreys_integrated_2023. Inspired by new work in  @irons2023causally we see gains in allowing specification of still more flexible prior distributions and evidence for algorithms for faster updating in these settings. For querying we see scope for facilitating non linear complex causal queries, such as risk ratios, which can currently be calculated in multiple steps by combining multiple simple causal queries. Finally we see scope for more integrated functionality for model validation, including assessments of sensitivity of conclusions to priors. 
+We see a set of areas for expansion. One involves extending the class of models that can be passed to `make_model` to allow for non binary data and  hierarchical data structures. Proofs of concept for both extensions exist in @humphreys_integrated_2023. Inspired by new work in  @irons2023causally we see gains in allowing specification of still more flexible prior distributions and evidence for algorithms for faster updating in these settings. For querying, we see scope for facilitating non linear complex causal queries, such as risk ratios, which can currently only be calculated by combining multiple simple causal queries. Finally we see scope for more integrated functionality for model validation, including assessments of sensitivity of conclusions to priors. 
 
 \FloatBarrier
 
