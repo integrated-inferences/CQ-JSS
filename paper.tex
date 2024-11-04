@@ -42,28 +42,14 @@
 \setlength{\emergencystretch}{3em} % prevent overfull lines
 \setcounter{secnumdepth}{-\maxdimen} % remove section numbering
 % Make \paragraph and \subparagraph free-standing
-\makeatletter
 \ifx\paragraph\undefined\else
   \let\oldparagraph\paragraph
-  \renewcommand{\paragraph}{
-    \@ifstar
-      \xxxParagraphStar
-      \xxxParagraphNoStar
-  }
-  \newcommand{\xxxParagraphStar}[1]{\oldparagraph*{#1}\mbox{}}
-  \newcommand{\xxxParagraphNoStar}[1]{\oldparagraph{#1}\mbox{}}
+  \renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
 \fi
 \ifx\subparagraph\undefined\else
   \let\oldsubparagraph\subparagraph
-  \renewcommand{\subparagraph}{
-    \@ifstar
-      \xxxSubParagraphStar
-      \xxxSubParagraphNoStar
-  }
-  \newcommand{\xxxSubParagraphStar}[1]{\oldsubparagraph*{#1}\mbox{}}
-  \newcommand{\xxxSubParagraphNoStar}[1]{\oldsubparagraph{#1}\mbox{}}
+  \renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
 \fi
-\makeatother
 
 
 \providecommand{\tightlist}{%
@@ -179,9 +165,8 @@
 \makeatletter
 \makeatother
 \makeatletter
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[enhanced, sharp corners, interior hidden, frame hidden, borderline west={3pt}{0pt}{shadecolor}, boxrule=0pt, breakable]}{\end{tcolorbox}}\fi
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[frame hidden, interior hidden, borderline west={3pt}{0pt}{shadecolor}, boxrule=0pt, sharp corners, breakable, enhanced]}{\end{tcolorbox}}\fi
 \makeatother
-
 \ifLuaTeX
   \usepackage{selnolig}  % disable illegal ligatures
 \fi
@@ -198,7 +183,6 @@
   citecolor={Blue},
   urlcolor={Blue},
   pdfcreator={LaTeX via pandoc}}
-
 
 %% -- Article metainformation (author, title, ...) -----------------------------
 
@@ -277,7 +261,6 @@ URL: \url{https://macartan.github.io/}\\
 
 \begin{document}
 \maketitle
-
 
 \section{Introduction: Causal models}\label{sec-intro}
 
@@ -400,7 +383,7 @@ inferences for complier average effects.
 query & given & mean & sd & cred.low & cred.high\\
 \midrule
 Y[X=1] - Y[X=0] & - & 0.55 & 0.10 & 0.37 & 0.73\\
-Y[X=1] - Y[X=0] & X==0 \& Y==0 & 0.64 & 0.15 & 0.38 & 0.90\\
+Y[X=1] - Y[X=0] & X==0 \& Y==0 & 0.64 & 0.15 & 0.37 & 0.88\\
 Y[X=1] - Y[X=0] & X[Z=1] > X[Z=0] & 0.70 & 0.05 & 0.59 & 0.80\\
 \bottomrule
 
@@ -738,8 +721,8 @@ the values of the parents of \(Y_j\). Thus if \(\theta^j_{pa_j}\) is the
 value for \(j\) when parents have values \(pa_j\), then we have that
 \(f_{Y_j}(\theta^{j}, pa_j) = \theta^j_{pa_j}\). The practical
 implication is that, given the causal structure, learning about the
-model reduces to learning about the distribution, \(\lambda\), over the
-nodal types.
+model reduces to learning about the distribution over the nodal types,
+\(\lambda\).
 
 In cases in which there is no unobserved confounding, we take the
 probability distributions over the nodal types for different nodes to be
@@ -816,13 +799,13 @@ w_{10} & = & \lambda^X_1(\lambda^Y_{00} + \lambda^Y_{10})\\
 w_{11} & = & \lambda^X_1(\lambda^Y_{11} + \lambda^Y_{01})\end{array} \right.\]
 
 For a more complex example Table~\ref{tbl-lipidspar} illustrates key
-values for the Lipids model. We see here that we have two types for node
-\(Z\), four for \(X\) (representing the strata familiar from
-instrumental variables analysis: never takers, always takers, defiers,
-and compliers) and 4 for \(Y\). For \(Z\) and \(X\) we have parameters
-corresponding to probability of these nodal types. For instance
-\texttt{Z.0} is the probability that \(Z=0\). \texttt{Z.1} is the
-complementary probability that \(Z=1\). Things are a little more
+values for the Lipids model. We see here that we have two types for the
+exogenous node \(Z\), four for \(X\) (representing the strata familiar
+from instrumental variables analysis: never takers, always takers,
+defiers, and compliers) and 4 for \(Y\). For \(Z\) and \(X\) we have
+parameters corresponding to probability of these nodal types. For
+instance \texttt{Z.0} is the probability that \(Z=0\). \texttt{Z.1} is
+the complementary probability that \(Z=1\). Things are a little more
 complicated for distributions on nodal types for \(Y\) however: because
 of confounding between \(X\) and \(Y\) we have parameters that capture
 the conditional probability of the nodal types for \(Y\) \emph{given}
@@ -1313,9 +1296,7 @@ R> lipids_model |>
 #> Alpha parameter values used for Dirichlet prior distributions:
 #> 
 #> X.00 X.10 X.01 X.11 
-#>    1    1    1    1 
-#> 
-#> Note: To pose causal queries of this model use query_model()
+#>    1    1    1    1
 \end{verbatim}
 
 Alternatively users can set Jeffreys priors using \texttt{set\_priors()}
@@ -1342,9 +1323,7 @@ R> lipids_model |>
 #> Alpha parameter values used for Dirichlet prior distributions:
 #> 
 #> X.00 X.10 X.01 X.11 
-#>    1    2    3    4 
-#> 
-#> Note: To pose causal queries of this model use query_model()
+#>    1    2    3    4
 \end{verbatim}
 
 The priors here should be interpreted as indicating
@@ -1369,9 +1348,7 @@ R> lipids_model |>
 #> Alpha parameter values used for Dirichlet prior distributions:
 #> 
 #> X.00 X.10 X.01 X.11 
-#>    1    1    3    1 
-#> 
-#> Note: To pose causal queries of this model use query_model()
+#>    1    1    3    1
 \end{verbatim}
 
 Setting priors requires mapping alpha values to parameters, and so the
@@ -1452,12 +1429,11 @@ R> make_model("X -> Y") |>
 
 \begin{verbatim}
 #> 
+#> parameters
 #> Model parameters with associated probabilities: 
 #> 
 #>  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
-#> 0.50 0.50 0.25 0.25 0.25 0.25 
-#> 
-#> Note: To pose causal queries of this model use query_model()
+#> 0.50 0.50 0.25 0.25 0.25 0.25
 \end{verbatim}
 
 The example below illustrates a change in the value of the parameter
@@ -1474,12 +1450,11 @@ R> make_model("X -> Y") |>
 
 \begin{verbatim}
 #> 
+#> parameters
 #> Model parameters with associated probabilities: 
 #> 
 #>  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
-#>  0.5  0.5  0.1  0.1  0.7  0.1 
-#> 
-#> Note: To pose causal queries of this model use query_model()
+#>  0.5  0.5  0.1  0.1  0.7  0.1
 \end{verbatim}
 
 \subsection{Drawing and manipulating
@@ -1656,9 +1631,9 @@ node \emph{given} values of other nodes.
 
 \subsubsection{Event probabilities}\label{event-probabilities}
 
-We calculate the probability of data types for any candidate parameter
-vector \(\lambda\). This is done using a matrix that maps from
-parameters into data types.
+We calculate the probability of data types for any parameter vector
+\(\lambda\). This is done using a matrix that maps from parameters into
+data types.
 
 In cases without confounding, there is a column for each data type; the
 matrix indicates which nodes in each set ``contribute'' to the data
@@ -1674,7 +1649,7 @@ R> make_model("X -> Y") |>
 
 \begin{verbatim}
 #> 
-#> Parameter mapping matrix: 
+#> parameter_mapping (Parameter mapping matrix) 
 #> 
 #>   Maps from parameters to data types, with
 #>   possibly multiple columns for each data type
@@ -1687,8 +1662,6 @@ R> make_model("X -> Y") |>
 #> Y.10    0    1    1    0
 #> Y.01    1    0    0    1
 #> Y.11    0    0    1    1
-#> 
-#> Note: To pose causal queries of this model use query_model()
 \end{verbatim}
 
 In this model, the probability of data type \texttt{X0Y0}, \(w_{00}\) is
@@ -1791,8 +1764,8 @@ R> list(
 #> 
 #> |model      |query           |  mean|    sd|
 #> |:----------|:---------------|-----:|-----:|
-#> |uncensored |Y[X=1] - Y[X=0] | 0.597| 0.196|
-#> |censored   |Y[X=1] - Y[X=0] | 0.015| 0.324|
+#> |uncensored |Y[X=1] - Y[X=0] | 0.590| 0.195|
+#> |censored   |Y[X=1] - Y[X=0] | 0.018| 0.315|
 \end{verbatim}
 
 \subsection{Output}\label{output}
@@ -1807,7 +1780,24 @@ R> model <-
 +  make_model("X -> Y")  |> 
 +  update_model()
 R> 
-R> posterior <- grab(model, "posterior_distribution")  
+R> posterior <- inspect(model, "posterior_distribution")  
+\end{verbatim}
+
+\begin{verbatim}
+#> 
+#> posterior_distribution
+#> Summary statistics of model parameters posterior distributions:
+#> 
+#>   Distributions matrix dimensions are 
+#>   4000 rows (draws) by 6 cols (parameters)
+#> 
+#>      mean   sd
+#> X.0  0.50 0.29
+#> X.1  0.50 0.29
+#> Y.00 0.25 0.19
+#> Y.10 0.25 0.19
+#> Y.01 0.25 0.19
+#> Y.11 0.25 0.20
 \end{verbatim}
 
 In addition, a distribution of causal types is stored by default; the
@@ -1841,20 +1831,18 @@ R> make_model("X -> Y")  |>
 #> post-warmup draws per chain=1000, total post-warmup draws=4000.
 #> 
 #>             mean se_mean   sd   2.5%   25%   50%   75% 97.5% n_eff Rhat
-#> X.0         0.50    0.01 0.29   0.03  0.25  0.50  0.76  0.98  2931    1
-#> X.1         0.50    0.01 0.29   0.02  0.24  0.50  0.75  0.97  2931    1
-#> Y.00        0.25    0.00 0.19   0.01  0.09  0.20  0.36  0.71  1927    1
-#> Y.10        0.25    0.00 0.20   0.01  0.09  0.21  0.37  0.71  4645    1
-#> Y.01        0.25    0.00 0.19   0.01  0.09  0.21  0.37  0.70  4248    1
-#> Y.11        0.25    0.00 0.19   0.01  0.09  0.20  0.37  0.70  4272    1
-#> lp__       -7.51    0.04 1.61 -11.52 -8.33 -7.17 -6.33 -5.43  1305    1
+#> X.0         0.50    0.01 0.29   0.03  0.26  0.50  0.75  0.97  2807    1
+#> X.1         0.50    0.01 0.29   0.03  0.25  0.50  0.74  0.97  2807    1
+#> Y.00        0.24    0.00 0.19   0.01  0.09  0.19  0.35  0.71  1871    1
+#> Y.10        0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.73  4088    1
+#> Y.01        0.25    0.00 0.20   0.01  0.09  0.21  0.37  0.72  4506    1
+#> Y.11        0.26    0.00 0.20   0.01  0.09  0.21  0.39  0.71  4291    1
+#> lp__       -7.68    0.05 1.81 -12.39 -8.55 -7.26 -6.34 -5.42  1286    1
 #> 
-#> Samples were drawn using NUTS(diag_e) at Fri Nov  1 02:15:59 2024.
+#> Samples were drawn using NUTS(diag_e) at Mon Nov  4 09:10:21 2024.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).
-#> 
-#> Note: To pose causal queries of this model use query_model()
 \end{verbatim}
 
 This summary provides information on the distribution of parameters and
@@ -1897,32 +1885,30 @@ R> model |>
 #> post-warmup draws per chain=1000, total post-warmup draws=4000.
 #> 
 #>             mean se_mean   sd   2.5%   25%   50%   75% 97.5% n_eff Rhat
-#> lambdas[1]  0.49    0.01 0.29   0.02  0.24  0.48  0.73  0.98  2741    1
-#> lambdas[2]  0.51    0.01 0.29   0.02  0.27  0.52  0.76  0.98  2741    1
-#> lambdas[3]  0.25    0.00 0.19   0.01  0.09  0.20  0.37  0.70  1858    1
-#> lambdas[4]  0.25    0.00 0.20   0.01  0.09  0.21  0.37  0.72  3975    1
-#> lambdas[5]  0.25    0.00 0.19   0.01  0.09  0.21  0.36  0.70  3751    1
-#> lambdas[6]  0.25    0.00 0.19   0.01  0.10  0.21  0.37  0.70  4561    1
-#> types[1]    0.12    0.00 0.13   0.00  0.02  0.08  0.17  0.48  2149    1
-#> types[2]    0.13    0.00 0.13   0.00  0.03  0.08  0.18  0.49  2145    1
-#> types[3]    0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.48  3179    1
-#> types[4]    0.13    0.00 0.14   0.00  0.03  0.08  0.19  0.52  3009    1
-#> types[5]    0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.48  3084    1
-#> types[6]    0.13    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3235    1
-#> types[7]    0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3357    1
-#> types[8]    0.13    0.00 0.13   0.00  0.03  0.08  0.18  0.47  3606    1
-#> lp__       -7.50    0.05 1.66 -11.77 -8.36 -7.12 -6.27 -5.45  1110    1
+#> lambdas[1]  0.50    0.01 0.29   0.02  0.26  0.51  0.75  0.98  3019    1
+#> lambdas[2]  0.50    0.01 0.29   0.02  0.25  0.49  0.74  0.98  3019    1
+#> lambdas[3]  0.26    0.00 0.20   0.01  0.10  0.21  0.38  0.71  1985    1
+#> lambdas[4]  0.24    0.00 0.19   0.01  0.09  0.20  0.36  0.70  3835    1
+#> lambdas[5]  0.24    0.00 0.19   0.01  0.09  0.20  0.36  0.70  4602    1
+#> lambdas[6]  0.25    0.00 0.20   0.01  0.09  0.21  0.37  0.72  4075    1
+#> types[1]    0.13    0.00 0.14   0.00  0.03  0.08  0.19  0.51  2290    1
+#> types[2]    0.13    0.00 0.13   0.00  0.03  0.08  0.18  0.48  2289    1
+#> types[3]    0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3489    1
+#> types[4]    0.12    0.00 0.13   0.00  0.02  0.08  0.17  0.48  3275    1
+#> types[5]    0.12    0.00 0.13   0.00  0.02  0.08  0.18  0.48  3630    1
+#> types[6]    0.12    0.00 0.13   0.00  0.03  0.08  0.17  0.48  3219    1
+#> types[7]    0.13    0.00 0.13   0.00  0.03  0.08  0.18  0.48  3256    1
+#> types[8]    0.13    0.00 0.13   0.00  0.03  0.08  0.19  0.51  3449    1
+#> lp__       -7.58    0.04 1.69 -11.83 -8.43 -7.20 -6.33 -5.43  1428    1
 #> 
-#> Samples were drawn using NUTS(diag_e) at Fri Nov  1 02:16:05 2024.
+#> Samples were drawn using NUTS(diag_e) at Mon Nov  4 09:10:22 2024.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).
-#> 
-#> Note: To pose causal queries of this model use query_model()
 \end{verbatim}
 
-Users can then pass the Stan fit object to other diagnostic packages
-such as \texttt{bayesplot}.
+Users can then pass the \texttt{stanfit} object to other diagnostic
+packages such as \texttt{bayesplot}.
 
 \section{Queries}\label{sec-query}
 
@@ -2209,8 +2195,6 @@ R> model |>
 #> Y.10 0.01 0.01
 #> Y.01 0.95 0.03
 #> Y.11 0.02 0.02
-#> 
-#> Note: To pose causal queries of this model use query_model()
 \end{verbatim}
 
 \begin{figure}[t]
@@ -2312,8 +2296,8 @@ R> make_model("X -> M -> Y") |>
 #> 
 #> |query           |case_level |  mean|    sd|
 #> |:---------------|:----------|-----:|-----:|
-#> |Y[X=1] > Y[X=0] |TRUE       | 0.671|    NA|
-#> |Y[X=1] > Y[X=0] |FALSE      | 0.426| 0.327|
+#> |Y[X=1] > Y[X=0] |TRUE       | 0.675|    NA|
+#> |Y[X=1] > Y[X=0] |FALSE      | 0.450| 0.324|
 \end{verbatim}
 
 \subsubsection{Batch queries}\label{batch-queries}
@@ -2361,7 +2345,7 @@ model & query & given & using & case\_level & mean & sd\\
 A & ATE & - & priors & FALSE & 0.00 & 0.20\\
 B & ATE & - & priors & FALSE & 0.00 & 0.23\\
 A & ATE & - & posteriors & FALSE & 0.55 & 0.10\\
-B & ATE & - & posteriors & FALSE & 0.55 & 0.10\\
+B & ATE & - & posteriors & FALSE & 0.56 & 0.10\\
 A & ATE & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.22\\
 \addlinespace
 B & ATE & Y==1 \& X==1 & priors & FALSE & 0.49 & 0.24\\
@@ -2380,7 +2364,7 @@ B & POS & Y==1 \& X==1 & posteriors & FALSE & 0.95 & 0.04\\
 A & ATE & - & priors & TRUE & 0.00 & NA\\
 B & ATE & - & priors & TRUE & 0.00 & NA\\
 A & ATE & - & posteriors & TRUE & 0.55 & NA\\
-B & ATE & - & posteriors & TRUE & 0.55 & NA\\
+B & ATE & - & posteriors & TRUE & 0.56 & NA\\
 \addlinespace
 A & ATE & Y==1 \& X==1 & priors & TRUE & 0.50 & NA\\
 B & ATE & Y==1 \& X==1 & priors & TRUE & 0.49 & NA\\
@@ -2592,7 +2576,7 @@ Network (CRAN) at \url{https://CRAN.R-project.org/}.
 \section*{Acknowledgments}\label{acknowledgments}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, colframe=quarto-callout-color-frame, arc=.35mm, rightrule=.15mm, leftrule=.75mm, bottomrule=.15mm, toprule=.15mm, colback=white, opacityback=0, left=2mm, breakable]
+\begin{tcolorbox}[enhanced jigsaw, opacityback=0, left=2mm, colback=white, toprule=.15mm, arc=.35mm, colframe=quarto-callout-color-frame, bottomrule=.15mm, rightrule=.15mm, breakable, leftrule=.75mm]
 
 We thank Ben Goodrich, who provided generous insights on using
 \texttt{stan} for this project. We thank Alan M Jacobs for key work in
@@ -2877,7 +2861,6 @@ the parameter space with increasing model complexity places limits on
 feasible computability without further recourse to specialized methods
 for handling large causal models. In contrast, the results suggest that
 computational time is concave in the size of the data.
-
 
 
 
