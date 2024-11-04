@@ -1,0 +1,26 @@
+Dear Editors:
+
+Please find attached our submission "Making, Updating, and Querying Causal Models using CausalQueries" 
+This is our second submission of this article, addressing issues raised by your team regarding the first submission (you wrote: “We thus reject this re-submission but invite the authors to re-submit after having resolved the issues pointed and improved the submission accordingly”).
+ 
+Specifically, you noted: 
+
+1.	“The manuscript currently lacks an illustrative example of use of the package on real data exemplifying how the package might be used in practice. This example should embed the application of the package into a statistical context which should help potential users see how they would use the package in practice for their own data.”
+
+Section 2 of the manuscript introduces a running example that uses real data previously analyzed by Chickering and Pearl and others. The section illustrates the use of the key functions using this example, specifically showing how to set up the model, update it, and query it. We return to this example in later sections to show how additional functionality can be employed.
+
+2. Complete replication material
+
+Previously the replication material included all code that was evaluated but all code that was shown in the manuscript. In the current version all code is evaluated directly and is contained in the replication material.	
+
+3. Comments regarding methods and code that exposed the internal structure.
+
+We are very grateful for these comments and have updated the package to address them. In particular we now have a function `grab` that can be used to access all major elements, including posterior distributions and diagnostics. These now have associated print or summary methods. We think this greatly enhances the usability of the package.
+ 
+4. Other comments on writing and coding
+
+You provided additional smaller comments which we have taken seriously and addressed in this version of the manuscript.
+
+With thanks
+
+

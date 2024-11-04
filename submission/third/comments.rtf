@@ -1,0 +1,32 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2761
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 HelveticaNeue;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;\red255\green255\blue255;}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0\c83922;\cssrgb\c100000\c100000\c100000;}
+\margl1440\margr1440\vieww16700\viewh11080\viewkind0
+\deftab720
+\pard\pardeftab720\sa280\partightenfactor0
+
+\f0\fs28 \cf2 \cb3 \expnd0\expndtw0\kerning0
+The submission "Making, Updating, and Querying Causal Models using CausalQueries" is a revised version submitted after initial screening. The authors were asked to add an illustrative example, provide complete replication material and improve the implementation, in particular to avoid internal structures as well as to ease post-processing the results.\cb1 \
+\cb3 Overall we feel that the submission did not suitably address the issues raised, in particular regarding improving the implementation by including a better exploitation of R's classes and methods system which should enable users to easily adopt use of the package but also inspect the fitted object and in this way contribute to improving data analysis and statistical modeling.\cb1 \
+\cb3 We decided not to send the current submission into review because the chances for successful publication were still deemed too low.\cb1 \
+\cb3 Specific comments:\cb1 \
+\cb3 o The main class of the package is "causal_model", which has print, summary and plot methods. However, all entries of these objects have their own class but not method to query them. Hence, the internal structure of causal_model objects is exposed and a number of methods included in the package are dedicated to parts of this internal structure, which is very difficult to follow in practice. For instance:\cb1 \
+\cb3 > class(lipids_model$P)\cb1 \uc0\u8232 \cb3 [1] "parameter_matrix" "data.frame"\cb1 \uc0\u8232 \cb3 > methods(class = "parameter_matrix")\cb1 \uc0\u8232 \cb3 [1] print\cb1 \uc0\u8232 \cb3 see '?methods' for accessing help and source code\cb1 \
+\cb3 > class(lipids_model$parameters_df)\cb1 \uc0\u8232 \cb3 [1] "parameters_df" "data.frame"\cb1 \uc0\u8232 \cb3 > methods(class = "parameter_df")\cb1 \uc0\u8232 \cb3 no methods found\cb1 \
+\cb3 > class(lipids_model$dag)\cb1 \uc0\u8232 \cb3 [1] "dag" "data.frame"\cb1 \uc0\u8232 \cb3 > methods(class = "dag")\cb1 \uc0\u8232 \cb3 [1] print\cb1 \
+\cb3 For the last one, at least, a plot method would make a lot of sense.\cb1 \
+\cb3 Since these classes all inherit from data.frame, trying to plot or summary can results in errors or irrelevant outputs. Finally, for a model class, causal_model clearly needs to have more methods (at least confint or alike for instance).\cb1 \
+\cb3 o Loading the package gives\cb1 \
+\cb3 > library("CausalQueries")\cb1 \uc0\u8232 \cb3 Loading required package: dplyr\cb1 \
+\cb3 Attaching package: \'91dplyr\'92\cb1 \
+\cb3 The following objects are masked from \'91package:stats\'92:\cb1 \
+\cb3 filter, lag\cb1 \
+\cb3 The following objects are masked from \'91package:base\'92:\cb1 \
+\cb3 intersect, setdiff, setequal, union\cb1 \
+\cb3 Loading required package: Rcpp\cb1 \
+\cb3 This raises the question why it is not sufficient to have dplyr in Imports and thus avoid masking base R functions.\cb1 \
+\cb3 o The output of\cb1 \
+\cb3 > help(package = "CausalQueries")\cb1 \
+\cb3 lists also internal functions. This can be avoided by adding keyword internal to the respective man pages.\cb1 \
+\cb3 o The manuscript lacks a conclusion / summary section at the end.}
