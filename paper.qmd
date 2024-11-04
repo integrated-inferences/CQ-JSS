@@ -292,7 +292,7 @@ If node $i$ can take on $k_i$ possible values then the set of possible values th
 
 The set of all possible causal reactions of a given unit to all possible values of parents is then given by its collection of nodal types at each node. We call this collection a unit's "causal type", $\theta$. These causal types correspond to the principal strata, familiar, for instance, from the study of instrumental variables [@frangakis_principal_2002].
 
-The approach used by `CausalQueries` is to let the domain of exogenous nodes $\theta^{Y_j}$ be coextensive with the number of nodal types for $Y_j$. Function $f^j$ then determines the value of $y$ by simply reporting the value of $Y_j$ implied by the nodal type and the values of the parents of $Y_j$. Thus if $\theta^j_{pa_j}$ is the value for $j$ when parents have values $pa_j$, then we have  that $f_{Y_j}(\theta^{j}, pa_j) = \theta^j_{pa_j}$. The practical implication is that, given the causal structure, learning about the model reduces to learning about the distribution, $\lambda$, over the nodal types.
+The approach used by `CausalQueries` is to let the domain of exogenous nodes $\theta^{Y_j}$ be coextensive with the number of nodal types for $Y_j$. Function $f^j$ then determines the value of $y$ by simply reporting the value of $Y_j$ implied by the nodal type and the values of the parents of $Y_j$. Thus if $\theta^j_{pa_j}$ is the value for $j$ when parents have values $pa_j$, then we have  that $f_{Y_j}(\theta^{j}, pa_j) = \theta^j_{pa_j}$. The practical implication is that, given the causal structure, learning about the model reduces to learning about the distribution over the nodal types, $\lambda$.
 
 In cases in which there is no unobserved confounding, we take the probability distributions over the nodal types for different nodes to be independent: $\theta^i \perp\!\!\! \perp \theta^j, i\neq j$. In this case we use a categorical distribution to specify ${\lambda^j_x} := \Pr(\theta^j = {\theta^j_x})$. From independence then we have that the probability of a given causal type $\theta_x$ is  $\prod_{i=1}^n {\lambda^i_x}$. For instance $\Pr(\theta = (\theta^X_1, \theta^Y_{01})) = \Pr(\theta^X = \theta^X_1)\Pr(\theta^Y = \theta^Y_{01}) = \lambda^X_1\lambda^Y_{01}$.
 
@@ -329,7 +329,7 @@ w_{01} & = & \lambda^X_0(\lambda^Y_{11} + \lambda^Y_{10})\\
 w_{10} & = & \lambda^X_1(\lambda^Y_{00} + \lambda^Y_{10})\\
 w_{11} & = & \lambda^X_1(\lambda^Y_{11} + \lambda^Y_{01})\end{array} \right.$$
 
-For a more complex example @tbl-lipidspar illustrates key values for the Lipids model. We see here that we have two types for node $Z$, four for $X$ (representing the strata familiar from instrumental variables analysis: never takers, always takers, defiers, and compliers) and 4 for $Y$. For $Z$ and $X$ we have parameters corresponding to probability of these nodal types. For instance `Z.0` is the probability that $Z=0$. `Z.1` is the complementary probability that $Z=1$. Things are a little more complicated for distributions on nodal types for $Y$ however: because of confounding between $X$ and $Y$ we have parameters that capture the conditional probability of the nodal types for $Y$ *given* the nodal types for $X$. We see there are four sets of these parameters.
+For a more complex example @tbl-lipidspar illustrates key values for the Lipids model. We see here that we have two types for the exogenous node $Z$, four for $X$ (representing the strata familiar from instrumental variables analysis: never takers, always takers, defiers, and compliers) and 4 for $Y$. For $Z$ and $X$ we have parameters corresponding to probability of these nodal types. For instance `Z.0` is the probability that $Z=0$. `Z.1` is the complementary probability that $Z=1$. Things are a little more complicated for distributions on nodal types for $Y$ however: because of confounding between $X$ and $Y$ we have parameters that capture the conditional probability of the nodal types for $Y$ *given* the nodal types for $X$. We see there are four sets of these parameters.
 
 ```{r}
 #| label: tbl-lipidspar
@@ -805,7 +805,7 @@ In cases with confounding, these are sets of nodal types for a given node *given
 
 #### Event probabilities
 
-We calculate the probability of data types for any candidate parameter vector $\lambda$. This is done using a matrix that maps from parameters into data types. 
+We calculate the probability of data types for any  parameter vector $\lambda$. This is done using a matrix that maps from parameters into data types. 
 
 In cases without confounding, there is a column for each data type; the matrix indicates which nodes in each set "contribute" to the data type, and the probability of the data type is found by summing within sets and taking the product over sets. To illustrate, we can examine the parameter mapping matrix for a simple model using the `inspect()` function as follows:
 
@@ -876,7 +876,7 @@ model <-
   make_model("X -> Y")  |> 
   update_model()
 
-posterior <- grab(model, "posterior_distribution")  
+posterior <- inspect(model, "posterior_distribution")  
 
 ```
 
@@ -934,7 +934,7 @@ model |>
 
 ```
 
-Users can then pass the Stan fit object to other diagnostic packages such as `bayesplot`.
+Users can then pass the `stanfit` object to other diagnostic packages such as `bayesplot`.
 
 <!-- ```{r}
 np <- model |> inspect("stanfit") |> bayesplot::nuts_params()
