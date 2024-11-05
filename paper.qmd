@@ -286,7 +286,8 @@ The complete set of possible causal reactions of a given unit to all possible va
 
 The approach used by `CausalQueries` is to align the domain of exogenous nodes $\theta^{Y_j}$ with the number of nodal types for $Y_j$. The function $f^j$ then determines the value of $y$ by simply reporting the value of $Y_j$ implied by the nodal type and the values of the parents of $Y_j$. Therefore, if $\theta^j_{pa_j}$ is the value for $j$ when parents have values $pa_j$, then $f_{Y_j}(\theta^{j}, pa_j) = \theta^j_{pa_j}$. Practically, this means that, given the causal structure, learning about the model reduces to learning about the distribution, $\lambda$, over the nodal types.
 
-In scenarios without unobserved confounding, we assume that the probability distributions over the nodal types for different nodes are independent: $\theta^i \perp\!\!\! \perp \theta^j, i\neq j$. In this case, we use a categorical distribution to specify ${\lambda^j_x} := \Pr(\theta^j = {\theta^j_x})$. From this independence, the probability of a given causal type $\theta_x$ is $\prod_{i=1}^n {\lambda^i_x}$. For example, $\Pr(\theta = (\theta^X_1, \theta^Y_{01})) = \Pr(\theta^X = \theta^X_1)\Pr(\theta^Y = \theta^Y_{01}) = \lambda^X_1\lambda^Y_{01}$. In cases where confounding is present, the logic remains the same, but we need to specify enough parameters to capture the joint distribution over nodal types for different nodes. We achieve this by utilizing the causal structure.
+In scenarios without unobserved confounding, we assume that the probability distributions over the nodal types for different nodes are independent: $\theta^i \perp\!\!\! \perp \theta^j, i\neq j$. In this case, we use a categorical distribution to specify ${\lambda^j_x} := \Pr(\theta^j = {\theta^j_x})$. From this independence, the probability of a given causal type $\theta_x$ is $\prod_{i=1}^n {\lambda^i_x}$. For example, $\Pr(\theta = (\theta^X_1, \theta^Y_{01})) = \Pr(\theta^X = \theta^X_1)\Pr(\theta^Y = \theta^Y_{01}) = \lambda^X_1\lambda^Y_{01}$. In cases where confounding is present, the logic remains the same, but we need to specify enough parameters to capture the joint distribution over nodal types for different nodes. 
+
 
 For instance, in the Lipids model, the joint distribution of nodal types can be simplified as shown in @eq-join.
 
@@ -325,7 +326,7 @@ w_{10} & = & \lambda^X_1(\lambda^Y_{00} + \lambda^Y_{10})\\
 w_{11} & = & \lambda^X_1(\lambda^Y_{11} + \lambda^Y_{01})\end{array} \right.
 $$
 
-For a more complex example @tbl-lipidspar illustrates key values for the Lipids model. We see here that we have two types for node $Z$, four for $X$ (representing the strata familiar from instrumental variables analysis: never takers, always takers, defiers, and compliers) and 4 for $Y$. For $Z$ and $X$ we have parameters corresponding to probability of these nodal types. For instance `Z.0` is the probability that $Z=0$. `Z.1` is the complementary probability that $Z=1$. Things are a little more complicated for distributions on nodal types for $Y$ however: because of confounding between $X$ and $Y$ we have parameters that capture the conditional probability of the nodal types for $Y$ *given* the nodal types for $X$. We see there are four sets of these parameters. The next to final column shows a sample set of parameter values. Together, the parameters describe a full joint probability distribution over types for $Z$, $X$ and $Y$ that is faithful to the graph.
+For a more complex example @tbl-lipidspar illustrates key values for the Lipids model. We see here that we have two types for the exogenous node $Z$, four for $X$ (representing the strata familiar from instrumental variables analysis: never takers, always takers, defiers, and compliers) and 4 for $Y$. For $Z$ and $X$ we have parameters corresponding to probability of these nodal types. For instance `Z.0` is the probability that $Z=0$. `Z.1` is the complementary probability that $Z=1$. Things are a little more complicated for distributions on nodal types for $Y$ however: because of confounding between $X$ and $Y$ we have parameters that capture the conditional probability of the nodal types for $Y$ *given* the nodal types for $X$. We see there are four sets of these parameters. The next to final column shows a sample set of parameter values. Together, the parameters describe a full joint probability distribution over types for $Z$, $X$ and $Y$ that is faithful to the graph.
 
 ```{r}
 #| label: tbl-lipidspar
@@ -771,7 +772,10 @@ In cases involving confounding, these parameter sets are defined for a given nod
 
 #### Event probabilities
 
-We determine the probability of data types (_events_) for any given parameter vector $\lambda$ using a matrix that maps parameters to data types. In scenarios without confounding, the matrix contains a column for each data type. It shows which nodes in each set contribute to the data type, and the probability of the data type is calculated by summing within sets and multiplying across sets. For example, we can use the `inspect()` function to examine the parameter mapping matrix for a simple model as follows:
+We calculate the probability of data types for any  parameter vector $\lambda$. This is done using a matrix that maps from parameters into data types. 
+
+In cases without confounding, there is a column for each data type; the matrix indicates which nodes in each set "contribute" to the data type, and the probability of the data type is found by summing within sets and taking the product over sets. To illustrate, we can examine the parameter mapping matrix for a simple model using the `inspect()` function as follows:
+
 
 ```{r}
 #| echo: true
@@ -840,7 +844,7 @@ model <-
   make_model("X -> Y")  |> 
   update_model()
 
-posterior <- grab(model, "posterior_distribution")  
+posterior <- inspect(model, "posterior_distribution")  
 
 ```
 
@@ -898,7 +902,7 @@ model |>
 
 ```
 
-Users can then pass the Stan fit object to other diagnostic packages such as `bayesplot`.
+Users can then pass the `stanfit` object to other diagnostic packages such as `bayesplot`.
 
 ## Queries {#sec-query}
 
