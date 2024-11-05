@@ -326,6 +326,7 @@ w_{10} & = & \lambda^X_1(\lambda^Y_{00} + \lambda^Y_{10})\\
 w_{11} & = & \lambda^X_1(\lambda^Y_{11} + \lambda^Y_{01})\end{array} \right.
 $$
 
+
 For a more complex example @tbl-lipidspar illustrates key values for the Lipids model. We see here that we have two types for the exogenous node $Z$, four for $X$ (representing the strata familiar from instrumental variables analysis: never takers, always takers, defiers, and compliers) and 4 for $Y$. For $Z$ and $X$ we have parameters corresponding to probability of these nodal types. For instance `Z.0` is the probability that $Z=0$. `Z.1` is the complementary probability that $Z=1$. Things are a little more complicated for distributions on nodal types for $Y$ however: because of confounding between $X$ and $Y$ we have parameters that capture the conditional probability of the nodal types for $Y$ *given* the nodal types for $X$. We see there are four sets of these parameters. The next to final column shows a sample set of parameter values. Together, the parameters describe a full joint probability distribution over types for $Z$, $X$ and $Y$ that is faithful to the graph.
 
 ```{r}
@@ -903,6 +904,15 @@ model |>
 ```
 
 Users can then pass the `stanfit` object to other diagnostic packages such as `bayesplot`.
+
+
+<!-- ```{r}
+np <- model |> inspect("stanfit") |> bayesplot::nuts_params()
+
+model |> inspect("stan_fit") |>
+  bayesplot::mcmc_trace(pars = "lambdas[5]", np = np) +
+  ylab("trace for fifth element of lambda")
+``` -->
 
 ## Queries {#sec-query}
 
