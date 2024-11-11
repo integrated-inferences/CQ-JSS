@@ -1,0 +1,34 @@
+---
+title: "Cover letter: Making, Updating, and Querying Causal Models with `CausalQueries`"
+format: pdf
+---
+
+Berlin, November 2024
+
+Dear Editor:
+
+Please find attached our submission "Making, Updating, and Querying Causal Models using `CausalQueries`" 
+
+This is our third submission of this article, addressing issues raised by your team regarding the second submission.
+
+We have significantly developed the package in light of these comments and pushed version1.2.1 to CRAN.
+
+Based on last reviews we received we believe it might be useful to clarify two points:
+
+First: The reviewer again requested a “better exploitation of R's classes and methods system.” We had previously sought to address this concern by providing additional classes for internal objects. The reviewer highlighted that many of these did not have many methods associated with them. This is correct. The reason for this is that these are internal objects that in general do not have to be accessed by users. To avoid confusion, we no longer supply these objects with a class, however we continue to make them easily accessible via two functions: `inspect` (which provides a summary of requested internally objects, inherited from summary(model)) and `grab` (which quietly returns requested internal objects).
+
+We now clarify in the text (Box 1) that there are only two distinct types of object associated with `CausalQueries`: `causal_model` and `model_query`. These both come with summary, print, and plot methods. `summary.causal_model` in particular allows extensive options should users want to investigate internal features in detail.
+
+Second, the reviewer noted:
+
+> “Finally, for a model class, causal_model clearly needs to have more methods (at least confint or alike for instance).”
+
+For many packages the model class is used for “fitted models,” with coefficients, estimates, and so on.  In `CausalQueries` the `causal_model` class is used for the causal model itself and not for specific queries that might be posed to the model. Specific queries are posed using `query_model` and the resulting `model_query` object contains summaries of queries posed, including credibility intervals, and so on. This object has a print, summary, and plot method associated with it.
+
+We do appreciate that when seeing the term 'model' some users might expect that `summary(model)` would provide estimates, standard errors and so on. Instead, `summary(model)` gives details on the model itself. To avoid confusion, `summary(model)` now provides a note alerting users that querying the model
+
+Other generous comments from the reviewer have been addressed, including the addition of a conclusion with pointers for areas of possible future expansion.
+ 
+With thanks
+
+Macartan Humphreys

@@ -106,9 +106,9 @@
 \usepackage{makecell}
 \usepackage{xcolor}
 \usepackage{placeins}
-
-
+% \usepackage{tcolorbox}
 \newtheorem{definition}{Definition}
+% \newtcolorbox{mybox}[1]{colback=gray!10, colframe=gray!80, title=#1}
 \usepackage{orcidlink,thumbpdf,lmodern}
 
 \newcommand{\class}[1]{`\code{#1}'}
@@ -179,9 +179,8 @@
 \makeatletter
 \makeatother
 \makeatletter
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[breakable, interior hidden, frame hidden, sharp corners, enhanced, borderline west={3pt}{0pt}{shadecolor}, boxrule=0pt]}{\end{tcolorbox}}\fi
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[frame hidden, borderline west={3pt}{0pt}{shadecolor}, interior hidden, enhanced, sharp corners, boxrule=0pt, breakable]}{\end{tcolorbox}}\fi
 \makeatother
-
 \ifLuaTeX
   \usepackage{selnolig}  % disable illegal ligatures
 \fi
@@ -190,7 +189,7 @@
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same} % disable monospaced font for URLs
 \hypersetup{
-  pdftitle={CausalQueries: Making, Updating, and Querying Causal Models},
+  pdftitle={Making, Updating, and Querying Causal Models with CausalQueries},
   pdfauthor={Till Tietz; Lily Medina; Georgiy Syunyaev; Macartan Humphreys},
   colorlinks=true,
   linkcolor={blue},
@@ -198,7 +197,6 @@
   citecolor={Blue},
   urlcolor={Blue},
   pdfcreator={LaTeX via pandoc}}
-
 
 %% -- Article metainformation (author, title, ...) -----------------------------
 
@@ -211,10 +209,10 @@ University \And Macartan Humphreys~\orcidlink{0000-0001-7029-2326}\\WZB}
 \Plainauthor{Till Tietz, Lily Medina, Georgiy Syunyaev, Macartan
 Humphreys} %% comma-separated
 
-\title{\texttt{CausalQueries}: Making, Updating, and Querying Causal
-Models}
-\Plaintitle{CausalQueries: Making, Updating, and Querying Causal
-Models} %% without formatting
+\title{Making, Updating, and Querying Causal Models with
+\texttt{CausalQueries}}
+\Plaintitle{Making, Updating, and Querying Causal Models with
+CausalQueries} %% without formatting
 
 %% an abstract and keywords
 \Abstract{The \proglang{R} package \texttt{CausalQueries} can be used to
@@ -277,7 +275,6 @@ URL: \url{https://macartan.github.io/}\\
 
 \begin{document}
 \maketitle
-
 
 \section{Introduction: Causal models}\label{sec-intro}
 
@@ -349,44 +346,67 @@ R> lipids_data
 
 This data is reported in ``compact form,'' meaning it records the number
 of units (``count'') that display each possible pattern of outcomes on
-the three variables (``event''). The ``strategy'' column records the set
-of variables for which data has been recorded. In this illustration the
-data is complete and so the implied strategy is \texttt{ZXY} for all
-units.
+\(Z\), \(X\), and \(Y\) (``event'').
 
-As the first step, users can create (or \emph{make}) the stipulated
-causal model using \texttt{CausalQueries} as follows:
+The strategy to analyse this data involves three steps:
+
+\begin{itemize}
+\tightlist
+\item
+  Step 1: generate a model with \texttt{make\_model}, yielding an object
+  of class \texttt{causal\_model}
+\item
+  Step 2: update the model with \texttt{update\_model}, again yielding
+  an object of class \texttt{causal\_model}
+\item
+  Step 3: pose queries of the model with \texttt{query\_model}, yielding
+  an object of class \texttt{model\_query}.
+\end{itemize}
+
+Users generate the stipulated causal model using \texttt{CausalQueries}
+as follows:
 
 \begin{verbatim}
 R> lipids_model <-  make_model("Z -> X -> Y; X <-> Y") 
 \end{verbatim}
 
-Next users can \emph{update} beliefs over model parameters by supplying
+The result is an object of class \texttt{causal\_model}, with associated
+\texttt{print}, \texttt{summary}, and \texttt{plot} methods.
+
+Users can then \emph{update} beliefs over model parameters by supplying
 data as follows:
 
 \begin{verbatim}
 R> lipids_model <- update_model(lipids_model, lipids_data)
 \end{verbatim}
 
+The updated model is also an object of class \texttt{causal\_model}.
+
 Finally, users can \emph{query} the model. For instance, the three
 previously mentioned queries, which vary in the type of conditioning
 imposed, can be formulated as follows:
 
 \begin{verbatim}
-R> lipids_queries <-  query_model(
-+  lipids_model,
-+  query = "Y[X=1] - Y[X=0]",
-+  given = c("All", "X==0 & Y==0", "X[Z=1] > X[Z=0]"),
-+  using = "posteriors"
-+)
+R> lipids_queries <-
++  query_model(
++    lipids_model,
++    query = "Y[X=1] - Y[X=0]",
++    given = c("All", "X==0 & Y==0", "X[Z=1] > X[Z=0]"),
++    using = "posteriors"
++  )
 \end{verbatim}
 
-The output is a data frame containing estimates, posterior standard
-deviations, and credibility intervals. Table Table~\ref{tbl-lipids}
-presents the results from the analysis of the lipids data.\footnote{Note
-  that the ``using'' column is omitted to simplify output, as all
-  estimands are derived from the posterior distribution.} Rows 1 and 2
-in the table replicate the results from
+The output is an object of class \texttt{model\_query}, with associated
+\texttt{print}, \texttt{summary}, and \texttt{plot} methods.
+
+The \texttt{model\_query} object is a data frame containing estimates,
+and, when available, prior or posterior standard deviations, and
+credibility intervals.
+
+Table~\ref{tbl-lipids} presents the results from the analysis of the
+lipids data.\footnote{Note that the ``using'' column is omitted to
+  simplify output, as all estimands are derived from the posterior
+  distribution.} Rows 1 and 2 in the table replicate the results from
 \citet{chickering_clinicians_1996}, while row 3 provides inferences for
 complier average effects.
 
@@ -400,8 +420,8 @@ complier average effects.
 \toprule
 query & given & mean & sd & cred.low & cred.high\\
 \midrule
-Y[X=1] - Y[X=0] & - & 0.56 & 0.10 & 0.37 & 0.74\\
-Y[X=1] - Y[X=0] & X==0 \& Y==0 & 0.64 & 0.16 & 0.37 & 0.90\\
+Y[X=1] - Y[X=0] & - & 0.55 & 0.10 & 0.37 & 0.73\\
+Y[X=1] - Y[X=0] & X==0 \& Y==0 & 0.64 & 0.15 & 0.37 & 0.89\\
 Y[X=1] - Y[X=0] & X[Z=1] > X[Z=0] & 0.70 & 0.05 & 0.59 & 0.80\\
 \bottomrule
 
@@ -423,8 +443,18 @@ R> lipids_queries |> plot()
 
 \end{figure}%
 
-All core functions above can also be combined in a single pipeline as
-follows:
+These core functions can be combined in a single pipeline as follows:
+
+\begin{verbatim}
+R>   make_model("Z -> X -> Y; X <-> Y") |>
++  update_model(lipids_data) |>
++  query_model(
++    query = "Y[X=1] - Y[X=0]",
++    given = c("All", "X==0 & Y==0", "X[Z=1] > X[Z=0]"),
++    using = "posteriors"
++  ) |>
++  plot()
+\end{verbatim}
 
 As we describe below, the same basic procedure of making, updating, and
 querying models, can be used (up to computational constraints) for
@@ -440,7 +470,7 @@ sciences, computer science, and applied mathematics. This section
 focuses on the role and capabilities of \texttt{CausalQueries} within
 the specific area of evaluating causal queries on models represented as
 directed acyclic graphs (DAGs) or structural equation models (SEMs).
-Table Table~\ref{tbl-software} provides a summary of relevant software,
+Table~\ref{tbl-software} provides a summary of relevant software,
 highlighting their connections, strengths, and limitations in comparison
 to \texttt{CausalQueries}.
 
@@ -657,8 +687,9 @@ expands quickly with the model's complexity. This complexity growth
 depends on the causal structure and increases rapidly with the number of
 parents influencing a child node. A chain model like
 \(A \rightarrow B \rightarrow C \rightarrow D \rightarrow E\) has only
-40 parameters, while a model where \(A, B, C, D\) are all direct
-ancestors of \(E\) has \(65,544\) parameters. Switching from binary to
+18 parameters (\(2^1 + 4\times 2^2\)), while a model where
+\(A, B, C, D\) are all direct ancestors of \(E\) has \(65,544\)
+parameters (\(4\times 2^1 + 2^{(4^2)}\)). Switching from binary to
 nonbinary nodes has similar effects. The restriction to binary nodes is
 due to computational, not conceptual, reasons.\footnote{For more on
   computational constraints and strategies for updating and querying
@@ -743,8 +774,7 @@ independence, the probability of a given causal type \(\theta_x\) is
 \(\Pr(\theta = (\theta^X_1, \theta^Y_{01})) = \Pr(\theta^X = \theta^X_1)\Pr(\theta^Y = \theta^Y_{01}) = \lambda^X_1\lambda^Y_{01}\).
 In cases where confounding is present, the logic remains the same, but
 we need to specify enough parameters to capture the joint distribution
-over nodal types for different nodes. We achieve this by utilizing the
-causal structure.
+over nodal types for different nodes.
 
 For instance, in the Lipids model, the joint distribution of nodal types
 can be simplified as shown in Equation~\ref{eq-join}.
@@ -812,13 +842,13 @@ w_{11} & = & \lambda^X_1(\lambda^Y_{11} + \lambda^Y_{01})\end{array} \right.
 \]
 
 For a more complex example Table~\ref{tbl-lipidspar} illustrates key
-values for the Lipids model. We see here that we have two types for node
-\(Z\), four for \(X\) (representing the strata familiar from
-instrumental variables analysis: never takers, always takers, defiers,
-and compliers) and 4 for \(Y\). For \(Z\) and \(X\) we have parameters
-corresponding to probability of these nodal types. For instance
-\texttt{Z.0} is the probability that \(Z=0\). \texttt{Z.1} is the
-complementary probability that \(Z=1\). Things are a little more
+values for the Lipids model. We see here that we have two types for the
+exogenous node \(Z\), four for \(X\) (representing the strata familiar
+from instrumental variables analysis: never takers, always takers,
+defiers, and compliers) and 4 for \(Y\). For \(Z\) and \(X\) we have
+parameters corresponding to probability of these nodal types. For
+instance \texttt{Z.0} is the probability that \(Z=0\). \texttt{Z.1} is
+the complementary probability that \(Z=1\). Things are a little more
 complicated for distributions on nodal types for \(Y\) however: because
 of confounding between \(X\) and \(Y\) we have parameters that capture
 the conditional probability of the nodal types for \(Y\) \emph{given}
@@ -891,11 +921,14 @@ updating, and querying causal models.
 
 \section{Making models}\label{sec-make}
 
-A model can be defined in a single step in \texttt{CausalQueries} using
-a \texttt{dagitty}-style syntax \citep{textor_robust_2016}, where the
-model structure is expressed as a causal statement. For example, a model
-where \(X\) causes both \(M\) and \(Y\), and \(M\) also causes \(Y\),
-can be created as follows:
+A model can be defined in a single step in \texttt{CausalQueries} by
+supplying a causal statement---expressed using \texttt{dagitty}-style
+syntax \citep{textor_robust_2016}--- to \texttt{make\_model}. This
+generates an object of class \texttt{causal\_model} (see Box 1 for a
+description of classes and methods),
+
+To illustrate, a model where \(X\) causes both \(M\) and \(Y\), and
+\(M\) also causes \(Y\), can be created as follows:
 
 \begin{verbatim}
 R> model <- make_model("X -> M -> Y <- X")
@@ -947,6 +980,34 @@ might influence two or more observed variables. In this case, condition
 3 above is relaxed, and the exogenous nodes associated with confounded
 variables have a joint distribution. We describe how this is done in
 greater detail in Section~\ref{sec-confounding}.
+
+\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, colbacktitle=quarto-callout-note-color!10!white, left=2mm, colframe=quarto-callout-note-color-frame, colback=white, coltitle=black, opacityback=0, bottomtitle=1mm, arc=.35mm, titlerule=0mm, breakable, opacitybacktitle=0.6, rightrule=.15mm, toptitle=1mm, leftrule=.75mm, title={Box 1: Classes and Methods}, bottomrule=.15mm]
+
+\texttt{CausalQueries} makes use of two types of object classes,
+\texttt{causal\_model} and \texttt{model\_query}.
+
+\begin{itemize}
+\item
+  An object of class \texttt{causal\_model} encodes a structural causal
+  model and stores information on parameter values---either provided by
+  the user or set to defaults---as well as prior or posterior
+  distributions over model parameters. An object of class
+  \texttt{causal\_model} is generated using \texttt{make\_model()} and
+  can be adjusted using \texttt{update\_model()} as well as a set of
+  helper functions: \texttt{set\_confound}, \texttt{set\_restrictions},
+  \texttt{set\_priors}. Methods \texttt{print}, \texttt{summary} and
+  \texttt{plot} are available for an object of class
+  \texttt{causal\_model}.
+\item
+  An object of class \texttt{model\_query} records responses to queries
+  posed of a causal model. Depending on the nature of the query, it can
+  include estimates of effects, prior or posterior standard deviations,
+  and confidence intervals. Methods \texttt{print}, \texttt{summary} and
+  \texttt{plot} are available for an object of class
+  \texttt{model\_query}.
+\end{itemize}
+
+\end{tcolorbox}
 
 \subsection{Graphing}\label{graphing}
 
@@ -1003,7 +1064,8 @@ R> lipids_model |>
 
 \end{minipage}%
 
-\caption{\label{fig-plots}Examples of model graphs.}
+\caption{\label{fig-plots}Examples of model graphs. For help on options
+see \texttt{?\ plot\_model}}
 
 \end{figure}%
 
@@ -1326,7 +1388,7 @@ priors is to add them as a vector of numbers using
 
 \begin{verbatim}
 R> lipids_model |> 
-+  set_priors(node = "X", alphas = 1:4) |> 
++  set_priors(param_names = c("X.10", "X.01"), alphas = 3:4) |> 
 +  inspect("prior_hyperparameters", nodes = "X")
 \end{verbatim}
 
@@ -1336,7 +1398,7 @@ R> lipids_model |>
 #> Alpha parameter values used for Dirichlet prior distributions:
 #> 
 #> X.00 X.10 X.01 X.11 
-#>    1    2    3    4
+#>    1    3    4    1
 \end{verbatim}
 
 The priors here should be interpreted as indicating
@@ -1477,7 +1539,7 @@ from some speculated set of parameter values.
 \subsubsection{Drawing data basics}\label{drawing-data-basics}
 
 Generating data requires a specification of parameter values. The
-parameter values in the parameters dataframe are used by default.
+parameter values in the parameters data frame are used by default.
 Otherwise users can provide parameters on the fly.
 
 \begin{verbatim}
@@ -1515,14 +1577,6 @@ R> sample_data <-
 +            nodes = list(c("Z", "Y"), "X"),
 +            probs = list(1, .5),
 +            subsets = list(TRUE, "Z==1 & Y==0"))
-\end{verbatim}
-
-\begin{verbatim}
-#> # A tibble: 2 x 5
-#>   node_names nodes     n_steps probs subsets    
-#>   <chr>      <list>    <lgl>   <dbl> <chr>      
-#> 1 Z, Y       <chr [2]> NA        1   TRUE       
-#> 2 X          <chr [1]> NA        0.5 Z==1 & Y==0
 \end{verbatim}
 
 \subsubsection{Reshaping data}\label{reshaping-data}
@@ -1619,14 +1673,16 @@ given node, conditional on the values of other nodes.
 
 \subsubsection{Event probabilities}\label{event-probabilities}
 
-We determine the probability of data types (\emph{events}) for any given
-parameter vector \(\lambda\) using a matrix that maps parameters to data
-types. In scenarios without confounding, the matrix contains a column
-for each data type. It shows which nodes in each set contribute to the
-data type, and the probability of the data type is calculated by summing
-within sets and multiplying across sets. For example, we can use the
-\texttt{inspect()} function to examine the parameter mapping matrix for
-a simple model as follows:
+We calculate the probability of data types for any parameter vector
+\(\lambda\). This is done using a matrix that maps from parameters into
+data types.
+
+In cases without confounding, there is a column for each data type; the
+matrix indicates which nodes in each set ``contribute'' to the data
+type, and the probability of the data type is found by summing within
+sets and taking the product over sets. To illustrate, we can examine the
+parameter mapping matrix for a simple model using the \texttt{inspect()}
+function as follows:
 
 \begin{verbatim}
 R> make_model("X -> Y") |> 
@@ -1746,7 +1802,13 @@ R> list(
 \end{verbatim}
 
 \begin{verbatim}
-#> :
+#> 
+#> Causal queries generated by query_model
+#> 
+#> |model      |query           |  mean|    sd|
+#> |:----------|:---------------|-----:|-----:|
+#> |uncensored |Y[X=1] - Y[X=0] | 0.590| 0.194|
+#> |censored   |Y[X=1] - Y[X=0] | 0.018| 0.315|
 \end{verbatim}
 
 \subsection{Output}\label{output}
@@ -1762,7 +1824,24 @@ R> model <-
 +  make_model("X -> Y")  |> 
 +  update_model()
 R> 
-R> posterior <- grab(model, "posterior_distribution")  
+R> posterior <- inspect(model, "posterior_distribution")  
+\end{verbatim}
+
+\begin{verbatim}
+#> 
+#> posterior_distribution
+#> Summary statistics of model parameters posterior distributions:
+#> 
+#>   Distributions matrix dimensions are 
+#>   4000 rows (draws) by 6 cols (parameters)
+#> 
+#>      mean   sd
+#> X.0  0.51 0.28
+#> X.1  0.49 0.28
+#> Y.00 0.25 0.19
+#> Y.10 0.25 0.19
+#> Y.01 0.25 0.19
+#> Y.11 0.25 0.20
 \end{verbatim}
 
 Additionally, a distribution of causal types is stored by default.
@@ -1784,6 +1863,30 @@ provides two measures to help assess convergence.
 R> make_model("X -> Y")  |> 
 +  update_model(keep_type_distribution = FALSE) |>
 +  inspect("stan_summary") 
+\end{verbatim}
+
+\begin{verbatim}
+#> 
+#> stan_summary
+#> Stan model summary:
+#> 
+#> Inference for Stan model: simplexes.
+#> 4 chains, each with iter=2000; warmup=1000; thin=1; 
+#> post-warmup draws per chain=1000, total post-warmup draws=4000.
+#> 
+#>             mean se_mean   sd   2.5%   25%   50%   75% 97.5% n_eff Rhat
+#> X.0         0.50    0.01 0.29   0.03  0.25  0.49  0.74  0.97  3036    1
+#> X.1         0.50    0.01 0.29   0.03  0.26  0.51  0.75  0.97  3036    1
+#> Y.00        0.25    0.00 0.19   0.01  0.09  0.21  0.37  0.70  2031    1
+#> Y.10        0.25    0.00 0.19   0.01  0.09  0.21  0.37  0.71  4633    1
+#> Y.01        0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.72  4162    1
+#> Y.11        0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.71  4701    1
+#> lp__       -7.53    0.04 1.65 -11.75 -8.37 -7.15 -6.32 -5.44  1368    1
+#> 
+#> Samples were drawn using NUTS(diag_e) at Mon Nov 11 17:00:40 2024.
+#> For each parameter, n_eff is a crude measure of effective sample size,
+#> and Rhat is the potential scale reduction factor on split chains (at 
+#> convergence, Rhat=1).
 \end{verbatim}
 
 This summary provides information on the distribution of parameters and
@@ -1842,21 +1945,25 @@ R> model |>
 #> types[8]    0.13    0.00 0.13   0.00  0.03  0.08  0.18  0.51  3956    1
 #> lp__       -7.51    0.04 1.58 -11.43 -8.33 -7.20 -6.34 -5.42  1410    1
 #> 
-#> Samples were drawn using NUTS(diag_e) at Mon Nov  4 17:53:09 2024.
+#> Samples were drawn using NUTS(diag_e) at Mon Nov 11 17:00:46 2024.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).
 \end{verbatim}
 
-Users can then pass the Stan fit object to other diagnostic packages
-such as \texttt{bayesplot}.
+Users can then pass the \texttt{stanfit} object to other diagnostic
+packages such as \texttt{bayesplot}.
 
 \section{Queries}\label{sec-query}
 
 \texttt{CausalQueries} provides functionality to pose and answer
 elaborate causal queries. The key approach is to code causal queries as
 functions of causal types and return a distribution over the queries
-implied by the distribution over causal types.
+implied by the distribution over causal types. The primary approach is
+to use \texttt{query\_model()} to generate an object of class
+\texttt{model\_query} (see Box 1) which prints to a table or can be
+plotted directly. The next sections describe how such queries are
+calculated and the syntax used for posing queries.
 
 \subsection{Calculating factual and counterfactual
 quantities}\label{sec-propagation}
@@ -2091,9 +2198,12 @@ R> make_model("X -> Y") |>
 \subsubsection{Nested queries}\label{nested-queries}
 
 \texttt{CausalQueries} lets users pose nested ``complex counterfactual''
-queries. For instance \texttt{"Y{[}M=M{[}X=0{]},\ X=1{]}==1"} queries
-the types for which \(Y\) equals \(1\) when \(X\) is set to \(1\), while
-keeping \(M\) constant at the value it would take if \(X\) were \(0\).
+queries. Rather than stipulating a value to which some node is to be
+set, the user can set the value to the value that the node would take
+given actions taken on ancestor nodes. For instance
+\texttt{"Y{[}M=M{[}X=0{]},\ X=1{]}==1"} queries the types for which
+\(Y\) equals \(1\) when \(X\) is set to \(1\), while keeping \(M\)
+constant at whatever value it would take if \(X\) were set to \(0\).
 
 \subsection{Quantifying queries}\label{quantifying-queries}
 
@@ -2168,18 +2278,28 @@ R> queries <-
 +    using = "priors")
 \end{verbatim}
 
-The command \texttt{query\_distribution()} can also be used when one is
-interested in assessing the value of a query for a \emph{particular
-case}. In a sense, this is equivalent to posing a conditional query,
-querying conditional on values in a case. For instance, we might consult
-our posterior for the Lipids model and ask about the effect of \(X\) on
-\(Y\) for a case in which \(Z=1\), \(X=1\) and \(Y=1\).
+The result is a data frame with one column per query and rows for draws
+from prior or posterior distributions as requested.
+
+The core function \texttt{query\_model} implements
+\texttt{query\_distribution} and reports summaries of distributions.
+
+\subsubsection{Case queries}\label{case-queries}
+
+The commands \texttt{query\_distribution()} and \texttt{query\_model()}
+can also be used when one is interested in assessing the value of a
+query for a \emph{particular case}. In a sense, this is equivalent to
+posing a conditional query, querying conditional on values in a case.
+For instance, we might consult our posterior for the Lipids model and
+ask about the effect of \(X\) on \(Y\) for a case in which \(Z=1\),
+\(X=1\) and \(Y=1\).
 
 \begin{verbatim}
 R> lipids_model |>
-+  query_model(query = "Y[X=1] - Y[X=0]",
-+              given = "X==1 & Y==1 & Z==1",
-+              using = "posteriors")  |> 
++  query_model(
++    query = "Y[X=1] - Y[X=0]",
++    given = "X==1 & Y==1 & Z==1",
++    using = "posteriors")  |> 
 +  subset(select = c("query", "mean", "sd"))
 \end{verbatim}
 
@@ -2229,28 +2349,47 @@ R> make_model("X -> M -> Y") |>
 +  subset(select = c("query", "case_level", "mean", "sd"))
 \end{verbatim}
 
+\begin{verbatim}
+#> 
+#> Causal queries generated by query_model
+#> 
+#> |query           |case_level |  mean|    sd|
+#> |:---------------|:----------|-----:|-----:|
+#> |Y[X=1] > Y[X=0] |TRUE       | 0.672|    NA|
+#> |Y[X=1] > Y[X=0] |FALSE      | 0.429| 0.326|
+\end{verbatim}
+
 \subsubsection{Batch queries}\label{batch-queries}
 
-The function \texttt{query\_model()} can also be used to query multiple
-models. The function takes a list of models, causal queries, and
-conditions as inputs. It then calculates population or case level
-estimands given prior or posterior distributions and reports summaries
-of these distributions. The result is a data frame that can be displayed
-as a table or used for graphing. The associated \texttt{plot} method
-produces plots with class \texttt{c("gg",\ "ggplot")}.
+The function \texttt{query\_model()} can also be used to pose multiple
+queries of multiple models in batch. The function takes a list of
+models, causal queries, and conditions as inputs. It then calculates
+population or case level estimands given prior or posterior
+distributions and reports summaries of these distributions. The result
+is a data frame of class \texttt{model\_query} (see Box 1) that can be
+displayed as a table or used for graphing. The associated \texttt{plot}
+method produces plots with class \texttt{c("gg",\ "ggplot")}.
 
-Table~\ref{tbl-batch-query} returns to the Lipids data and shows the
-output from a single call to \texttt{query\_model()} with the
-\texttt{expand\_grid} argument set to \texttt{TRUE} to generate all
-combinations of list elements.
+Since users can adjust multiple lists of features of a query there is an
+option, \texttt{expand\_grid\ =\ TRUE}, to indicate whether to query
+with respect to all combinations of supplied arguments.
+
+To illustrate, we return again to the limits model but now consider two
+versions, one with and one without a monotonicity restriction imposed.
 
 \begin{verbatim}
 R> models <- list(
-+  A = lipids_model |> 
++  Unrestricted = lipids_model |> 
 +    update_model(data = lipids_data, refresh = 0),
-+  B = lipids_model |> set_restrictions("X[Z=1] < X[Z=0]") |>
++  Restricted = lipids_model |> set_restrictions("X[Z=1] < X[Z=0]") |>
 +    update_model(data = lipids_data, refresh = 0))
-R> 
+\end{verbatim}
+
+Table~\ref{tbl-batch-query} then shows the output from a single call to
+\texttt{query\_model()} with the \texttt{expand\_grid} argument set to
+\texttt{TRUE} to generate all combinations of list elements.
+
+\begin{verbatim}
 R> queries <- 
 +  query_model(
 +    models,  
@@ -2271,47 +2410,63 @@ R> queries <-
 \toprule
 model & query & given & using & case\_level & mean & sd\\
 \midrule
-A & ATE & - & priors & FALSE & 0.00 & 0.20\\
-B & ATE & - & priors & FALSE & 0.00 & 0.23\\
-A & ATE & - & posteriors & FALSE & 0.55 & 0.10\\
-B & ATE & - & posteriors & FALSE & 0.56 & 0.10\\
-A & ATE & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.22\\
+Unrestricted & ATE & - & priors & FALSE & 0.00 & 0.20\\
+Restricted & ATE & - & priors & FALSE & 0.00 & 0.23\\
+Unrestricted & ATE & - & posteriors & FALSE & 0.56 & 0.10\\
+Restricted & ATE & - & posteriors & FALSE & 0.56 & 0.10\\
+Unrestricted & ATE & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.22\\
 \addlinespace
-B & ATE & Y==1 \& X==1 & priors & FALSE & 0.49 & 0.24\\
-A & ATE & Y==1 \& X==1 & posteriors & FALSE & 0.95 & 0.04\\
-B & ATE & Y==1 \& X==1 & posteriors & FALSE & 0.95 & 0.04\\
-A & POS & - & priors & FALSE & 0.25 & 0.12\\
-B & POS & - & priors & FALSE & 0.25 & 0.14\\
+Restricted & ATE & Y==1 \& X==1 & priors & FALSE & 0.49 & 0.24\\
+Unrestricted & ATE & Y==1 \& X==1 & posteriors & FALSE & 0.95 & 0.04\\
+Restricted & ATE & Y==1 \& X==1 & posteriors & FALSE & 0.95 & 0.04\\
+Unrestricted & POS & - & priors & FALSE & 0.25 & 0.12\\
+Restricted & POS & - & priors & FALSE & 0.25 & 0.14\\
 \addlinespace
-A & POS & - & posteriors & FALSE & 0.60 & 0.10\\
-B & POS & - & posteriors & FALSE & 0.61 & 0.10\\
-A & POS & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.22\\
-B & POS & Y==1 \& X==1 & priors & FALSE & 0.49 & 0.24\\
-A & POS & Y==1 \& X==1 & posteriors & FALSE & 0.95 & 0.04\\
+Unrestricted & POS & - & posteriors & FALSE & 0.61 & 0.10\\
+Restricted & POS & - & posteriors & FALSE & 0.61 & 0.10\\
+Unrestricted & POS & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.22\\
+Restricted & POS & Y==1 \& X==1 & priors & FALSE & 0.49 & 0.24\\
+Unrestricted & POS & Y==1 \& X==1 & posteriors & FALSE & 0.95 & 0.04\\
 \addlinespace
-B & POS & Y==1 \& X==1 & posteriors & FALSE & 0.95 & 0.04\\
-A & ATE & - & priors & TRUE & 0.00 & NA\\
-B & ATE & - & priors & TRUE & 0.00 & NA\\
-A & ATE & - & posteriors & TRUE & 0.55 & NA\\
-B & ATE & - & posteriors & TRUE & 0.56 & NA\\
+Restricted & POS & Y==1 \& X==1 & posteriors & FALSE & 0.95 & 0.04\\
+Unrestricted & ATE & - & priors & TRUE & 0.00 & NA\\
+Restricted & ATE & - & priors & TRUE & 0.00 & NA\\
+Unrestricted & ATE & - & posteriors & TRUE & 0.56 & NA\\
+Restricted & ATE & - & posteriors & TRUE & 0.56 & NA\\
 \addlinespace
-A & ATE & Y==1 \& X==1 & priors & TRUE & 0.50 & NA\\
-B & ATE & Y==1 \& X==1 & priors & TRUE & 0.49 & NA\\
-A & ATE & Y==1 \& X==1 & posteriors & TRUE & 0.95 & NA\\
-B & ATE & Y==1 \& X==1 & posteriors & TRUE & 0.95 & NA\\
-A & POS & - & priors & TRUE & 0.25 & NA\\
+Unrestricted & ATE & Y==1 \& X==1 & priors & TRUE & 0.50 & NA\\
+Restricted & ATE & Y==1 \& X==1 & priors & TRUE & 0.49 & NA\\
+Unrestricted & ATE & Y==1 \& X==1 & posteriors & TRUE & 0.95 & NA\\
+Restricted & ATE & Y==1 \& X==1 & posteriors & TRUE & 0.95 & NA\\
+Unrestricted & POS & - & priors & TRUE & 0.25 & NA\\
 \addlinespace
-B & POS & - & priors & TRUE & 0.25 & NA\\
-A & POS & - & posteriors & TRUE & 0.60 & NA\\
-B & POS & - & posteriors & TRUE & 0.61 & NA\\
-A & POS & Y==1 \& X==1 & priors & TRUE & 0.50 & NA\\
-B & POS & Y==1 \& X==1 & priors & TRUE & 0.49 & NA\\
+Restricted & POS & - & priors & TRUE & 0.25 & NA\\
+Unrestricted & POS & - & posteriors & TRUE & 0.61 & NA\\
+Restricted & POS & - & posteriors & TRUE & 0.61 & NA\\
+Unrestricted & POS & Y==1 \& X==1 & priors & TRUE & 0.50 & NA\\
+Restricted & POS & Y==1 \& X==1 & priors & TRUE & 0.49 & NA\\
 \addlinespace
-A & POS & Y==1 \& X==1 & posteriors & TRUE & 0.95 & NA\\
-B & POS & Y==1 \& X==1 & posteriors & TRUE & 0.95 & NA\\
+Unrestricted & POS & Y==1 \& X==1 & posteriors & TRUE & 0.95 & NA\\
+Restricted & POS & Y==1 \& X==1 & posteriors & TRUE & 0.95 & NA\\
 \bottomrule
 
 \end{longtable}
+
+Figure~\ref{fig-batch-query} shows the default plot associated with this
+query.
+
+\begin{figure}
+
+\centering{
+
+\includegraphics{paper_files/figure-pdf/fig-batch-query-1.pdf}
+
+}
+
+\caption{\label{fig-batch-query}Default plotting for a a set of queries
+over multiple models.}
+
+\end{figure}%
 
 \section{Summary and discussion}\label{summary-and-discussion}
 
@@ -2352,8 +2507,9 @@ requirements}\label{computational-details-and-software-requirements}
 requirements}
 
 \begin{longtable}[]{@{}
-  >{\raggedleft\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.3000}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.7000}}@{}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.1800}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.4100}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.4100}}@{}}
 \toprule\noalign{}
 \endhead
 \bottomrule\noalign{}
@@ -2362,9 +2518,9 @@ Version & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
 \item
-  1.1.1
+  1.2.1
 \end{itemize}
-\end{minipage} \\
+\end{minipage} & \\
 Availability & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
@@ -2375,14 +2531,14 @@ Availability & \begin{minipage}[t]{\linewidth}\raggedright
   Development:
   \url{https://github.com/integrated-inferences/CausalQueries}
 \end{itemize}
-\end{minipage} \\
+\end{minipage} & \\
 Issues & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
 \item
   \url{https://github.com/integrated-inferences/CausalQueries/issues}
 \end{itemize}
-\end{minipage} \\
+\end{minipage} & \\
 Operating Systems & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
@@ -2393,7 +2549,7 @@ Operating Systems & \begin{minipage}[t]{\linewidth}\raggedright
 \item
   Windows
 \end{itemize}
-\end{minipage} \\
+\end{minipage} & \\
 Testing Environments OS & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
@@ -2406,7 +2562,7 @@ Testing Environments OS & \begin{minipage}[t]{\linewidth}\raggedright
 \item
   Windows
 \end{itemize}
-\end{minipage} \\
+\end{minipage} & \\
 Testing Environments R & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
@@ -2419,14 +2575,14 @@ Testing Environments R & \begin{minipage}[t]{\linewidth}\raggedright
 \item
   r-devel
 \end{itemize}
-\end{minipage} \\
+\end{minipage} & \\
 R Version & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
 \item
   R(\textgreater= 3.4.0)
 \end{itemize}
-\end{minipage} \\
+\end{minipage} & \\
 Compiler & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
@@ -2437,14 +2593,12 @@ Compiler & \begin{minipage}[t]{\linewidth}\raggedright
 \item
   clang++
 \end{itemize}
-\end{minipage} \\
+\end{minipage} & \\
 Stan requirements & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
 \item
   inline
-\item
-  Rcpp (\textgreater= 0.12.0)
 \item
   RcppEigen (\textgreater= 0.3.3.3.0)
 \item
@@ -2458,55 +2612,55 @@ Stan requirements & \begin{minipage}[t]{\linewidth}\raggedright
 \item
   rstan (\textgreater= 2.26.0)
 \end{itemize}
-\end{minipage} \\
+\end{minipage} & \\
 R-Packages Depends & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
 \item
-  dplyr
-\item
   methods
 \end{itemize}
-\end{minipage} \\
+\end{minipage} & \\
 R-Packages Imports & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
 \item
-  dagitty (\textgreater= 0.3-1)
+  dirmult (\textgreater= 0.1.3-4) \textbar{}
 \item
-  dirmult (\textgreater= 0.1.3-4)
+  dplyr \textbar{}
 \item
-  stats (\textgreater= 4.1.1)
+  stats (\textgreater= 4.1.1) \textbar{}
 \item
-  rlang (\textgreater= 0.2.0)
+  rlang (\textgreater= 0.2.0) \textbar{}
 \item
-  rstan (\textgreater= 2.26.0)
+  rstan (\textgreater= 2.26.0) \textbar{}
 \item
-  rstantools (\textgreater= 2.0.0)
+  rstantools (\textgreater= 2.0.0) \textbar{}
 \item
-  stringr (\textgreater= 1.4.0)
+  stringr (\textgreater= 1.4.0) \textbar{}
 \item
-  ggdag (\textgreater= 0.2.4)
+  ggdag (\textgreater= 0.2.4) \textbar{}
 \item
-  latex2exp (\textgreater= 0.9.4)
+  latex2exp (\textgreater= 0.9.4) \textbar{}
 \item
-  ggplot2 (\textgreater= 3.3.5)
+  ggplot2 (\textgreater= 3.3.5) \textbar{}
 \item
-  lifecycle (\textgreater= 1.0.1)
+  lifecycle (\textgreater= 1.0.1) \textbar{}
+\item
+  Rcpp (\textgreater= 0.12.0) \textbar{}
 \end{itemize}
-\end{minipage} \\
+\end{minipage} & \\
 \end{longtable}
 
 The results in this paper were obtained using
-\proglang{R}\textasciitilde3.4.1 with the
-\pkg{MASS}\textasciitilde7.3.47 package. \proglang{R} itself and all
-packages used are available from the Comprehensive \proglang{R} Archive
-Network (CRAN) at \url{https://CRAN.R-project.org/}.
+\proglang{R}\textasciitilde4.3 with the \pkg{MASS}\textasciitilde7.3-60
+package. \proglang{R} itself and all packages used are available from
+the Comprehensive \proglang{R} Archive Network (CRAN) at
+\url{https://CRAN.R-project.org/}.
 
 \section*{Acknowledgments}\label{acknowledgments}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, breakable, colframe=quarto-callout-color-frame, toprule=.15mm, arc=.35mm, bottomrule=.15mm, leftrule=.75mm, colback=white, left=2mm, opacityback=0, rightrule=.15mm]
+\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, left=2mm, colframe=quarto-callout-color-frame, breakable, colback=white, rightrule=.15mm, arc=.35mm, opacityback=0, bottomrule=.15mm, leftrule=.75mm]
 
 We thank Ben Goodrich, who provided generous insights on using
 \texttt{stan} for this project. We thank Alan M Jacobs for key work in
@@ -2743,9 +2897,9 @@ Number of Model Parameters
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\(X1 \rightarrow Y\) & 6 & 7.0 \\
-\(X1 \rightarrow Y; X2 \rightarrow Y\) & 20 & 8.4 \\
-\(X1\rightarrow Y;X2\rightarrow Y;X3\rightarrow Y\) & 262 & 22.9 \\
+\(X1 \rightarrow Y\) & 6 & 9.0 \\
+\(X1 \rightarrow Y; X2 \rightarrow Y\) & 20 & 11.5 \\
+\(X1\rightarrow Y;X2\rightarrow Y;X3\rightarrow Y\) & 262 & 87.3 \\
 \end{longtable}
 
 \begin{longtable}[]{@{}
@@ -2759,7 +2913,7 @@ Model
 \end{minipage} & \begin{minipage}[b]{\linewidth}\centering
 Number of Observations
 \end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-\texttt{update\_model()} Run-Time (seconds) \textbar{}
+\texttt{update\_model()} Run-Time (seconds)
 \end{minipage} \\
 \midrule\noalign{}
 \endfirsthead
@@ -2769,29 +2923,28 @@ Model
 \end{minipage} & \begin{minipage}[b]{\linewidth}\centering
 Number of Observations
 \end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-\texttt{update\_model()} Run-Time (seconds) \textbar{}
+\texttt{update\_model()} Run-Time (seconds)
 \end{minipage} \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\(X1 \rightarrow Y\) & 10 & 5.8 \\
-\(X1 \rightarrow Y\) & 100 & 6.5 \\
-\(X1 \rightarrow Y\) & 1000 & 7.0 \\
-\(X1 \rightarrow Y\) & 10000 & 10.6 \\
-\(X1 \rightarrow Y\) & 100000 & 22.9 \\
+\(X1 \rightarrow Y\) & 10 & 8.4 \\
+\(X1 \rightarrow Y\) & 100 & 8.5 \\
+\(X1 \rightarrow Y\) & 1000 & 9.9 \\
+\(X1 \rightarrow Y\) & 10000 & 14.3 \\
+\(X1 \rightarrow Y\) & 100000 & 30.0 \\
 \end{longtable}
 
 Increasing the number of parents in a model greatly increases the number
 of parameters and computational time. The results suggests the
-computational time is convex in the number of parents and approximately
-linear in the number of parameters. Unless model restrictions are
-imposed four parents would yield 65,536 parameters. The rapid growth of
-the parameter space with increasing model complexity places limits on
-feasible computability without further recourse to specialized methods
-for handling large causal models. In contrast, the results suggest that
-computational time is concave in the size of the data.
-
+computational time is convex in the number of parents. Unless model
+restrictions are imposed, four parents would yield 65,536 parameters.
+The rapid growth of the parameter space with increasing model complexity
+places limits on feasible computability without further recourse to
+specialized methods for handling large causal models. In contrast, the
+results suggest that computational time is concave in the size of the
+data.
 
 
 
