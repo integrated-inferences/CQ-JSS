@@ -63,8 +63,7 @@ execute:
 #| include: false
 
 # knitr::purl("paper.qmd")
-# knitr::spin("submission/test.R")
-# knitr::spin("submission/code.R")
+# knitr::spin("submission/third/code.R")  
 library(tidyverse)
 library(CausalQueries)
 library(microbenchmark)
@@ -93,7 +92,7 @@ In the next section we provide a motivating example that uses the three primary 
 
 Before providing details on package functionality, we give an example of an application of  the three primary functions, showing how to use `CausalQueries` to replicate the analysis in [@chickering_clinicians_1996; see also @humphreys_integrated_2023]. 
 
-@chickering_clinicians_1996 seek to draw inferences on causal effects in the presence of imperfect compliance. We have access to an instrument $Z$ (a randomly assigned prescription for cholesterol medication), which is a cause of $X$ (treatment uptake) but otherwise unrelated to $Y$ (cholesterol). We imagine we are interested in three specific queries. The first is the average causal effect of $X$ on $Y$. The second is the average effect for units for which $X=0$ and $Y=0$. The last is the average effect for "compliers": units for which $X$ responds positively to $Z$. Thus two of these queries are conditional queries, with one conditional on a counterfactual quantity.
+@chickering_clinicians_1996 seek to draw inferences on causal effects in the presence of imperfect compliance. We have access to an instrument $Z$ (a randomly assigned prescription for cholesterol medication), which is a cause of $X$ (treatment uptake) but otherwise unrelated to $Y$ (cholesterol). We imagine we are interested in three specific queries. The first is the average causal effect of $X$ on $Y$. The second is the average effect for units for which $X=0$ and $Y=0$; this "probability of causation" query asks whether untreated individuals with bad outcomes did poorly *because* they were untreated. The last is the average effect for "compliers": units for which $X$ responds positively to $Z$. Thus two of these queries are conditional queries, with one conditional on a counterfactual quantity.
 
 The data on $Z$, $X$, and $Y$ is given in @chickering_clinicians_1996 and is also included in the `CausalQueries` package. The data looks as follows:
 
@@ -113,7 +112,7 @@ The strategy to analyse this data involves three steps:
 
 * Step 1: generate a model with `make_model`, yielding an object of class `causal_model`
 * Step 2: update the model with `update_model`, again yielding an object of class `causal_model`
-* Step 3: pose queries of the model  with `query_model`, yielding an object of class `model_query`.  
+* Step 3: pose queries of the model  with `query_model`, yielding an object of class `model_query`  
 
 Users generate the stipulated causal model using `CausalQueries` as follows:
 
@@ -127,7 +126,7 @@ lipids_model <-  make_model("Z -> X -> Y; X <-> Y")
 
 ```
 
-The result is an object of class `causal_model`, with associated `print`, `summary`, and `plot` methods.  
+The result is an object of class `causal_model`, with associated `print`, `summary`, and `plot` methods.  By default, uniform priors are placed on model parameters.
 
 Users can then _update_ beliefs over model parameters by supplying data as follows:
 
@@ -141,7 +140,7 @@ lipids_model <- update_model(lipids_model, lipids_data)
 
 ```
 
-The updated model is also an object of class `causal_model`. 
+The updated model is also an object of class `causal_model`, though now also containing a posterior distribution over model parameters. 
 
 Finally, users can _query_ the model. For instance, the three previously mentioned queries, which vary in the type of conditioning imposed, can be formulated as follows:
 
@@ -153,8 +152,10 @@ Finally, users can _query_ the model. For instance, the three previously mention
 lipids_queries <-
   query_model(
     lipids_model,
-    query = "Y[X=1] - Y[X=0]",
-    given = c("All", "X==0 & Y==0", "X[Z=1] > X[Z=0]"),
+    queries = list(
+      ATE  = "Y[X=1] - Y[X=0]",
+      PoC  = "Y[X=1] - Y[X=0] :|: X==0 & Y==0",
+      LATE = "Y[X=1] - Y[X=0] :|: X[Z=1] > X[Z=0]"),
     using = "posteriors"
   )
 
@@ -164,7 +165,7 @@ The output is an object of class `model_query`, with associated `print`, `summar
 
 The `model_query` object is a data frame containing estimates, and, when available, prior or posterior standard deviations, and credibility intervals. 
 
-@tbl-lipids presents the results from the analysis of the lipids data.^[Note that the "using" column is omitted to simplify output, as all estimands are derived from the posterior distribution.] Rows 1 and 2 in the table replicate the results from @chickering_clinicians_1996, while row 3 provides inferences for complier average effects.
+@tbl-lipids presents the results from the analysis of the lipids data.^[Note that the "using" column is omitted to simplify output, as all estimands are derived from the posterior distribution.] Rows 1 and 2 in the table replicate the results from @chickering_clinicians_1996, while row 3 provides inferences for the local  (complier) average treatment effects ("LATE").
 
 ```{r}
 #| label: tbl-lipids
@@ -172,7 +173,7 @@ The `model_query` object is a data frame containing estimates, and, when availab
 #| echo: false
 
 lipids_queries |>
-  dplyr::select(query, given, mean, sd, starts_with("cred")) |>
+  dplyr::select(label, query, given, mean, sd, starts_with("cred")) |>
   knitr::kable(
     digits = 2,
     booktabs = TRUE,
@@ -200,13 +201,14 @@ These core functions can be combined in a single pipeline as follows:
 #| message: false
 #| output: false
 
-  make_model("Z -> X -> Y; X <-> Y") |>
+make_model("Z -> X -> Y; X <-> Y") |>
   update_model(lipids_data) |>
   query_model(
-    query = "Y[X=1] - Y[X=0]",
-    given = c("All", "X==0 & Y==0", "X[Z=1] > X[Z=0]"),
-    using = "posteriors"
-  ) |>
+    queries = list(
+      ATE  = "Y[X=1] - Y[X=0]",
+      PoC  = "Y[X=1] - Y[X=0] :|: X==0 & Y==0",
+      LATE = "Y[X=1] - Y[X=0] :|: X[Z=1] > X[Z=0]"),
+    using = "posteriors") |>
   plot()
 
 ```
@@ -255,9 +257,9 @@ Both `autobounds` and `causaloptim` build on seminal approaches in @balke_bounds
 
 In summary, the main strength of `CausalQueries` is its ability to let users define arbitrary DAG and pose any queries on it, using a canonical procedure to form Bayesian posteriors for those queries, regardless of whether they are identified. For instance, if researchers want to learn about the local average treatment effect and their model meets the conditions in @angrist_identification_1996, updating will recover valid estimates as data grows, even if researchers are unaware that the local average treatment effect is identified or unfamiliar with the specific estimation method proposed by @angrist_identification_1996.
 
-There are two main limitations of the models that `CausalQueries` can handle. First, `CausalQueries` is designed for models with a relatively small number of binary nodes. Since it does not limit the range of possible causal relationships in a model, the parameter space expands quickly with the model's complexity. This complexity growth depends on the causal structure and increases rapidly with the number of parents influencing a child node. A chain model like $A \rightarrow B \rightarrow C \rightarrow D \rightarrow E$ has only 18 parameters ($2^1 + 4\times 2^2$), while a model where $A, B, C, D$ are all direct ancestors of $E$ has $65,544$ parameters ($4\times 2^1 + 2^{(4^2)}$). Switching from binary to nonbinary nodes has similar effects. The restriction to binary nodes is due to computational, not conceptual, reasons.^[For more on computational constraints and strategies for updating and querying large models, see the `CausalQueriesTools` package available via `devtools::install_github("till-tietz/CausalQueriesTools")`. The main approach here is to divide large causal models into modules, update each module, and then reassemble them to pose queries. Also, see section 9.4.1 of @humphreys_integrated_2023 for a method that represents non-binary data as a profile of outcomes on multiple binary nodes.]
+There are two main limitations of the models that `CausalQueries` can handle. First, `CausalQueries` is designed for models with a relatively small number of binary nodes. Since it does not limit the range of possible causal relationships in a model, the parameter space expands quickly with the model's complexity. This complexity growth depends on the causal structure and increases rapidly with the number of parents influencing a child node. A chain model like $A \rightarrow B \rightarrow C \rightarrow D \rightarrow E$ has only 18 parameters ($2^1 + 4\times 2^2$), while a model in which $A, B, C, D$ are all direct ancestors of $E$ has $65,544$ parameters ($4\times 2^1 + 2^{(4^2)}$). Switching from binary to nonbinary nodes has similar effects. The restriction to binary nodes is for computational, not conceptual, reasons.^[For more on computational constraints and strategies for updating and querying large models, see the `CausalQueriesTools` package available via `devtools::install_github("till-tietz/CausalQueriesTools")`. The main approach here is to divide large causal models into modules, update each module, and then reassemble them to pose queries. Also, see section 9.4.1 of @humphreys_integrated_2023 for a method that represents non-binary data as a profile of outcomes on multiple binary nodes.]
 
-Second, the package is designed for learning about populations from independently sampled units. Therefore, it does not inherently address issues of clustering, hierarchical structures, or purposive sampling. However, the broader framework can be adapted for these purposes [see section 9.4 of @humphreys_integrated_2023]. The targets of inference are usually case-level or population-level quantities, and `CausalQueries` is not well-suited for estimating sample quantities.
+Second, the package is designed for learning about populations from independently sampled units. Therefore, it does not inherently address issues of clustering, hierarchical structures, or purposive sampling. However, the broader framework can be adapted for these purposes [see section 9.4 of @humphreys_integrated_2023]. The targets of inference are case-level or population-level quantities; `CausalQueries` is not well-suited for estimating sample quantities.
 
 ## Statistical model {#sec-theory}
 
@@ -324,7 +326,7 @@ w_{11} & = & \lambda^X_1(\lambda^Y_{11} + \lambda^Y_{01})\end{array} \right.
 $$
 
 
-For a more complex example @tbl-lipidspar illustrates key values for the Lipids model. We see here that we have two types for the exogenous node $Z$, four for $X$ (representing the strata familiar from instrumental variables analysis: never takers, always takers, defiers, and compliers) and 4 for $Y$. For $Z$ and $X$ we have parameters corresponding to probability of these nodal types. For instance `Z.0` is the probability that $Z=0$. `Z.1` is the complementary probability that $Z=1$. Things are a little more complicated for distributions on nodal types for $Y$ however: because of confounding between $X$ and $Y$ we have parameters that capture the conditional probability of the nodal types for $Y$ *given* the nodal types for $X$. We see there are four sets of these parameters. The next to final column shows a sample set of parameter values. Together, the parameters describe a full joint probability distribution over types for $Z$, $X$ and $Y$ that is faithful to the graph.
+For a more complex example, @tbl-lipidspar illustrates key values for the Lipids model. We see here that we have two types for the exogenous node $Z$, four for $X$ (representing the strata familiar from instrumental variables analysis: never takers, always takers, defiers, and compliers) and four for $Y$. For $Z$ and $X$ we have parameters corresponding to probability of these nodal types. For instance `Z.0` is the probability that $Z=0$. `Z.1` is the complementary probability that $Z=1$. Things are a little more complicated for distributions on nodal types for $Y$ however: because of confounding between $X$ and $Y$ we have parameters that capture the conditional probability of the nodal types for $Y$ *given* the nodal types for $X$. We see there are four sets of these parameters. The next to final column shows a sample set of parameter values. Together, the parameters describe a full joint probability distribution over types for $Z$, $X$ and $Y$ that is faithful to the graph.
 
 ```{r}
 #| label: tbl-lipidspar
@@ -335,7 +337,7 @@ with_pars <-
   lipids_model |>
   set_parameters(param_type = "prior_draw") 
 
-with_pars$parameters_df |>
+with_pars |> grab("parameters_df") |>
   dplyr::select(node,  nodal_type, param_set, param_names, param_value, priors) |> 
   knitr::kable(
     digits = 2,
@@ -358,24 +360,23 @@ $$
 
 The value of the `CausalQueries` package is that it enables users to specify arbitrary models of this form, determine all the implied nodal and causal types, and update these models using given priors and data. This is achieved by calculating event probabilities based on all possible parameter vectors and subsequently the likelihood of the data given the model. Additionally, the package allows users to pose arbitrary queries on a model to evaluate the values of estimands of interest, which are functions of the values or counterfactual values of nodes, *conditional* on the values or counterfactual values of nodes.
 
-The following sections review the key functionalities for making, updating, and querying causal models.
-
-<!-- \ref{box1} -->
-
-<!-- ```{=latex} -->
-<!-- \begin{mybox}{Box1 XX} \label{box1} -->
-<!-- Here is the text that will appear inside the grey box. You can include multiple lines of text here. -->
-<!-- \end{mybox} -->
-<!-- ``` -->
+The following sections review the classes and methods used by `CausalQueries` and the key functionalities for making, updating, and querying causal models.
 
 
+## Classes and Methods {#sec-classes}
+
+`CausalQueries` makes use of two types of object classes, `causal_model` and `model_query`.
+
+An object of class `causal_model` encodes a structural causal model and stores information on parameter values---either provided by the user or set to defaults---as well as prior or posterior distributions over model parameters. An object of class `causal_model` is generated using `make_model()` and can be adjusted using `update_model()` as well as a set of helper functions: `set_confound`, `set_restrictions`, `set_priors`, as describe in sections @sec-make and @sec-update below.  Methods `print`, `summary` and `plot` are available for an object of class `causal_model`.
+
+An object of class `model_query` records  responses to queries posed of a causal model. Depending on the nature of the query, it can include estimates of effects, prior or posterior standard deviations, and confidence intervals.  An object of class `causal_model` is generated using `query_model` as described in @sec-query. Methods `print`, `summary` and `plot` are available for an object of class `model_query`.
 
 
 
 
 ## Making models {#sec-make}
 
-A model can be defined in a single step in `CausalQueries` by supplying a causal statement---expressed using `dagitty`-style syntax [@textor_robust_2016]--- to `make_model`. This generates an object of class `causal_model` (see Box 1 for a description of classes and methods),
+A model can be defined in a single step in `CausalQueries` by supplying a causal statement---expressed using `dagitty`-style syntax [@textor_robust_2016]--- to `make_model`. This generates an object of class `causal_model` (see @sec-classes).
 
 To illustrate, a model where $X$ causes both $M$ and $Y$, and $M$ also causes $Y$, can be created as follows:
 
@@ -405,20 +406,12 @@ The statement provides the names of nodes as well as arrows ("`->`" or "`<-`") c
 
 In addition, as we did in the @chickering_clinicians_1996 example, it is possible to use two-headed arrows ("`<->`") to indicate "unobserved confounding," that is, the presence of an unobserved variable that might influence two or more observed variables. In this case, condition 3 above is relaxed, and the exogenous nodes associated with confounded variables have a joint distribution. We describe how this is done in greater detail in @sec-confounding.
 
-::: {#note-example2 .callout-note icon=false}
-## Box 1: Classes and Methods
 
-`CausalQueries` makes use of two types of object classes, `causal_model` and `model_query`.
 
-* An object of class `causal_model` encodes a structural causal model and stores information on parameter values---either provided by the user or set to defaults---as well as prior or posterior distributions over model parameters. An object of class `causal_model` is generated using `make_model()` and can be adjusted using `update_model()` as well as a set of helper functions: `set_confound`, `set_restrictions`, `set_priors`. Methods `print`, `summary` and `plot` are available for an object of class `causal_model`.
-
-* An object of class `model_query` records  responses to queries posed of a causal model. Depending on the nature of the query, it can include estimates of effects, prior or posterior standard deviations, and confidence intervals.  Methods `print`, `summary` and `plot` are available for an object of class `model_query`.
-
-:::
 
 ### Graphing
 
-Plotting the model can help verify that you have correctly defined its structure. `CausalQueries` offers straightforward graphing tools that utilize features from the `dagitty`, `ggplot2`, and `ggdag` packages. Once a model is defined, it can be graphed by calling the `plot()` method on objects of class `causal_model`. This method is a wrapper for the `plot_model()` function and accepts additional options, which are detailed in `?plot_model`.
+Plotting the model can help users verify that they have correctly defined its structure. `CausalQueries` offers straightforward graphing tools that utilize features from the `ggplot2` and `ggdag` packages. Once a model is defined, it can be graphed by calling the `plot()` method on objects of class `causal_model`. This method is a wrapper for the `plot_model()` function and accepts additional options, which are detailed in `?plot_model`.
 
 @fig-plots shows figures generated by plotting `lipids_model` with and without options. The plots have class `c("gg", "ggplot")` and so will accept any additional layers available for the objects of class `ggplot`.
 
@@ -428,7 +421,7 @@ Plotting the model can help verify that you have correctly defined its structure
 #| out-width: 60%
 #| fig-height: 6
 #| fig-width: 4
-#| fig-cap: "Examples of model graphs. For help on options see `? plot_model`"
+#| fig-cap: "Examples of model graphs. For help on options see `?plot_model`"
 #| fig-subcap:
 #|   - "Without options"
 #|   - "With options"
@@ -480,6 +473,7 @@ When a model is defined, `CausalQueries` generates a set of internal objects use
 | `type_distribution`         | A matrix of type probabilities using posteriors.                                                                                                                                |
 | `data`                      | A data frame with data that was provided to update the model.                                                                                                                   |
 | `stanfit`                   | A `stanfit` object generated by Stan; prints `stanfit` summary with updated parameter names.                                                                                     |
+| `stan_warnings`              | A list of warnings produced by Stan during updating. If warnings exist these are printed as part of model summaries. |
 | `stan_summary`              | A list of Stan outputs that includes `stanfit`, `data`, and, if requested when updating the model, posterior `event_probabilities` and `type_distribution`; prints `stanfit` summary with updated parameter names. |
 
 
@@ -649,7 +643,7 @@ Users can also provide custom priors. The simplest way to specify custom priors 
 #| label: set-priors-custom
 #| echo: true
 #| eval: true
-#| message: FALSE
+#| message: false
 
 lipids_model |> 
   set_priors(param_names = c("X.10", "X.01"), alphas = 3:4) |> 
@@ -657,7 +651,7 @@ lipids_model |>
 
 ```
 
-The priors here should be interpreted as indicating $\alpha_X = (1, 2, 3, 4)$, which implies a distribution over $(\lambda^X_{00},\lambda^X_{10}, \lambda^X_{01}, \lambda^X_{11})$ with expectation $\left(\frac{1}{10}, \frac{2}{10}, \frac{3}{10}, \frac{4}{10} \right)$.
+The priors here should be interpreted as indicating $\alpha_X = (1, 3, 4, 1)$, which implies a distribution over $(\lambda^X_{00},\lambda^X_{10}, \lambda^X_{01}, \lambda^X_{11})$ with expectation $\left(\frac{1}{9}, \frac{3}{9}, \frac{4}{9}, \frac{1}{9} \right)$.
 
 Providing priors as a vector of numbers for larger models can be hard. For that reason, `set_priors()` allows for more targeted modifications of the parameter vector. For instance:
 
@@ -672,9 +666,8 @@ lipids_model |>
 
 ```
 
-Setting priors requires mapping alpha values to parameters, and so the problem of altering priors reduces to selecting rows of the `parameters_df` data frame at which to alter values. When specifying a causal statement as above, `CausalQueries` internally identifies nodal types consistent with the statement, which identifies parameters to alter priors for.
+<!-- Setting priors requires mapping alpha values to parameters, and so the problem of altering priors reduces to selecting rows of the `parameters_df` data frame at which to alter values. When specifying a causal statement as above, `CausalQueries` internally identifies nodal types consistent with the statement, which identifies parameters to alter priors for. -->
 
-We can achieve the same result as above by specifying nodal types for which we would like to adjust the priors. `set_priors()` allows for the specification of any non-redundant combination of arguments on the `param_names`, `node`, `nodal_type`, `param_set`, and `given` columns of `parameters_df` to identify parameters to set priors for uniquely. Alternatively, a fully formed subsetting statement may be supplied to `alter_at`. Since all these arguments are mapped to the parameters they identify internally, they may be used interchangeably.^[See `?set_priors` and `?make_priors` for more examples.]
 
 While setting highly targeted priors is convenient and flexible, it should be done with caution. Assigning priors to specific parameters in complex models, particularly those involving confounding, can significantly impact inferences. Additionally, note that flat priors over nodal types do not necessarily equate to flat priors over queries. Flat priors over parameters within a parameter family assign equal weight to each nodal type, which can lead to strong assumptions about causal quantities of interest. For example, in an $X \rightarrow Y$ model where negative effects are excluded, the average causal effect implied by flat priors is $1/3$. This can be demonstrated by querying the model as follows:
 
@@ -852,8 +845,7 @@ list(
                  data, 
                  censored_types = c("X1Y0",  "X0Y1"))
   ) |>
-  query_model("Y[X=1] - Y[X=0]", using = "posteriors") |> 
-  subset(select = c("model", "query", "mean", "sd"))
+  query_model("Y[X=1] - Y[X=0]", using = "posteriors")
 
 ```
 
@@ -902,6 +894,29 @@ make_model("X -> Y")  |>
 
 This summary provides information on the distribution of parameters and convergence diagnostics, summarized in the `Rhat` column. The last row shows the unnormalized log density on Stan's unconstrained space, which is intended to diagnose sampling efficiency and evaluate approximations.^[See [Stan documentation](https://mc-stan.org/cmdstanr/reference/fit-method-lp.html) for more details.] This summary can also include summaries for the transformed parameters if users retain these.
 
+
+### Convergence problems and diagnostics
+
+There is no guarantee that updating will produce reliable posterior draws. Indeed for some models,  convergence failure are predictable. Fortunately,  `stan` provides warnings that alert users to possible problems. These warnings are retained by `CausalQueries` and repeated in model summaries or when queries are posed.
+
+In the example below the missing data on $M$ means that there is no information to assess whether the strong relation between $X$ and $Y$ is due to positive effects. 
+
+```{r}
+#| label: preservewwarning
+#| warning: false
+model <- 
+  make_model("X -> M -> Y") |>
+  update_model(data = data.frame(X = rep(0:1, 10000), Y = rep(0:1, 10000)), 
+               iter = 5000,
+               refresh = 0)
+```
+
+The print and summary methods returns warnings alerting users to the problem thus:
+
+```{r}
+model
+```
+
 If users wish to run more advanced diagnostics of performance, they can retain and access the "raw" Stan output as follows: 
 
 ```{r}
@@ -940,7 +955,7 @@ model |> inspect("stan_fit") |>
 
 ## Queries {#sec-query}
 
-`CausalQueries` provides functionality to pose and answer elaborate causal queries. The key approach is to code causal queries as functions of causal types and return a distribution over the queries implied by the distribution over causal types. The primary approach is to use `query_model()` to generate an object of class `model_query` (see Box 1) which prints to a table or can be plotted directly. The next sections describe how such queries are calculated and  the syntax used for posing queries.
+`CausalQueries` provides functionality to pose and answer elaborate causal queries. The key approach is to code causal queries as functions of causal types and return a distribution over the queries implied by the distribution over causal types. The primary approach is to use `query_model()` to generate an object of class `model_query` (see @sec-classes) which prints to a table or can be plotted directly. The next sections describe how such queries are calculated and  the syntax used for posing queries.
 
 ### Calculating factual and counterfactual quantities {#sec-propagation}
 
@@ -1015,7 +1030,7 @@ In this case, the aim is to identify the types for which in fact $X1=1$ and $X2=
 
 #### Conditional queries
 
-Many queries of interest are "conditional" queries. For example, the effect of $X$ on $Y$ for units for which $W=1$ or the effect of $X$ on $Y$ for units for which $Z$ positively affects $X$. Such conditional queries are posed in `CausalQueries` by providing a `given` statement and the `query` statement. The entire query then becomes: for what units does the `query` condition hold among those units for which the `given` condition holds? The two parts can each be calculated using `get_query_types`. Thus, for instance, in an $X \rightarrow Y$ model, the probability that $X$ causes $Y$ given $X=1 \, \& \, Y=1$ is the probability of causal `X1.Y11` type divided by the sum of the probabilities of types `X1.Y11` and `X1.Y01`. In practice, this is done automatically for users when they call `query_model()` or `query_distribution()`.
+Many queries of interest are "conditional" queries. For example, the effect of $X$ on $Y$ for units for which $W=1$ or the effect of $X$ on $Y$ for units for which $Z$ positively affects $X$. Such conditional queries are posed in `CausalQueries` by providing a `given` statement and the `query` statement or by placing the condition following a `:|:` separator in the query expression. For instance `"Y[X=1]==1 :|: X==0"` asks for the probability that $Y=1$ when $X$ is set to 1 for a case in which in fact $X=0$. The entire query then becomes: for what units does the `query` condition hold among those units for which the `given` condition holds? The two parts can each be calculated using `get_query_types`. Thus, for instance, in an $X \rightarrow Y$ model, the probability that $X$ causes $Y$ given $X=1 \, \& \, Y=1$ is the probability of causal `X1.Y11` type divided by the sum of the probabilities of types `X1.Y11` and `X1.Y01`. In practice, this is done automatically for users when they call `query_model()` or `query_distribution()`.
 
 #### Complex expressions
 
@@ -1086,26 +1101,29 @@ The core function `query_model` implements `query_distribution` and reports summ
 
 #### Case queries
 
-The commands `query_distribution()` and `query_model()` can also be used when one is interested in assessing the value of a query for a *particular case*. In a sense, this is equivalent to posing a conditional query, querying conditional on values in a case. For instance, we might consult our posterior for the Lipids model and ask about the effect of $X$ on $Y$ for a case in which $Z=1$, $X=1$ and $Y=1$. 
+The commands `query_distribution()` and `query_model()` can also be used when one is interested in assessing the value of a query about a new case that we might confront. 
+
+In a sense, this is equivalent to posing a conditional query, querying conditional on values in a case. For instance, we might consult our posterior for the Lipids model and ask about the effect of $X$ on $Y$ for a case in which $Z=1$, $X=1$ and $Y=1$. 
 
 ```{r}
 #| label: case-level-query
 #| echo: true
 #| eval: true
 #| purl: true
+#| fig-height: 2 
+#| fig-width: 8 
 
 lipids_model |>
   query_model(
-    query = "Y[X=1] - Y[X=0]",
-    given = "X==1 & Y==1 & Z==1",
-    using = "posteriors")  |> 
-  subset(select = c("query", "mean", "sd"))
+    query = "Y[X=1] - Y[X=0] :|: X==1 & Y==1 & Z==1",
+    using = "posteriors") |>
+  plot()
 
 ```
 
-The result is what we should now believe for all cases in which $Z=1$, $X=1$, and $Y=1$. It is the expected average effect among cases with this data type, so this expectation has an uncertainty attached reflecting our uncertainty about the expectation.
+The result is what we should now believe for all cases in which $Z=1$, $X=1$, and $Y=1$. It is the expected average effect among cases with this data type, so this expectation has an uncertainty attached to it, reflecting our uncertainty about the expectation.
 
-In principle, this differs from what we would infer if we were presented with a new case. When examining a new case, we must *update* based on the information observed in that case. This *new* case-level inference is calculated when the `case_level = TRUE` argument is specified. For a query $Q$ and given $D$, this returns the value $\frac{\int\pi(Q \& D | \lambda_i)p(\lambda_i)d\lambda_i}{\int\pi(D | \lambda_i)p(\lambda_i)d\lambda_i}$, which may differ from the mean of the distribution $\frac{\pi(Q \& D | \lambda)}{\pi(D | \lambda)}$ given by $\int \frac{\pi(Q \& D | \lambda_i)}{\pi(D | \lambda_i)} p(\lambda_i)d\lambda_i$.
+This can differ, however, from what we would infer if we were presented with a new case drawn from the population. When examining a new case, we must *update* based on the information provided about that case. This *new* case-level inference is calculated when the `case_level = TRUE` argument is specified. For a query $Q$ and given $D$, this returns the value $\frac{\int\pi(Q \& D | \lambda_i)p(\lambda_i)d\lambda_i}{\int\pi(D | \lambda_i)p(\lambda_i)d\lambda_i}$, which may differ from the mean of the distribution $\frac{\pi(Q \& D | \lambda)}{\pi(D | \lambda)}$ given by $\int \frac{\pi(Q \& D | \lambda_i)}{\pi(D | \lambda_i)} p(\lambda_i)d\lambda_i$.
 
 To illustrate the difference, consider an $X \rightarrow M \rightarrow Y$ model where we are quite certain that $X$ causes $Y$, but unsure whether this effect works through two positive or two negative effects. If asked what we would think  about effects in cases $M=0$ (or with $M=1$), we have little basis to know whether these are cases in which effects are more or less likely. However, if we randomly find a case and we observe that $M=0$, our understanding of the causal model evolves, leading us to believe there is (or is not) an effect in this specific case. The case-level query gives a single value without posterior standard deviation, representing the belief about this new case. 
 
@@ -1113,20 +1131,21 @@ To illustrate the difference, consider an $X \rightarrow M \rightarrow Y$ model 
 #| echo: true
 #| eval: true
 #| purl: true
+#| fig-height: 2.5 
+#| fig-width: 8 
 
 make_model("X -> M -> Y") |>
   update_model(data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)), iter = 4000) |>
-  query_model("Y[X=1] > Y[X=0]", 
-            given = "X==1 & Y==1 & M==1", 
+  query_model("Y[X=1] > Y[X=0] :|: X==1 & Y==1 & M==1", 
             using = "posteriors",
-            case_level = c(TRUE, FALSE))  |> 
-  subset(select = c("query", "case_level", "mean", "sd"))
+            case_level = c(TRUE, FALSE)) |>
+  plot()
 
 ```
 
 #### Batch queries
 
-The function `query_model()` can also be used to pose multiple queries of multiple models in batch. The function takes a list of models, causal queries, and conditions as inputs. It then calculates population or case level estimands given prior or posterior distributions and reports summaries of these distributions. The result is a data frame of class `model_query` (see Box 1) that can be displayed as a table or used for graphing. The associated `plot` method produces plots with class `c("gg", "ggplot")`.
+The function `query_model()` can also be used to pose multiple queries of multiple models in batch. The function takes a list of models, causal queries, and conditions as inputs. It then calculates population or case level estimands given prior or posterior distributions and reports summaries of these distributions. The result is a data frame of class `model_query` (see @sec-classes) that can be displayed as a table or used for graphing. The associated `plot` method produces plots with class `c("gg", "ggplot")`.
 
 Since users can adjust multiple lists of features of a query there is an option, `expand_grid = TRUE`,  to indicate whether to query with respect to all combinations of supplied arguments.
 
@@ -1138,10 +1157,13 @@ To illustrate, we return again to the limits model but now consider two versions
 #| eval: true
 
 models <- list(
-  Unrestricted = lipids_model |> 
+  Unrestricted = lipids_model |>
     update_model(data = lipids_data, refresh = 0),
-  Restricted = lipids_model |> set_restrictions("X[Z=1] < X[Z=0]") |>
-    update_model(data = lipids_data, refresh = 0))
+  
+  Restricted = lipids_model |>
+    set_restrictions("X[Z=1] < X[Z=0]") |>
+    update_model(data = lipids_data, refresh = 0)
+)
 ```
 
 @tbl-batch-query then  shows the output from a single call to `query_model()` with the `expand_grid` argument set to `TRUE` to generate all combinations of list elements. 
@@ -1156,8 +1178,7 @@ queries <-
   query_model(
     models,  
     query = list(ATE = "Y[X=1] - Y[X=0]", 
-                 POS = "Y[X=1] > Y[X=0]"),
-    given = c(TRUE,  "Y==1 & X==1"),
+                 POS = "Y[X=1] > Y[X=0] :|: Y==1 & X==1"),
     case_level = c(FALSE, TRUE),
     using = c("priors", "posteriors"),
     expand_grid = TRUE)
@@ -1190,7 +1211,7 @@ queries |>
 #| label: fig-batch-query
 #| fig-cap: "Default plotting for a a set of queries over multiple models."
 #| fig-width: 8 
-#| fig-height: 6 
+#| fig-height: 4 
 #| echo: false
 #| eval: true
 #| message: false
@@ -1201,11 +1222,11 @@ queries |> plot()
 ## Summary and discussion
 
 
-`CausalQueries` provides an intuitive user interface to generate, update, and query causal models.
+`CausalQueries` provides an intuitive user interface to generate, update, and query causal models defined over binary nodes.
 
-A particular strength is the flexibility users enjoy in specifying the structure of causal models and querying them using an integrated framework. Rather than requiring bespoke functions for different types of problems---studying treatment effects in randomized experiments, complier effects in encouragement designs, or mediation quantities in more complex causal structures---a unified procedure is used both for defining models and for updating on model parameters. With updated models in hand, queries involving arbitrary $do$ operations can be posed using an intuitive syntax. 
+A particular strength is the flexibility users enjoy in specifying the structure of causal models and querying them using an integrated framework. Rather than requiring bespoke functions for different types of problems---studying treatment effects in randomized experiments, complier effects in encouragement designs, or mediation quantities in more complex causal structures---a unified procedure is used for defining models and for updating on model parameters. With updated models in hand, queries involving arbitrary $do$ operations can be posed using an intuitive syntax. 
 
-We identify several areas for future expansion of the package's functionality. One area involves extending the class of models that can be passed to `make_model()` to accommodate non-binary data and hierarchical data structures. Proofs of concept for both extensions are available in @humphreys_integrated_2023. Inspired by new work in @irons2023causally, we see potential in allowing the specification of more flexible prior distributions and developing algorithms for faster updating in these settings. For querying, there is scope to facilitate nonlinear complex causal queries, such as risk ratios, which currently require combining multiple simple causal queries. Finally, we see potential for more integrated functionality for model validation, including assessments of the sensitivity of conclusions to priors. 
+We identify several areas for future expansion of the package's functionality. One area involves extending the class of models that can be passed to `make_model()` to accommodate non-binary data and hierarchical data structures. Proofs of concept for both extensions are available in @humphreys_integrated_2023. Inspired by new work in @irons2023causally, we see potential in allowing the specification of more flexible prior distributions and developing algorithms for faster updating in these settings. Inspired by conditions for identification of mediation quantities in @forastiere2018principal, we see potential for allowing more flexible constraints over the joint distribution of nodal types. For querying, we see scope for  facilitating nonlinear complex causal queries, such as risk ratios, which currently require combining multiple simple causal queries. Finally, we see potential for more integrated functionality for model validation, including assessments of the sensitivity of conclusions to priors. 
 
 \FloatBarrier
 
@@ -1351,11 +1372,11 @@ We present a brief summary of model updating benchmarks. Note that these benchma
 +----------------------------------------------------+----------------------------+--------------------------------------+
 | Model                                              | Number of Model Parameters | `update_model()` Run-Time (seconds)  |
 +:==================================================:+:==========================:+:====================================:+
-| $X1 \rightarrow Y$                                 | 6                          | 9.0                                  |
+| $X1 \rightarrow Y$                                 | 6                          | 7.6                                  |
 +----------------------------------------------------+----------------------------+--------------------------------------+
-| $X1 \rightarrow Y; X2 \rightarrow Y$               | 20                         | 11.5                                 |
+| $X1 \rightarrow Y; X2 \rightarrow Y$               | 20                         | 9.6                                  |
 +----------------------------------------------------+----------------------------+--------------------------------------+
-| $X1\rightarrow Y;X2\rightarrow Y;X3\rightarrow Y$  | 262                        | 87.3                                 |
+| $X1\rightarrow Y;X2\rightarrow Y;X3\rightarrow Y$  | 262                        | 96.4                                 |
 +----------------------------------------------------+----------------------------+--------------------------------------+
 
 : Benchmark 1. {#tbl-bench1 tbl-colwidths=\[40,30,30\]}
@@ -1363,15 +1384,15 @@ We present a brief summary of model updating benchmarks. Note that these benchma
 +--------------------+------------------------+----------------------------------------+
 | Model              | Number of Observations | `update_model()` Run-Time (seconds)    |
 +:==================:+:======================:+:======================================:+
-| $X1 \rightarrow Y$ | 10                     | 8.4                                    |
+| $X1 \rightarrow Y$ | 10                     | 7.5                                    |
 +--------------------+------------------------+----------------------------------------+
-| $X1 \rightarrow Y$ | 100                    | 8.5                                    |
+| $X1 \rightarrow Y$ | 100                    | 7.8                                    |
 +--------------------+------------------------+----------------------------------------+
-| $X1 \rightarrow Y$ | 1000                   | 9.9                                    |
+| $X1 \rightarrow Y$ | 1000                   | 9.8                                    |
 +--------------------+------------------------+----------------------------------------+
-| $X1 \rightarrow Y$ | 10000                  | 14.3                                   |
+| $X1 \rightarrow Y$ | 10000                  | 16.2                                   |
 +--------------------+------------------------+----------------------------------------+
-| $X1 \rightarrow Y$ | 100000                 | 30.0                                   |
+| $X1 \rightarrow Y$ | 100000                 | 34.3                                   |
 +--------------------+------------------------+----------------------------------------+
 
 : Benchmark 2. {#tbl-bench2 tbl-colwidths=\[40,30,30\]}

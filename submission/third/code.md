@@ -1,6 +1,6 @@
 ---
 title: "Replication code for 'Making, Updating, and Querying Causal Models using CausalQueries'"
-date: November 2024
+date: December 2024
 author: Till Tietz, Lily Medina, Georgiy Syunyaev, and Macartan Humphreys
 ---
 
@@ -37,23 +37,11 @@ data("lipids_data")
 lipids_data
 ```
 
-```
-##    event strategy count
-## 1 Z0X0Y0      ZXY   158
-## 2 Z1X0Y0      ZXY    52
-## 3 Z0X1Y0      ZXY     0
-## 4 Z1X1Y0      ZXY    23
-## 5 Z0X0Y1      ZXY    14
-## 6 Z1X0Y1      ZXY    12
-## 7 Z0X1Y1      ZXY     0
-## 8 Z1X1Y1      ZXY    78
-```
-
 ## Lipids model
 
 
 ``` r
-lipids_model <-  make_model("Z -> X -> Y; X <-> Y") 
+lipids_model <-  make_model("Z -> X -> Y; X <-> Y")
 ```
 
 ``` r
@@ -64,8 +52,9 @@ lipids_model <- update_model(lipids_model, lipids_data)
 lipids_queries <-
   query_model(
     lipids_model,
-    query = "Y[X=1] - Y[X=0]",
-    given = c("All", "X==0 & Y==0", "X[Z=1] > X[Z=0]"),
+    queries = list(ATE  = "Y[X=1] - Y[X=0]", 
+                   PoC  = "Y[X=1] - Y[X=0] :|: X==0 & Y==0", 
+                   LATE = "Y[X=1] - Y[X=0] :|: X[Z=1] > X[Z=0]"),
     using = "posteriors"
   )
 ```
@@ -77,8 +66,9 @@ lipids_queries |>
     digits = 2,
     booktabs = TRUE,
     align = "c",
-    escape = TRUE, 
-    linesep = "") 
+    escape = TRUE,
+    linesep = ""
+  )
 ```
 
 
@@ -93,41 +83,44 @@ lipids_queries |>
 lipids_queries |> plot()
 ```
 
-![Illustration of queries plotted](figure/unnamed-chunk-7-1.png)
+![Illustration of queries plotted](figure/unnamed-chunk-8-1.png)
 
 All in a single pipe:
 
 
 ``` r
-  make_model("Z -> X -> Y; X <-> Y") |>
+make_model("Z -> X -> Y; X <-> Y") |>
   update_model(lipids_data) |>
   query_model(
-    query = "Y[X=1] - Y[X=0]",
-    given = c("All", "X==0 & Y==0", "X[Z=1] > X[Z=0]"),
+    queries = list(ATE  = "Y[X=1] - Y[X=0]", 
+                   PoC  = "Y[X=1] - Y[X=0] :|: X==0 & Y==0", 
+                   LATE = "Y[X=1] - Y[X=0] :|: X[Z=1] > X[Z=0]"),
     using = "posteriors"
   ) |>
   plot()
 ```
 
-![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-1.png)
+![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-1.png)
 
 ## Making models
 
 
 ``` r
-with_pars <- 
+with_pars <-
   lipids_model |>
-  set_parameters(param_type = "prior_draw") 
+  set_parameters(param_type = "prior_draw")
 
-with_pars$parameters_df |>
-  dplyr::select(node,  nodal_type, param_set, param_names, param_value, priors) |> 
+with_pars |> grab("parameters_df") |>
+  dplyr::select(node, nodal_type, param_set, 
+                param_names, param_value, priors) |>
   knitr::kable(
     digits = 2,
     booktabs = TRUE,
     align = "c",
     escape = TRUE,
     longtable = TRUE,
-    linesep = "") |> 
+    linesep = ""
+  ) |>
   kableExtra::kable_classic_2(latex_options = c("hold_position"))
 ```
 
@@ -330,13 +323,15 @@ model <- make_model("X -> M -> Y <- X")
 lipids_model |> plot()
 
 lipids_model |>
-  plot(x_coord = 1:3,
-       y_coord = 3:1,
-       textcol = "black",
-       textsize = 3,
-       shape = c(15, 16, 16),
-       nodecol = "lightgrey",
-       nodesize = 10)
+  plot(
+    x_coord = 1:3,
+    y_coord = 3:1,
+    textcol = "black",
+    textsize = 3,
+    shape = c(15, 16, 16),
+    nodecol = "lightgrey",
+    nodesize = 10
+  )
 ```
 
 <div class="figure">
@@ -345,38 +340,40 @@ lipids_model |>
 </div>
 
 ``` r
-statements <- list("X -> Y <- W", 
-                   "X -> Y <- W; X <-> W", 
-                   "X -> Y <- W; X <-> Y; W <-> Y",
-                   "X -> Y <- W; X <-> Y; W <-> Y; X <-> W", 
-                   "X -> W -> Y <- X",
-                   "X -> W -> Y <- X; W <-> Y",
-                   "X -> W -> Y <- X; X <-> W; W <-> Y", 
-                   "X -> W -> Y <- X; X <-> W; W <-> Y; X <-> Y")
+statements <- list(
+  "X -> Y <- W",
+  "X -> Y <- W; X <-> W",
+  "X -> Y <- W; X <-> Y; W <-> Y",
+  "X -> Y <- W; X <-> Y; W <-> Y; X <-> W",
+  "X -> W -> Y <- X",
+  "X -> W -> Y <- X; W <-> Y",
+  "X -> W -> Y <- X; X <-> W; W <-> Y",
+  "X -> W -> Y <- X; X <-> W; W <-> Y; X <-> Y"
+)
 
 dof <- function(statement) {
   make_model(statement, add_causal_types = FALSE) |>
-  grab("parameters_df")  |>
-  group_by(param_set) |>
-  summarize(n  = n() - 1) |>
-  pull(n) |>
-  sum()
+    grab("parameters_df")  |>
+    group_by(param_set) |>
+    summarize(n  = n() - 1) |>
+    pull(n) |>
+    sum()
 }
-  
 
-statements |> 
-  lapply(function(s) paste0("`", s, "`")) |> 
-  unlist() |> 
-  data.frame(
-    Model = _,
-    dof = unlist(lapply(statements, dof))) |>
+
+statements |>
+  lapply(function(s)
+    paste0("`", s, "`")) |>
+  unlist() |>
+  data.frame(Model = _, dof = unlist(lapply(statements, dof))) |>
   knitr::kable(
     digits = 2,
     booktabs = TRUE,
     align = c("l", "c"),
-    escape = TRUE, 
+    escape = TRUE,
     linesep = "",
-    col.names = c("Model", "Degrees of freedom")) 
+    col.names = c("Model", "Degrees of freedom")
+  )
 ```
 
 
@@ -396,16 +393,16 @@ statements |>
 
 
 ``` r
-model_restricted <- 
-  lipids_model |> 
+model_restricted <-
+  lipids_model |>
   set_restrictions("X[Z=1] < X[Z=0]")
 ```
 
 ``` r
-model <- 
+model <-
   lipids_model |>
-  set_restrictions(labels = list(X = "01", Y = c("00", "01", "11")), 
-                   keep = TRUE)
+  set_restrictions(labels = list(X = "01", 
+                                 Y = c("00", "01", "11")), keep = TRUE)
 ```
 
 ``` r
@@ -419,8 +416,8 @@ model <- lipids_model |>
 ```
 
 ``` r
-lipids_model |> 
-  inspect("prior_hyperparameters", nodes = "X") 
+lipids_model |>
+  inspect("prior_hyperparameters", nodes = "X")
 ```
 
 ```
@@ -433,7 +430,7 @@ lipids_model |>
 ```
 
 ``` r
-model <- lipids_model |> 
+model <- lipids_model |>
   set_priors(distribution = "jeffreys")
 ```
 
@@ -442,8 +439,8 @@ model <- lipids_model |>
 ```
 
 ``` r
-lipids_model |> 
-  set_priors(param_names = c("X.10", "X.01"), alphas = 3:4) |> 
+lipids_model |>
+  set_priors(param_names = c("X.10", "X.01"), alphas = 3:4) |>
   inspect("prior_hyperparameters", nodes = "X")
 ```
 
@@ -472,14 +469,14 @@ lipids_model |>
 ```
 
 ``` r
-query <- 
+query <-
   make_model("X -> Y") |>
   set_restrictions(decreasing("X", "Y")) |>
   query_model("Y[X=1] - Y[X=0]", using = "priors")
 ```
 
 ``` r
-make_model("X -> Y") |> 
+make_model("X -> Y") |>
   inspect("parameters")
 ```
 
@@ -507,55 +504,44 @@ make_model("X -> Y") |>
 ##  0.5  0.5  0.1  0.1  0.7  0.1
 ```
 
+## Drawing data from a model
+
+Complete data
+
+
 ``` r
-lipids_model |> 
+lipids_model |>
   make_data(n = 4)
 ```
 
-```
-##   Z X Y
-## 1 0 0 0
-## 2 0 0 1
-## 3 1 1 0
-## 4 1 1 1
-```
+Incomplete data
+
 
 ``` r
 sample_data <-
   lipids_model |>
-  make_data(n = 8,
-            nodes = list(c("Z", "Y"), "X"),
-            probs = list(1, .5),
-            subsets = list(TRUE, "Z==1 & Y==0"))
+  make_data(
+    n = 8,
+    nodes = list(c("Z", "Y"), "X"),
+    probs = list(1, .5),
+    subsets = list(TRUE, "Z==1 & Y==0")
+  )
 ```
+
+Data in compact form
+
 
 ``` r
-sample_data |> 
+sample_data |>
   collapse_data(lipids_model)
-```
-
-```
-##     event strategy count
-## 1  Z0X0Y0      ZXY     0
-## 2  Z1X0Y0      ZXY     1
-## 3  Z0X1Y0      ZXY     0
-## 4  Z1X1Y0      ZXY     1
-## 5  Z0X0Y1      ZXY     0
-## 6  Z1X0Y1      ZXY     0
-## 7  Z0X1Y1      ZXY     0
-## 8  Z1X1Y1      ZXY     0
-## 9    Z0Y0       ZY     1
-## 10   Z1Y0       ZY     2
-## 11   Z0Y1       ZY     1
-## 12   Z1Y1       ZY     2
 ```
 
 ## Updating models
 
 
 ``` r
-make_model("X -> Y") |> 
-  inspect("parameter_mapping") 
+make_model("X -> Y") |>
+  inspect("parameter_mapping")
 ```
 
 ```
@@ -579,31 +565,22 @@ make_model("X -> Y") |>
 data <- data.frame(X = rep(0:1, 5), Y = rep(0:1, 5))
 
 list(
-  uncensored = 
-    update_model(make_model("X -> Y"),
-                 data),
-  censored = 
-    update_model(make_model("X -> Y"), 
-                 data, 
-                 censored_types = c("X1Y0",  "X0Y1"))
-  ) |>
-  query_model("Y[X=1] - Y[X=0]", using = "posteriors") |> 
-  subset(select = c("model", "query", "mean", "sd"))
+  uncensored =
+    update_model(make_model("X -> Y"), data),
+  censored =
+    update_model(make_model("X -> Y"), data, censored_types = c("X1Y0", "X0Y1"))
+) |>
+  query_model("Y[X=1] - Y[X=0]", using = "posteriors")
 ```
 
 ```
 ## 
-## Causal queries generated by query_model
-## 
-## |model      |query           |  mean|    sd|
-## |:----------|:---------------|-----:|-----:|
-## |uncensored |Y[X=1] - Y[X=0] | 0.590| 0.194|
-## |censored   |Y[X=1] - Y[X=0] | 0.018| 0.315|
+## Causal queries generated by query_model (all at population level)
 ```
 
 ``` r
 model <-
-  make_model("X -> Y")  |> 
+  make_model("X -> Y")  |>
   update_model()
 ```
 
@@ -612,7 +589,7 @@ model <-
 ```
 
 ``` r
-posterior <- inspect(model, "posterior_distribution")  
+posterior <- inspect(model, "posterior_distribution")
 ```
 
 ```
@@ -633,10 +610,9 @@ posterior <- inspect(model, "posterior_distribution")
 ```
 
 ``` r
-lipids_model <- 
-  lipids_model |> 
-  update_model(keep_fit = TRUE,
-               keep_event_probabilities = TRUE)
+lipids_model <-
+  lipids_model |>
+  update_model(keep_fit = TRUE, keep_event_probabilities = TRUE)
 ```
 
 ```
@@ -644,9 +620,9 @@ lipids_model <-
 ```
 
 ``` r
-make_model("X -> Y")  |> 
+make_model("X -> Y")  |>
   update_model(keep_type_distribution = FALSE) |>
-  inspect("stan_summary") 
+  inspect("stan_summary")
 ```
 
 ```
@@ -671,15 +647,74 @@ make_model("X -> Y")  |>
 ## Y.11        0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.71  4701    1
 ## lp__       -7.53    0.04 1.65 -11.75 -8.37 -7.15 -6.32 -5.44  1368    1
 ## 
-## Samples were drawn using NUTS(diag_e) at Mon Nov 11 16:34:01 2024.
+## Samples were drawn using NUTS(diag_e) at Fri Dec 20 11:32:28 2024.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).
 ```
 
+Preservation of warnings after updating
+
+
 ``` r
-model <- 
-  make_model("X -> Y") |> 
+model <-
+  make_model("X -> M -> Y") |>
+  update_model(data = data.frame(X = rep(0:1, 10000), Y = rep(0:1, 10000)),
+               iter = 5000,
+               refresh = 0)
+```
+
+```
+## Warning: The largest R-hat is 1.73, indicating chains have not mixed.
+## Running the chains for more iterations may help. See
+## https://mc-stan.org/misc/warnings.html#r-hat
+```
+
+```
+## Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+## Running the chains for more iterations may help. See
+## https://mc-stan.org/misc/warnings.html#bulk-ess
+```
+
+```
+## Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
+## Running the chains for more iterations may help. See
+## https://mc-stan.org/misc/warnings.html#tail-ess
+```
+
+``` r
+model
+```
+
+```
+## 
+## Causal statement: 
+## M -> Y; X -> M
+## 
+## Number of nodal types by node:
+## X M Y 
+## 2 4 4 
+## 
+## Number of causal types: 32
+## 
+## Model has been updated and contains a posterior distribution with
+## 4 chains, each with iter=5000; warmup=2500; thin=1;  
+## Use inspect(model, 'stan_objects') to inspect stan summary
+## 
+## Warnings passed from rstan during updating:
+## The largest R-hat is 1.73, indicating chains have not mixed
+## Bulk Effective Samples Size (ESS) is too low
+## Tail Effective Samples Size (ESS) is too low
+```
+
+Preservation of entire stanfit object
+
+## ----------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+``` r
+model <-
+  make_model("X -> Y") |>
   update_model(refresh = 0, keep_fit = TRUE)
 ```
 
@@ -688,7 +723,7 @@ model <-
 ```
 
 ``` r
-model |> 
+model |>
   inspect("stanfit")
 ```
 
@@ -701,67 +736,48 @@ model |>
 ## post-warmup draws per chain=1000, total post-warmup draws=4000.
 ## 
 ##             mean se_mean   sd   2.5%   25%   50%   75% 97.5% n_eff Rhat
-## lambdas[1]  0.50    0.01 0.29   0.03  0.25  0.49  0.74  0.97  2923    1
-## lambdas[2]  0.50    0.01 0.29   0.03  0.26  0.51  0.75  0.97  2923    1
-## lambdas[3]  0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.73  1959    1
-## lambdas[4]  0.25    0.00 0.19   0.01  0.09  0.20  0.37  0.70  4505    1
-## lambdas[5]  0.25    0.00 0.19   0.01  0.09  0.21  0.38  0.70  4081    1
-## lambdas[6]  0.25    0.00 0.19   0.01  0.09  0.21  0.36  0.72  4546    1
-## types[1]    0.12    0.00 0.14   0.00  0.02  0.07  0.18  0.51  1916    1
-## types[2]    0.13    0.00 0.14   0.00  0.03  0.08  0.18  0.51  2457    1
-## types[3]    0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.47  3783    1
-## types[4]    0.13    0.00 0.13   0.00  0.03  0.08  0.18  0.48  3302    1
-## types[5]    0.13    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3538    1
-## types[6]    0.13    0.00 0.13   0.00  0.03  0.08  0.18  0.50  3324    1
-## types[7]    0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.47  2941    1
-## types[8]    0.13    0.00 0.13   0.00  0.03  0.08  0.18  0.51  3956    1
-## lp__       -7.51    0.04 1.58 -11.43 -8.33 -7.20 -6.34 -5.42  1410    1
+## lambdas[1]  0.50    0.01 0.29   0.03  0.25  0.50  0.75  0.97  2558    1
+## lambdas[2]  0.50    0.01 0.29   0.03  0.25  0.50  0.75  0.97  2558    1
+## lambdas[3]  0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.71  2012    1
+## lambdas[4]  0.26    0.00 0.20   0.01  0.10  0.21  0.38  0.72  4663    1
+## lambdas[5]  0.25    0.00 0.20   0.01  0.08  0.20  0.37  0.71  4851    1
+## lambdas[6]  0.25    0.00 0.19   0.01  0.09  0.20  0.36  0.71  4266    1
+## types[1]    0.13    0.00 0.14   0.00  0.03  0.08  0.18  0.49  2317    1
+## types[2]    0.12    0.00 0.13   0.00  0.02  0.07  0.18  0.49  2150    1
+## types[3]    0.13    0.00 0.14   0.00  0.03  0.08  0.18  0.51  3350    1
+## types[4]    0.13    0.00 0.13   0.00  0.03  0.08  0.18  0.50  3460    1
+## types[5]    0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3676    1
+## types[6]    0.12    0.00 0.14   0.00  0.02  0.08  0.18  0.51  3694    1
+## types[7]    0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.47  3424    1
+## types[8]    0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3166    1
+## lp__       -7.55    0.05 1.66 -11.87 -8.39 -7.15 -6.33 -5.45  1357    1
 ## 
-## Samples were drawn using NUTS(diag_e) at Mon Nov 11 16:34:09 2024.
+## Samples were drawn using NUTS(diag_e) at Fri Dec 20 11:32:40 2024.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).
 ```
 
 ## Querying models
+Finding outcomes consistent with interventions
+
 
 
 ``` r
-make_model("X -> Y") |> 
+make_model("X -> Y") |>
   realise_outcomes()
 ```
 
-```
-##      X Y
-## 0.00 0 0
-## 1.00 1 0
-## 0.10 0 1
-## 1.10 1 0
-## 0.01 0 0
-## 1.01 1 1
-## 0.11 0 1
-## 1.11 1 1
-```
-
 ``` r
-make_model("X -> Y") |> 
+make_model("X -> Y") |>
   realise_outcomes(dos = list(X = 1))
 ```
 
-```
-##      X Y
-## 0.00 1 0
-## 1.00 1 0
-## 0.10 1 0
-## 1.10 1 0
-## 0.01 1 1
-## 1.01 1 1
-## 0.11 1 1
-## 1.11 1 1
-```
+Finding types consistent with a query
+
 
 ``` r
-make_model("X -> Y")  |> 
+make_model("X -> Y")  |>
   get_query_types("Y==1")
 ```
 
@@ -780,7 +796,7 @@ make_model("X -> Y")  |>
 ```
 
 ``` r
-make_model("X -> Y")  |> 
+make_model("X -> Y")  |>
   get_query_types("Y[X=1]==1")
 ```
 
@@ -818,7 +834,7 @@ make_model("X1 -> Y <- X2")  |>
 ```
 
 ``` r
-make_model("X -> Y") |> 
+make_model("X -> Y") |>
   get_query_types("Y[X=1] - Y[X=0]")
 ```
 
@@ -827,16 +843,20 @@ make_model("X -> Y") |>
 ##      0      0     -1     -1      1      1      0      0
 ```
 
+Querying directly from posteriors over model parameters
+
+
+
 ``` r
 data  <- data.frame(X = rep(0:1, 50), Y = rep(0:1, 50))
 
-model <- 
+model <-
   make_model("X -> Y") |>
   update_model(data, iter  = 4000, refresh = 0)
 
-model |> 
-  inspect("posterior_distribution")  |> 
-  ggplot(aes(Y.01 - Y.10)) + geom_histogram() 
+model |>
+  inspect("posterior_distribution")  |>
+  ggplot(aes(Y.01 - Y.10)) + geom_histogram()
 ```
 
 ```
@@ -865,89 +885,79 @@ model |>
 <p class="caption">Posterior on "Probability $Y$ is increasing in $X$".</p>
 </div>
 
+Querying using query syntax
+
+
 ``` r
-queries <- 
-  make_model("X -> Y") |> 
+queries <-
+  make_model("X -> Y") |>
   query_distribution(
-    query = list(increasing = "(Y[X=1] > Y[X=0])",
-                 ATE = "(Y[X=1] - Y[X=0])"), 
-    using = "priors")
+    query = list(increasing = "(Y[X=1] > Y[X=0])", 
+                 ATE = "(Y[X=1] - Y[X=0])"),
+    using = "priors"
+  )
 ```
 
 ``` r
 lipids_model |>
-  query_model(
-    query = "Y[X=1] - Y[X=0]",
-    given = "X==1 & Y==1 & Z==1",
-    using = "posteriors")  |> 
-  subset(select = c("query", "mean", "sd"))
+  query_model(query = "Y[X=1] - Y[X=0] :|: X==1 & Y==1 & Z==1", 
+              using = "posteriors") |>
+  plot()
 ```
 
-```
-## 
-## Causal queries generated by query_model
-## 
-## |query           |  mean|    sd|
-## |:---------------|-----:|-----:|
-## |Y[X=1] - Y[X=0] | 0.499| 0.238|
-```
+![plot of chunk case-level-query](figure/case-level-query-1.png)
 
 ``` r
 make_model("X -> M -> Y") |>
   update_model(data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)), iter = 4000) |>
-  query_model("Y[X=1] > Y[X=0]", 
-            given = "X==1 & Y==1 & M==1", 
-            using = "posteriors",
-            case_level = c(TRUE, FALSE))  |> 
-  subset(select = c("query", "case_level", "mean", "sd"))
+  query_model(
+    "Y[X=1] > Y[X=0] :|: X==1 & Y==1 & M==1",
+    using = "posteriors",
+    case_level = c(TRUE, FALSE)
+  ) |>
+  plot()
 ```
 
-```
-## 
-## Causal queries generated by query_model
-## 
-## |query           |case_level |  mean|    sd|
-## |:---------------|:----------|-----:|-----:|
-## |Y[X=1] > Y[X=0] |TRUE       | 0.672|    NA|
-## |Y[X=1] > Y[X=0] |FALSE      | 0.429| 0.326|
-```
+![plot of chunk new-case-level-query](figure/new-case-level-query-1.png)
 
 ``` r
 models <- list(
-  Unrestricted = lipids_model |> 
+  Unrestricted = lipids_model |>
     update_model(data = lipids_data, refresh = 0),
   Restricted = lipids_model |> set_restrictions("X[Z=1] < X[Z=0]") |>
-    update_model(data = lipids_data, refresh = 0))
+    update_model(data = lipids_data, refresh = 0)
+)
 ```
 
 ``` r
-queries <- 
+queries <-
   query_model(
-    models,  
-    query = list(ATE = "Y[X=1] - Y[X=0]", 
-                 POS = "Y[X=1] > Y[X=0]"),
-    given = c(TRUE,  "Y==1 & X==1"),
+    models,
+    query = list(ATE = "Y[X=1] - Y[X=0]", POS = "Y[X=1] > Y[X=0] :|: Y==1 & X==1"),
     case_level = c(FALSE, TRUE),
     using = c("priors", "posteriors"),
-    expand_grid = TRUE)
+    expand_grid = TRUE
+  )
 ```
 
 ``` r
 queries |>
-  dplyr::select(-starts_with("cred")) |> 
+  dplyr::select(-starts_with("cred")) |>
   knitr::kable(
     digits = 2,
     booktabs = TRUE,
     align = "c",
     escape = TRUE,
     longtable = TRUE,
-    linesep = "") |> 
+    linesep = ""
+  ) |>
   kableExtra::kable_classic_2(latex_options = c("hold_position"))
 ```
 
 <table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
  <thead>
   <tr>
+   <th style="text-align:center;"> label </th>
    <th style="text-align:center;"> model </th>
    <th style="text-align:center;"> query </th>
    <th style="text-align:center;"> given </th>
@@ -959,8 +969,9 @@ queries |>
  </thead>
 <tbody>
   <tr>
-   <td style="text-align:center;"> Unrestricted </td>
    <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Unrestricted </td>
+   <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
    <td style="text-align:center;"> - </td>
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> FALSE </td>
@@ -968,8 +979,9 @@ queries |>
    <td style="text-align:center;"> 0.20 </td>
   </tr>
   <tr>
-   <td style="text-align:center;"> Restricted </td>
    <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Restricted </td>
+   <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
    <td style="text-align:center;"> - </td>
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> FALSE </td>
@@ -977,17 +989,19 @@ queries |>
    <td style="text-align:center;"> 0.23 </td>
   </tr>
   <tr>
-   <td style="text-align:center;"> Unrestricted </td>
    <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Unrestricted </td>
+   <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
    <td style="text-align:center;"> - </td>
    <td style="text-align:center;"> posteriors </td>
    <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.56 </td>
+   <td style="text-align:center;"> 0.55 </td>
    <td style="text-align:center;"> 0.10 </td>
   </tr>
   <tr>
+   <td style="text-align:center;"> ATE </td>
    <td style="text-align:center;"> Restricted </td>
-   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
    <td style="text-align:center;"> - </td>
    <td style="text-align:center;"> posteriors </td>
    <td style="text-align:center;"> FALSE </td>
@@ -995,8 +1009,9 @@ queries |>
    <td style="text-align:center;"> 0.10 </td>
   </tr>
   <tr>
+   <td style="text-align:center;"> POS </td>
    <td style="text-align:center;"> Unrestricted </td>
-   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Y[X=1] &gt; Y[X=0] </td>
    <td style="text-align:center;"> Y==1 &amp; X==1 </td>
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> FALSE </td>
@@ -1004,8 +1019,9 @@ queries |>
    <td style="text-align:center;"> 0.22 </td>
   </tr>
   <tr>
+   <td style="text-align:center;"> POS </td>
    <td style="text-align:center;"> Restricted </td>
-   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Y[X=1] &gt; Y[X=0] </td>
    <td style="text-align:center;"> Y==1 &amp; X==1 </td>
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> FALSE </td>
@@ -1013,98 +1029,29 @@ queries |>
    <td style="text-align:center;"> 0.24 </td>
   </tr>
   <tr>
+   <td style="text-align:center;"> POS </td>
    <td style="text-align:center;"> Unrestricted </td>
+   <td style="text-align:center;"> Y[X=1] &gt; Y[X=0] </td>
+   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
+   <td style="text-align:center;"> posteriors </td>
+   <td style="text-align:center;"> FALSE </td>
+   <td style="text-align:center;"> 0.95 </td>
+   <td style="text-align:center;"> 0.04 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> POS </td>
+   <td style="text-align:center;"> Restricted </td>
+   <td style="text-align:center;"> Y[X=1] &gt; Y[X=0] </td>
+   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
+   <td style="text-align:center;"> posteriors </td>
+   <td style="text-align:center;"> FALSE </td>
+   <td style="text-align:center;"> 0.95 </td>
+   <td style="text-align:center;"> 0.04 </td>
+  </tr>
+  <tr>
    <td style="text-align:center;"> ATE </td>
-   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
-   <td style="text-align:center;"> posteriors </td>
-   <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.95 </td>
-   <td style="text-align:center;"> 0.04 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Restricted </td>
-   <td style="text-align:center;"> ATE </td>
-   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
-   <td style="text-align:center;"> posteriors </td>
-   <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.95 </td>
-   <td style="text-align:center;"> 0.04 </td>
-  </tr>
-  <tr>
    <td style="text-align:center;"> Unrestricted </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> - </td>
-   <td style="text-align:center;"> priors </td>
-   <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.25 </td>
-   <td style="text-align:center;"> 0.12 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Restricted </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> - </td>
-   <td style="text-align:center;"> priors </td>
-   <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.25 </td>
-   <td style="text-align:center;"> 0.14 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Unrestricted </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> - </td>
-   <td style="text-align:center;"> posteriors </td>
-   <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.61 </td>
-   <td style="text-align:center;"> 0.10 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Restricted </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> - </td>
-   <td style="text-align:center;"> posteriors </td>
-   <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.61 </td>
-   <td style="text-align:center;"> 0.10 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Unrestricted </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
-   <td style="text-align:center;"> priors </td>
-   <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.50 </td>
-   <td style="text-align:center;"> 0.22 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Restricted </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
-   <td style="text-align:center;"> priors </td>
-   <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.49 </td>
-   <td style="text-align:center;"> 0.24 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Unrestricted </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
-   <td style="text-align:center;"> posteriors </td>
-   <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.95 </td>
-   <td style="text-align:center;"> 0.04 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Restricted </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
-   <td style="text-align:center;"> posteriors </td>
-   <td style="text-align:center;"> FALSE </td>
-   <td style="text-align:center;"> 0.95 </td>
-   <td style="text-align:center;"> 0.04 </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Unrestricted </td>
-   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
    <td style="text-align:center;"> - </td>
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> TRUE </td>
@@ -1112,8 +1059,9 @@ queries |>
    <td style="text-align:center;"> NA </td>
   </tr>
   <tr>
-   <td style="text-align:center;"> Restricted </td>
    <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Restricted </td>
+   <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
    <td style="text-align:center;"> - </td>
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> TRUE </td>
@@ -1121,8 +1069,19 @@ queries |>
    <td style="text-align:center;"> NA </td>
   </tr>
   <tr>
-   <td style="text-align:center;"> Unrestricted </td>
    <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Unrestricted </td>
+   <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
+   <td style="text-align:center;"> - </td>
+   <td style="text-align:center;"> posteriors </td>
+   <td style="text-align:center;"> TRUE </td>
+   <td style="text-align:center;"> 0.55 </td>
+   <td style="text-align:center;"> NA </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Restricted </td>
+   <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
    <td style="text-align:center;"> - </td>
    <td style="text-align:center;"> posteriors </td>
    <td style="text-align:center;"> TRUE </td>
@@ -1130,17 +1089,9 @@ queries |>
    <td style="text-align:center;"> NA </td>
   </tr>
   <tr>
-   <td style="text-align:center;"> Restricted </td>
-   <td style="text-align:center;"> ATE </td>
-   <td style="text-align:center;"> - </td>
-   <td style="text-align:center;"> posteriors </td>
-   <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.56 </td>
-   <td style="text-align:center;"> NA </td>
-  </tr>
-  <tr>
+   <td style="text-align:center;"> POS </td>
    <td style="text-align:center;"> Unrestricted </td>
-   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Y[X=1] &gt; Y[X=0] </td>
    <td style="text-align:center;"> Y==1 &amp; X==1 </td>
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> TRUE </td>
@@ -1148,8 +1099,9 @@ queries |>
    <td style="text-align:center;"> NA </td>
   </tr>
   <tr>
+   <td style="text-align:center;"> POS </td>
    <td style="text-align:center;"> Restricted </td>
-   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Y[X=1] &gt; Y[X=0] </td>
    <td style="text-align:center;"> Y==1 &amp; X==1 </td>
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> TRUE </td>
@@ -1157,8 +1109,9 @@ queries |>
    <td style="text-align:center;"> NA </td>
   </tr>
   <tr>
+   <td style="text-align:center;"> POS </td>
    <td style="text-align:center;"> Unrestricted </td>
-   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Y[X=1] &gt; Y[X=0] </td>
    <td style="text-align:center;"> Y==1 &amp; X==1 </td>
    <td style="text-align:center;"> posteriors </td>
    <td style="text-align:center;"> TRUE </td>
@@ -1166,80 +1119,9 @@ queries |>
    <td style="text-align:center;"> NA </td>
   </tr>
   <tr>
+   <td style="text-align:center;"> POS </td>
    <td style="text-align:center;"> Restricted </td>
-   <td style="text-align:center;"> ATE </td>
-   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
-   <td style="text-align:center;"> posteriors </td>
-   <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.95 </td>
-   <td style="text-align:center;"> NA </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Unrestricted </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> - </td>
-   <td style="text-align:center;"> priors </td>
-   <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.25 </td>
-   <td style="text-align:center;"> NA </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Restricted </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> - </td>
-   <td style="text-align:center;"> priors </td>
-   <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.25 </td>
-   <td style="text-align:center;"> NA </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Unrestricted </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> - </td>
-   <td style="text-align:center;"> posteriors </td>
-   <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.61 </td>
-   <td style="text-align:center;"> NA </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Restricted </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> - </td>
-   <td style="text-align:center;"> posteriors </td>
-   <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.61 </td>
-   <td style="text-align:center;"> NA </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Unrestricted </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
-   <td style="text-align:center;"> priors </td>
-   <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.50 </td>
-   <td style="text-align:center;"> NA </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Restricted </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
-   <td style="text-align:center;"> priors </td>
-   <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.49 </td>
-   <td style="text-align:center;"> NA </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Unrestricted </td>
-   <td style="text-align:center;"> POS </td>
-   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
-   <td style="text-align:center;"> posteriors </td>
-   <td style="text-align:center;"> TRUE </td>
-   <td style="text-align:center;"> 0.95 </td>
-   <td style="text-align:center;"> NA </td>
-  </tr>
-  <tr>
-   <td style="text-align:center;"> Restricted </td>
-   <td style="text-align:center;"> POS </td>
+   <td style="text-align:center;"> Y[X=1] &gt; Y[X=0] </td>
    <td style="text-align:center;"> Y==1 &amp; X==1 </td>
    <td style="text-align:center;"> posteriors </td>
    <td style="text-align:center;"> TRUE </td>
@@ -1273,27 +1155,23 @@ chains <- 3
 cores <- 8
 
 future::plan(list(
-      future::tweak(future::multisession, 
-                    workers = floor(cores/(chains + 1))),
-      future::tweak(future::multisession, 
-                    workers = chains)
-    ))
+  future::tweak(future::multisession, workers = floor(cores / (chains + 1))),
+  future::tweak(future::multisession, workers = chains)
+))
 
 model <- make_model("X -> Y")
-data <- list(data_1 = data.frame(X=0:1, Y=0:1), 
-             data_2 = data.frame(X=0:1, Y=1:0))
+data <- list(data_1 = data.frame(X = 0:1, Y = 0:1),
+             data_2 = data.frame(X = 0:1, Y = 1:0))
 
 results <-
-future.apply::future_lapply(
-  data,
-  function(d) {
+  future.apply::future_lapply(data, function(d) {
     update_model(
       model = model,
       data = d,
       chains = chains,
       refresh = 0
-    )},
- future.seed = TRUE)
+    )
+  }, future.seed = TRUE)
 ```
 
 sample output
@@ -1314,23 +1192,23 @@ results$data_1 |> inspect(what = "stan_summary")
 ## post-warmup draws per chain=1000, total post-warmup draws=3000.
 ## 
 ##             mean se_mean   sd   2.5%    25%   50%   75% 97.5% n_eff Rhat
-## X.0         0.50    0.00 0.22   0.09   0.33  0.50  0.67  0.90  2013    1
-## X.1         0.50    0.00 0.22   0.10   0.33  0.50  0.67  0.91  2013    1
-## Y.00        0.23    0.00 0.18   0.01   0.08  0.19  0.34  0.64  1606    1
-## Y.10        0.17    0.00 0.14   0.00   0.06  0.13  0.25  0.53  3903    1
-## Y.01        0.37    0.00 0.21   0.02   0.20  0.36  0.52  0.81  3022    1
-## Y.11        0.23    0.00 0.17   0.01   0.09  0.20  0.34  0.65  3106    1
-## X0.Y00      0.11    0.00 0.11   0.00   0.03  0.08  0.16  0.40  1726    1
-## X1.Y00      0.12    0.00 0.11   0.00   0.03  0.08  0.17  0.39  1701    1
-## X0.Y10      0.08    0.00 0.09   0.00   0.02  0.05  0.12  0.32  2831    1
-## X1.Y10      0.08    0.00 0.09   0.00   0.02  0.05  0.12  0.32  3188    1
-## X0.Y01      0.18    0.00 0.14   0.01   0.07  0.15  0.26  0.54  2486    1
-## X1.Y01      0.18    0.00 0.14   0.01   0.07  0.15  0.26  0.54  2670    1
-## X0.Y11      0.12    0.00 0.11   0.00   0.04  0.08  0.16  0.41  2722    1
-## X1.Y11      0.12    0.00 0.11   0.00   0.03  0.09  0.17  0.39  2419    1
-## lp__       -9.32    0.05 1.60 -13.50 -10.09 -8.96 -8.11 -7.31   978    1
+## X.0         0.50    0.01 0.23   0.09   0.33  0.51  0.68  0.91  2009    1
+## X.1         0.50    0.01 0.23   0.09   0.32  0.49  0.67  0.91  2009    1
+## Y.00        0.23    0.00 0.18   0.01   0.08  0.19  0.34  0.65  1353    1
+## Y.10        0.17    0.00 0.14   0.00   0.06  0.14  0.24  0.52  3302    1
+## Y.01        0.37    0.00 0.21   0.02   0.20  0.36  0.53  0.80  2685    1
+## Y.11        0.23    0.00 0.17   0.01   0.09  0.19  0.33  0.64  3557    1
+## X0.Y00      0.12    0.00 0.11   0.00   0.03  0.08  0.17  0.42  1694    1
+## X1.Y00      0.11    0.00 0.11   0.00   0.03  0.08  0.16  0.41  1561    1
+## X0.Y10      0.08    0.00 0.08   0.00   0.02  0.06  0.12  0.31  2538    1
+## X1.Y10      0.08    0.00 0.08   0.00   0.02  0.06  0.12  0.30  2894    1
+## X0.Y01      0.19    0.00 0.14   0.01   0.07  0.16  0.27  0.53  2249    1
+## X1.Y01      0.19    0.00 0.15   0.01   0.07  0.15  0.27  0.55  2689    1
+## X0.Y11      0.12    0.00 0.11   0.00   0.03  0.08  0.16  0.40  2832    1
+## X1.Y11      0.11    0.00 0.11   0.00   0.03  0.08  0.16  0.41  2962    1
+## lp__       -9.36    0.05 1.63 -13.38 -10.22 -9.01 -8.14 -7.29  1110    1
 ## 
-## Samples were drawn using NUTS(diag_e) at Mon Nov 11 16:34:53 2024.
+## Samples were drawn using NUTS(diag_e) at Fri Dec 20 11:33:12 2024.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).
@@ -1464,11 +1342,16 @@ model <- list(
   CausalQueries::make_model("X1 -> Y; X2 -> Y; X3 -> Y")
 )
 
-iter <- 3000
+iter <- 5000
 
-data <- expand_grid(X1 = 0:1, X2 = 0:1, X3 = 0:1, X4 = 0:1) |>
+data <- expand_grid(
+  X1 = 0:1,
+  X2 = 0:1,
+  X3 = 0:1,
+  X4 = 0:1
+) |>
   uncount(20) |>
-  mutate(Y = 1*(X1 + X2 - X3 + X1*X4 + rnorm(n()) > 0))
+  mutate(Y = 1 * (X1 + X2 - X3 + X1 * X4 + rnorm(n()) > 0))
 
 options(mc.cores = parallel::detectCores())
 ```
@@ -1488,9 +1371,9 @@ kable(summary(benchmark_model), digits = 2)
 
 |expr |   min|    lq|  mean| median|    uq|   max| neval|cld |
 |:----|-----:|-----:|-----:|------:|-----:|-----:|-----:|:---|
-|m1   |  8.46|  8.58|  9.00|   8.77|  9.37|  9.80|     5|a   |
-|m2   | 10.15| 10.51| 10.53|  10.51| 10.57| 10.91|     5|b   |
-|m3   | 87.16| 87.27| 87.97|  87.29| 88.87| 89.24|     5|c   |
+|m1   |  6.65|  6.73|  7.65|   6.88|  7.53| 10.44|     5|a   |
+|m2   |  9.41|  9.42|  9.57|   9.62|  9.62|  9.76|     5|a   |
+|m3   | 95.10| 95.40| 96.42|  95.73| 96.09| 99.77|     5|b   |
 
 effect of data size on run-time
 
@@ -1498,11 +1381,10 @@ effect of data size on run-time
 ``` r
 model <- CausalQueries::make_model("X -> Y")
 
-data <- lapply(10^c(1:5), function(n) {
+data <- lapply(10 ^ c(1:5), function(n) {
   CausalQueries::make_data(model, n)
 })
 ```
-
 
 ``` r
 benchmark_data <- microbenchmark::microbenchmark(
@@ -1521,9 +1403,9 @@ kable(summary(benchmark_data), digits = 2)
 
 |expr |   min|    lq|  mean| median|    uq|   max| neval|cld |
 |:----|-----:|-----:|-----:|------:|-----:|-----:|-----:|:---|
-|d0   |  7.82|  8.13|  8.41|   8.59|  8.67|  8.84|     5|a   |
-|d1   |  8.25|  8.29|  8.53|   8.36|  8.71|  9.04|     5|a   |
-|d2   |  9.49|  9.57|  9.93|   9.95| 10.27| 10.35|     5|a   |
-|d3   | 13.26| 14.01| 14.27|  14.25| 14.77| 15.05|     5|b   |
-|d4   | 27.89| 27.89| 30.99|  27.98| 33.29| 37.90|     5|c   |
+|d0   |  6.77|  7.22|  7.47|   7.30|  7.96|  8.12|     5|a   |
+|d1   |  7.51|  7.70|  8.05|   7.83|  8.34|  8.87|     5|a   |
+|d2   |  9.44|  9.62|  9.83|   9.82| 10.06| 10.20|     5|a   |
+|d3   | 15.76| 16.04| 16.23|  16.14| 16.43| 16.81|     5|b   |
+|d4   | 33.06| 33.26| 36.36|  34.25| 38.79| 42.46|     5|c   |
 
