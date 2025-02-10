@@ -598,7 +598,7 @@ make_model("X -> Y")  |>
 ## Y.11        0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.71  4701    1
 ## lp__       -7.53    0.04 1.65 -11.75 -8.37 -7.15 -6.32 -5.44  1368    1
 ## 
-## Samples were drawn using NUTS(diag_e) at Mon Feb 10 17:07:15 2025.
+## Samples were drawn using NUTS(diag_e) at Mon Feb 10 17:31:03 2025.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).
@@ -677,7 +677,7 @@ model |>
 ## types[8]    0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3166    1
 ## lp__       -7.55    0.05 1.66 -11.87 -8.39 -7.15 -6.33 -5.45  1357    1
 ## 
-## Samples were drawn using NUTS(diag_e) at Mon Feb 10 17:07:38 2025.
+## Samples were drawn using NUTS(diag_e) at Mon Feb 10 17:31:24 2025.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).
@@ -1176,8 +1176,6 @@ for (i in 1:n_types) {
 
 
 ``` r
-if(run_benchmarking){
-
 #  effect of model complexity on run-time
 
 model <- list(
@@ -1201,18 +1199,18 @@ benchmark_model <- microbenchmark::microbenchmark(
   times = 5
 )
 
-benchmark_model
-
-}
+kable(summary(benchmark_model), digits = 2)
 ```
 
-```
-## Unit: seconds
-```
+
+
+|expr |    min|     lq|   mean| median|     uq|    max| neval|cld |
+|:----|------:|------:|------:|------:|------:|------:|-----:|:---|
+|m1   |   9.78|   9.96|  10.51|  10.77|  11.02|  11.05|     5|a   |
+|m2   |  13.26|  13.35|  13.59|  13.58|  13.60|  14.16|     5|b   |
+|m3   | 110.08| 110.48| 110.85| 110.65| 111.39| 111.62|     5|c   |
 
 ``` r
-if(run_benchmarking){
-
 # effect of data size on run-time
 model <- CausalQueries::make_model("X -> Y")
 
@@ -1228,12 +1226,15 @@ benchmark_data <- microbenchmark::microbenchmark(
   times = 5
 )
 
-benchmark_data
-
-}
+kable(summary(benchmark_data), digits = 2)
 ```
 
-```
-## Unit: seconds
-```
+
+
+|expr |   min|    lq|  mean| median|    uq|   max| neval|cld |
+|:----|-----:|-----:|-----:|------:|-----:|-----:|-----:|:---|
+|d0   |  9.01|  9.48|  9.43|   9.49|  9.58|  9.60|     5|a   |
+|d1   |  9.06|  9.72|  9.71|   9.73|  9.93| 10.10|     5|a   |
+|d2   | 10.99| 11.69| 11.93|  12.07| 12.21| 12.67|     5|b   |
+|d3   | 16.56| 17.68| 18.11|  18.20| 18.21| 19.90|     5|c   |
 

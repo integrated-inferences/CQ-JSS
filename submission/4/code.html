@@ -667,7 +667,7 @@ list(
 ## Y.11        0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.71  4701    1
 ## lp__       -7.53    0.04 1.65 -11.75 -8.37 -7.15 -6.32 -5.44  1368    1
 ## 
-## Samples were drawn using NUTS(diag_e) at Mon Feb 10 17:07:15 2025.
+## Samples were drawn using NUTS(diag_e) at Mon Feb 10 17:31:03 2025.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).
@@ -732,7 +732,7 @@ list(
 ## types[8]    0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3166    1
 ## lp__       -7.55    0.05 1.66 -11.87 -8.39 -7.15 -6.33 -5.45  1357    1
 ## 
-## Samples were drawn using NUTS(diag_e) at Mon Feb 10 17:07:38 2025.
+## Samples were drawn using NUTS(diag_e) at Mon Feb 10 17:31:24 2025.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).
@@ -1168,9 +1168,7 @@ for (i in 1:n_types) {
 } 
 </code></pre>
 <h2 id="benchmarking-slow">benchmarking (slow)</h2>
-<pre><code class="language-r">if(run_benchmarking){
-
-#  effect of model complexity on run-time
+<pre><code class="language-r">#  effect of model complexity on run-time
 
 model &lt;- list(
   CausalQueries::make_model(&quot;X -&gt; Y&quot;),
@@ -1193,15 +1191,59 @@ benchmark_model &lt;- microbenchmark::microbenchmark(
   times = 5
 )
 
-benchmark_model
-
-}
+kable(summary(benchmark_model), digits = 2)
 </code></pre>
-<pre><code>## Unit: seconds
-</code></pre>
-<pre><code class="language-r">if(run_benchmarking){
-
-# effect of data size on run-time
+<table>
+<thead>
+<tr>
+<th align="left">expr</th>
+<th align="right">min</th>
+<th align="right">lq</th>
+<th align="right">mean</th>
+<th align="right">median</th>
+<th align="right">uq</th>
+<th align="right">max</th>
+<th align="right">neval</th>
+<th align="left">cld</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">m1</td>
+<td align="right">9.78</td>
+<td align="right">9.96</td>
+<td align="right">10.51</td>
+<td align="right">10.77</td>
+<td align="right">11.02</td>
+<td align="right">11.05</td>
+<td align="right">5</td>
+<td align="left">a</td>
+</tr>
+<tr>
+<td align="left">m2</td>
+<td align="right">13.26</td>
+<td align="right">13.35</td>
+<td align="right">13.59</td>
+<td align="right">13.58</td>
+<td align="right">13.60</td>
+<td align="right">14.16</td>
+<td align="right">5</td>
+<td align="left">b</td>
+</tr>
+<tr>
+<td align="left">m3</td>
+<td align="right">110.08</td>
+<td align="right">110.48</td>
+<td align="right">110.85</td>
+<td align="right">110.65</td>
+<td align="right">111.39</td>
+<td align="right">111.62</td>
+<td align="right">5</td>
+<td align="left">c</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-r"># effect of data size on run-time
 model &lt;- CausalQueries::make_model(&quot;X -&gt; Y&quot;)
 
 data &lt;- lapply(10^c(1:5), function(n) {
@@ -1216,12 +1258,69 @@ benchmark_data &lt;- microbenchmark::microbenchmark(
   times = 5
 )
 
-benchmark_data
-
-}
+kable(summary(benchmark_data), digits = 2)
 </code></pre>
-<pre><code>## Unit: seconds
-</code></pre>
+<table>
+<thead>
+<tr>
+<th align="left">expr</th>
+<th align="right">min</th>
+<th align="right">lq</th>
+<th align="right">mean</th>
+<th align="right">median</th>
+<th align="right">uq</th>
+<th align="right">max</th>
+<th align="right">neval</th>
+<th align="left">cld</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">d0</td>
+<td align="right">9.01</td>
+<td align="right">9.48</td>
+<td align="right">9.43</td>
+<td align="right">9.49</td>
+<td align="right">9.58</td>
+<td align="right">9.60</td>
+<td align="right">5</td>
+<td align="left">a</td>
+</tr>
+<tr>
+<td align="left">d1</td>
+<td align="right">9.06</td>
+<td align="right">9.72</td>
+<td align="right">9.71</td>
+<td align="right">9.73</td>
+<td align="right">9.93</td>
+<td align="right">10.10</td>
+<td align="right">5</td>
+<td align="left">a</td>
+</tr>
+<tr>
+<td align="left">d2</td>
+<td align="right">10.99</td>
+<td align="right">11.69</td>
+<td align="right">11.93</td>
+<td align="right">12.07</td>
+<td align="right">12.21</td>
+<td align="right">12.67</td>
+<td align="right">5</td>
+<td align="left">b</td>
+</tr>
+<tr>
+<td align="left">d3</td>
+<td align="right">16.56</td>
+<td align="right">17.68</td>
+<td align="right">18.11</td>
+<td align="right">18.20</td>
+<td align="right">18.21</td>
+<td align="right">19.90</td>
+<td align="right">5</td>
+<td align="left">c</td>
+</tr>
+</tbody>
+</table>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js" defer></script>

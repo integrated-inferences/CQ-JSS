@@ -63,7 +63,7 @@ execute:
 #| include: false
 #' ---
 #' title: "Replication code for 'Making, Updating, and Querying Causal Models using CausalQueries'"
-#' date: December 2024
+#' date: February 2025
 #' author: Till Tietz, Lily Medina, Georgiy Syunyaev, and Macartan Humphreys
 #' ---
 #' 
