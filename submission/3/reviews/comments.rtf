@@ -1,0 +1,42 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2821
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 HelveticaNeue;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;\red255\green255\blue255;}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0\c83922;\cssrgb\c100000\c100000\c100000;}
+\margl1440\margr1440\vieww19480\viewh11500\viewkind0
+\deftab720
+\pard\pardeftab720\sa280\partightenfactor0
+
+\f0\fs28 \cf2 \cb3 \expnd0\expndtw0\kerning0
+Thank you for submitting a revised version. Unfortunately there still seem to be some issues with the replication material / manuscript. Please check the following comments and update your submission and then re-submit together with a point-to-point response:\cb1 \
+\cb3 o Running the replication code provided using the package version submitted we obtain\cb1 \
+\cb3 > make_model("X -> Y") |>\cb1 \uc0\u8232 \cb3 + update_model(keep_type_distribution = FALSE) |>\cb1 \uc0\u8232 \cb3 + inspect("stan_summary")\cb1 \uc0\u8232 \cb3 No data provided\cb1 \
+\cb3 SAMPLING FOR MODEL 'simplexes' NOW (CHAIN 1).\cb1 \uc0\u8232 \cb3 [...]\cb1 \
+\cb3 stan_summary\cb1 \uc0\u8232 \cb3 Stan model summary:\cb1 \uc0\u8232 \cb3 $data\cb1 \uc0\u8232 \cb3 NULL\cb1 \
+\cb3 $stan_warnings\cb1 \uc0\u8232 \cb3 [1] ""\cb1 \
+\cb3 $stan_summary\cb1 \uc0\u8232 \cb3 [1] "Inference for Stan model: simplexes." \cb1 \uc0\u8232 \cb3 [2] "4 chains, each with iter=2000; warmup=1000; thin=1; " \cb1 \uc0\u8232 \cb3 [3] "post-warmup draws per chain=1000, total post-warmup draws=4000." \cb1 \uc0\u8232 \cb3 [4] "" \cb1 \uc0\u8232 \cb3 [5] " mean se_mean sd 2.5% 25% 50% 75% 97.5% n_eff Rhat"\cb1 \uc0\u8232 \cb3 [6] "X.0 0.50 0.01 0.29 0.03 0.25 0.49 0.74 0.97 3036 1"\cb1 \uc0\u8232 \cb3 [7] "X.1 0.50 0.01 0.29 0.03 0.26 0.51 0.75 0.97 3036 1"\cb1 \uc0\u8232 \cb3 [8] "Y.00 0.25 0.00 0.19 0.01 0.09 0.21 0.37 0.70 2031 1"\cb1 \uc0\u8232 \cb3 [9] "Y.10 0.25 0.00 0.19 0.01 0.09 0.21 0.37 0.71 4633 1"\cb1 \uc0\u8232 \cb3 [10] "Y.01 0.25 0.00 0.20 0.01 0.09 0.20 0.37 0.72 4162 1"\cb1 \uc0\u8232 \cb3 [11] "Y.11 0.25 0.00 0.20 0.01 0.09 0.20 0.37 0.71 4701 1"\cb1 \uc0\u8232 \cb3 [12] "lp__ -7.53 0.04 1.65 -11.75 -8.37 -7.15 -6.32 -5.44 1368 1"\cb1 \uc0\u8232 \cb3 [13] "" \cb1 \uc0\u8232 \cb3 [14] "Samples were drawn using NUTS(diag_e) at Sun Feb 2 09:43:42 2025." \cb1 \uc0\u8232 \cb3 [15] "For each parameter, n_eff is a crude measure of effective sample size," \cb1 \uc0\u8232 \cb3 [16] "and Rhat is the potential scale reduction factor on split chains (at " \cb1 \uc0\u8232 \cb3 [17] "convergence, Rhat=1)."\cb1 \
+\cb3 which differs from the output shown on page 23.\cb1 \
+\cb3 o The output\cb1 \
+\cb3 > model\cb1 \
+\cb3 Causal statement: \cb1 \uc0\u8232 \cb3 M -> Y; X -> M\cb1 \
+\cb3 Number of nodal types by node:\cb1 \uc0\u8232 \cb3 X M Y \cb1 \uc0\u8232 \cb3 2 4 4\cb1 \
+\cb3 Number of causal types: 32\cb1 \
+\cb3 Model has been updated and contains a posterior distribution with\cb1 \uc0\u8232 \cb3 4 chains, each with iter=5000; warmup=2500; thin=1; \cb1 \uc0\u8232 \cb3 Use inspect(model, 'stan_objects') to inspect stan summary\cb1 \
+\cb3 Warnings passed from rstan during updating:\cb1 \uc0\u8232 \cb3 The largest R-hat is 1.73, indicating chains have not mixed\cb1 \uc0\u8232 \cb3 Bulk Effective Samples Size (ESS) is too low\cb1 \uc0\u8232 \cb3 Tail Effective Samples Size (ESS) is too low>\cb1 \
+\cb3 indicates that a \\n is missing at the end.\cb1 \
+\cb3 o We obtain\cb1 \
+\cb3 > make_model("X -> Y") |>\cb1 \uc0\u8232 \cb3 + get_query_types("Y==1")\cb1 \uc0\u8232 \cb3 $types\cb1 \uc0\u8232 \cb3 X0.Y00 X1.Y00 X0.Y10 X1.Y10 X0.Y01 X1.Y01 X0.Y11 X1.Y11 \cb1 \uc0\u8232 \cb3 FALSE FALSE TRUE FALSE FALSE TRUE TRUE TRUE\cb1 \
+\cb3 $query\cb1 \uc0\u8232 \cb3 [1] "Y==1"\cb1 \
+\cb3 $evaluated_nodes\cb1 \uc0\u8232 \cb3 X Y\cb1 \uc0\u8232 \cb3 0.00 0 0\cb1 \uc0\u8232 \cb3 1.00 1 0\cb1 \uc0\u8232 \cb3 0.10 0 1\cb1 \uc0\u8232 \cb3 1.10 1 0\cb1 \uc0\u8232 \cb3 0.01 0 0\cb1 \uc0\u8232 \cb3 1.01 1 1\cb1 \uc0\u8232 \cb3 0.11 0 1\cb1 \uc0\u8232 \cb3 1.11 1 1\cb1 \
+\cb3 $type_list\cb1 \uc0\u8232 \cb3 [1] "X0.Y10" "X1.Y01" "X0.Y11" "X1.Y11"\cb1 \
+\cb3 which differs from the output shown on page 27\cb1 \
+\cb3 and\cb1 \
+\cb3 > make_model("X -> Y") |>\cb1 \uc0\u8232 \cb3 + get_query_types("Y[X=1]==1")\cb1 \uc0\u8232 \cb3 $types\cb1 \uc0\u8232 \cb3 X0.Y00 X1.Y00 X0.Y10 X1.Y10 X0.Y01 X1.Y01 X0.Y11 X1.Y11 \cb1 \uc0\u8232 \cb3 FALSE FALSE FALSE FALSE TRUE TRUE TRUE TRUE\cb1 \
+\cb3 $query\cb1 \uc0\u8232 \cb3 [1] "Y[X=1]==1"\cb1 \
+\cb3 $evaluated_nodes\cb1 \uc0\u8232 \cb3 X Y Y[X=1]\cb1 \uc0\u8232 \cb3 0.00 0 0 0\cb1 \uc0\u8232 \cb3 1.00 1 0 0\cb1 \uc0\u8232 \cb3 0.10 0 1 0\cb1 \uc0\u8232 \cb3 1.10 1 0 0\cb1 \uc0\u8232 \cb3 0.01 0 0 1\cb1 \uc0\u8232 \cb3 1.01 1 1 1\cb1 \uc0\u8232 \cb3 0.11 0 1 1\cb1 \uc0\u8232 \cb3 1.11 1 1 1\cb1 \
+\cb3 $type_list\cb1 \uc0\u8232 \cb3 [1] "X0.Y01" "X1.Y01" "X0.Y11" "X1.Y11"\cb1 \
+\cb3 which differs from the output shown on page 28\cb1 \
+\cb3 as well as for the following examples.\cb1 \
+\cb3 See the output from running the code in batch mode in the file attached.\cb1 \
+\cb3 o The manuscript contains on page 36:\cb1 \
+\cb3 Version\cb1 \uc0\u8232 \cb3 \'95 1.2.1\cb1 \
+\cb3 This does not correspond to the submitted version.}
