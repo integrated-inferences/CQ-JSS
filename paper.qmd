@@ -1298,7 +1298,7 @@ We identify several areas for future expansion of the package's functionality. O
 ## Computational details and software requirements {.unnumbered}
 
 +------------------------:+:-------------------------------------------------------------------------------------+
-| Version                 | -   1.2.1                                                                            |
+| Version                 | -   1.3.3                                                                            |
 +-------------------------+--------------------------------------------------------------------------------------+
 | Availability            | -   Stable Release: <https://cran.rstudio.com/web/packages/CausalQueries/index.html> |
 |                         | -   Development: <https://github.com/integrated-inferences/CausalQueries>            |
