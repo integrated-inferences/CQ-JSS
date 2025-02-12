@@ -179,7 +179,7 @@
 \makeatletter
 \makeatother
 \makeatletter
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[frame hidden, borderline west={3pt}{0pt}{shadecolor}, sharp corners, boxrule=0pt, interior hidden, breakable, enhanced]}{\end{tcolorbox}}\fi
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[breakable, frame hidden, interior hidden, borderline west={3pt}{0pt}{shadecolor}, enhanced, boxrule=0pt, sharp corners]}{\end{tcolorbox}}\fi
 \makeatother
 \ifLuaTeX
   \usepackage{selnolig}  % disable illegal ligatures
@@ -428,7 +428,7 @@ the local (complier) average treatment effects (``LATE'').
 label & query & given & mean & sd & cred.low & cred.high\\
 \midrule
 ATE & Y[X=1] - Y[X=0] & - & 0.55 & 0.10 & 0.37 & 0.73\\
-PoC & Y[X=1] - Y[X=0] & X==0 \& Y==0 & 0.64 & 0.15 & 0.37 & 0.89\\
+PoC & Y[X=1] - Y[X=0] & X==0 \& Y==0 & 0.63 & 0.15 & 0.38 & 0.89\\
 LATE & Y[X=1] - Y[X=0] & X[Z=1] > X[Z=0] & 0.70 & 0.05 & 0.59 & 0.80\\
 \bottomrule
 
@@ -1858,16 +1858,18 @@ R> make_model("X -> Y")  |>
 #> 4 chains, each with iter=2000; warmup=1000; thin=1; 
 #> post-warmup draws per chain=1000, total post-warmup draws=4000.
 #> 
-#>             mean se_mean   sd   2.5%   25%   50%   75% 97.5% n_eff Rhat
-#> X.0         0.50    0.01 0.29   0.03  0.25  0.49  0.74  0.97  3036    1
-#> X.1         0.50    0.01 0.29   0.03  0.26  0.51  0.75  0.97  3036    1
-#> Y.00        0.25    0.00 0.19   0.01  0.09  0.21  0.37  0.70  2031    1
-#> Y.10        0.25    0.00 0.19   0.01  0.09  0.21  0.37  0.71  4633    1
-#> Y.01        0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.72  4162    1
-#> Y.11        0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.71  4701    1
-#> lp__       -7.53    0.04 1.65 -11.75 -8.37 -7.15 -6.32 -5.44  1368    1
+#>                    mean se_mean   sd   2.5%   25%   50%   75% 97.5% n_eff Rhat
+#> X.0                0.50    0.01 0.29   0.03  0.25  0.49  0.74  0.97  3036 1.00
+#> X.1                0.50    0.01 0.29   0.03  0.26  0.51  0.75  0.97  3036 1.00
+#> Y.00               0.25    0.00 0.19   0.01  0.09  0.21  0.37  0.70  2031 1.00
+#> Y.10               0.25    0.00 0.19   0.01  0.09  0.21  0.37  0.71  4633 1.00
+#> Y.01               0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.72  4162 1.00
+#> Y.11               0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.71  4701 1.00
+#> lp__               1.00    0.02 0.96   0.03  0.30  0.72  1.39  3.43  2536 1.00
+#> log_sum_gammas[2]  1.85    0.03 1.19   0.36  1.00  1.58  2.41  4.93  1159 1.01
+#> lp__              -7.53    0.04 1.65 -11.75 -8.37 -7.15 -6.32 -5.44  1368 1.00
 #> 
-#> Samples were drawn using NUTS(diag_e) at Mon Feb 10 17:53:42 2025.
+#> Samples were drawn using NUTS(diag_e) at Wed Feb 12 16:35:14 2025.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).
@@ -1961,24 +1963,26 @@ R> model |>
 #> 4 chains, each with iter=2000; warmup=1000; thin=1; 
 #> post-warmup draws per chain=1000, total post-warmup draws=4000.
 #> 
-#>             mean se_mean   sd   2.5%   25%   50%   75% 97.5% n_eff Rhat
-#> lambdas[1]  0.50    0.01 0.29   0.03  0.25  0.50  0.75  0.97  2558    1
-#> lambdas[2]  0.50    0.01 0.29   0.03  0.25  0.50  0.75  0.97  2558    1
-#> lambdas[3]  0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.71  2012    1
-#> lambdas[4]  0.26    0.00 0.20   0.01  0.10  0.21  0.38  0.72  4663    1
-#> lambdas[5]  0.25    0.00 0.20   0.01  0.08  0.20  0.37  0.71  4851    1
-#> lambdas[6]  0.25    0.00 0.19   0.01  0.09  0.20  0.36  0.71  4266    1
-#> types[1]    0.13    0.00 0.14   0.00  0.03  0.08  0.18  0.49  2317    1
-#> types[2]    0.12    0.00 0.13   0.00  0.02  0.07  0.18  0.49  2150    1
-#> types[3]    0.13    0.00 0.14   0.00  0.03  0.08  0.18  0.51  3350    1
-#> types[4]    0.13    0.00 0.13   0.00  0.03  0.08  0.18  0.50  3460    1
-#> types[5]    0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3676    1
-#> types[6]    0.12    0.00 0.14   0.00  0.02  0.08  0.18  0.51  3694    1
-#> types[7]    0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.47  3424    1
-#> types[8]    0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3166    1
-#> lp__       -7.55    0.05 1.66 -11.87 -8.39 -7.15 -6.33 -5.45  1357    1
+#>                    mean se_mean   sd   2.5%   25%   50%   75% 97.5% n_eff Rhat
+#> lambdas[1]         0.50    0.01 0.29   0.03  0.25  0.50  0.75  0.97  2558    1
+#> lambdas[2]         0.50    0.01 0.29   0.03  0.25  0.50  0.75  0.97  2558    1
+#> lambdas[3]         0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.71  2012    1
+#> lambdas[4]         0.26    0.00 0.20   0.01  0.10  0.21  0.38  0.72  4663    1
+#> lambdas[5]         0.25    0.00 0.20   0.01  0.08  0.20  0.37  0.71  4851    1
+#> lambdas[6]         0.25    0.00 0.19   0.01  0.09  0.20  0.36  0.71  4266    1
+#> log_sum_gammas[1]  0.99    0.02 0.99   0.03  0.28  0.69  1.37  3.68  2209    1
+#> log_sum_gammas[2]  1.87    0.03 1.21   0.34  0.99  1.61  2.45  5.02  1315    1
+#> types[1]           0.13    0.00 0.14   0.00  0.03  0.08  0.18  0.49  2317    1
+#> types[2]           0.12    0.00 0.13   0.00  0.02  0.07  0.18  0.49  2150    1
+#> types[3]           0.13    0.00 0.14   0.00  0.03  0.08  0.18  0.51  3350    1
+#> types[4]           0.13    0.00 0.13   0.00  0.03  0.08  0.18  0.50  3460    1
+#> types[5]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3676    1
+#> types[6]           0.12    0.00 0.14   0.00  0.02  0.08  0.18  0.51  3694    1
+#> types[7]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.47  3424    1
+#> types[8]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3166    1
+#> lp__              -7.55    0.05 1.66 -11.87 -8.39 -7.15 -6.33 -5.45  1357    1
 #> 
-#> Samples were drawn using NUTS(diag_e) at Mon Feb 10 17:53:59 2025.
+#> Samples were drawn using NUTS(diag_e) at Wed Feb 12 16:35:28 2025.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).
@@ -2419,7 +2423,7 @@ label & model & query & given & using & case\_level & mean & sd\\
 \midrule
 ATE & Unrestricted & Y[X=1] - Y[X=0] & - & priors & FALSE & 0.00 & 0.20\\
 ATE & Restricted & Y[X=1] - Y[X=0] & - & priors & FALSE & 0.00 & 0.23\\
-ATE & Unrestricted & Y[X=1] - Y[X=0] & - & posteriors & FALSE & 0.55 & 0.10\\
+ATE & Unrestricted & Y[X=1] - Y[X=0] & - & posteriors & FALSE & 0.56 & 0.10\\
 ATE & Restricted & Y[X=1] - Y[X=0] & - & posteriors & FALSE & 0.56 & 0.10\\
 POS & Unrestricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.22\\
 \addlinespace
@@ -2429,7 +2433,7 @@ POS & Restricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & posteriors & FALSE & 0.95 & 
 ATE & Unrestricted & Y[X=1] - Y[X=0] & - & priors & TRUE & 0.00 & NA\\
 ATE & Restricted & Y[X=1] - Y[X=0] & - & priors & TRUE & 0.00 & NA\\
 \addlinespace
-ATE & Unrestricted & Y[X=1] - Y[X=0] & - & posteriors & TRUE & 0.55 & NA\\
+ATE & Unrestricted & Y[X=1] - Y[X=0] & - & posteriors & TRUE & 0.56 & NA\\
 ATE & Restricted & Y[X=1] - Y[X=0] & - & posteriors & TRUE & 0.56 & NA\\
 POS & Unrestricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & priors & TRUE & 0.50 & NA\\
 POS & Restricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & priors & TRUE & 0.49 & NA\\
@@ -2651,7 +2655,7 @@ the Comprehensive \proglang{R} Archive Network (CRAN) at
 \section*{Acknowledgments}\label{acknowledgments}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, breakable, bottomrule=.15mm, left=2mm, toprule=.15mm, leftrule=.75mm, arc=.35mm, rightrule=.15mm, opacityback=0, colback=white, colframe=quarto-callout-color-frame]
+\begin{tcolorbox}[enhanced jigsaw, breakable, toprule=.15mm, leftrule=.75mm, colframe=quarto-callout-color-frame, opacityback=0, rightrule=.15mm, arc=.35mm, bottomrule=.15mm, left=2mm, colback=white]
 
 We thank Ben Goodrich, who provided generous insights on using
 \texttt{stan} for this project. We thank Alan M Jacobs for key work in
@@ -2746,105 +2750,104 @@ causal types to the model.
 
 \begin{verbatim}
 S4 class stanmodel 'simplexes' coded as follows:
-functions{
+functions {
   row_vector col_sums(matrix X) {
-    row_vector[cols(X)] s ;
-    s = rep_row_vector(1, rows(X)) * X ;
-    return s ;
+    row_vector[cols(X)] s;
+    s = rep_row_vector(1, rows(X)) * X;
+    return s;
   }
 }
 data {
-int<lower=1> n_params;
-int<lower=1> n_paths;
-int<lower=1> n_types;
-int<lower=1> n_param_sets;
-int<lower=1> n_nodes;
-array[n_param_sets] int<lower=1> n_param_each;
-int<lower=1> n_data;
-int<lower=1> n_events;
-int<lower=1> n_strategies;
-int<lower=0, upper=1> keep_type_distribution;
-vector<lower=0>[n_params] lambdas_prior;
-array[n_param_sets] int<lower=1> l_starts;
-array[n_param_sets] int<lower=1> l_ends;
-array[n_nodes] int<lower=1> node_starts;
-array[n_nodes] int<lower=1> node_ends;
-array[n_strategies] int<lower=1> strategy_starts;
-array[n_strategies] int<lower=1> strategy_ends;
-matrix[n_params, n_types] P;
-matrix[n_params, n_paths] parmap;
-matrix[n_paths, n_data] map;
-matrix<lower=0,upper=1>[n_events,n_data] E;
-array[n_events] int<lower=0> Y;
+  int<lower=1> n_params;
+  int<lower=1> n_paths;
+  int<lower=1> n_types;
+  int<lower=1> n_param_sets;
+  int<lower=1> n_nodes;
+  array[n_param_sets] int<lower=1> n_param_each;
+  int<lower=1> n_data;
+  int<lower=1> n_events;
+  int<lower=1> n_strategies;
+  int<lower=0, upper=1> keep_type_distribution;
+  vector<lower=0>[n_params] lambdas_prior;
+  array[n_param_sets] int<lower=1> l_starts;
+  array[n_param_sets] int<lower=1> l_ends;
+  array[n_nodes] int<lower=1> node_starts;
+  array[n_nodes] int<lower=1> node_ends;
+  array[n_strategies] int<lower=1> strategy_starts;
+  array[n_strategies] int<lower=1> strategy_ends;
+  matrix[n_params, n_types] P;
+  matrix[n_params, n_paths] parmap;
+  matrix[n_paths, n_data] map;
+  matrix<lower=0, upper=1>[n_events, n_data] E;
+  array[n_events] int<lower=0> Y;
 }
 parameters {
-vector<lower=0>[n_params - n_param_sets] gamma;
+  vector<lower=0>[n_params - n_param_sets] gamma;
 }
 transformed parameters {
-vector<lower=0, upper=1>[n_params] lambdas;
-vector<lower=1>[n_param_sets] sum_gammas;
-matrix[n_params, n_paths] parlam;
-matrix[n_nodes, n_paths] parlam2;
-vector<lower=0, upper=1>[n_paths] w_0;
-vector<lower=0, upper=1>[n_data] w;
-vector<lower=0, upper=1>[n_events] w_full;
-// Cases in which a parameter set has only one value need special handling
-// they have no gamma components and sum_gamma needs to be made manually
-for (i in 1:n_param_sets) {
-  if (l_starts[i] >= l_ends[i]) {
-    sum_gammas[i] = 1;
-    lambdas[l_starts[i]] = 1;
-    }
-  else if (l_starts[i] < l_ends[i]) {
-    sum_gammas[i] =
-    1 + sum(gamma[(l_starts[i] - (i-1)):(l_ends[i] - i)]);
-    lambdas[l_starts[i]:l_ends[i]] =
-    append_row(1, gamma[(l_starts[i] - (i-1)):(l_ends[i] - i)]) /
-      sum_gammas[i];
+  vector<lower=0, upper=1>[n_params] lambdas;
+  vector<lower=1>[n_param_sets] sum_gammas;
+  matrix[n_params, n_paths] parlam;
+  matrix[n_nodes, n_paths] parlam2;
+  vector<lower=0, upper=1>[n_paths] w_0;
+  vector<lower=0, upper=1>[n_data] w;
+  vector<lower=0, upper=1>[n_events] w_full;
+  vector[n_param_sets] log_sum_gammas;
+  // Handle cases where parameter set has only one value
+  for (i in 1:n_param_sets) {
+    if (l_starts[i] >= l_ends[i]) {
+      sum_gammas[i] = 1;
+      lambdas[l_starts[i]] = 1;
+    } else {
+      sum_gammas[i] = 1 + sum(gamma[(l_starts[i] - (i - 1)):(l_ends[i] - i)]);
+      lambdas[l_starts[i]:l_ends[i]] =
+        append_row(1, gamma[(l_starts[i] - (i - 1)):(l_ends[i] - i)]) /
+        sum_gammas[i];
     }
   }
-// Mapping from parameters to data types
-// (usual case): [n_par * n_data] * [n_par * n_data]
-parlam  = rep_matrix(lambdas, n_paths) .* parmap;
-// Sum probability over nodes on each path
-for (i in 1:n_nodes) {
- parlam2[i,] = col_sums(parlam[(node_starts[i]):(node_ends[i]),]);
- }
-// then take product  to get probability of data type on path
-for (i in 1:n_paths) {
-  w_0[i] = prod(parlam2[,i]);
- }
- // last (if confounding): map to n_data columns instead of n_paths
- w = map'*w_0;
+  // Mapping from parameters to data types
+  parlam = rep_matrix(lambdas, n_paths) .* parmap;
+  // Sum probability over nodes on each path
+  for (i in 1:n_nodes) {
+    parlam2[i, ] = col_sums(parlam[(node_starts[i]):(node_ends[i]), ]);
+  }
+  // Compute probability of data type on each path
+  for (i in 1:n_paths) {
+    w_0[i] = exp(sum(log(parlam2[, i])));
+  }
+  // Map to n_data columns instead of n_paths (if confounding)
+  w = map' * w_0;
   // Extend/reduce to cover all observed data types
- w_full = E * w;
+  w_full = E * w;
+  // Calculate log sum gammas once for efficiency
+  log_sum_gammas = log(sum_gammas);
 }
 model {
-// Dirichlet distributions
-for (i in 1:n_param_sets) {
-  target += dirichlet_lpdf(lambdas[l_starts[i]:l_ends[i]]  |
-    lambdas_prior[l_starts[i] :l_ends[i]]);
-  target += -n_param_each[i] * log(sum_gammas[i]);
- }
-// Multinomials
-// Note with censoring event_probabilities might not sum to 1
-for (i in 1:n_strategies) {
-  target += multinomial_lpmf(
-  Y[strategy_starts[i]:strategy_ends[i]] |
-    w_full[strategy_starts[i]:strategy_ends[i]]/
-     sum(w_full[strategy_starts[i]:strategy_ends[i]]));
- }
+  // Dirichlet distributions
+  for (i in 1:n_param_sets) {
+    target += dirichlet_lpdf(lambdas[l_starts[i]:l_ends[i]] |
+                             lambdas_prior[l_starts[i]:l_ends[i]]);
+    target += -n_param_each[i] * log_sum_gammas[i];
+  }
+  // Multinomial likelihoods (handling censoring)
+  for (i in 1:n_strategies) {
+    target += multinomial_lpmf(
+      Y[strategy_starts[i]:strategy_ends[i]] |
+      w_full[strategy_starts[i]:strategy_ends[i]] /
+      sum(w_full[strategy_starts[i]:strategy_ends[i]])
+    );
+  }
 }
 // Option to export distribution of causal types
-generated quantities{
-vector[n_types] types;
-if (keep_type_distribution == 1){
-for (i in 1:n_types) {
-   types[i] = prod(P[, i].*lambdas + 1 - P[,i]);
-}}
- if (keep_type_distribution == 0){
+generated quantities {
+  vector[n_types] types;
+  if (keep_type_distribution == 1) {
+    for (i in 1:n_types) {
+      types[i] = prod(P[, i] .* lambdas + 1 - P[, i]);
+    }
+  } else {
     types = rep_vector(1, n_types);
- }
+  }
 } 
 \end{verbatim}
 
@@ -2858,72 +2861,55 @@ benchmarks are not generally reproducible and depend on the
 specifications of the hardware system used to produce them. The first
 benchmark considers the effect of model complexity on updating time. The
 second benchmark considers the effect of data size on updating time. We
-run four parallel chains for each model. The results of the benchmarks
-are presented in Table~\ref{tbl-bench1} and Table~\ref{tbl-bench2}.
+run four parallel chains for each model with a relatively large number
+(4000) of iterations each time, all replicated five times. The results
+of the benchmarks are presented in Table~\ref{tbl-bench1} and
+Table~\ref{tbl-bench2}.
 
 \begin{longtable}[]{@{}
-  >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.4000}}
-  >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3000}}
-  >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3000}}@{}}
-\caption{Benchmark 1.}\label{tbl-bench1}\tabularnewline
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.5618}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.2360}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.2022}}@{}}
+
+\caption{\label{tbl-bench1}Benchmarking 1}
+
+\tabularnewline
+
 \toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\centering
+\begin{minipage}[b]{\linewidth}\raggedright
 Model
-\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-Number of Model Parameters
-\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-\texttt{update\_model()} Run-Time (seconds)
-\end{minipage} \\
-\midrule\noalign{}
-\endfirsthead
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\centering
-Model
-\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-Number of Model Parameters
-\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-\texttt{update\_model()} Run-Time (seconds)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Number of parameters
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Runtime (seconds)
 \end{minipage} \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\(X1 \rightarrow Y\) & 6 & 7.6 \\
-\(X1 \rightarrow Y; X2 \rightarrow Y\) & 20 & 9.6 \\
-\(X1\rightarrow Y;X2\rightarrow Y;X3\rightarrow Y\) & 262 & 96.4 \\
+\(X1 \rightarrow Y\) & 6 & 6.33 \\
+\(X1 \rightarrow Y; X2 \rightarrow Y\) & 20 & 9.05 \\
+\(X1\rightarrow Y;X2\rightarrow Y;X3\rightarrow Y\) & 262 & 100.49 \\
+
 \end{longtable}
 
-\begin{longtable}[]{@{}
-  >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.4000}}
-  >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3000}}
-  >{\centering\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3000}}@{}}
-\caption{Benchmark 2.}\label{tbl-bench2}\tabularnewline
+\begin{longtable}[]{@{}lrr@{}}
+
+\caption{\label{tbl-bench2}Benchmarking 2}
+
+\tabularnewline
+
 \toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\centering
-Model
-\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-Number of Observations
-\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-\texttt{update\_model()} Run-Time (seconds)
-\end{minipage} \\
-\midrule\noalign{}
-\endfirsthead
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\centering
-Model
-\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-Number of Observations
-\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-\texttt{update\_model()} Run-Time (seconds)
-\end{minipage} \\
+Model & Number of observations & Runtime (seconds) \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\(X1 \rightarrow Y\) & 10 & 7.5 \\
-\(X1 \rightarrow Y\) & 100 & 7.8 \\
-\(X1 \rightarrow Y\) & 1000 & 9.8 \\
-\(X1 \rightarrow Y\) & 10000 & 16.2 \\
+\(X1 \rightarrow Y\) & 10 & 9.02 \\
+\(X1 \rightarrow Y\) & 100 & 9.51 \\
+\(X1 \rightarrow Y\) & 1000 & 11.25 \\
+\(X1 \rightarrow Y\) & 10000 & 17.54 \\
+
 \end{longtable}
 
 Increasing the number of parents in a model greatly increases the number
