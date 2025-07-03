@@ -107,7 +107,7 @@ make_model("Z -> X -> Y; X <-> Y") |>
   plot()
 ```
 
-![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-1.png)
+![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-1.png)
 <table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
  <thead>
   <tr>
@@ -593,7 +593,7 @@ make_model("X -> Y")  |>
 ## log_sum_gammas[2]  1.85    0.03 1.19   0.36  1.00  1.58  2.41  4.93  1159 1.01
 ## lp__              -7.53    0.04 1.65 -11.75 -8.37 -7.15 -6.32 -5.44  1368 1.00
 ## 
-## Samples were drawn using NUTS(diag_e) at Wed Feb 12 16:42:52 2025.
+## Samples were drawn using NUTS(diag_e) at Thu Feb 27 10:41:46 2025.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).
@@ -674,7 +674,7 @@ model |>
 ## types[8]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3166    1
 ## lp__              -7.55    0.05 1.66 -11.87 -8.39 -7.15 -6.33 -5.45  1357    1
 ## 
-## Samples were drawn using NUTS(diag_e) at Wed Feb 12 16:43:12 2025.
+## Samples were drawn using NUTS(diag_e) at Thu Feb 27 10:42:02 2025.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).
@@ -810,7 +810,7 @@ make_model("X -> M -> Y") |>
   plot()
 ```
 
-![plot of chunk unnamed-chunk-53](figure/unnamed-chunk-53-1.png)
+![plot of chunk unnamed-chunk-54](figure/unnamed-chunk-54-1.png)
 
 ``` r
 models <- list(
@@ -1175,16 +1175,16 @@ Table: Benchmarking 1
 
 |Model                                             | Number of parameters| Runtime (seconds)|
 |:-------------------------------------------------|--------------------:|-----------------:|
-|$X1 \rightarrow Y$                                |                    6|              9.63|
-|$X1 \rightarrow Y; X2 \rightarrow Y$              |                   20|             12.48|
-|$X1\rightarrow Y;X2\rightarrow Y;X3\rightarrow Y$ |                  262|            102.59|
+|$X1 \rightarrow Y$                                |                    6|              6.80|
+|$X1 \rightarrow Y; X2 \rightarrow Y$              |                   20|              9.26|
+|$X1\rightarrow Y;X2\rightarrow Y;X3\rightarrow Y$ |                  262|             96.35|
 
 Table: Benchmarking 2
 
 |Model              | Number of observations| Runtime (seconds)|
 |:------------------|----------------------:|-----------------:|
-|$X1 \rightarrow Y$ |                     10|              8.30|
-|$X1 \rightarrow Y$ |                    100|              8.99|
-|$X1 \rightarrow Y$ |                   1000|             10.76|
-|$X1 \rightarrow Y$ |                  10000|             16.70|
+|$X1 \rightarrow Y$ |                     10|              9.12|
+|$X1 \rightarrow Y$ |                    100|              9.01|
+|$X1 \rightarrow Y$ |                   1000|             10.99|
+|$X1 \rightarrow Y$ |                  10000|             18.69|
 

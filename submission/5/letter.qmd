@@ -1,0 +1,43 @@
+---
+title: "Cover letter: Making, Updating, and Querying Causal Models with `CausalQueries`"
+format: pdf
+---
+
+Berlin, February 2025
+
+Dear Editor:
+
+
+
+
+The reviewer made two points with respect to the Bayes equation on page 8 and text around it; suggesting that we should be updating with respect to $\tehta$ not $\lambda$
+
+
+> lipids_model |> get_query_types("Y[X=1] / Y[X=0]")
+Z0.X00.Y00 Z1.X00.Y00 Z0.X10.Y00 Z1.X10.Y00 Z0.X01.Y00 Z1.X01.Y00 Z0.X11.Y00 Z1.X11.Y00 Z0.X00.Y10 
+       NaN        NaN        NaN        NaN        NaN        NaN        NaN        NaN          0 
+Z1.X00.Y10 Z0.X10.Y10 Z1.X10.Y10 Z0.X01.Y10 Z1.X01.Y10 Z0.X11.Y10 Z1.X11.Y10 Z0.X00.Y01 Z1.X00.Y01 
+         0          0          0          0          0          0          0        Inf        Inf 
+Z0.X10.Y01 Z1.X10.Y01 Z0.X01.Y01 Z1.X01.Y01 Z0.X11.Y01 Z1.X11.Y01 Z0.X00.Y11 Z1.X00.Y11 Z0.X10.Y11 
+       Inf        Inf        Inf        Inf        Inf        Inf          1          1          1 
+Z1.X10.Y11 Z0.X01.Y11 Z1.X01.Y11 Z0.X11.Y11 Z1.X11.Y11 
+         1          1          1          1          1 
+         
+         
+PAcakge updates
+
+From reviewer B
+
+         • In ?make model, the possibility for confounded X<->Y should be men-
+tioned.
+
+• Also nice to have: links to documentations of related functions mentioned,
+e.g., to set priors and set parameters in ?make model.
+• In summary.causal model, the meaning of the display column for a node
+
+is not immediately clear and might benefit from an example in the docu-
+mentation.
+         
+With thanks
+
+Macartan Humphreys

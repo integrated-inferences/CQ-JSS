@@ -283,15 +283,19 @@ The packages most similar to `CausalQueries` for model definition are `autobound
 
 Both `autobounds` and `causaloptim` build on seminal approaches in @balke_bounds_1997 to construct bounds on queries, using constrained polynomial and linear optimization, respectively. In contrast, `CausalQueries` uses Bayesian inference to generate a posterior over the causal model, which is then queried [consistent with @chickering_clinicians_1996; @zhang_partial_2022]. A key difference is the target of inference. The polynomial and linear programming approach is suited to handling larger causal models. However, due to their similar model parameterization, `autobounds`, `causaloptim`, and `CausalQueries` face similar constraints as parameter spaces expand rapidly with model size. The Bayesian approach to model updating and querying is more efficient because a model can be updated once and queried multiple times, while expensive optimization runs are needed for each separate query in `autobounds` and `causaloptim`.
 
-In summary, the main strength of `CausalQueries` is its ability to let users define arbitrary DAG and pose any queries on it, using a canonical procedure to form Bayesian posteriors for those queries, regardless of whether they are identified. For instance, if researchers want to learn about the local average treatment effect and their model meets the conditions in @angrist_identification_1996, updating will recover valid estimates as data grows, even if researchers are unaware that the local average treatment effect is identified or unfamiliar with the specific estimation method proposed by @angrist_identification_1996.
+In summary, the main strength of `CausalQueries` is its ability to let users define an arbitrary DAG and pose any queries on it, using a canonical procedure to form Bayesian posteriors for those queries, regardless of whether they are identified. For instance, if researchers want to learn about the local average treatment effect and their model meets the conditions in @angrist_identification_1996, updating will recover valid estimates as data grows, even if researchers are unaware that the local average treatment effect is identified or unfamiliar with the specific estimation method proposed by @angrist_identification_1996.
 
-There are two main limitations of the models that `CausalQueries` can handle. First, `CausalQueries` is designed for models with a relatively small number of binary nodes. Since it does not limit the range of possible causal relationships in a model, the parameter space expands quickly with the model's complexity. This complexity growth depends on the causal structure and increases rapidly with the number of parents influencing a child node. A chain model like $A \rightarrow B \rightarrow C \rightarrow D \rightarrow E$ has only 18 parameters ($2^1 + 4\times 2^2$), while a model in which $A, B, C, D$ are all direct ancestors of $E$ has $65,544$ parameters ($4\times 2^1 + 2^{(4^2)}$). Switching from binary to nonbinary nodes has similar effects. The restriction to binary nodes is for computational, not conceptual, reasons.^[For more on computational constraints and strategies for updating and querying large models, see the `CausalQueriesTools` package available via `devtools::install_github("till-tietz/CausalQueriesTools")`. The main approach here is to divide large causal models into modules, update each module, and then reassemble them to pose queries. Also, see section 9.4.1 of @humphreys_integrated_2023 for a method that represents non-binary data as a profile of outcomes on multiple binary nodes.]
+There are two main limitations of the models that `CausalQueries` can handle. First, `CausalQueries` is designed for models with a relatively small number of binary nodes. Since it does not limit the range of possible causal relationships in a model, the parameter space expands quickly with the model's complexity. This complexity growth depends on the causal structure and increases rapidly with the number of parents influencing a child node. A chain model like $A \rightarrow B \rightarrow C \rightarrow D \rightarrow E$ has only 18 parameters ($2^1 + 4\times 2^2$), while a model in which $A, B, C, D$ are all direct ancestors of $E$ has $65,544$ parameters ($4\times 2^1 + 2^{(2^4)}$). Switching from binary to nonbinary nodes has similar effects. The restriction to binary nodes is for computational, not conceptual, reasons.^[For more on computational constraints and strategies for updating and querying large models, see the `CausalQueriesTools` package available via `devtools::install_github("till-tietz/CausalQueriesTools")`. The main approach here is to divide large causal models into modules, update each module, and then reassemble them to pose queries. Also, see section 9.4.1 of @humphreys_integrated_2023 for a method that represents non-binary data as a profile of outcomes on multiple binary nodes.]
 
 Second, the package is designed for learning about populations from independently sampled units. Therefore, it does not inherently address issues of clustering, hierarchical structures, or purposive sampling. However, the broader framework can be adapted for these purposes [see section 9.4 of @humphreys_integrated_2023]. The targets of inference are case-level or population-level quantities; `CausalQueries` is not well-suited for estimating sample quantities.
 
 ## Statistical model {#sec-theory}
 
-The core conceptual framework used by `CausalQueries` is that described in Pearl's *Causality* [@pearl_causality_2009]. It can be summarized as follows [using notation from @humphreys_integrated_2023]:
+The core conceptual framework used by `CausalQueries` is that described in Pearl's *Causality* [@pearl_causality_2009]. 
+
+The two key steps to defining a causal model are to define a causal structure and then place probability distributions over models consistent with that structure. 
+
+Relying on ideas in @pearl_causality_2009  [with notation from @humphreys_integrated_2023], we define a causal model as follows:
 
 ```{=tex}
 \begin{definition}
@@ -300,20 +304,27 @@ The core conceptual framework used by `CausalQueries` is that described in Pearl
   \begin{enumerate}
     \item an ordered collection of ``endogenous nodes" $Y = \{Y_1, Y_2, \dots, Y_n\}$
     \item an ordered collection of ``exogenous nodes" $\Theta = \{\theta^{Y_1}, \theta^{Y_2}, \dots, \theta^{Y_n}\}$
-    \item a collection of functions $F = \{f_{Y_1}, f_{Y_2}, \dots, f_{Y_n}\}$ with $f_{Y_j}$ specifying, for each $j$, how outcome $Y_j$ depends on $\theta_j$ and realizations of endogenous nodes prior to $Y_j$.
+    \item an ordered collection of functions $F = \{f_{Y_1}, f_{Y_2}, \dots, f_{Y_n}\}$ with $f_{Y_j}$ specifying, for each $j$, how outcome $Y_j$ depends on $\theta_j$ and realizations of endogenous nodes prior to $Y_j$.
     \item a probability distribution, $\lambda$, over $\Theta$.
   \end{enumerate}
   
 \end{definition}
 ```
 
-By default, `CausalQueries` assumes that endogenous nodes are binary. When defining a causal structure, we specify which endogenous nodes are (possible) direct causes of a node, $Y_j$, given the other nodes in the model. These nodes are referred to as the parents of $Y_j$, denoted as $PA_j$ (where uppercase $PA_j$ represents the collection of nodes, and lowercase $pa_j$ represents a specific set of values these nodes might assume). With discrete-valued nodes, it is possible to identify all potential responses of a node to its parents, which we call "nodal types." If a node $i$ can take on $k_i$ possible values, then the set of possible values that the parents of $j$ can assume is $m_j :=\prod_{i\in PA_j}k_i$. Consequently, there are $k_j^{m_j}$ different ways that node $j$ might respond to its parents. For binary nodes, this simplifies to $2^{\left(2^{|PA_j|}\right)}$. Thus, an endogenous node with no parents has 2 nodal types; a binary node with one binary parent has four types; and a binary node with two parents has 16 types, and so forth.
+
+Elements 1 - 3 of definition 1 define a "**structural causal model**." These components define a causal structure,  specifying which endogenous nodes are (possible) direct causes of a node, $Y_j$, given the other nodes in a model. These nodes are referred to as the "parents" of $Y_j$, denoted as $PA_j$ (where uppercase $PA_j$ represents the collection of nodes, and lowercase $pa_j$ represents a specific set of values these nodes might assume). 
+
+Specifying a structural causal model involves making possibly strong assumptions, for example about which nodes are not plausibly causes of other nodes. Even still, without information on the distribution of exogenous nodes, a structural causal model is generally not rich enough to allow us to make probabilistic statements about the distribution of outcomes. Adding the final element of the definition then gives us the fully specified causal model.
+
+With discrete-valued nodes, it is possible to identify all potential responses of a node to its parents,  which we call "nodal types" (often referred to as "response functions"). If a node $i$ can take on $k_i$ possible values, then the set of possible values that the parents of $j$ can assume is $m_j :=\prod_{i\in PA_j}k_i$. Consequently, there are $k_j^{m_j}$ different ways that node $j$ might respond to its parents. For binary nodes, this simplifies to $2^{\left(2^{|PA_j|}\right)}$. Thus, an endogenous node with no parents has 2 nodal types; a binary node with one binary parent has four types; and a binary node with two parents has 16 types, and so forth.
+
+As a practical matter we need to label response types. In `CausalQueries` this is done using subscripts that indicate the response given different combinations of parents. A node, $Y$, with one binary parent, $X$, has a nodal types subscripted with two values indicating the two possible values of $Y$'s parent (0 or 1):  $(\theta_{00}, \theta_{01}, \theta_{10}, \theta_{11})$,  where $\theta_{ab}$ labels nodal type  $(Y(X=0) = a,Y(X=1) = b)$. The same approach is used for nodes with more (or fewer) nodal types, where the $i$th digit in the subscript corresponding to the value the node takes when the parents take on the $i$th combination of possible parent values (listed in colexicographic binary order given the specified ordering of parents).
 
 The complete set of possible causal reactions of a given unit to all possible values of its parents is represented by its collection of nodal types at each node. We refer to this collection as a unit's "causal type," denoted as $\theta$. These causal types correspond to the principal strata, which are familiar from the study of instrumental variables [@frangakis_principal_2002].
 
-The approach used by `CausalQueries` is to align the domain of exogenous nodes $\theta^{Y_j}$ with the number of nodal types for $Y_j$. The function $f^j$ then determines the value of $y$ by simply reporting the value of $Y_j$ implied by the nodal type and the values of the parents of $Y_j$. Therefore, if $\theta^j_{pa_j}$ is the value for $j$ when parents have values $pa_j$, then $f_{Y_j}(\theta^{j}, pa_j) = \theta^j_{pa_j}$. Practically, this means that, given the causal structure, learning about the model reduces to learning about the distribution, $\lambda$, over the nodal types.
+`CausalQueries` treats the set of nodal types of $Y_j$ as the domain of exogenous nodes $\theta^{Y_j}$.  The function $f_{Y_j}$ then determines the value of $y$ by simply reporting the value of $Y_j$ implied by the nodal type and the values of the parents of $Y_j$. Therefore, if $\theta^{Y_j}_{pa_j}$ is the value for $j$ when parents have values $pa_j$, then $f_{Y_j}(\theta^{j}, pa_j) = \theta^{Y_j}_{pa_j}$. Practically, this means that, given the causal structure, learning about the model reduces to learning about the distribution, $\lambda$, over the nodal types.
 
-In scenarios without unobserved confounding, we assume that the probability distributions over the nodal types for different nodes are independent: $\theta^i \perp\!\!\! \perp \theta^j, i\neq j$. In this case, we use a categorical distribution to specify ${\lambda^j_x} := \Pr(\theta^j = {\theta^j_x})$. From this independence, the probability of a given causal type $\theta_x$ is $\prod_{i=1}^n {\lambda^i_x}$. For example, $\Pr(\theta = (\theta^X_1, \theta^Y_{01})) = \Pr(\theta^X = \theta^X_1)\Pr(\theta^Y = \theta^Y_{01}) = \lambda^X_1\lambda^Y_{01}$. In cases where confounding is present, the logic remains the same, but we need to specify enough parameters to capture the joint distribution over nodal types for different nodes. 
+In scenarios without unobserved confounding, we assume that the probability distributions over the nodal types for different nodes are independent: $\theta^i \perp\!\!\! \perp \theta^{Y_j}, i\neq j$. In this case, we use a categorical distribution to specify ${\lambda^j_x} := \Pr(\theta^{Y_j} = {\theta^{Y_j}_x})$. From this independence, the probability of a given causal type $\theta_x$ is $\prod_{i=1}^n {\lambda^i_x}$. For example, $\Pr(\theta = (\theta^X_1, \theta^Y_{01})) = \Pr(\theta^X = \theta^X_1)\Pr(\theta^Y = \theta^Y_{01}) = \lambda^X_1\lambda^Y_{01}$. In cases where confounding is present, the logic remains the same, but we need to specify enough parameters to capture the joint distribution over nodal types for different nodes. 
 
 
 For instance, in the Lipids model, the joint distribution of nodal types can be simplified as shown in @eq-join.
@@ -338,13 +349,13 @@ $$
 p(\lambda|D) = \frac{p(D|\lambda)p(\lambda)}{\int_{\lambda^{'}} p(D|\lambda')p(\lambda')}
 $$
 
-where $p(D|\lambda')$ is calculated under the assumption that units are exchangeable and independently drawn. In practice this means that the probability that two units have causal types $\theta_i$ and $\theta_j$ is simply $\lambda'_i\lambda'_j$. Since a causal type fully determines an outcome vector $d = \{y_1, y_2,\dots,y_n\}$, the probability of a given outcome ("event"), $w_d$, is given simply by the probability that the causal type is among those that yield outcome $d$. Thus, from $\lambda$ we can calculate a vector of event probabilities, $w(\lambda)$, for each vector of outcomes, and under independence, we have:
+where $p(D|\lambda')$ is calculated under the assumption that units are exchangeable and independently drawn. In practice this means that the probability that two units have causal types $\theta'_i$ and $\theta'_j$ is simply $\lambda'_i\lambda'_j$. Since a causal type fully determines an outcome vector $d = \{y_1, y_2,\dots,y_n\}$, the probability of a given outcome ("event"), $w_d$, is given simply by the probability that the causal type is among those that yield outcome $d$. Thus, from $\lambda$ we can calculate a vector of event probabilities, $w(\lambda)$, for each vector of outcomes. For $N$ units, and assuming independence, the probability of observing a set of outcomes at all nodes across all units is:
 
 $$
 D \sim \text{Multinomial}(w(\lambda), N)
 $$
 
-Thus for instance in the case of an $X \rightarrow Y$ model, and letting $w_{xy}$ denote the probability of a data type $X=x, Y=y$, the event probabilities are:
+Thus for instance in the case of an $X \rightarrow Y$ model, letting $w_{xy}$ denote the probability of a data type $X=x, Y=y$, the event probabilities are:
 
 $$
 w(\lambda) = \left\{\begin{array}{ccc} w_{00} & = & \lambda^X_0(\lambda^Y_{00} + \lambda^Y_{01})\\ 
@@ -353,6 +364,7 @@ w_{10} & = & \lambda^X_1(\lambda^Y_{00} + \lambda^Y_{10})\\
 w_{11} & = & \lambda^X_1(\lambda^Y_{11} + \lambda^Y_{01})\end{array} \right.
 $$
 
+Recall $\lambda^Y_{01}=\Pr(\theta^Y = \theta^Y_{01})$ and the subscripts ($0$, $00$, $01$, dots)  summarizes the responses of nodes to parent combinations, as described above.
 
 For a more complex example, @tbl-lipidspar illustrates key values for the Lipids model. We see here that we have two types for the exogenous node $Z$, four for $X$ (representing the strata familiar from instrumental variables analysis: never takers, always takers, defiers, and compliers) and four for $Y$. For $Z$ and $X$ we have parameters corresponding to probability of these nodal types. For instance `Z.0` is the probability that $Z=0$. `Z.1` is the complementary probability that $Z=1$. Things are a little more complicated for distributions on nodal types for $Y$ however: because of confounding between $X$ and $Y$ we have parameters that capture the conditional probability of the nodal types for $Y$ *given* the nodal types for $X$. We see there are four sets of these parameters. The next to final column shows a sample set of parameter values. Together, the parameters describe a full joint probability distribution over types for $Z$, $X$ and $Y$ that is faithful to the graph.
 
@@ -711,7 +723,7 @@ lipids_model |>
 <!-- Setting priors requires mapping alpha values to parameters, and so the problem of altering priors reduces to selecting rows of the `parameters_df` data frame at which to alter values. When specifying a causal statement as above, `CausalQueries` internally identifies nodal types consistent with the statement, which identifies parameters to alter priors for. -->
 
 
-While setting highly targeted priors is convenient and flexible, it should be done with caution. Assigning priors to specific parameters in complex models, particularly those involving confounding, can significantly impact inferences. Additionally, note that flat priors over nodal types do not necessarily equate to flat priors over queries. Flat priors over parameters within a parameter family assign equal weight to each nodal type, which can lead to strong assumptions about causal quantities of interest. For example, in an $X \rightarrow Y$ model where negative effects are excluded, the average causal effect implied by flat priors is $1/3$. This can be demonstrated by querying the model as follows:
+While setting highly targeted priors is convenient and flexible, it should be done with caution. Assigning priors to specific parameters in complex models, particularly those involving confounding, can significantly impact inferences (see @richardson2011transparent on an approach to specifying priors that more clearly separates beliefs over identifies and non-identified components). Additionally, note that flat priors over nodal types do not necessarily equate to flat priors over queries. Flat priors over parameters within a parameter family assign equal weight to each nodal type, which can lead to strong assumptions about causal quantities of interest. For example, in an $X \rightarrow Y$ model where negative effects are excluded, the average causal effect implied by flat priors is $1/3$. This can be demonstrated by querying the model as follows:
 
 ```{r}
 #| label: set-priors-flat
@@ -724,7 +736,7 @@ query <-
 ```
 
 
-More subtly, the *structure* of a model, coupled with flat priors, has substantive importance for priors on causal quantities. For instance, with flat priors, prior on the probability that $X$ has a positive effect on $Y$ in the model $X \rightarrow Y$ is centered on $1/4$. But prior on the probability that $X$ positively affects $Y$ in the model $X \rightarrow M \rightarrow Y$ is centered on $1/8$. Caution regarding priors is essential when models are not identified, as is the case for many models considered here. For some quantities, the marginal posterior distribution reflects the marginal prior distribution [@poirier_revising_1998].
+More subtly, the *structure* of a model, coupled with flat priors, has substantive importance for priors on causal quantities. For instance, with flat priors, prior on the probability that $X$ has a positive effect on $Y$ in the model $X \rightarrow Y$ is centered on $1/4$. But prior on the probability that $X$ positively affects $Y$ in the model $X \rightarrow M \rightarrow Y$ is centered on $1/8$. Caution regarding priors is essential when queries are not identified, as is the case for many models considered here. For some quantities, the marginal posterior distribution reflects the marginal prior distribution [@poirier_revising_1998].
 
 #### Setting Parameters {#parameters}
 
@@ -1066,7 +1078,7 @@ For instance, consider the query `Y[X=0]==1`. This query asks about the types fo
 ```{r}
 
 make_model("X -> Y")  |> 
-  get_query_types("Y[X=1]==1")
+  get_query_types("Y[X=0]==1")
 
 ```
 
@@ -1081,7 +1093,7 @@ make_model("X1 -> Y <- X2")  |>
 
 ```
 
-In this case, the aim is to identify the types for which in fact $X1=1$ and $X2=1$ *in addition* $Y=0$ when $X1 = X2 = 0$, and $Y = 1$ when $X1 = X2 = 1$.
+In this case, the aim is to identify the types for which in fact $X1=1$ and $X2=1$ and, *in addition*, $Y=0$ when $X1 = X2 = 0$ and $Y = 1$ when $X1 = X2 = 1$.
 
 #### Conditional queries
 
@@ -1101,7 +1113,7 @@ make_model("X -> Y") |>
 
 #### Nested queries
 
-`CausalQueries` lets users pose nested "complex counterfactual" queries. Rather than stipulating a value to which some node is to be set, the user can set the value to the value that the node would take given actions taken on ancestor nodes.  For instance `"Y[M=M[X=0], X=1]==1"` queries the types for which $Y$ equals $1$ when $X$ is set to $1$, while keeping $M$ constant at whatever value it would take if $X$ were set to $0$.
+`CausalQueries` lets users pose nested "complex counterfactual" queries. Rather than stipulating a value to which some node is to be set, the user can set the value to the value that the node would take given actions taken on ancestor nodes.  For instance `"Y[M=M[X=0], X=1]==1"` queries the types for which $Y$ equals $1$ when $X$ is set to $1$, while keeping $M$ constant at whatever value it would take if $X$ were set to $0$. Such values are important for defining queries such as the "natural direct effect" [@pearl2022direct].
 
 ### Quantifying queries
 
@@ -1204,7 +1216,7 @@ The function `query_model()` can also be used to pose multiple queries of multip
 
 Since users can adjust multiple lists of features of a query there is an option, `expand_grid = TRUE`,  to indicate whether to query with respect to all combinations of supplied arguments.
 
-To illustrate, we return again to the limits model but now consider two versions, one with and one without a monotonicity restriction imposed. 
+To illustrate, we return again to the lipids model but now consider two versions, one with and one without a monotonicity restriction imposed. 
 
 ```{r}
 #| label: batch-query
@@ -1312,12 +1324,12 @@ We identify several areas for future expansion of the package's functionality. O
 |                         | -   MacOS                                                                            |
 |                         | -   Windows                                                                          |
 +-------------------------+--------------------------------------------------------------------------------------+
-| Testing Environments R  | -   R 4.3.1                                                                          |
-|                         | -   R 4.3.0                                                                          |
+| Testing Environments R  | -   R 4.4.2                                                                          |
+|                         | -   R 4.3.3                                                                          |
 |                         | -   R 4.2.3                                                                          |
 |                         | -   r-devel                                                                          |
 +-------------------------+--------------------------------------------------------------------------------------+
-| R Version               | -   R(\>= 3.4.0)                                                                     |
+| R Version               | -   R(\>= 4.2.0)                                                                     |
 +-------------------------+--------------------------------------------------------------------------------------+
 | Compiler                | -   either of the below or similar:                                                  |
 |                         | -   g++                                                                              |
@@ -1340,10 +1352,11 @@ We identify several areas for future expansion of the package's functionality. O
 |                         | -   rstan (\>= 2.26.0)                                                               |
 |                         | -   rstantools (\>= 2.0.0)                                                           |
 |                         | -   stringr (\>= 1.4.0)                                                              |
-|                         | -   ggdag (\>= 0.2.4)                                                                |
 |                         | -   latex2exp (\>= 0.9.4)                                                            |
+|                         | -   knitr (\>= 1.45)                                                              |
 |                         | -   ggplot2 (\>= 3.3.5)                                                              |
 |                         | -   lifecycle (\>= 1.0.1)                                                            |
+|                         | -   ggraph (\>= 2.2.0)                                                                |
 |                         | -   Rcpp (\>= 0.12.0)                                                                |
 +-------------------------+--------------------------------------------------------------------------------------+
 
