@@ -1,0 +1,94 @@
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.4000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.6000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Element
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Description
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+
+
+\begin{minipage}[b]{\linewidth}\raggedright
+Element
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Description
+\end{minipage} \\
+
+
+\midrule\noalign{}
+\endhead
+\endlastfoot
+\texttt{statement} & A character string describing causal relations
+using dagitty syntax. \\
+
+\texttt{nodes} & A list containing the nodes in the model. \\
+
+\texttt{parents\_df} & A table listing nodes, whether they are root
+nodes or not, and the number and names of parents they have. \\
+
+\texttt{parameters} & A vector of `true' parameters. \\
+
+\texttt{parameter\_names} & A vector of names of parameters. \\
+
+\texttt{parameter\_mapping} & A matrix mapping from parameters into data
+types. \\
+
+\texttt{parameter\_matrix} & A matrix mapping from parameters into
+causal types. \\
+
+\texttt{parameters\_df} & A data frame containing parameter
+information. \\
+
+\texttt{causal\_types} & A data frame listing causal types and the nodal
+types that produce them. \\
+
+\texttt{nodal\_types} & A list with the nodal types of the model. \\
+
+\texttt{data\_types} & A list with all data types consistent with the
+model. \\
+
+\texttt{ambiguities\_matrix} & A matrix mapping from causal types into
+data types. \\
+
+\texttt{prior\_hyperparameters} & A vector of alpha values used to
+parameterize Dirichlet prior distributions; optionally provide node
+names to reduce output. \\
+
+\texttt{prior\_distribution} & A data frame of the parameter prior
+distribution. \\
+
+\texttt{posterior\_distribution} & A data frame of the parameter
+posterior distribution. \\
+
+\texttt{type\_prior} & A matrix of type probabilities using priors. \\
+
+\texttt{type\_posterior} & A matrix of type probabilities using
+posteriors. \\
+
+\texttt{prior\_event\_probabilities} & A vector of data (event)
+probabilities given a single realization of parameters. \\
+
+\texttt{posterior\_event\_probabilities} & A sample of data (event)
+probabilities from the posterior. \\
+
+\texttt{data} & A data frame with data that was provided to update the
+model. \\
+
+\texttt{stan\_summary} & A \texttt{stanfit} summary with processed
+parameter names. \\
+
+\texttt{stanfit} & An unprocessed \texttt{stanfit} object as generated
+by Stan. \\
+
+\texttt{stan\_warnings} & A list of warnings produced by Stan during
+updating. \\
+
+\bottomrule
+\caption{Elements of a model that can be inspected using
+\texttt{inspect()}.}\label{tbl-core}\tabularnewline
+\end{longtable}

@@ -43,7 +43,7 @@ format:
   jss-pdf:
     keep-tex: true
     include-in-header: supp/in-header.tex
-    tbl-cap-location: top
+    tbl-cap-location: bottom
     knitr: 
       opts_chunk:
         prompt: true
@@ -176,9 +176,9 @@ lipids_queries <-
   query_model(
     lipids_model,
     queries = list(
-      ATE  = "Y[X=1] - Y[X=0]",
-      PoC  = "Y[X=1] - Y[X=0] :|: X==0 & Y==0",
-      LATE = "Y[X=1] - Y[X=0] :|: X[Z=1] > X[Z=0]"),
+      ATE  = "Y[X = 1] - Y[X = 0]",
+      PoC  = "Y[X = 1] - Y[X = 0] :|: X == 0 & Y == 0",
+      LATE = "Y[X = 1] - Y[X = 0] :|: X[Z = 1] > X[Z = 0]"),
     using = "posteriors"
   )
 
@@ -233,9 +233,9 @@ make_model("Z -> X -> Y; X <-> Y") |>
   update_model(lipids_data) |>
   query_model(
     queries = list(
-      ATE  = "Y[X=1] - Y[X=0]",
-      PoC  = "Y[X=1] - Y[X=0] :|: X==0 & Y==0",
-      LATE = "Y[X=1] - Y[X=0] :|: X[Z=1] > X[Z=0]"),
+      ATE  = "Y[X = 1] - Y[X = 0]",
+      PoC  = "Y[X = 1] - Y[X = 0] :|: X == 0 & Y == 0",
+      LATE = "Y[X = 1] - Y[X = 0] :|: X[Z = 1] > X[Z = 0]"),
     using = "posteriors") |>
   plot()
 
@@ -247,31 +247,11 @@ As we describe below, the same basic procedure of making, updating, and querying
 
 The field of causal inference encompasses a wide range of software tools used across various disciplines, including social sciences, natural sciences, computer science, and applied mathematics. This section focuses on the role and capabilities of `CausalQueries` within the specific area of evaluating causal queries on models represented as directed acyclic graphs (DAGs) or structural equation models (SEMs).  @tbl-software provides a summary of relevant software, highlighting their connections, strengths, and limitations in comparison to `CausalQueries`.
 
-+--------------+--------------------------+---------------------+--------------+---------------------------------------------------------------------+
-| Software     | Source                   | Language            | Availability | Scope                                                               |
-+==============+==========================+=====================+==============+=====================================================================+
-| `causalnex`  | @beaumont_causalnex_2021 | [Python]{.proglang} | -   pip      | -   causal structure learning                                       |
-|              |                          |                     |              | -   querying marginal distributions                                 |
-|              |                          |                     |              | -   discrete data                                                   |
-+--------------+--------------------------+---------------------+--------------+---------------------------------------------------------------------+
-| `pclag`      | @kalisch_causal_2012     | [R]{.proglang}      | -   CRAN     | -   causal structure learning                                       |
-|              |                          |                     | -   GitHub   | -   ATEs under linear conditional expectations, no hidden selection |
-+--------------+--------------------------+---------------------+--------------+---------------------------------------------------------------------+
-| `DoWhy`      | @dowhy                   | [Python]{.proglang} | -   pip      | -   identification                                                  |
-|              |                          |                     |              | -   average and conditional causal effects                          |
-|              |                          |                     |              | -   robustness checks                                               |
-+--------------+--------------------------+---------------------+--------------+---------------------------------------------------------------------+
-| `autobounds` | @duarte_automated_2023   | [Python]{.proglang} | -   Docker   | -   bounding causal effects                                         |
-|              |                          |                     | -   GitHub   | -   partial identification                                          |
-|              |                          |                     |              | -   DAG canonicalization                                            |
-|              |                          |                     |              | -   binary data                                                     |
-+--------------+--------------------------+---------------------+--------------+---------------------------------------------------------------------+
-| `causaloptim`| @sachs_general_2023      | [R]{.proglang}      | -   CRAN     | -   bounding causal effects                                         |
-|              |                          |                     | -   GitHub   | -   non-identified queries                                          |
-|              |                          |                     |              | -   binary data                                                     |
-+--------------+--------------------------+---------------------+--------------+---------------------------------------------------------------------+
 
-: Related software. {#tbl-software tbl-colwidths="\[19,20,10,18,38\]"}
+
+```{=latex}
+\input{tables/related_software.tex}
+```
 
 `causalnex` is comprehensive software that offers functions for discovering and querying causal models. Like `CausalQueries`, it uses Bayesian methods and supports "`do` calculus" [@pearl_causality_2009]. It focuses on conditional probability distribution tables instead of principal strata (causal types). This limits the types of queries and expert information that can be incorporated. For example, knowing conditional probability distributions is not enough to make claims about (or provide priors with respect to) effect monotonicity, complier effects, or the "probability of causation" [@dawid2017probability]. However, it allows for efficient handling of simple queries with larger models.
 
@@ -285,9 +265,9 @@ Both `autobounds` and `causaloptim` build on seminal approaches in @balke_bounds
 
 In summary, the main strength of `CausalQueries` is its ability to let users define an arbitrary DAG and pose any queries on it, using a canonical procedure to form Bayesian posteriors for those queries, regardless of whether they are identified. For instance, if researchers want to learn about the local average treatment effect and their model meets the conditions in @angrist_identification_1996, updating will recover valid estimates as data grows, even if researchers are unaware that the local average treatment effect is identified or unfamiliar with the specific estimation method proposed by @angrist_identification_1996.
 
-There are two main limitations of the models that `CausalQueries` can handle. First, `CausalQueries` is designed for models with a relatively small number of binary nodes. Since it does not limit the range of possible causal relationships in a model, the parameter space expands quickly with the model's complexity. This complexity growth depends on the causal structure and increases rapidly with the number of parents influencing a child node. A chain model like $A \rightarrow B \rightarrow C \rightarrow D \rightarrow E$ has only 18 parameters ($2^1 + 4\times 2^2$), while a model in which $A, B, C, D$ are all direct ancestors of $E$ has $65,544$ parameters ($4\times 2^1 + 2^{(2^4)}$). Switching from binary to nonbinary nodes has similar effects. The restriction to binary nodes is for computational, not conceptual, reasons.^[For more on computational constraints and strategies for updating and querying large models, see the `CausalQueriesTools` package available via `devtools::install_github("till-tietz/CausalQueriesTools")`. The main approach here is to divide large causal models into modules, update each module, and then reassemble them to pose queries. Also, see section 9.4.1 of @humphreys_integrated_2023 for a method that represents non-binary data as a profile of outcomes on multiple binary nodes.]
+There are two main limitations of the models that `CausalQueries` can handle. First, `CausalQueries` is designed for models with a relatively small number of binary nodes. Since it does not limit the range of possible causal relationships in a model, the parameter space expands quickly with the model's complexity. This complexity growth depends on the causal structure and increases rapidly with the number of parents influencing a child node. A chain model like $A \rightarrow B \rightarrow C \rightarrow D \rightarrow E$ has only 18 parameters ($2^1 + 4\times 2^2$), while a model in which $A, B, C, D$ are all direct ancestors of $E$ has $65,544$ parameters ($4\times 2^1 + 2^{(2^4)}$). Switching from binary to nonbinary nodes has similar effects. The restriction to binary nodes is for computational, not conceptual, reasons.^[For more on computational constraints and strategies for updating and querying large models, see the `CausalQueriesTools` package available via `devtools::install_github("till-tietz/CausalQueriesTools")`. The main approach here is to divide large causal models into modules, update each module, and then reassemble them to pose queries. Also, see Section 9.4.1 of @humphreys_integrated_2023 for a method that represents non-binary data as a profile of outcomes on multiple binary nodes.]
 
-Second, the package is designed for learning about populations from independently sampled units. Therefore, it does not inherently address issues of clustering, hierarchical structures, or purposive sampling. However, the broader framework can be adapted for these purposes [see section 9.4 of @humphreys_integrated_2023]. The targets of inference are case-level or population-level quantities; `CausalQueries` is not well-suited for estimating sample quantities.
+Second, the package is designed for learning about populations from independently sampled units. Therefore, it does not inherently address issues of clustering, hierarchical structures, or purposive sampling. However, the broader framework can be adapted for these purposes [see Section 9.4 of @humphreys_integrated_2023]. The targets of inference are case-level or population-level quantities; `CausalQueries` is not well-suited for estimating sample quantities.
 
 ## Statistical model {#sec-theory}
 
@@ -407,7 +387,7 @@ The following sections review the classes and methods used by `CausalQueries` an
 
 `CausalQueries` makes use of two types of object classes, `causal_model` and `model_query`.
 
-An object of class `causal_model` encodes a structural causal model and stores information on parameter values---either provided by the user or set to defaults---as well as prior or posterior distributions over model parameters. An object of class `causal_model` is generated using `make_model()` and can be adjusted using `update_model()` as well as a set of helper functions: `set_confound`, `set_restrictions`, `set_priors`, as describe in sections @sec-make and @sec-update below.  Methods `print`, `summary` and `plot` are available for an object of class `causal_model`.
+An object of class `causal_model` encodes a structural causal model and stores information on parameter values---either provided by the user or set to defaults---as well as prior or posterior distributions over model parameters. An object of class `causal_model` is generated using `make_model()` and can be adjusted using `update_model()` as well as a set of helper functions: `set_confound`, `set_restrictions`, `set_priors`, as describe in  @sec-make and @sec-update below.  Methods `print`, `summary` and `plot` are available for an object of class `causal_model`.
 
 An object of class `model_query` records  responses to queries posed of a causal model. Depending on the nature of the query, it can include estimates of effects, prior or posterior standard deviations, and confidence intervals.  An object of class `causal_model` is generated using `query_model` as described in @sec-query. Methods `print`, `summary` and `plot` are available for an object of class `model_query`.
 
@@ -497,35 +477,10 @@ When a model is defined, `CausalQueries` generates a set of internal objects use
 @tbl-core summarizes features of a causal model that can be examined using `inspect()`.
 
 
-| Element                     | Description                                                                                                                                                                     |
-|-----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `statement`                 | A character string describing causal relations using dagitty syntax.                                                                                                            |
-| `nodes`                     | A list containing the nodes in the model.                                                                                                                                       |
-| `parents_df`                | A table listing nodes, whether they are root nodes or not, and the number and names of parents they have.                                                                       |
-| `parameters`                | A vector of 'true' parameters.                                                                                                                                                  |
-| `parameter_names`           | A vector of names of parameters.                                                                                                                                               |
-| `parameter_mapping`         | A matrix mapping from parameters into data types.                                                                                                                                |
-| `parameter_matrix`          | A matrix mapping from parameters into causal types.                                                                                                                              |
-| `parameters_df`             | A data frame containing parameter information.                                                                                                                                  |
-| `causal_types`              | A data frame listing causal types and the nodal types that produce them.                                                                                                        |
-| `nodal_types`               | A list with the nodal types of the model.                                                                                                                                       |
-| `data_types`                | A list with all data types consistent with the model.                                                                                     |
-| `ambiguities_matrix`        | A matrix mapping from causal types into data types.                                                                                                                              |
-| `prior_hyperparameters`     | A vector of alpha values used to parameterize Dirichlet prior distributions; optionally provide node names to reduce output. |
-| `prior_distribution`        | A data frame of the parameter prior distribution.                                                                                                                               |
-| `posterior_distribution`    | A data frame of the parameter posterior distribution.                                                                                                                           |
-| `type_prior`                | A matrix of type probabilities using priors.                                                                                                                                    |
-| `type_posterior`         | A matrix of type probabilities using posteriors.                                                                                                                                |
-| `prior_event_probabilities` | A vector of data (event) probabilities given a single realization of parameters.                                                     |
-| `posterior_event_probabilities` | A sample of data (event) probabilities from the posterior.                                                                                                                     |
-| `data`                      | A data frame with data that was provided to update the model.                                                                                                                   |
-| `stan_summary`              |  A `stanfit` summary with processed parameter names. |
-| `stanfit`                   | An unprocessed `stanfit` object as generated by Stan.                                                                                     |
-| `stan_warnings`              | A list of warnings produced by Stan during updating. |
 
-
-: Elements of a model that can be inspected using `inspect()`. {#tbl-core tbl-colwidths="\[40,60\]"}
-
+```{=latex}
+\input{tables/core_elements.tex}
+```
 
 ### Tailoring models
 
@@ -542,21 +497,11 @@ When a causal statement is provided to `make_model()`, the model is created with
 
 Unobserved confounding between two (or more) nodes arises when the nodal types for the nodes are not independent. For instance, in the $X \rightarrow Y$ graph, there are $2$ nodal types for $X$ and $4$ for $Y$. There are thus $8$ joint nodal types (or causal types), as shown in @tbl-joint.
 
-+-----------------+----------------------------------+----------------------------------+----------------------+
-|                 | $\theta^X_{0}$                   | $\theta^X_{1}$                   | $\sum$               |
-+:===============:+:================================:+:================================:+:====================:+
-| $\theta^Y_{00}$ | $\Pr(\theta^X_0, \theta^Y_{00})$ | $\Pr(\theta^X_1, \theta^Y_{00})$ | $\Pr(\theta^Y_{00})$ |
-+-----------------+----------------------------------+----------------------------------+----------------------+
-| $\theta^Y_{10}$ | $\Pr(\theta^X_0, \theta^Y_{10})$ | $\Pr(\theta^X_1, \theta^Y_{10})$ | $\Pr(\theta^Y_{10})$ |
-+-----------------+----------------------------------+----------------------------------+----------------------+
-| $\theta^Y_{01}$ | $\Pr(\theta^X_0, \theta^Y_{01})$ | $\Pr(\theta^X_1, \theta^Y_{01})$ | $\Pr(\theta^Y_{01})$ |
-+-----------------+----------------------------------+----------------------------------+----------------------+
-| $\theta^Y_{11}$ | $\Pr(\theta^X_0, \theta^Y_{11})$ | $\Pr(\theta^X_1, \theta^Y_{11})$ | $\Pr(\theta^Y_{11})$ |
-+-----------------+----------------------------------+----------------------------------+----------------------+
-| $\sum$          | $\Pr(\theta^X_0)$                | $\Pr(\theta^X_1)$                | 1                    |
-+-----------------+----------------------------------+----------------------------------+----------------------+
 
-: Nodal types in $X \rightarrow Y$ model. {#tbl-joint tbl-colwidths="\[25,25,25,25\]"}
+```{=latex}
+\input{tables/nodal_types.tex}
+```
+
 
 @tbl-joint has eight interior elements so that an unconstrained joint distribution would have seven degrees of freedom. A no-confounding assumption means that  $\Pr(\theta^X, \theta^Y) = \Pr(\theta^X)\Pr(\theta^Y)$. In this case, it is sufficient to put a distribution on the marginals, and there would be $3$ degrees of freedom for $Y$ and $1$ for $X$, totaling $4$ rather than $7$. To allow for an unconstrained joint distribution, the parameters data frame for this model would include two parameter families associated with the node $Y$. Each family represents the conditional distribution of $Y$'s nodal types, given $X$. For example, the parameter `Y01_X.1` can be interpreted as $\Pr(\theta^Y = \theta^Y_{01} | \theta^X=1)$. Refer to @tbl-lipidspar for an example of a parameter matrix with confounding. 
 
@@ -598,8 +543,12 @@ statements |>
     booktabs = TRUE,
     align = c("l", "c"),
     escape = TRUE, 
-    linesep = "",
+    linesep = "", 
     col.names = c("Model", "Degrees of freedom")) 
+
+
+
+
 
 ```
 
@@ -613,7 +562,7 @@ It is often beneficial to constrain the set of types. In `CausalQueries`, this i
 
 model_restricted <- 
   lipids_model |> 
-  set_restrictions("X[Z=1] < X[Z=0]")
+  set_restrictions("X[Z = 1] < X[Z = 0]")
 
 ```
 
@@ -715,7 +664,7 @@ Providing priors as a vector of numbers for larger models can be hard. For that 
 #| eval: true
 
 lipids_model |>
-  set_priors(statement = "X[Z=1] > X[Z=0]", alphas = 3) |>
+  set_priors(statement = "X[Z = 1] > X[Z = 0]", alphas = 3) |>
   inspect("prior_hyperparameters", nodes = "X")
 
 ```
@@ -731,7 +680,7 @@ While setting highly targeted priors is convenient and flexible, it should be do
 query <- 
   make_model("X -> Y") |>
   set_restrictions(decreasing("X", "Y")) |>
-  query_model("Y[X=1] - Y[X=0]", using = "priors")
+  query_model("Y[X = 1] - Y[X = 0]", using = "priors")
 
 ```
 
@@ -762,7 +711,7 @@ The example below illustrates a change in the value of the parameter that corres
 #| eval: true
 
 make_model("X -> Y") |>
-  set_parameters(statement = "Y[X=1] > Y[X=0]", parameters = .7) |>
+  set_parameters(statement = "Y[X = 1] > Y[X = 0]", parameters = .7) |>
   inspect("parameters")
 
 ```
@@ -809,7 +758,7 @@ sample_data <-
   make_data(n = 8,
             nodes = list(c("Z", "Y"), "X"),
             probs = list(1, .5),
-            subsets = list(TRUE, "Z==1 & Y==0"))
+            subsets = list(TRUE, "Z == 1 & Y == 0"))
 
 ```
 
@@ -913,7 +862,7 @@ list(
                  data, 
                  censored_types = c("X1Y0",  "X0Y1"))
   ) |>
-  query_model("Y[X=1] - Y[X=0]", using = "posteriors")
+  query_model("Y[X = 1] - Y[X = 0]", using = "posteriors")
 
 ```
 
@@ -1067,7 +1016,7 @@ The core of querying involves determining which causal types correspond to speci
 ```{r}
 
 make_model("X -> Y")  |> 
-  get_query_types("Y==1")
+  get_query_types("Y == 1")
 
 ```
 
@@ -1078,7 +1027,7 @@ For instance, consider the query `Y[X=0]==1`. This query asks about the types fo
 ```{r}
 
 make_model("X -> Y")  |> 
-  get_query_types("Y[X=0]==1")
+  get_query_types("Y[X = 0] == 1")
 
 ```
 
@@ -1089,7 +1038,7 @@ When a node has multiple parents, it is possible to set the values of none, some
 #| echo: true
 
 make_model("X1 -> Y <- X2")  |>
-  get_query_types("X1==1 & X2==1 & (Y[X1=1, X2=1] > Y[X1=0, X2=0])")
+  get_query_types("X1 == 1 & X2 == 1 & (Y[X1 = 1, X2 = 1] > Y[X1 = 0, X2 = 0])")
 
 ```
 
@@ -1107,7 +1056,7 @@ Linear operators can also be used over a set of simple statements. Thus `"Y[X=1]
 
 ```{r}
 make_model("X -> Y") |> 
-  get_query_types("Y[X=1] - Y[X=0]")
+  get_query_types("Y[X = 1] - Y[X = 0]")
 
 ```
 
@@ -1156,8 +1105,8 @@ It is generally helpful to use causal syntax to define the query and calculate t
 queries <- 
   make_model("X -> Y") |> 
   query_distribution(
-    query = list(increasing = "(Y[X=1] > Y[X=0])",
-                 ATE = "(Y[X=1] - Y[X=0])"), 
+    query = list(increasing = "(Y[X = 1] > Y[X = 0])",
+                 ATE = "(Y[X = 1] - Y[X = 0])"), 
     using = "priors")
 
 ```
@@ -1182,7 +1131,7 @@ In a sense, this is equivalent to posing a conditional query, querying condition
 
 lipids_model |>
   query_model(
-    query = "Y[X=1] - Y[X=0] :|: X==1 & Y==1 & Z==1",
+    query = "Y[X = 1] - Y[X = 0] :|: X == 1 & Y == 1 & Z == 1",
     using = "posteriors") |>
   plot()
 
@@ -1203,7 +1152,7 @@ To illustrate the difference, consider an $X \rightarrow M \rightarrow Y$ model 
 
 make_model("X -> M -> Y") |>
   update_model(data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)), iter = 4000) |>
-  query_model("Y[X=1] > Y[X=0] :|: X==1 & Y==1 & M==1", 
+  query_model("Y[X=1] > Y[X = 0] :|: X == 1 & Y == 1 & M == 1", 
             using = "posteriors",
             case_level = c(TRUE, FALSE)) |>
   plot()
@@ -1228,7 +1177,7 @@ models <- list(
     update_model(data = lipids_data, refresh = 0),
   
   Restricted = lipids_model |>
-    set_restrictions("X[Z=1] < X[Z=0]") |>
+    set_restrictions("X[Z = 1] < X[Z = 0]") |>
     update_model(data = lipids_data, refresh = 0)
 )
 ```
@@ -1244,8 +1193,8 @@ models <- list(
 queries <- 
   query_model(
     models,  
-    query = list(ATE = "Y[X=1] - Y[X=0]", 
-                 POS = "Y[X=1] > Y[X=0] :|: Y==1 & X==1"),
+    query = list(ATE = "Y[X = 1] - Y[X = 0]", 
+                 POS = "Y[X = 1] > Y[X = 0] :|: Y == 1 & X == 1"),
     case_level = c(FALSE, TRUE),
     using = c("priors", "posteriors"),
     expand_grid = TRUE)
@@ -1268,7 +1217,7 @@ queries |>
     escape = TRUE,
     longtable = TRUE,
     linesep = "") |> 
-  kableExtra::kable_classic_2(latex_options = c("hold_position"))
+  kableExtra::kable_classic_2(latex_options = c("hold_position", "scale_down"))
 
 ```
 
@@ -1394,7 +1343,7 @@ We thank Ben Goodrich, who provided generous insights on using `stan` for this p
 If users have access to multiple cores,  parallel processing can be implemented by including this line before running `CausalQueries`:
 
 ```{r}
-library(parallel)
+library("parallel")
 
 options(mc.cores = parallel::detectCores())
 ```
@@ -1403,8 +1352,8 @@ Additionally, parallelizing across models or data while running MCMC chains in p
 
 ```{r}
 #| echo: true
-library(future)
-library(future.apply)
+library("future")
+library("future.apply")
 
 chains <- 3
 cores <- 8

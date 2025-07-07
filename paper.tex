@@ -42,28 +42,14 @@
 \setlength{\emergencystretch}{3em} % prevent overfull lines
 \setcounter{secnumdepth}{-\maxdimen} % remove section numbering
 % Make \paragraph and \subparagraph free-standing
-\makeatletter
 \ifx\paragraph\undefined\else
   \let\oldparagraph\paragraph
-  \renewcommand{\paragraph}{
-    \@ifstar
-      \xxxParagraphStar
-      \xxxParagraphNoStar
-  }
-  \newcommand{\xxxParagraphStar}[1]{\oldparagraph*{#1}\mbox{}}
-  \newcommand{\xxxParagraphNoStar}[1]{\oldparagraph{#1}\mbox{}}
+  \renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
 \fi
 \ifx\subparagraph\undefined\else
   \let\oldsubparagraph\subparagraph
-  \renewcommand{\subparagraph}{
-    \@ifstar
-      \xxxSubParagraphStar
-      \xxxSubParagraphNoStar
-  }
-  \newcommand{\xxxSubParagraphStar}[1]{\oldsubparagraph*{#1}\mbox{}}
-  \newcommand{\xxxSubParagraphNoStar}[1]{\oldsubparagraph{#1}\mbox{}}
+  \renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
 \fi
-\makeatother
 
 
 \providecommand{\tightlist}{%
@@ -79,17 +65,15 @@
 \makesavenoteenv{longtable}
 \usepackage{graphicx}
 \makeatletter
-\newsavebox\pandoc@box
-\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
-  \sbox\pandoc@box{#1}%
-  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
-  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
-  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
-  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
-  \else\usebox{\pandoc@box}%
-  \fi%
-}
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
 % Set default figure placement to htbp
+\makeatletter
 \def\fps@figure{htbp}
 \makeatother
 
@@ -181,9 +165,11 @@
 \makeatletter
 \makeatother
 \makeatletter
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[breakable, borderline west={3pt}{0pt}{shadecolor}, frame hidden, sharp corners, boxrule=0pt, interior hidden, enhanced]}{\end{tcolorbox}}\fi
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[borderline west={3pt}{0pt}{shadecolor}, interior hidden, enhanced, frame hidden, sharp corners, breakable, boxrule=0pt]}{\end{tcolorbox}}\fi
 \makeatother
-
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
 \usepackage{bookmark}
 
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
@@ -197,7 +183,6 @@
   citecolor={Blue},
   urlcolor={Blue},
   pdfcreator={LaTeX via pandoc}}
-
 
 %% -- Article metainformation (author, title, ...) -----------------------------
 
@@ -276,7 +261,6 @@ URL: \url{https://macartan.github.io/}\\
 
 \begin{document}
 \maketitle
-
 
 \section{Introduction: Causal models}\label{sec-intro}
 
@@ -398,9 +382,9 @@ R> lipids_queries <-
 +  query_model(
 +    lipids_model,
 +    queries = list(
-+      ATE  = "Y[X=1] - Y[X=0]",
-+      PoC  = "Y[X=1] - Y[X=0] :|: X==0 & Y==0",
-+      LATE = "Y[X=1] - Y[X=0] :|: X[Z=1] > X[Z=0]"),
++      ATE  = "Y[X = 1] - Y[X = 0]",
++      PoC  = "Y[X = 1] - Y[X = 0] :|: X == 0 & Y == 0",
++      LATE = "Y[X = 1] - Y[X = 0] :|: X[Z = 1] > X[Z = 0]"),
 +    using = "posteriors"
 +  )
 \end{verbatim}
@@ -421,19 +405,19 @@ the local (complier) average treatment effects (``LATE'').
 
 \begin{longtable}[t]{ccccccc}
 
+\toprule
+label & query & given & mean & sd & cred.low & cred.high\\
+\midrule
+ATE & Y[X = 1] - Y[X = 0] & - & 0.55 & 0.10 & 0.37 & 0.73\\
+PoC & Y[X = 1] - Y[X = 0] & X == 0 \& Y == 0 & 0.64 & 0.15 & 0.37 & 0.89\\
+LATE & Y[X = 1] - Y[X = 0] & X[Z = 1] > X[Z = 0] & 0.70 & 0.05 & 0.59 & 0.80\\
+\bottomrule
+
+
 \caption{\label{tbl-lipids}Replication of
 \citet{chickering_clinicians_1996}.}
 
 \tabularnewline
-
-\toprule
-label & query & given & mean & sd & cred.low & cred.high\\
-\midrule
-ATE & Y[X=1] - Y[X=0] & - & 0.55 & 0.10 & 0.37 & 0.73\\
-PoC & Y[X=1] - Y[X=0] & X==0 \& Y==0 & 0.63 & 0.15 & 0.38 & 0.89\\
-LATE & Y[X=1] - Y[X=0] & X[Z=1] > X[Z=0] & 0.70 & 0.05 & 0.59 & 0.80\\
-\bottomrule
-
 \end{longtable}
 
 For visual presentation of the results, output can also be plotted:
@@ -444,7 +428,7 @@ R> lipids_queries |> plot()
 
 \begin{figure}[H]
 
-{\centering \pandocbounded{\includegraphics[keepaspectratio]{paper_files/figure-pdf/queryplot-1.pdf}}
+{\centering \includegraphics{paper_files/figure-pdf/queryplot-1.pdf}
 
 }
 
@@ -459,9 +443,9 @@ R> make_model("Z -> X -> Y; X <-> Y") |>
 +  update_model(lipids_data) |>
 +  query_model(
 +    queries = list(
-+      ATE  = "Y[X=1] - Y[X=0]",
-+      PoC  = "Y[X=1] - Y[X=0] :|: X==0 & Y==0",
-+      LATE = "Y[X=1] - Y[X=0] :|: X[Z=1] > X[Z=0]"),
++      ATE  = "Y[X = 1] - Y[X = 0]",
++      PoC  = "Y[X = 1] - Y[X = 0] :|: X == 0 & Y == 0",
++      LATE = "Y[X = 1] - Y[X = 0] :|: X[Z = 1] > X[Z = 0]"),
 +    using = "posteriors") |>
 +  plot()
 \end{verbatim}
@@ -480,144 +464,11 @@ sciences, computer science, and applied mathematics. This section
 focuses on the role and capabilities of \texttt{CausalQueries} within
 the specific area of evaluating causal queries on models represented as
 directed acyclic graphs (DAGs) or structural equation models (SEMs).
-Table~\ref{tbl-software} provides a summary of relevant software,
+\textbf{?@tbl-software} provides a summary of relevant software,
 highlighting their connections, strengths, and limitations in comparison
 to \texttt{CausalQueries}.
 
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1800}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1900}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1000}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1700}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.3600}}@{}}
-\caption{Related software.}\label{tbl-software}\tabularnewline
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Software
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Source
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Language
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Availability
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Scope
-\end{minipage} \\
-\midrule\noalign{}
-\endfirsthead
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Software
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Source
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Language
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Availability
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Scope
-\end{minipage} \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-\texttt{causalnex} & \citet{beaumont_causalnex_2021} & \proglang{Python}
-& \begin{minipage}[t]{\linewidth}\raggedright
-\begin{itemize}
-\tightlist
-\item
-  pip
-\end{itemize}
-\end{minipage} & \begin{minipage}[t]{\linewidth}\raggedright
-\begin{itemize}
-\tightlist
-\item
-  causal structure learning
-\item
-  querying marginal distributions
-\item
-  discrete data
-\end{itemize}
-\end{minipage} \\
-\texttt{pclag} & \citet{kalisch_causal_2012} & \proglang{R} &
-\begin{minipage}[t]{\linewidth}\raggedright
-\begin{itemize}
-\tightlist
-\item
-  CRAN
-\item
-  GitHub
-\end{itemize}
-\end{minipage} & \begin{minipage}[t]{\linewidth}\raggedright
-\begin{itemize}
-\tightlist
-\item
-  causal structure learning
-\item
-  ATEs under linear conditional expectations, no hidden selection
-\end{itemize}
-\end{minipage} \\
-\texttt{DoWhy} & \citet{dowhy} & \proglang{Python} &
-\begin{minipage}[t]{\linewidth}\raggedright
-\begin{itemize}
-\tightlist
-\item
-  pip
-\end{itemize}
-\end{minipage} & \begin{minipage}[t]{\linewidth}\raggedright
-\begin{itemize}
-\tightlist
-\item
-  identification
-\item
-  average and conditional causal effects
-\item
-  robustness checks
-\end{itemize}
-\end{minipage} \\
-\texttt{autobounds} & \citet{duarte_automated_2023} & \proglang{Python}
-& \begin{minipage}[t]{\linewidth}\raggedright
-\begin{itemize}
-\tightlist
-\item
-  Docker
-\item
-  GitHub
-\end{itemize}
-\end{minipage} & \begin{minipage}[t]{\linewidth}\raggedright
-\begin{itemize}
-\tightlist
-\item
-  bounding causal effects
-\item
-  partial identification
-\item
-  DAG canonicalization
-\item
-  binary data
-\end{itemize}
-\end{minipage} \\
-\texttt{causaloptim} & \citet{sachs_general_2023} & \proglang{R} &
-\begin{minipage}[t]{\linewidth}\raggedright
-\begin{itemize}
-\tightlist
-\item
-  CRAN
-\item
-  GitHub
-\end{itemize}
-\end{minipage} & \begin{minipage}[t]{\linewidth}\raggedright
-\begin{itemize}
-\tightlist
-\item
-  bounding causal effects
-\item
-  non-identified queries
-\item
-  binary data
-\end{itemize}
-\end{minipage} \\
-\end{longtable}
+\input{tables/related_software.tex}
 
 \texttt{causalnex} is comprehensive software that offers functions for
 discovering and querying causal models. Like \texttt{CausalQueries}, it
@@ -708,7 +559,7 @@ for computational, not conceptual, reasons.\footnote{For more on
   \texttt{devtools::install\_github("till-tietz/CausalQueriesTools")}.
   The main approach here is to divide large causal models into modules,
   update each module, and then reassemble them to pose queries. Also,
-  see section 9.4.1 of \citet{humphreys_integrated_2023} for a method
+  see Section 9.4.1 of \citet{humphreys_integrated_2023} for a method
   that represents non-binary data as a profile of outcomes on multiple
   binary nodes.}
 
@@ -716,7 +567,7 @@ Second, the package is designed for learning about populations from
 independently sampled units. Therefore, it does not inherently address
 issues of clustering, hierarchical structures, or purposive sampling.
 However, the broader framework can be adapted for these purposes
-\citep[see section 9.4 of][]{humphreys_integrated_2023}. The targets of
+\citep[see Section 9.4 of][]{humphreys_integrated_2023}. The targets of
 inference are case-level or population-level quantities;
 \texttt{CausalQueries} is not well-suited for estimating sample
 quantities.
@@ -727,8 +578,8 @@ The core conceptual framework used by \texttt{CausalQueries} is that
 described in Pearl's \emph{Causality} \citep{pearl_causality_2009}.
 
 The two key steps to defining a causal model are to define a causal
-structure and then place probability distributions over models
-consistent with that structure.
+structure and then place a probability distribution over the exogeneous
+variables in the model.
 
 Relying on ideas in \citeauthor{pearl_causality_2009}
 \citetext{\citeyear{pearl_causality_2009}; \citealp[with notation
@@ -747,13 +598,13 @@ follows:
   
 \end{definition}
 
-Elements 1 - 3 of definition 1 define a ``\textbf{structural causal
-model}.'' These components define a causal structure, specifying which
-endogenous nodes are (possible) direct causes of a node, \(Y_j\), given
-the other nodes in a model. These nodes are referred to as the
-``parents'' of \(Y_j\), denoted as \(PA_j\) (where uppercase \(PA_j\)
-represents the collection of nodes, and lowercase \(pa_j\) represents a
-specific set of values these nodes might assume).
+Elements 1 - 3 define a ``\textbf{structural causal model}.'' These
+components pin down a causal structure, specifying which endogenous
+nodes are (possible) direct causes of a node, \(Y_j\), given the other
+nodes in a model. Such nodes are referred to as the ``parents'' of
+\(Y_j\), denoted as \(PA_j\) (where uppercase \(PA_j\) represents the
+collection of nodes, and lowercase \(pa_j\) represents a specific set of
+values these nodes might assume).
 
 Specifying a structural causal model involves making possibly strong
 assumptions, for example about which nodes are not plausibly causes of
@@ -764,15 +615,16 @@ outcomes. Adding the final element of the definition then gives us the
 fully specified causal model.
 
 With discrete-valued nodes, it is possible to identify all potential
-responses of a node to its parents, which we call ``nodal types'' (often
-referred to as ``response functions''). If a node \(i\) can take on
-\(k_i\) possible values, then the set of possible values that the
-parents of \(j\) can assume is \(m_j :=\prod_{i\in PA_j}k_i\).
-Consequently, there are \(k_j^{m_j}\) different ways that node \(j\)
-might respond to its parents. For binary nodes, this simplifies to
-\(2^{\left(2^{|PA_j|}\right)}\). Thus, an endogenous node with no
-parents has 2 nodal types; a binary node with one binary parent has four
-types; and a binary node with two parents has 16 types, and so forth.
+responses of a node to its parents, which we call ``nodal types''
+(``response functions'' in \citet{pearl_causality_2009}). If a node
+\(i\) can take on \(k_i\) possible values, then the set of possible
+values that the parents of \(j\) can assume is
+\(m_j :=\prod_{i\in PA_j}k_i\). Consequently, there are \(k_j^{m_j}\)
+different ways that node \(j\) might respond to its parents. For binary
+nodes, this simplifies to \(2^{\left(2^{|PA_j|}\right)}\). Thus, an
+endogenous node with no parents has 2 nodal types; a binary node with
+one binary parent has four types; and a binary node with two parents has
+16 types, and so forth.
 
 As a practical matter we need to label response types. In
 \texttt{CausalQueries} this is done using subscripts that indicate the
@@ -785,7 +637,10 @@ approach is used for nodes with more (or fewer) nodal types, where the
 \(i\)th digit in the subscript corresponding to the value the node takes
 when the parents take on the \(i\)th combination of possible parent
 values (listed in colexicographic binary order given the specified
-ordering of parents).
+ordering of parents).\footnote{A similar approach may be used for non
+  binary nodes though in this case the index components can take on more
+  values and then length of indices adjust to reflect the set of all
+  possible parent value combinations.}
 
 The complete set of possible causal reactions of a given unit to all
 possible values of its parents is represented by its collection of nodal
@@ -833,9 +688,10 @@ conditional probability \(\Pr(\theta^Y|\theta^X)\):
 \lambda^Z_1\lambda^X_{10}\lambda^{Y|\theta^X_{10}}_{11}
 }\end{equation}
 
-Representing beliefs \emph{over causal models} thus requires specifying
-a probability distribution over \(\lambda\). This distribution might be
-degenerate if users wish to specify a particular model.
+Representing beliefs \emph{over causal models} (in contrast to beliefs
+over causal types given a causal model) thus requires specifying a
+probability distribution over \(\lambda\) itself. This distribution
+might be degenerate if users wish to specify a particular model.
 \texttt{CausalQueries} also allows users to specify parameters,
 \(\alpha\), of a Dirichlet distribution over \(\lambda^j\) for each node
 \(Y^j\) (and similarly for conditional distributions in cases of
@@ -882,8 +738,8 @@ w_{10} & = & \lambda^X_1(\lambda^Y_{00} + \lambda^Y_{10})\\
 w_{11} & = & \lambda^X_1(\lambda^Y_{11} + \lambda^Y_{01})\end{array} \right.
 \]
 
-Recall \(\lambda^Y_{01}=\Pr(\theta^Y = \theta^Y_{01})\) and the
-subscripts (\(0\), \(00\), \(01\), dots) summarizes the responses of
+where \(\lambda^Y_{01}=\Pr(\theta^Y = \theta^Y_{01})\) and the
+subscripts (\(0\), \(00\), \(01\), \dots) summarize the responses of
 nodes to parent combinations, as described above.
 
 For a more complex example, Table~\ref{tbl-lipidspar} illustrates key
@@ -904,11 +760,6 @@ distribution over types for \(Z\), \(X\) and \(Y\) that is faithful to
 the graph.
 
 \begin{longtable}[t]{cccccc}
-
-\caption{\label{tbl-lipidspar}Nodal types and parameters for Lipids
-model.}
-
-\tabularnewline
 
 \toprule
 node & nodal\_type & param\_set & param\_names & param\_value & priors\\
@@ -941,6 +792,11 @@ Y & 01 & Y.X.11 & Y.01\_X.11 & 0.01 & 1\\
 Y & 11 & Y.X.11 & Y.11\_X.11 & 0.30 & 1\\
 \bottomrule
 
+
+\caption{\label{tbl-lipidspar}Nodal types and parameters for Lipids
+model.}
+
+\tabularnewline
 \end{longtable}
 
 These parameters again imply a probability distribution over data types.
@@ -965,7 +821,7 @@ The following sections review the classes and methods used by
 \texttt{CausalQueries} and the key functionalities for making, updating,
 and querying causal models.
 
-\section{Classes and Methods}\label{sec-classes}
+\section{Classes and methods}\label{sec-classes}
 
 \texttt{CausalQueries} makes use of two types of object classes,
 \texttt{causal\_model} and \texttt{model\_query}.
@@ -977,7 +833,7 @@ distributions over model parameters. An object of class
 \texttt{causal\_model} is generated using \texttt{make\_model()} and can
 be adjusted using \texttt{update\_model()} as well as a set of helper
 functions: \texttt{set\_confound}, \texttt{set\_restrictions},
-\texttt{set\_priors}, as describe in sections Section~\ref{sec-make} and
+\texttt{set\_priors}, as describe in Section~\ref{sec-make} and
 Section~\ref{sec-update} below. Methods \texttt{print}, \texttt{summary}
 and \texttt{plot} are available for an object of class
 \texttt{causal\_model}.
@@ -1088,7 +944,7 @@ R> lipids_model |>
 
 \centering{
 
-\includegraphics[width=0.6\linewidth,height=\textheight,keepaspectratio]{paper_files/figure-pdf/fig-plots-1.pdf}
+\includegraphics[width=0.6\textwidth,height=\textheight]{paper_files/figure-pdf/fig-plots-1.pdf}
 
 }
 
@@ -1100,7 +956,7 @@ R> lipids_model |>
 
 \centering{
 
-\includegraphics[width=0.6\linewidth,height=\textheight,keepaspectratio]{paper_files/figure-pdf/fig-plots-2.pdf}
+\includegraphics[width=0.6\textwidth,height=\textheight]{paper_files/figure-pdf/fig-plots-2.pdf}
 
 }
 
@@ -1125,75 +981,10 @@ quickly review these elements. The only difference between the two is
 that \texttt{grab()} is quiet and does not produce a printout, whereas
 \texttt{inspect()} does.
 
-Table~\ref{tbl-core} summarizes features of a causal model that can be
+\textbf{?@tbl-core} summarizes features of a causal model that can be
 examined using \texttt{inspect()}.
 
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.4000}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.6000}}@{}}
-\caption{Elements of a model that can be inspected using
-\texttt{inspect()}.}\label{tbl-core}\tabularnewline
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Element
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Description
-\end{minipage} \\
-\midrule\noalign{}
-\endfirsthead
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Element
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Description
-\end{minipage} \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-\texttt{statement} & A character string describing causal relations
-using dagitty syntax. \\
-\texttt{nodes} & A list containing the nodes in the model. \\
-\texttt{parents\_df} & A table listing nodes, whether they are root
-nodes or not, and the number and names of parents they have. \\
-\texttt{parameters} & A vector of `true' parameters. \\
-\texttt{parameter\_names} & A vector of names of parameters. \\
-\texttt{parameter\_mapping} & A matrix mapping from parameters into data
-types. \\
-\texttt{parameter\_matrix} & A matrix mapping from parameters into
-causal types. \\
-\texttt{parameters\_df} & A data frame containing parameter
-information. \\
-\texttt{causal\_types} & A data frame listing causal types and the nodal
-types that produce them. \\
-\texttt{nodal\_types} & A list with the nodal types of the model. \\
-\texttt{data\_types} & A list with all data types consistent with the
-model. \\
-\texttt{ambiguities\_matrix} & A matrix mapping from causal types into
-data types. \\
-\texttt{prior\_hyperparameters} & A vector of alpha values used to
-parameterize Dirichlet prior distributions; optionally provide node
-names to reduce output. \\
-\texttt{prior\_distribution} & A data frame of the parameter prior
-distribution. \\
-\texttt{posterior\_distribution} & A data frame of the parameter
-posterior distribution. \\
-\texttt{type\_prior} & A matrix of type probabilities using priors. \\
-\texttt{type\_posterior} & A matrix of type probabilities using
-posteriors. \\
-\texttt{prior\_event\_probabilities} & A vector of data (event)
-probabilities given a single realization of parameters. \\
-\texttt{posterior\_event\_probabilities} & A sample of data (event)
-probabilities from the posterior. \\
-\texttt{data} & A data frame with data that was provided to update the
-model. \\
-\texttt{stan\_summary} & A \texttt{stanfit} summary with processed
-parameter names. \\
-\texttt{stanfit} & An unprocessed \texttt{stanfit} object as generated
-by Stan. \\
-\texttt{stan\_warnings} & A list of warnings produced by Stan during
-updating. \\
-\end{longtable}
+\input{tables/core_elements.tex}
 
 \subsection{Tailoring models}\label{tailoring-models}
 
@@ -1210,51 +1001,11 @@ Unobserved confounding between two (or more) nodes arises when the nodal
 types for the nodes are not independent. For instance, in the
 \(X \rightarrow Y\) graph, there are \(2\) nodal types for \(X\) and
 \(4\) for \(Y\). There are thus \(8\) joint nodal types (or causal
-types), as shown in Table~\ref{tbl-joint}.
+types), as shown in \textbf{?@tbl-joint}.
 
-\begin{longtable}[]{@{}
-  >{\centering\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
-  >{\centering\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
-  >{\centering\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
-  >{\centering\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}@{}}
-\caption{Nodal types in \(X \rightarrow Y\)
-model.}\label{tbl-joint}\tabularnewline
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\centering
-\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-\(\theta^X_{0}\)
-\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-\(\theta^X_{1}\)
-\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-\(\sum\)
-\end{minipage} \\
-\midrule\noalign{}
-\endfirsthead
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\centering
-\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-\(\theta^X_{0}\)
-\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-\(\theta^X_{1}\)
-\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-\(\sum\)
-\end{minipage} \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-\(\theta^Y_{00}\) & \(\Pr(\theta^X_0, \theta^Y_{00})\) &
-\(\Pr(\theta^X_1, \theta^Y_{00})\) & \(\Pr(\theta^Y_{00})\) \\
-\(\theta^Y_{10}\) & \(\Pr(\theta^X_0, \theta^Y_{10})\) &
-\(\Pr(\theta^X_1, \theta^Y_{10})\) & \(\Pr(\theta^Y_{10})\) \\
-\(\theta^Y_{01}\) & \(\Pr(\theta^X_0, \theta^Y_{01})\) &
-\(\Pr(\theta^X_1, \theta^Y_{01})\) & \(\Pr(\theta^Y_{01})\) \\
-\(\theta^Y_{11}\) & \(\Pr(\theta^X_0, \theta^Y_{11})\) &
-\(\Pr(\theta^X_1, \theta^Y_{11})\) & \(\Pr(\theta^Y_{11})\) \\
-\(\sum\) & \(\Pr(\theta^X_0)\) & \(\Pr(\theta^X_1)\) & 1 \\
-\end{longtable}
+\input{tables/nodal_types.tex}
 
-Table~\ref{tbl-joint} has eight interior elements so that an
+\textbf{?@tbl-joint} has eight interior elements so that an
 unconstrained joint distribution would have seven degrees of freedom. A
 no-confounding assumption means that
 \(\Pr(\theta^X, \theta^Y) = \Pr(\theta^X)\Pr(\theta^Y)\). In this case,
@@ -1274,11 +1025,6 @@ on the underlying DAG. Table~\ref{tbl-dof} demonstrates the number of
 independent parameters required for different types of confounding.
 
 \begin{longtable}[]{@{}lc@{}}
-
-\caption{\label{tbl-dof}Number of different independent parameters
-(degrees of freedom) for different three-node models.}
-
-\tabularnewline
 
 \toprule\noalign{}
 Model & Degrees of freedom \\
@@ -1302,6 +1048,11 @@ Model & Degrees of freedom \\
 \texttt{X\ -\textgreater{}\ W\ -\textgreater{}\ Y\ \textless{}-\ X;\ X\ \textless{}-\textgreater{}\ W;\ W\ \textless{}-\textgreater{}\ Y;\ X\ \textless{}-\textgreater{}\ Y}
 & 127 \\
 
+
+\caption{\label{tbl-dof}Number of different independent parameters
+(degrees of freedom) for different three-node models.}
+
+\tabularnewline
 \end{longtable}
 
 \subsubsection{Setting restrictions}\label{restrictions}
@@ -1320,7 +1071,7 @@ for which \(X\) decreases in \(Z\) as follows:
 \begin{verbatim}
 R> model_restricted <- 
 +  lipids_model |> 
-+  set_restrictions("X[Z=1] < X[Z=0]")
++  set_restrictions("X[Z = 1] < X[Z = 0]")
 \end{verbatim}
 
 If we wanted to retain only this nodal type rather than remove it, we
@@ -1366,7 +1117,7 @@ Section~\ref{sec-syntax} for a guide to the syntax used by
 \texttt{CausalQueries}). The help file in \texttt{?set\_restrictions}
 provides further details and examples of restrictions users can set.
 
-\subsubsection{Setting Priors}\label{priors}
+\subsubsection{Setting priors}\label{priors}
 
 Priors on model parameters can be added to the parameters data frame and
 interpreted as alpha parameters of a Dirichlet distribution. The
@@ -1454,7 +1205,7 @@ modifications of the parameter vector. For instance:
 
 \begin{verbatim}
 R> lipids_model |>
-+  set_priors(statement = "X[Z=1] > X[Z=0]", alphas = 3) |>
++  set_priors(statement = "X[Z = 1] > X[Z = 0]", alphas = 3) |>
 +  inspect("prior_hyperparameters", nodes = "X")
 \end{verbatim}
 
@@ -1485,7 +1236,7 @@ demonstrated by querying the model as follows:
 R> query <- 
 +  make_model("X -> Y") |>
 +  set_restrictions(decreasing("X", "Y")) |>
-+  query_model("Y[X=1] - Y[X=0]", using = "priors")
++  query_model("Y[X = 1] - Y[X = 0]", using = "priors")
 \end{verbatim}
 
 More subtly, the \emph{structure} of a model, coupled with flat priors,
@@ -1499,7 +1250,7 @@ identified, as is the case for many models considered here. For some
 quantities, the marginal posterior distribution reflects the marginal
 prior distribution \citep{poirier_revising_1998}.
 
-\subsubsection{Setting Parameters}\label{parameters}
+\subsubsection{Setting parameters}\label{parameters}
 
 By default, models include a vector of parameter values within the
 \texttt{parameters\_df} data frame. These values are useful for
@@ -1539,7 +1290,7 @@ still sum up to one.
 
 \begin{verbatim}
 R> make_model("X -> Y") |>
-+  set_parameters(statement = "Y[X=1] > Y[X=0]", parameters = .7) |>
++  set_parameters(statement = "Y[X = 1] > Y[X = 0]", parameters = .7) |>
 +  inspect("parameters")
 \end{verbatim}
 
@@ -1600,7 +1351,7 @@ R> sample_data <-
 +  make_data(n = 8,
 +            nodes = list(c("Z", "Y"), "X"),
 +            probs = list(1, .5),
-+            subsets = list(TRUE, "Z==1 & Y==0"))
++            subsets = list(TRUE, "Z == 1 & Y == 0"))
 \end{verbatim}
 
 \subsubsection{Reshaping data}\label{reshaping-data}
@@ -1821,17 +1572,17 @@ R> list(
 +                 data, 
 +                 censored_types = c("X1Y0",  "X0Y1"))
 +  ) |>
-+  query_model("Y[X=1] - Y[X=0]", using = "posteriors")
++  query_model("Y[X = 1] - Y[X = 0]", using = "posteriors")
 \end{verbatim}
 
 \begin{verbatim}
 #> 
 #> Causal queries generated by query_model (all at population level)
 #> 
-#> |label           |model      |using      |  mean|    sd| cred.low| cred.high|
-#> |:---------------|:----------|:----------|-----:|-----:|--------:|---------:|
-#> |Y[X=1] - Y[X=0] |uncensored |posteriors | 0.590| 0.194|    0.168|     0.897|
-#> |Y[X=1] - Y[X=0] |censored   |posteriors | 0.018| 0.315|   -0.614|     0.629|
+#> |label               |model      |using      |  mean|    sd| cred.low| cred.high|
+#> |:-------------------|:----------|:----------|-----:|-----:|--------:|---------:|
+#> |Y[X = 1] - Y[X = 0] |uncensored |posteriors | 0.590| 0.194|    0.168|     0.897|
+#> |Y[X = 1] - Y[X = 0] |censored   |posteriors | 0.018| 0.315|   -0.614|     0.629|
 \end{verbatim}
 
 \subsection{Output}\label{output}
@@ -1908,7 +1659,7 @@ R> make_model("X -> Y")  |>
 #> log_sum_gammas[2]  1.85    0.03 1.19   0.36  1.00  1.58  2.41  4.93  1159 1.01
 #> lp__              -7.53    0.04 1.65 -11.75 -8.37 -7.15 -6.32 -5.44  1368 1.00
 #> 
-#> Samples were drawn using NUTS(diag_e) at Thu Jul  3 10:55:52 2025.
+#> Samples were drawn using NUTS(diag_e) at Mon Jul  7 18:56:17 2025.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).
@@ -2021,7 +1772,7 @@ R> model |>
 #> types[8]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3166    1
 #> lp__              -7.55    0.05 1.66 -11.87 -8.39 -7.15 -6.33 -5.45  1357    1
 #> 
-#> Samples were drawn using NUTS(diag_e) at Thu Jul  3 10:56:10 2025.
+#> Samples were drawn using NUTS(diag_e) at Mon Jul  7 18:56:20 2025.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).
@@ -2143,7 +1894,7 @@ in \(Y=1\) without any interventions.
 
 \begin{verbatim}
 R> make_model("X -> Y")  |> 
-+  get_query_types("Y==1")
++  get_query_types("Y == 1")
 \end{verbatim}
 
 \begin{verbatim}
@@ -2176,7 +1927,7 @@ of causal types that meets this query is quite different:
 
 \begin{verbatim}
 R> make_model("X -> Y")  |> 
-+  get_query_types("Y[X=0]==1")
++  get_query_types("Y[X = 0] == 1")
 \end{verbatim}
 
 \begin{verbatim}
@@ -2203,7 +1954,7 @@ are set to \(1\). For instance:
 
 \begin{verbatim}
 R> make_model("X1 -> Y <- X2")  |>
-+  get_query_types("X1==1 & X2==1 & (Y[X1=1, X2=1] > Y[X1=0, X2=0])")
++  get_query_types("X1 == 1 & X2 == 1 & (Y[X1 = 1, X2 = 1] > Y[X1 = 0, X2 = 0])")
 \end{verbatim}
 
 \begin{verbatim}
@@ -2266,7 +2017,7 @@ the share of cases with negative effects.
 
 \begin{verbatim}
 R> make_model("X -> Y") |> 
-+  get_query_types("Y[X=1] - Y[X=0]")
++  get_query_types("Y[X = 1] - Y[X = 0]")
 \end{verbatim}
 
 \begin{verbatim}
@@ -2315,7 +2066,7 @@ R> model |>
 
 \centering{
 
-\includegraphics[width=0.6\linewidth,height=\textheight,keepaspectratio]{paper_files/figure-pdf/fig-posterior-dist-1.pdf}
+\includegraphics[width=0.6\textwidth,height=\textheight]{paper_files/figure-pdf/fig-posterior-dist-1.pdf}
 
 }
 
@@ -2337,8 +2088,8 @@ distributions. This can be done for a list of queries using
 R> queries <- 
 +  make_model("X -> Y") |> 
 +  query_distribution(
-+    query = list(increasing = "(Y[X=1] > Y[X=0])",
-+                 ATE = "(Y[X=1] - Y[X=0])"), 
++    query = list(increasing = "(Y[X = 1] > Y[X = 0])",
++                 ATE = "(Y[X = 1] - Y[X = 0])"), 
 +    using = "priors")
 \end{verbatim}
 
@@ -2362,12 +2113,12 @@ posterior for the Lipids model and ask about the effect of \(X\) on
 \begin{verbatim}
 R> lipids_model |>
 +  query_model(
-+    query = "Y[X=1] - Y[X=0] :|: X==1 & Y==1 & Z==1",
++    query = "Y[X = 1] - Y[X = 0] :|: X == 1 & Y == 1 & Z == 1",
 +    using = "posteriors") |>
 +  plot()
 \end{verbatim}
 
-\pandocbounded{\includegraphics[keepaspectratio]{paper_files/figure-pdf/case-level-query-1.pdf}}
+\includegraphics{paper_files/figure-pdf/case-level-query-1.pdf}
 
 The result is what we should now believe for all cases in which \(Z=1\),
 \(X=1\), and \(Y=1\). It is the expected average effect among cases with
@@ -2400,13 +2151,13 @@ the belief about this new case.
 \begin{verbatim}
 R> make_model("X -> M -> Y") |>
 +  update_model(data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)), iter = 4000) |>
-+  query_model("Y[X=1] > Y[X=0] :|: X==1 & Y==1 & M==1", 
++  query_model("Y[X=1] > Y[X = 0] :|: X == 1 & Y == 1 & M == 1", 
 +            using = "posteriors",
 +            case_level = c(TRUE, FALSE)) |>
 +  plot()
 \end{verbatim}
 
-\pandocbounded{\includegraphics[keepaspectratio]{paper_files/figure-pdf/unnamed-chunk-28-1.pdf}}
+\includegraphics{paper_files/figure-pdf/unnamed-chunk-52-1.pdf}
 
 \subsubsection{Batch queries}\label{batch-queries}
 
@@ -2433,7 +2184,7 @@ R> models <- list(
 +    update_model(data = lipids_data, refresh = 0),
 +  
 +  Restricted = lipids_model |>
-+    set_restrictions("X[Z=1] < X[Z=0]") |>
++    set_restrictions("X[Z = 1] < X[Z = 0]") |>
 +    update_model(data = lipids_data, refresh = 0)
 +)
 \end{verbatim}
@@ -2446,8 +2197,8 @@ Table~\ref{tbl-batch-query} then shows the output from a single call to
 R> queries <- 
 +  query_model(
 +    models,  
-+    query = list(ATE = "Y[X=1] - Y[X=0]", 
-+                 POS = "Y[X=1] > Y[X=0] :|: Y==1 & X==1"),
++    query = list(ATE = "Y[X = 1] - Y[X = 0]", 
++                 POS = "Y[X = 1] > Y[X = 0] :|: Y == 1 & X == 1"),
 +    case_level = c(FALSE, TRUE),
 +    using = c("priors", "posteriors"),
 +    expand_grid = TRUE)
@@ -2455,34 +2206,34 @@ R> queries <-
 
 \begin{longtable}[t]{cccccccc}
 
-\caption{\label{tbl-batch-query}Results for two queries on two models.}
-
-\tabularnewline
-
 \toprule
 label & model & query & given & using & case\_level & mean & sd\\
 \midrule
-ATE & Unrestricted & Y[X=1] - Y[X=0] & - & priors & FALSE & 0.00 & 0.20\\
-ATE & Restricted & Y[X=1] - Y[X=0] & - & priors & FALSE & 0.00 & 0.23\\
-ATE & Unrestricted & Y[X=1] - Y[X=0] & - & posteriors & FALSE & 0.56 & 0.10\\
-ATE & Restricted & Y[X=1] - Y[X=0] & - & posteriors & FALSE & 0.56 & 0.10\\
-POS & Unrestricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.22\\
+ATE & Unrestricted & Y[X = 1] - Y[X = 0] & - & priors & FALSE & 0.00 & 0.20\\
+ATE & Restricted & Y[X = 1] - Y[X = 0] & - & priors & FALSE & 0.00 & 0.23\\
+ATE & Unrestricted & Y[X = 1] - Y[X = 0] & - & posteriors & FALSE & 0.56 & 0.10\\
+ATE & Restricted & Y[X = 1] - Y[X = 0] & - & posteriors & FALSE & 0.56 & 0.10\\
+POS & Unrestricted & Y[X = 1] > Y[X = 0] & Y == 1 \& X == 1 & priors & FALSE & 0.50 & 0.22\\
 \addlinespace
-POS & Restricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & priors & FALSE & 0.49 & 0.24\\
-POS & Unrestricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & posteriors & FALSE & 0.95 & 0.04\\
-POS & Restricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & posteriors & FALSE & 0.95 & 0.04\\
-ATE & Unrestricted & Y[X=1] - Y[X=0] & - & priors & TRUE & 0.00 & NA\\
-ATE & Restricted & Y[X=1] - Y[X=0] & - & priors & TRUE & 0.00 & NA\\
+POS & Restricted & Y[X = 1] > Y[X = 0] & Y == 1 \& X == 1 & priors & FALSE & 0.49 & 0.24\\
+POS & Unrestricted & Y[X = 1] > Y[X = 0] & Y == 1 \& X == 1 & posteriors & FALSE & 0.95 & 0.04\\
+POS & Restricted & Y[X = 1] > Y[X = 0] & Y == 1 \& X == 1 & posteriors & FALSE & 0.95 & 0.04\\
+ATE & Unrestricted & Y[X = 1] - Y[X = 0] & - & priors & TRUE & 0.00 & NA\\
+ATE & Restricted & Y[X = 1] - Y[X = 0] & - & priors & TRUE & 0.00 & NA\\
 \addlinespace
-ATE & Unrestricted & Y[X=1] - Y[X=0] & - & posteriors & TRUE & 0.56 & NA\\
-ATE & Restricted & Y[X=1] - Y[X=0] & - & posteriors & TRUE & 0.56 & NA\\
-POS & Unrestricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & priors & TRUE & 0.50 & NA\\
-POS & Restricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & priors & TRUE & 0.49 & NA\\
-POS & Unrestricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & posteriors & TRUE & 0.95 & NA\\
+ATE & Unrestricted & Y[X = 1] - Y[X = 0] & - & posteriors & TRUE & 0.56 & NA\\
+ATE & Restricted & Y[X = 1] - Y[X = 0] & - & posteriors & TRUE & 0.56 & NA\\
+POS & Unrestricted & Y[X = 1] > Y[X = 0] & Y == 1 \& X == 1 & priors & TRUE & 0.50 & NA\\
+POS & Restricted & Y[X = 1] > Y[X = 0] & Y == 1 \& X == 1 & priors & TRUE & 0.49 & NA\\
+POS & Unrestricted & Y[X = 1] > Y[X = 0] & Y == 1 \& X == 1 & posteriors & TRUE & 0.95 & NA\\
 \addlinespace
-POS & Restricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & posteriors & TRUE & 0.95 & NA\\
+POS & Restricted & Y[X = 1] > Y[X = 0] & Y == 1 \& X == 1 & posteriors & TRUE & 0.95 & NA\\
 \bottomrule
 
+
+\caption{\label{tbl-batch-query}Results for two queries on two models.}
+
+\tabularnewline
 \end{longtable}
 
 Figure~\ref{fig-batch} shows the default plot associated with this
@@ -2492,7 +2243,7 @@ query.
 
 \centering{
 
-\pandocbounded{\includegraphics[keepaspectratio]{paper_files/figure-pdf/fig-batch-1.pdf}}
+\includegraphics{paper_files/figure-pdf/fig-batch-1.pdf}
 
 }
 
@@ -2543,9 +2294,9 @@ requirements}\label{computational-details-and-software-requirements}
 requirements}
 
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1800}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4100}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4100}}@{}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.1800}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.4100}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.4100}}@{}}
 \toprule\noalign{}
 \endhead
 \bottomrule\noalign{}
@@ -2698,7 +2449,7 @@ the Comprehensive \proglang{R} Archive Network (CRAN) at
 \section*{Acknowledgments}\label{acknowledgments}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, breakable, rightrule=.15mm, colframe=quarto-callout-color-frame, colback=white, arc=.35mm, left=2mm, opacityback=0, toprule=.15mm, leftrule=.75mm, bottomrule=.15mm]
+\begin{tcolorbox}[enhanced jigsaw, rightrule=.15mm, left=2mm, bottomrule=.15mm, colback=white, leftrule=.75mm, toprule=.15mm, opacityback=0, colframe=quarto-callout-color-frame, breakable, arc=.35mm]
 
 We thank Ben Goodrich, who provided generous insights on using
 \texttt{stan} for this project. We thank Alan M Jacobs for key work in
@@ -2733,7 +2484,7 @@ implemented by including this line before running
 \texttt{CausalQueries}:
 
 \begin{verbatim}
-R> library(parallel)
+R> library("parallel")
 R> 
 R> options(mc.cores = parallel::detectCores())
 \end{verbatim}
@@ -2746,8 +2497,8 @@ parallel processes at the upper level of the nested parallel structure
 are given by \(\left \lfloor \frac{cores}{chains + 1} \right \rfloor\).
 
 \begin{verbatim}
-R> library(future)
-R> library(future.apply)
+R> library("future")
+R> library("future.apply")
 R> 
 R> chains <- 3
 R> cores <- 8
@@ -2910,13 +2661,9 @@ of the benchmarks are presented in Table~\ref{tbl-bench1} and
 Table~\ref{tbl-bench2}.
 
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.5618}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2360}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2022}}@{}}
-
-\caption{\label{tbl-bench1}Benchmarking 1}
-
-\tabularnewline
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.5618}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.2360}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.2022}}@{}}
 
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
@@ -2930,17 +2677,17 @@ Runtime (seconds)
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\(X1 \rightarrow Y\) & 6 & 7.24 \\
-\(X1 \rightarrow Y; X2 \rightarrow Y\) & 20 & 10.04 \\
-\(X1\rightarrow Y;X2\rightarrow Y;X3\rightarrow Y\) & 262 & 90.04 \\
+\(X1 \rightarrow Y\) & 6 & 1.18 \\
+\(X1 \rightarrow Y; X2 \rightarrow Y\) & 20 & 2.52 \\
+\(X1\rightarrow Y;X2\rightarrow Y;X3\rightarrow Y\) & 262 & 48.99 \\
 
+
+\caption{\label{tbl-bench1}Benchmarking 1}
+
+\tabularnewline
 \end{longtable}
 
 \begin{longtable}[]{@{}lrr@{}}
-
-\caption{\label{tbl-bench2}Benchmarking 2}
-
-\tabularnewline
 
 \toprule\noalign{}
 Model & Number of observations & Runtime (seconds) \\
@@ -2948,11 +2695,15 @@ Model & Number of observations & Runtime (seconds) \\
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\(X1 \rightarrow Y\) & 10 & 8.81 \\
-\(X1 \rightarrow Y\) & 100 & 8.72 \\
-\(X1 \rightarrow Y\) & 1000 & 11.64 \\
-\(X1 \rightarrow Y\) & 10000 & 18.73 \\
+\(X1 \rightarrow Y\) & 10 & 863.05 \\
+\(X1 \rightarrow Y\) & 100 & 1201.23 \\
+\(X1 \rightarrow Y\) & 1000 & 2258.39 \\
+\(X1 \rightarrow Y\) & 10000 & 6054.22 \\
 
+
+\caption{\label{tbl-bench2}Benchmarking 2}
+
+\tabularnewline
 \end{longtable}
 
 Increasing the number of parents in a model greatly increases the number
@@ -2964,7 +2715,6 @@ places limits on feasible computability without further recourse to
 specialized methods for handling large causal models. In contrast, the
 results suggest that computational time is concave in the size of the
 data.
-
 
 
 
