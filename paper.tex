@@ -1,4 +1,5 @@
 % Options for packages loaded elsewhere
+% Options for packages loaded elsewhere
 \PassOptionsToPackage{unicode}{hyperref}
 \PassOptionsToPackage{hyphens}{url}
 \PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
@@ -6,21 +7,22 @@
 \documentclass[
   11pt,
   article]{jss}
-
+\usepackage{xcolor}
 \usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
 \usepackage{iftex}
 \ifPDFTeX
   \usepackage[T1]{fontenc}
   \usepackage[utf8]{inputenc}
   \usepackage{textcomp} % provide euro and other symbols
 \else % if luatex or xetex
-  \usepackage{unicode-math}
+  \usepackage{unicode-math} % this also loads fontspec
   \defaultfontfeatures{Scale=MatchLowercase}
   \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
 \fi
 \usepackage{lmodern}
-\ifPDFTeX\else  
-    % xetex/luatex font selection
+\ifPDFTeX\else
+  % xetex/luatex font selection
 \fi
 % Use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
@@ -38,9 +40,6 @@
 }{% if KOMA class
   \KOMAoptions{parskip=half}}
 \makeatother
-\usepackage{xcolor}
-\setlength{\emergencystretch}{3em} % prevent overfull lines
-\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
 % Make \paragraph and \subparagraph free-standing
 \makeatletter
 \ifx\paragraph\undefined\else
@@ -66,8 +65,7 @@
 \makeatother
 
 
-\providecommand{\tightlist}{%
-  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}\usepackage{longtable,booktabs,array}
+\usepackage{longtable,booktabs,array}
 \usepackage{calc} % for calculating minipage widths
 % Correct order of tables after \paragraph or \subparagraph
 \usepackage{etoolbox}
@@ -93,6 +91,19 @@
 \def\fps@figure{htbp}
 \makeatother
 
+
+
+
+
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+
+
+
+
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{array}
@@ -110,6 +121,7 @@
 \usepackage{placeins}
 % \usepackage{tcolorbox}
 \newtheorem{definition}{Definition}
+\renewcommand{\texttt}[1]{\code{#1}}
 % \newtcolorbox{mybox}[1]{colback=gray!10, colframe=gray!80, title=#1}
 \usepackage{orcidlink,thumbpdf,lmodern}
 
@@ -181,15 +193,13 @@
 \makeatletter
 \makeatother
 \makeatletter
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[breakable, borderline west={3pt}{0pt}{shadecolor}, frame hidden, sharp corners, boxrule=0pt, interior hidden, enhanced]}{\end{tcolorbox}}\fi
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[enhanced, boxrule=0pt, interior hidden, sharp corners, frame hidden, breakable, borderline west={3pt}{0pt}{shadecolor}]}{\end{tcolorbox}}\fi
 \makeatother
-
 \usepackage{bookmark}
-
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
-\urlstyle{same} % disable monospaced font for URLs
+\urlstyle{same}
 \hypersetup{
-  pdftitle={Making, Updating, and Querying Causal Models with CausalQueries},
+  pdftitle={Making, Updating, and Querying Causal Models with },
   pdfauthor={Till Tietz; Lily Medina; Georgiy Syunyaev; Macartan Humphreys},
   colorlinks=true,
   linkcolor={blue},
@@ -211,19 +221,19 @@ University \And Macartan Humphreys~\orcidlink{0000-0001-7029-2326}\\WZB}
 Humphreys} %% comma-separated
 
 \title{Making, Updating, and Querying Causal Models with
-\texttt{CausalQueries}}
-\Plaintitle{Making, Updating, and Querying Causal Models with
-CausalQueries} %% without formatting
+\pkg{CausalQueries}}
+\Plaintitle{Making, Updating, and Querying Causal Models
+with} %% without formatting
 
 %% an abstract and keywords
-\Abstract{The \proglang{R} package \texttt{CausalQueries} can be used to
+\Abstract{The \proglang{R} package \pkg{CausalQueries} can be used to
 make, update, and query causal models defined on binary nodes. Users
 provide a causal statement of the form
 \texttt{X\ -\textgreater{}\ M\ \textless{}-\ Y;\ M\ \textless{}-\textgreater{}\ Y}
 which is interpreted as a structural causal model over a collection of
-binary nodes. Then \texttt{CausalQueries} allows users to (1) identify
-the set of principal strata---causal types---required to characterize
-all possible causal relations between nodes that are consistent with the
+binary nodes. Then \pkg{CausalQueries} allows users to (1) identify the
+set of principal strata---causal types---required to characterize all
+possible causal relations between nodes that are consistent with the
 causal statement (2) determine a set of parameters needed to
 characterize distributions over these causal types (3) update beliefs
 over distributions of causal types, using a \texttt{stan} model plus
@@ -280,7 +290,7 @@ URL: \url{https://macartan.github.io/}\\
 
 \section{Introduction: Causal models}\label{sec-intro}
 
-\texttt{CausalQueries} is an \proglang{R} package that lets users make,
+\pkg{CausalQueries} is an \proglang{R} package that lets users make,
 update, and query causal models. Users provide a structural causal model
 in the form of a statement that reports a set of binary variables and
 the relations of causal ancestry between them. There are three primary
@@ -309,7 +319,7 @@ models. We provide further computation details in the final section.
 
 Before providing details on package functionality, we give an example of
 an application of the three primary functions, showing how to use
-\texttt{CausalQueries} to replicate the analysis in
+\pkg{CausalQueries} to replicate the analysis in
 \citetext{\citealp{chickering_clinicians_1996}; \citealp[see
 also][]{humphreys_integrated_2023}}.
 
@@ -328,24 +338,23 @@ conditional queries, with one conditional on a counterfactual quantity.
 
 The data on \(Z\), \(X\), and \(Y\) is given in
 \citet{chickering_clinicians_1996} and is also included in the
-\texttt{CausalQueries} package. The data looks as follows:
+\pkg{CausalQueries} package. The data looks as follows:
 
-\begin{verbatim}
+\begin{CodeInput}
 R> data("lipids_data")
-R> 
 R> lipids_data
-\end{verbatim}
+\end{CodeInput}
 
 \begin{verbatim}
-#>    event strategy count
-#> 1 Z0X0Y0      ZXY   158
-#> 2 Z1X0Y0      ZXY    52
-#> 3 Z0X1Y0      ZXY     0
-#> 4 Z1X1Y0      ZXY    23
-#> 5 Z0X0Y1      ZXY    14
-#> 6 Z1X0Y1      ZXY    12
-#> 7 Z0X1Y1      ZXY     0
-#> 8 Z1X1Y1      ZXY    78
+   event strategy count
+1 Z0X0Y0      ZXY   158
+2 Z1X0Y0      ZXY    52
+3 Z0X1Y0      ZXY     0
+4 Z1X1Y0      ZXY    23
+5 Z0X0Y1      ZXY    14
+6 Z1X0Y1      ZXY    12
+7 Z0X1Y1      ZXY     0
+8 Z1X1Y1      ZXY    78
 \end{verbatim}
 
 This data is reported in ``compact form,'' meaning it records the number
@@ -358,21 +367,21 @@ The strategy to analyse this data involves three steps:
 \tightlist
 \item
   Step 1: generate a model with \texttt{make\_model}, yielding an object
-  of class \texttt{causal\_model}
+  of class \texttt{causal\_model},
 \item
   Step 2: update the model with \texttt{update\_model}, again yielding
-  an object of class \texttt{causal\_model}
+  an object of class \texttt{causal\_model},
 \item
   Step 3: pose queries of the model with \texttt{query\_model}, yielding
-  an object of class \texttt{model\_query}
+  an object of class \texttt{model\_query}.
 \end{itemize}
 
-Users generate the stipulated causal model using \texttt{CausalQueries}
-as follows:
+Users generate the stipulated causal model using \pkg{CausalQueries} as
+follows:
 
-\begin{verbatim}
+\begin{CodeInput}
 R> lipids_model <-  make_model("Z -> X -> Y; X <-> Y") 
-\end{verbatim}
+\end{CodeInput}
 
 The result is an object of class \texttt{causal\_model}, with associated
 \texttt{print}, \texttt{summary}, and \texttt{plot} methods. By default,
@@ -381,9 +390,9 @@ uniform priors are placed on model parameters.
 Users can then \emph{update} beliefs over model parameters by supplying
 data as follows:
 
-\begin{verbatim}
+\begin{CodeInput}
 R> lipids_model <- update_model(lipids_model, lipids_data)
-\end{verbatim}
+\end{CodeInput}
 
 The updated model is also an object of class \texttt{causal\_model},
 though now also containing a posterior distribution over model
@@ -393,17 +402,13 @@ Finally, users can \emph{query} the model. For instance, the three
 previously mentioned queries, which vary in the type of conditioning
 imposed, can be formulated as follows:
 
-\begin{verbatim}
-R> lipids_queries <-
-+  query_model(
-+    lipids_model,
-+    queries = list(
-+      ATE  = "Y[X=1] - Y[X=0]",
-+      PoC  = "Y[X=1] - Y[X=0] :|: X==0 & Y==0",
-+      LATE = "Y[X=1] - Y[X=0] :|: X[Z=1] > X[Z=0]"),
-+    using = "posteriors"
-+  )
-\end{verbatim}
+\begin{CodeInput}
+R> lipids_queries <- query_model(lipids_model, queries = list(
++    ATE = "Y[X = 1] - Y[X = 0]",
++    PoC = "Y[X = 1] - Y[X = 0] :|: X == 0 & Y == 0",
++    LATE = "Y[X = 1] - Y[X = 0] :|: X[Z = 1] > X[Z = 0]"),
++    using = "posteriors")
+\end{CodeInput}
 
 The output is an object of class \texttt{model\_query}, with associated
 \texttt{print}, \texttt{summary}, and \texttt{plot} methods.
@@ -417,30 +422,36 @@ lipids data.\footnote{Note that the ``using'' column is omitted to
   simplify output, as all estimands are derived from the posterior
   distribution.} Rows 1 and 2 in the table replicate the results from
 \citet{chickering_clinicians_1996}, while row 3 provides inferences for
-the local (complier) average treatment effects (``LATE'').
+the local average treatment effects (LATE).
 
-\begin{longtable}[t]{ccccccc}
+\begin{table}
+
+\centering{
+
+\centering
+\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
+\begin{tabular}{ccccccc}
+\toprule
+label & query & given & mean & sd & cred.low & cred.high\\
+\midrule
+ATE & Y[X = 1] - Y[X = 0] & - & 0.55 & 0.10 & 0.37 & 0.73\\
+PoC & Y[X = 1] - Y[X = 0] & X == 0 \& Y == 0 & 0.64 & 0.15 & 0.37 & 0.89\\
+LATE & Y[X = 1] - Y[X = 0] & X[Z = 1] > X[Z = 0] & 0.70 & 0.05 & 0.59 & 0.80\\
+\bottomrule
+\end{tabular}}
+
+}
 
 \caption{\label{tbl-lipids}Replication of
 \citet{chickering_clinicians_1996}.}
 
-\tabularnewline
-
-\toprule
-label & query & given & mean & sd & cred.low & cred.high\\
-\midrule
-ATE & Y[X=1] - Y[X=0] & - & 0.55 & 0.10 & 0.37 & 0.73\\
-PoC & Y[X=1] - Y[X=0] & X==0 \& Y==0 & 0.63 & 0.15 & 0.38 & 0.89\\
-LATE & Y[X=1] - Y[X=0] & X[Z=1] > X[Z=0] & 0.70 & 0.05 & 0.59 & 0.80\\
-\bottomrule
-
-\end{longtable}
+\end{table}%
 
 For visual presentation of the results, output can also be plotted:
 
-\begin{verbatim}
+\begin{CodeInput}
 R> lipids_queries |> plot()
-\end{verbatim}
+\end{CodeInput}
 
 \begin{figure}[H]
 
@@ -448,23 +459,19 @@ R> lipids_queries |> plot()
 
 }
 
-\caption{Illustration of queries plotted}
+\caption{Illustration of queries plotted.}
 
 \end{figure}%
 
 These core functions can be combined in a single pipeline as follows:
 
-\begin{verbatim}
-R> make_model("Z -> X -> Y; X <-> Y") |>
-+  update_model(lipids_data) |>
-+  query_model(
-+    queries = list(
-+      ATE  = "Y[X=1] - Y[X=0]",
-+      PoC  = "Y[X=1] - Y[X=0] :|: X==0 & Y==0",
-+      LATE = "Y[X=1] - Y[X=0] :|: X[Z=1] > X[Z=0]"),
-+    using = "posteriors") |>
-+  plot()
-\end{verbatim}
+\begin{CodeInput}
+R> make_model("Z -> X -> Y; X <-> Y") |> update_model(lipids_data) |>
++    query_model(queries = list(ATE = "Y[X = 1] - Y[X = 0]",
++    PoC  = "Y[X = 1] - Y[X = 0] :|: X == 0 & Y == 0",
++    LATE = "Y[X = 1] - Y[X = 0] :|: X[Z = 1] > X[Z = 0]"),
++    using = "posteriors") |> plot()
+\end{CodeInput}
 
 As we describe below, the same basic procedure of making, updating, and
 querying models, can be used (up to computational constraints) for
@@ -477,12 +484,12 @@ packages}\label{connections-to-existing-packages}
 The field of causal inference encompasses a wide range of software tools
 used across various disciplines, including social sciences, natural
 sciences, computer science, and applied mathematics. This section
-focuses on the role and capabilities of \texttt{CausalQueries} within
-the specific area of evaluating causal queries on models represented as
+focuses on the role and capabilities of \pkg{CausalQueries} within the
+specific area of evaluating causal queries on models represented as
 directed acyclic graphs (DAGs) or structural equation models (SEMs).
 Table~\ref{tbl-software} provides a summary of relevant software,
 highlighting their connections, strengths, and limitations in comparison
-to \texttt{CausalQueries}.
+to \pkg{CausalQueries}.
 
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1800}}
@@ -490,7 +497,6 @@ to \texttt{CausalQueries}.
   >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1000}}
   >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1700}}
   >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.3600}}@{}}
-\caption{Related software.}\label{tbl-software}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 Software
@@ -520,9 +526,11 @@ Scope
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
+\tabularnewline
+\caption{Related software.}\label{tbl-software}\tabularnewline
 \endlastfoot
-\texttt{causalnex} & \citet{beaumont_causalnex_2021} & \proglang{Python}
-& \begin{minipage}[t]{\linewidth}\raggedright
+\pkg{causalnex} & \citet{beaumont_causalnex_2021} & \proglang{Python} &
+\begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
 \item
@@ -539,7 +547,7 @@ Scope
   discrete data
 \end{itemize}
 \end{minipage} \\
-\texttt{pclag} & \citet{kalisch_causal_2012} & \proglang{R} &
+\pkg{pclag} & \citet{kalisch_causal_2012} & \proglang{R} &
 \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
@@ -557,7 +565,7 @@ Scope
   ATEs under linear conditional expectations, no hidden selection
 \end{itemize}
 \end{minipage} \\
-\texttt{DoWhy} & \citet{dowhy} & \proglang{Python} &
+\pkg{DoWhy} & \citet{dowhy} & \proglang{Python} &
 \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
@@ -575,8 +583,8 @@ Scope
   robustness checks
 \end{itemize}
 \end{minipage} \\
-\texttt{autobounds} & \citet{duarte_automated_2023} & \proglang{Python}
-& \begin{minipage}[t]{\linewidth}\raggedright
+\pkg{autobounds} & \citet{duarte_automated_2023} & \proglang{Python} &
+\begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
 \item
@@ -597,7 +605,7 @@ Scope
   binary data
 \end{itemize}
 \end{minipage} \\
-\texttt{causaloptim} & \citet{sachs_general_2023} & \proglang{R} &
+\pkg{causaloptim} & \citet{sachs_general_2023} & \proglang{R} &
 \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
@@ -619,8 +627,8 @@ Scope
 \end{minipage} \\
 \end{longtable}
 
-\texttt{causalnex} is comprehensive software that offers functions for
-discovering and querying causal models. Like \texttt{CausalQueries}, it
+\pkg{causalnex} is comprehensive software that offers functions for
+discovering and querying causal models. Like \pkg{CausalQueries}, it
 uses Bayesian methods and supports ``\texttt{do} calculus''
 \citep{pearl_causality_2009}. It focuses on conditional probability
 distribution tables instead of principal strata (causal types). This
@@ -631,55 +639,54 @@ effect monotonicity, complier effects, or the ``probability of
 causation'' \citep{dawid2017probability}. However, it allows for
 efficient handling of simple queries with larger models.
 
-Similar to \texttt{causalnex}, \texttt{pclag} emphasizes learning about
-causal structures and uses the resulting DAGs to recover average
-treatment effects (ATEs) across all learned Markov-equivalent classes
-from observed data that satisfy linearity of conditional expectations.
-This approach is also more restrictive than \texttt{CausalQueries} in
-terms of the queries it allows.
+Similar to \pkg{causalnex}, \pkg{pclag} emphasizes learning about causal
+structures and uses the resulting DAGs to recover average treatment
+effects (ATEs) across all learned Markov-equivalent classes from
+observed data that satisfy linearity of conditional expectations. This
+approach is also more restrictive than \pkg{CausalQueries} in terms of
+the queries it allows.
 
-\texttt{DoWhy} is a feature-rich framework focusing on causal
+\pkg{DoWhy} is a feature-rich framework focusing on causal
 identification, effect estimation, and assumption validation. With a
 user-specified DAG, it uses do-calculus to find expressions that
-identify desired causal effects through Back-door, Front-door, IV, and
-mediation criteria, and then uses standard estimators to estimate the
-desired effect. After estimation, \texttt{DoWhy} deploys a comprehensive
-refutation engine with a large set of robustness tests. While this
-approach efficiently handles varied data types on large causal models,
-not parameterizing the DAG itself limits the types of queries that can
-be posed.
+identify desired causal effects through Back-door, Front-door,
+instrumental variable (IV), and mediation criteria, and then uses
+standard estimators to estimate the desired effect. After estimation,
+\pkg{DoWhy} deploys a comprehensive refutation engine with a large set
+of robustness tests. While this approach efficiently handles varied data
+types on large causal models, not parameterizing the DAG itself limits
+the types of queries that can be posed.
 
-The packages most similar to \texttt{CausalQueries} for model definition
-are \texttt{autobounds} and \texttt{causaloptim}. They deal with
-discrete causal models, and their definitions of principal strata
-(causal types) and causal relations on the DAG are very similar to those
-of \texttt{CausalQueries}. Differences arise in how disturbance terms
-and confounding are defined: implicitly by the causal statement in
-\texttt{CausalQueries} versus explicitly via separate disturbance nodes
-in \texttt{autobounds} and \texttt{causaloptim}. While
-\texttt{CausalQueries} assumes a canonical form for input DAGs,
-\texttt{autobounds} and \texttt{causaloptim} facilitate
-canonicalization. The main difference between the methods is in their
-approach to evaluating queries.
+The packages most similar to \pkg{CausalQueries} for model definition
+are \pkg{autobounds} and \pkg{causaloptim}. They deal with discrete
+causal models, and their definitions of principal strata (causal types)
+and causal relations on the DAG are very similar to those of
+\pkg{CausalQueries}. Differences arise in how disturbance terms and
+confounding are defined: implicitly by the causal statement in
+\pkg{CausalQueries} versus explicitly via separate disturbance nodes in
+\pkg{autobounds} and \pkg{causaloptim}. While \pkg{CausalQueries}
+assumes a canonical form for input DAGs, \pkg{autobounds} and
+\pkg{causaloptim} facilitate canonicalization. The main difference
+between the methods is in their approach to evaluating queries.
 
-Both \texttt{autobounds} and \texttt{causaloptim} build on seminal
-approaches in \citet{balke_bounds_1997} to construct bounds on queries,
-using constrained polynomial and linear optimization, respectively. In
-contrast, \texttt{CausalQueries} uses Bayesian inference to generate a
+Both \pkg{autobounds} and \pkg{causaloptim} build on seminal approaches
+in \citet{balke_bounds_1997} to construct bounds on queries, using
+constrained polynomial and linear optimization, respectively. In
+contrast, \pkg{CausalQueries} uses Bayesian inference to generate a
 posterior over the causal model, which is then queried \citep[consistent
 with][]{chickering_clinicians_1996, zhang_partial_2022}. A key
 difference is the target of inference. The polynomial and linear
 programming approach is suited to handling larger causal models.
-However, due to their similar model parameterization,
-\texttt{autobounds}, \texttt{causaloptim}, and \texttt{CausalQueries}
-face similar constraints as parameter spaces expand rapidly with model
-size. The Bayesian approach to model updating and querying is more
-efficient because a model can be updated once and queried multiple
-times, while expensive optimization runs are needed for each separate
-query in \texttt{autobounds} and \texttt{causaloptim}.
+However, due to their similar model parameterization, \pkg{autobounds},
+\pkg{causaloptim}, and \pkg{CausalQueries} face similar constraints as
+parameter spaces expand rapidly with model size. The Bayesian approach
+to model updating and querying is more efficient because a model can be
+updated once and queried multiple times, while expensive optimization
+runs are needed for each separate query in \pkg{autobounds} and
+\pkg{causaloptim}.
 
-In summary, the main strength of \texttt{CausalQueries} is its ability
-to let users define an arbitrary DAG and pose any queries on it, using a
+In summary, the main strength of \pkg{CausalQueries} is its ability to
+let users define an arbitrary DAG and pose any queries on it, using a
 canonical procedure to form Bayesian posteriors for those queries,
 regardless of whether they are identified. For instance, if researchers
 want to learn about the local average treatment effect and their model
@@ -689,8 +696,8 @@ unaware that the local average treatment effect is identified or
 unfamiliar with the specific estimation method proposed by
 \citet{angrist_identification_1996}.
 
-There are two main limitations of the models that \texttt{CausalQueries}
-can handle. First, \texttt{CausalQueries} is designed for models with a
+There are two main limitations of the models that \pkg{CausalQueries}
+can handle. First, \pkg{CausalQueries} is designed for models with a
 relatively small number of binary nodes. Since it does not limit the
 range of possible causal relationships in a model, the parameter space
 expands quickly with the model's complexity. This complexity growth
@@ -703,12 +710,11 @@ parameters (\(4\times 2^1 + 2^{(2^4)}\)). Switching from binary to
 nonbinary nodes has similar effects. The restriction to binary nodes is
 for computational, not conceptual, reasons.\footnote{For more on
   computational constraints and strategies for updating and querying
-  large models, see the \texttt{CausalQueriesTools} package available
-  via
+  large models, see the \pkg{CausalQueriesTools} package available via
   \texttt{devtools::install\_github("till-tietz/CausalQueriesTools")}.
   The main approach here is to divide large causal models into modules,
   update each module, and then reassemble them to pose queries. Also,
-  see section 9.4.1 of \citet{humphreys_integrated_2023} for a method
+  see Section 9.4.1 of \citet{humphreys_integrated_2023} for a method
   that represents non-binary data as a profile of outcomes on multiple
   binary nodes.}
 
@@ -716,19 +722,18 @@ Second, the package is designed for learning about populations from
 independently sampled units. Therefore, it does not inherently address
 issues of clustering, hierarchical structures, or purposive sampling.
 However, the broader framework can be adapted for these purposes
-\citep[see section 9.4 of][]{humphreys_integrated_2023}. The targets of
+\citep[see Section 9.4 of][]{humphreys_integrated_2023}. The targets of
 inference are case-level or population-level quantities;
-\texttt{CausalQueries} is not well-suited for estimating sample
-quantities.
+\pkg{CausalQueries} is not well-suited for estimating sample quantities.
 
 \section{Statistical model}\label{sec-theory}
 
-The core conceptual framework used by \texttt{CausalQueries} is that
+The core conceptual framework used by \pkg{CausalQueries} is that
 described in Pearl's \emph{Causality} \citep{pearl_causality_2009}.
 
 The two key steps to defining a causal model are to define a causal
-structure and then place probability distributions over models
-consistent with that structure.
+structure and then place a probability distribution over the exogeneous
+variables in the model.
 
 Relying on ideas in \citeauthor{pearl_causality_2009}
 \citetext{\citeyear{pearl_causality_2009}; \citealp[with notation
@@ -739,21 +744,21 @@ follows:
   
   A ``\textbf{causal model}'' is:
   \begin{enumerate}
-    \item an ordered collection of ``endogenous nodes" $Y = \{Y_1, Y_2, \dots, Y_n\}$
-    \item an ordered collection of ``exogenous nodes" $\Theta = \{\theta^{Y_1}, \theta^{Y_2}, \dots, \theta^{Y_n}\}$
-    \item an ordered collection of functions $F = \{f_{Y_1}, f_{Y_2}, \dots, f_{Y_n}\}$ with $f_{Y_j}$ specifying, for each $j$, how outcome $Y_j$ depends on $\theta_j$ and realizations of endogenous nodes prior to $Y_j$.
+    \item an ordered collection of ``endogenous nodes" $Y = \{Y_1, Y_2, \dots, Y_n\}$,
+    \item an ordered collection of ``exogenous nodes" $\Theta = \{\theta^{Y_1}, \theta^{Y_2}, \dots, \theta^{Y_n}\}$,
+    \item an ordered collection of functions $F = \{f_{Y_1}, f_{Y_2}, \dots, f_{Y_n}\}$ with $f_{Y_j}$ specifying, for each $j$, how outcome $Y_j$ depends on $\theta_j$ and realizations of endogenous nodes prior to $Y_j$,
     \item a probability distribution, $\lambda$, over $\Theta$.
   \end{enumerate}
   
 \end{definition}
 
-Elements 1 - 3 of definition 1 define a ``\textbf{structural causal
-model}.'' These components define a causal structure, specifying which
-endogenous nodes are (possible) direct causes of a node, \(Y_j\), given
-the other nodes in a model. These nodes are referred to as the
-``parents'' of \(Y_j\), denoted as \(PA_j\) (where uppercase \(PA_j\)
-represents the collection of nodes, and lowercase \(pa_j\) represents a
-specific set of values these nodes might assume).
+Elements 1-3 define a ``\textbf{structural causal model}.'' These
+components pin down a causal structure, specifying which endogenous
+nodes are (possible) direct causes of a node, \(Y_j\), given the other
+nodes in a model. Such nodes are referred to as the ``parents'' of
+\(Y_j\), denoted as \(PA_j\) (where uppercase \(PA_j\) represents the
+collection of nodes, and lowercase \(pa_j\) represents a specific set of
+values these nodes might assume).
 
 Specifying a structural causal model involves making possibly strong
 assumptions, for example about which nodes are not plausibly causes of
@@ -764,18 +769,19 @@ outcomes. Adding the final element of the definition then gives us the
 fully specified causal model.
 
 With discrete-valued nodes, it is possible to identify all potential
-responses of a node to its parents, which we call ``nodal types'' (often
-referred to as ``response functions''). If a node \(i\) can take on
-\(k_i\) possible values, then the set of possible values that the
-parents of \(j\) can assume is \(m_j :=\prod_{i\in PA_j}k_i\).
-Consequently, there are \(k_j^{m_j}\) different ways that node \(j\)
-might respond to its parents. For binary nodes, this simplifies to
-\(2^{\left(2^{|PA_j|}\right)}\). Thus, an endogenous node with no
-parents has 2 nodal types; a binary node with one binary parent has four
-types; and a binary node with two parents has 16 types, and so forth.
+responses of a node to its parents, which we call ``nodal types''
+(``response functions'' in \citet{pearl_causality_2009}). If a node
+\(i\) can take on \(k_i\) possible values, then the set of possible
+values that the parents of \(j\) can assume is
+\(m_j :=\prod_{i\in PA_j}k_i\). Consequently, there are \(k_j^{m_j}\)
+different ways that node \(j\) might respond to its parents. For binary
+nodes, this simplifies to \(2^{\left(2^{|PA_j|}\right)}\). Thus, an
+endogenous node with no parents has 2 nodal types; a binary node with
+one binary parent has four types; and a binary node with two parents has
+16 types, and so forth.
 
 As a practical matter we need to label response types. In
-\texttt{CausalQueries} this is done using subscripts that indicate the
+\pkg{CausalQueries} this is done using subscripts that indicate the
 response given different combinations of parents. A node, \(Y\), with
 one binary parent, \(X\), has a nodal types subscripted with two values
 indicating the two possible values of \(Y\)'s parent (0 or 1):
@@ -785,7 +791,10 @@ approach is used for nodes with more (or fewer) nodal types, where the
 \(i\)th digit in the subscript corresponding to the value the node takes
 when the parents take on the \(i\)th combination of possible parent
 values (listed in colexicographic binary order given the specified
-ordering of parents).
+ordering of parents).\footnote{A similar approach may be used for non
+  binary nodes though in this case the index components can take on more
+  values and then length of indices adjust to reflect the set of all
+  possible parent value combinations.}
 
 The complete set of possible causal reactions of a given unit to all
 possible values of its parents is represented by its collection of nodal
@@ -794,7 +803,7 @@ type,'' denoted as \(\theta\). These causal types correspond to the
 principal strata, which are familiar from the study of instrumental
 variables \citep{frangakis_principal_2002}.
 
-\texttt{CausalQueries} treats the set of nodal types of \(Y_j\) as the
+\pkg{CausalQueries} treats the set of nodal types of \(Y_j\) as the
 domain of exogenous nodes \(\theta^{Y_j}\). The function \(f_{Y_j}\)
 then determines the value of \(y\) by simply reporting the value of
 \(Y_j\) implied by the nodal type and the values of the parents of
@@ -833,20 +842,21 @@ conditional probability \(\Pr(\theta^Y|\theta^X)\):
 \lambda^Z_1\lambda^X_{10}\lambda^{Y|\theta^X_{10}}_{11}
 }\end{equation}
 
-Representing beliefs \emph{over causal models} thus requires specifying
-a probability distribution over \(\lambda\). This distribution might be
-degenerate if users wish to specify a particular model.
-\texttt{CausalQueries} also allows users to specify parameters,
-\(\alpha\), of a Dirichlet distribution over \(\lambda^j\) for each node
-\(Y^j\) (and similarly for conditional distributions in cases of
-confounding). If all entries of \(\alpha\) are \(0.5\), this corresponds
-to Jeffreys priors. By default, \texttt{CausalQueries} assumes a uniform
-distribution, meaning all nodal types are equally likely, which
-corresponds to \(\alpha\) being a vector of \(1\)'s.\footnote{While
-  flexible, using the Dirichlet distribution does constrain the types of
-  priors that can be represented; see \citet{irons2023causally} for a
-  discussion of these constraints and an approach to incorporating
-  richer priors using multiple Beta distributions.}
+Representing beliefs \emph{over causal models} (in contrast to beliefs
+over causal types given a causal model) thus requires specifying a
+probability distribution over \(\lambda\) itself. This distribution
+might be degenerate if users wish to specify a particular model.
+\pkg{CausalQueries} also allows users to specify parameters, \(\alpha\),
+of a Dirichlet distribution over \(\lambda^j\) for each node \(Y^j\)
+(and similarly for conditional distributions in cases of confounding).
+If all entries of \(\alpha\) are \(0.5\), this corresponds to Jeffreys
+priors. By default, \pkg{CausalQueries} assumes a uniform distribution,
+meaning all nodal types are equally likely, which corresponds to
+\(\alpha\) being a vector of \(1\)'s.\footnote{While flexible, using the
+  Dirichlet distribution does constrain the types of priors that can be
+  represented; see \citet{irons2023causally} for a discussion of these
+  constraints and an approach to incorporating richer priors using
+  multiple Beta distributions.}
 
 Updating is then done with respect to beliefs over \(\lambda\). In the
 Bayesian approach we have:
@@ -882,8 +892,8 @@ w_{10} & = & \lambda^X_1(\lambda^Y_{00} + \lambda^Y_{10})\\
 w_{11} & = & \lambda^X_1(\lambda^Y_{11} + \lambda^Y_{01})\end{array} \right.
 \]
 
-Recall \(\lambda^Y_{01}=\Pr(\theta^Y = \theta^Y_{01})\) and the
-subscripts (\(0\), \(00\), \(01\), dots) summarizes the responses of
+where \(\lambda^Y_{01}=\Pr(\theta^Y = \theta^Y_{01})\) and the
+subscripts (\(0\), \(00\), \(01\), \dots) summarize the responses of
 nodes to parent combinations, as described above.
 
 For a more complex example, Table~\ref{tbl-lipidspar} illustrates key
@@ -903,12 +913,7 @@ values. Together, the parameters describe a full joint probability
 distribution over types for \(Z\), \(X\) and \(Y\) that is faithful to
 the graph.
 
-\begin{longtable}[t]{cccccc}
-
-\caption{\label{tbl-lipidspar}Nodal types and parameters for Lipids
-model.}
-
-\tabularnewline
+\begin{longtable}{cccccc}
 
 \toprule
 node & nodal\_type & param\_set & param\_names & param\_value & priors\\
@@ -918,29 +923,30 @@ Z & 1 & Z & Z.1 & 0.16 & 1\\
 X & 00 & X & X.00 & 0.12 & 1\\
 X & 10 & X & X.10 & 0.08 & 1\\
 X & 01 & X & X.01 & 0.11 & 1\\
-\addlinespace
 X & 11 & X & X.11 & 0.69 & 1\\
 Y & 00 & Y.X.00 & Y.00\_X.00 & 0.38 & 1\\
 Y & 10 & Y.X.00 & Y.10\_X.00 & 0.00 & 1\\
 Y & 01 & Y.X.00 & Y.01\_X.00 & 0.20 & 1\\
 Y & 11 & Y.X.00 & Y.11\_X.00 & 0.42 & 1\\
-\addlinespace
 Y & 00 & Y.X.01 & Y.00\_X.01 & 0.40 & 1\\
 Y & 10 & Y.X.01 & Y.10\_X.01 & 0.38 & 1\\
 Y & 01 & Y.X.01 & Y.01\_X.01 & 0.06 & 1\\
 Y & 11 & Y.X.01 & Y.11\_X.01 & 0.16 & 1\\
 Y & 00 & Y.X.10 & Y.00\_X.10 & 0.71 & 1\\
-\addlinespace
 Y & 10 & Y.X.10 & Y.10\_X.10 & 0.15 & 1\\
 Y & 01 & Y.X.10 & Y.01\_X.10 & 0.05 & 1\\
 Y & 11 & Y.X.10 & Y.11\_X.10 & 0.09 & 1\\
 Y & 00 & Y.X.11 & Y.00\_X.11 & 0.65 & 1\\
 Y & 10 & Y.X.11 & Y.10\_X.11 & 0.04 & 1\\
-\addlinespace
 Y & 01 & Y.X.11 & Y.01\_X.11 & 0.01 & 1\\
 Y & 11 & Y.X.11 & Y.11\_X.11 & 0.30 & 1\\
 \bottomrule
 
+
+\caption{\label{tbl-lipidspar}Nodal types and parameters for Lipids
+model.}
+
+\tabularnewline
 \end{longtable}
 
 These parameters again imply a probability distribution over data types.
@@ -950,10 +956,10 @@ For instance the probability of data type \(Z=0, X=0, Y=0\) is:
 w_{000}=\Pr(Z=0, X=0, Y=0) = \lambda^Z_0\lambda^X_{00}(\lambda^{Y|\lambda^X_{00}}_{00}+\lambda^{Y|\lambda^X_{00}}_{01}) + \lambda^Z_0\lambda^X_{01}(\lambda^{Y|\lambda^X_{01}}_{00}+\lambda^{Y|\lambda^X_{01}}_{01})
 \]
 
-The value of the \texttt{CausalQueries} package is that it enables users
-to specify arbitrary models of this form, determine all the implied
-nodal and causal types, and update these models using given priors and
-data. This is achieved by calculating event probabilities based on all
+The value of the \pkg{CausalQueries} package is that it enables users to
+specify arbitrary models of this form, determine all the implied nodal
+and causal types, and update these models using given priors and data.
+This is achieved by calculating event probabilities based on all
 possible parameter vectors and subsequently the likelihood of the data
 given the model. Additionally, the package allows users to pose
 arbitrary queries on a model to evaluate the values of estimands of
@@ -962,12 +968,12 @@ nodes, \emph{conditional} on the values or counterfactual values of
 nodes.
 
 The following sections review the classes and methods used by
-\texttt{CausalQueries} and the key functionalities for making, updating,
+\pkg{CausalQueries} and the key functionalities for making, updating,
 and querying causal models.
 
-\section{Classes and Methods}\label{sec-classes}
+\section{Classes and methods}\label{sec-classes}
 
-\texttt{CausalQueries} makes use of two types of object classes,
+\pkg{CausalQueries} makes use of two types of object classes,
 \texttt{causal\_model} and \texttt{model\_query}.
 
 An object of class \texttt{causal\_model} encodes a structural causal
@@ -977,7 +983,7 @@ distributions over model parameters. An object of class
 \texttt{causal\_model} is generated using \texttt{make\_model()} and can
 be adjusted using \texttt{update\_model()} as well as a set of helper
 functions: \texttt{set\_confound}, \texttt{set\_restrictions},
-\texttt{set\_priors}, as describe in sections Section~\ref{sec-make} and
+\texttt{set\_priors}, as describe in Section~\ref{sec-make} and
 Section~\ref{sec-update} below. Methods \texttt{print}, \texttt{summary}
 and \texttt{plot} are available for an object of class
 \texttt{causal\_model}.
@@ -993,7 +999,7 @@ Section~\ref{sec-query}. Methods \texttt{print}, \texttt{summary} and
 
 \section{Making models}\label{sec-make}
 
-A model can be defined in a single step in \texttt{CausalQueries} by
+A model can be defined in a single step in \pkg{CausalQueries} by
 supplying a causal statement---expressed using \texttt{dagitty}-style
 syntax \citep{textor_robust_2016}--- to \texttt{make\_model}. This
 generates an object of class \texttt{causal\_model} (see
@@ -1002,9 +1008,9 @@ Section~\ref{sec-classes}).
 To illustrate, a model where \(X\) causes both \(M\) and \(Y\), and
 \(M\) also causes \(Y\), can be created as follows:
 
-\begin{verbatim}
+\begin{CodeInput}
 R> model <- make_model("X -> M -> Y <- X")
-\end{verbatim}
+\end{CodeInput}
 
 The statement provides the names of nodes as well as arrows
 (``\texttt{-\textgreater{}}'' or ``\texttt{\textless{}-}'') connecting
@@ -1020,11 +1026,11 @@ Formally, a statement like this is interpreted as:
   \begin{itemize}
   \tightlist
   \item
-    \(Y = f_Y(M, X, \theta^Y)\)
+    \(Y = f_Y(M, X, \theta^Y)\),
   \item
-    \(M = f_M(X, \theta^M)\)
+    \(M = f_M(X, \theta^M)\),
   \item
-    \(X = f_X(\theta^X)\)
+    \(X = f_X(\theta^X)\).
   \end{itemize}
 \item
   Distributions on \(\Theta\):
@@ -1032,7 +1038,7 @@ Formally, a statement like this is interpreted as:
   \begin{itemize}
   \tightlist
   \item
-    \(\Pr(\theta^i = \theta^i_k) = \lambda^i_k\)
+    \(\Pr(\theta^i = \theta^i_k) = \lambda^i_k\).
   \end{itemize}
 \item
   Independence assumptions:
@@ -1040,7 +1046,7 @@ Formally, a statement like this is interpreted as:
   \begin{itemize}
   \tightlist
   \item
-    \(\theta_i \perp\!\!\! \perp \theta_j, i\neq j\)
+    \(\theta_i \perp\!\!\! \perp \theta_j, i\neq j\).
   \end{itemize}
 \end{enumerate}
 
@@ -1056,7 +1062,7 @@ greater detail in Section~\ref{sec-confounding}.
 \subsection{Graphing}\label{graphing}
 
 Plotting the model can help users verify that they have correctly
-defined its structure. \texttt{CausalQueries} offers straightforward
+defined its structure. \pkg{CausalQueries} offers straightforward
 graphing tools that utilize features from the \texttt{ggplot2} and
 \texttt{ggdag} packages. Once a model is defined, it can be graphed by
 calling the \texttt{plot()} method on objects of class
@@ -1069,26 +1075,20 @@ Figure~\ref{fig-plots} shows figures generated by plotting
 \texttt{c("gg",\ "ggplot")} and so will accept any additional layers
 available for the objects of class \texttt{ggplot}.
 
-\begin{verbatim}
+\begin{CodeInput}
 R> lipids_model |> plot()
-R> 
-R> lipids_model |>
-+  plot(x_coord = 1:3,
-+       y_coord = 3:1,
-+       textcol = "black",
-+       textsize = 3,
-+       shape = c(15, 16, 16),
-+       nodecol = "lightgrey",
-+       nodesize = 10)
-\end{verbatim}
+R> lipids_model |> plot(x_coord = 1:3, y_coord = 3:1, 
++    textcol = "black", textsize = 3, shape = c(15, 16, 16), 
++    nodecol = "lightgrey", nodesize = 10)
+\end{CodeInput}
 
-\begin{figure}[h]
+\begin{figure}
 
 \begin{minipage}{0.50\linewidth}
 
 \centering{
 
-\includegraphics[width=0.6\linewidth,height=\textheight,keepaspectratio]{paper_files/figure-pdf/fig-plots-1.pdf}
+\includegraphics[width=0.5\linewidth,height=\textheight,keepaspectratio]{paper_files/figure-pdf/fig-plots-1.pdf}
 
 }
 
@@ -1100,7 +1100,7 @@ R> lipids_model |>
 
 \centering{
 
-\includegraphics[width=0.6\linewidth,height=\textheight,keepaspectratio]{paper_files/figure-pdf/fig-plots-2.pdf}
+\includegraphics[width=0.5\linewidth,height=\textheight,keepaspectratio]{paper_files/figure-pdf/fig-plots-2.pdf}
 
 }
 
@@ -1108,21 +1108,22 @@ R> lipids_model |>
 
 \end{minipage}%
 
-\caption{\label{fig-plots}Examples of model graphs. For help on options
-see \texttt{?plot\_model}}
+\caption{\label{fig-plots}Examples of model graphs.}
 
 \end{figure}%
 
+\FloatBarrier
+
 \subsection{Model inspection}\label{model-inspection}
 
-When a model is defined, \texttt{CausalQueries} generates a set of
-internal objects used for all inferential tasks. These include default
-parameter values, default priors, and matrices that map parameters to
-causal types and causal types to data types. Although users generally do
-not need to examine these objects, \texttt{CausalQueries} provides two
-functions, \texttt{inspect()} and \texttt{grab()}, that allow users to
-quickly review these elements. The only difference between the two is
-that \texttt{grab()} is quiet and does not produce a printout, whereas
+When a model is defined, \pkg{CausalQueries} generates a set of internal
+objects used for all inferential tasks. These include default parameter
+values, default priors, and matrices that map parameters to causal types
+and causal types to data types. Although users generally do not need to
+examine these objects, \pkg{CausalQueries} provides two functions,
+\texttt{inspect()} and \texttt{grab()}, that allow users to quickly
+review these elements. The only difference between the two is that
+\texttt{grab()} is quiet and does not produce a printout, whereas
 \texttt{inspect()} does.
 
 Table~\ref{tbl-core} summarizes features of a causal model that can be
@@ -1131,8 +1132,6 @@ examined using \texttt{inspect()}.
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.4000}}
   >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.6000}}@{}}
-\caption{Elements of a model that can be inspected using
-\texttt{inspect()}.}\label{tbl-core}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 Element
@@ -1150,6 +1149,9 @@ Description
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
+\tabularnewline
+\caption{Elements of a model that can be inspected using
+\texttt{inspect()}.}\label{tbl-core}\tabularnewline
 \endlastfoot
 \texttt{statement} & A character string describing causal relations
 using dagitty syntax. \\
@@ -1217,8 +1219,6 @@ types), as shown in Table~\ref{tbl-joint}.
   >{\centering\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
   >{\centering\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
   >{\centering\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}@{}}
-\caption{Nodal types in \(X \rightarrow Y\)
-model.}\label{tbl-joint}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\centering
 \end{minipage} & \begin{minipage}[b]{\linewidth}\centering
@@ -1242,6 +1242,9 @@ model.}\label{tbl-joint}\tabularnewline
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
+\tabularnewline
+\caption{Nodal types in \(X \rightarrow Y\)
+model.}\label{tbl-joint}\tabularnewline
 \endlastfoot
 \(\theta^Y_{00}\) & \(\Pr(\theta^X_0, \theta^Y_{00})\) &
 \(\Pr(\theta^X_1, \theta^Y_{00})\) & \(\Pr(\theta^Y_{00})\) \\
@@ -1273,55 +1276,48 @@ The confounding structure can influence the number of parameters based
 on the underlying DAG. Table~\ref{tbl-dof} demonstrates the number of
 independent parameters required for different types of confounding.
 
-\begin{longtable}[]{@{}lc@{}}
+\begin{table}
+
+\centering{
+
+\begin{tabular}{lc}
+\toprule
+Model & Degrees of freedom\\
+\midrule
+`X -> Y <- W` & 17\\
+`X -> Y <- W; X <-> W` & 18\\
+`X -> Y <- W; X <-> Y; W <-> Y` & 62\\
+`X -> Y <- W; X <-> Y; W <-> Y; X <-> W` & 63\\
+`X -> W -> Y <- X` & 19\\
+`X -> W -> Y <- X; W <-> Y` & 64\\
+`X -> W -> Y <- X; X <-> W; W <-> Y` & 67\\
+`X -> W -> Y <- X; X <-> W; W <-> Y; X <-> Y` & 127\\
+\bottomrule
+\end{tabular}
+
+}
 
 \caption{\label{tbl-dof}Number of different independent parameters
 (degrees of freedom) for different three-node models.}
 
-\tabularnewline
-
-\toprule\noalign{}
-Model & Degrees of freedom \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-\texttt{X\ -\textgreater{}\ Y\ \textless{}-\ W} & 17 \\
-\texttt{X\ -\textgreater{}\ Y\ \textless{}-\ W;\ X\ \textless{}-\textgreater{}\ W}
-& 18 \\
-\texttt{X\ -\textgreater{}\ Y\ \textless{}-\ W;\ X\ \textless{}-\textgreater{}\ Y;\ W\ \textless{}-\textgreater{}\ Y}
-& 62 \\
-\texttt{X\ -\textgreater{}\ Y\ \textless{}-\ W;\ X\ \textless{}-\textgreater{}\ Y;\ W\ \textless{}-\textgreater{}\ Y;\ X\ \textless{}-\textgreater{}\ W}
-& 63 \\
-\texttt{X\ -\textgreater{}\ W\ -\textgreater{}\ Y\ \textless{}-\ X} &
-19 \\
-\texttt{X\ -\textgreater{}\ W\ -\textgreater{}\ Y\ \textless{}-\ X;\ W\ \textless{}-\textgreater{}\ Y}
-& 64 \\
-\texttt{X\ -\textgreater{}\ W\ -\textgreater{}\ Y\ \textless{}-\ X;\ X\ \textless{}-\textgreater{}\ W;\ W\ \textless{}-\textgreater{}\ Y}
-& 67 \\
-\texttt{X\ -\textgreater{}\ W\ -\textgreater{}\ Y\ \textless{}-\ X;\ X\ \textless{}-\textgreater{}\ W;\ W\ \textless{}-\textgreater{}\ Y;\ X\ \textless{}-\textgreater{}\ Y}
-& 127 \\
-
-\end{longtable}
+\end{table}%
 
 \subsubsection{Setting restrictions}\label{restrictions}
 
 It is often beneficial to constrain the set of types. In
-\texttt{CausalQueries}, this is achieved at the nodal type level, with
+\pkg{CausalQueries}, this is achieved at the nodal type level, with
 restrictions on causal types following those on nodal types. For
 example, in analyses of data with imperfect compliance, such as in our
 Lipids model example, it is common to impose a monotonicity assumption:
 that \(X\) does not decrease in response to \(Z\). This assumption is
 necessary to interpret instrumental variable estimates as consistent
 estimates of the complier average treatment effect. In
-\texttt{CausalQueries}, we can impose this assumption by removing types
-for which \(X\) decreases in \(Z\) as follows:
+\pkg{CausalQueries}, we can impose this assumption by removing types for
+which \(X\) decreases in \(Z\) as follows:
 
-\begin{verbatim}
-R> model_restricted <- 
-+  lipids_model |> 
-+  set_restrictions("X[Z=1] < X[Z=0]")
-\end{verbatim}
+\begin{CodeInput}
+R> model_restricted <- lipids_model |> set_restrictions("X[Z = 1] < X[Z = 0]")
+\end{CodeInput}
 
 If we wanted to retain only this nodal type rather than remove it, we
 could do so by passing \texttt{keep\ =\ TRUE} as an argument to the
@@ -1330,43 +1326,40 @@ could do so by passing \texttt{keep\ =\ TRUE} as an argument to the
 parameter matrix in which both the set of parameters and the set of
 causal types are restricted.
 
-Restrictions in \texttt{CausalQueries} can be set in several other ways
+Restrictions in \pkg{CausalQueries} can be set in several other ways
 described below.
 
 \begin{itemize}
 \item
   Using nodal type labels:
 
-\begin{verbatim}
-R> model <- 
-+  lipids_model |>
-+  set_restrictions(labels = list(X = "01", Y = c("00", "01", "11")), 
-+                   keep = TRUE)
-\end{verbatim}
+  \begin{CodeInput}
+  R> model <- lipids_model |> set_restrictions(
+  +    labels = list(X = "01", Y = c("00", "01", "11")), keep = TRUE)
+  \end{CodeInput}
 \item
   Using wildcards in nodal type labels:
 
-\begin{verbatim}
-R> model <- lipids_model |>
-+  set_restrictions(labels = list(Y = "?0"))
-\end{verbatim}
+  \begin{CodeInput}
+  R> model <- lipids_model |> set_restrictions(labels = list(Y = "?0"))
+  \end{CodeInput}
 \item
   In models with confounding, restrictions can be added to nodal types
   conditional on the values of other nodal types using a \texttt{given}
   argument:
 
-\begin{verbatim}
-R> model <- lipids_model |>
-+  set_restrictions(labels = list(Y = c('00', '11')), given = 'X.00')
-\end{verbatim}
+  \begin{CodeInput}
+  R> model <- lipids_model |> set_restrictions(
+  +    labels = list(Y = c('00', '11')), given = 'X.00')
+  \end{CodeInput}
 \end{itemize}
 
 Setting restrictions sometimes involves using causal syntax (see
 Section~\ref{sec-syntax} for a guide to the syntax used by
-\texttt{CausalQueries}). The help file in \texttt{?set\_restrictions}
+\pkg{CausalQueries}). The help file in \texttt{?set\_restrictions}
 provides further details and examples of restrictions users can set.
 
-\subsubsection{Setting Priors}\label{priors}
+\subsubsection{Setting priors}\label{priors}
 
 Priors on model parameters can be added to the parameters data frame and
 interpreted as alpha parameters of a Dirichlet distribution. The
@@ -1383,7 +1376,7 @@ expectation and certainty for each dimension. For instance, the vector
 \(\alpha = (100, 1, 1, 1, 100)\) would place more weight on
 distributions that are close to \((0.5, 0, 0, 0, 0.5)\).
 
-In \texttt{CausalQueries}, priors are generally specified over the
+In \pkg{CausalQueries}, priors are generally specified over the
 distribution of nodal types.\footnote{If there is confounding in the
   model, priors are specified over the conditional distribution of nodal
   types.} For example, in a model represented by \(X \rightarrow Y\),
@@ -1392,8 +1385,8 @@ and another Dirichlet distribution over the four types for \(\theta^Y\).
 Importantly, it is implicitly assumed that priors are independent across
 families. Thus, in a model represented by \(X \rightarrow Y\), we
 specify beliefs over \(\lambda^X\) and \(\lambda^Y\) separately.
-\texttt{CausalQueries} does not allow users to specify correlated
-beliefs over these parameters.\footnote{Users can specify beliefs about
+\pkg{CausalQueries} does not allow users to specify correlated beliefs
+over these parameters.\footnote{Users can specify beliefs about
   \(\lambda^Y\) given \(\theta^X\) if a model involves possible
   confounding. However, this refers to beliefs over a joint
   distribution, not jointly distributed beliefs.}
@@ -1401,45 +1394,42 @@ beliefs over these parameters.\footnote{Users can specify beliefs about
 Prior hyperparameters are set to unity by default, corresponding to
 uniform priors. Users can retrieve the model's priors as follows:
 
-\begin{verbatim}
-R> lipids_model |> 
-+  inspect("prior_hyperparameters", nodes = "X") 
-\end{verbatim}
+\begin{CodeInput}
+R> lipids_model |> inspect("prior_hyperparameters", nodes = "X") 
+\end{CodeInput}
 
 \begin{verbatim}
-#> 
-#> prior_hyperparameters
-#> Alpha parameter values used for Dirichlet prior distributions:
-#> 
-#> X.00 X.10 X.01 X.11 
-#>    1    1    1    1
+
+prior_hyperparameters
+Alpha parameter values used for Dirichlet prior distributions:
+
+X.00 X.10 X.01 X.11 
+   1    1    1    1 
 \end{verbatim}
 
 Alternatively users can set Jeffreys priors using \texttt{set\_priors()}
 as follows:
 
-\begin{verbatim}
-R> model <- lipids_model |> 
-+  set_priors(distribution = "jeffreys")
-\end{verbatim}
+\begin{CodeInput}
+R> model <- lipids_model |> set_priors(distribution = "jeffreys")
+\end{CodeInput}
 
 Users can also provide custom priors. The simplest way to specify custom
 priors is to add them as a vector of numbers using
 \texttt{set\_priors()}. For instance:
 
-\begin{verbatim}
-R> lipids_model |> 
-+  set_priors(param_names = c("X.10", "X.01"), alphas = 3:4) |> 
-+  inspect("prior_hyperparameters", nodes = "X")
-\end{verbatim}
+\begin{CodeInput}
+R> lipids_model |> set_priors(param_names = c("X.10", "X.01"), alphas = 3:4) |> 
++    inspect("prior_hyperparameters", nodes = "X")
+\end{CodeInput}
 
 \begin{verbatim}
-#> 
-#> prior_hyperparameters
-#> Alpha parameter values used for Dirichlet prior distributions:
-#> 
-#> X.00 X.10 X.01 X.11 
-#>    1    3    4    1
+
+prior_hyperparameters
+Alpha parameter values used for Dirichlet prior distributions:
+
+X.00 X.10 X.01 X.11 
+   1    3    4    1 
 \end{verbatim}
 
 The priors here should be interpreted as indicating
@@ -1452,19 +1442,19 @@ Providing priors as a vector of numbers for larger models can be hard.
 For that reason, \texttt{set\_priors()} allows for more targeted
 modifications of the parameter vector. For instance:
 
-\begin{verbatim}
-R> lipids_model |>
-+  set_priors(statement = "X[Z=1] > X[Z=0]", alphas = 3) |>
-+  inspect("prior_hyperparameters", nodes = "X")
-\end{verbatim}
+\begin{CodeInput}
+R> lipids_model |> set_priors(
++    statement = "X[Z = 1] > X[Z = 0]", alphas = 3) |>
++    inspect("prior_hyperparameters", nodes = "X")
+\end{CodeInput}
 
 \begin{verbatim}
-#> 
-#> prior_hyperparameters
-#> Alpha parameter values used for Dirichlet prior distributions:
-#> 
-#> X.00 X.10 X.01 X.11 
-#>    1    1    3    1
+
+prior_hyperparameters
+Alpha parameter values used for Dirichlet prior distributions:
+
+X.00 X.10 X.01 X.11 
+   1    1    3    1 
 \end{verbatim}
 
 While setting highly targeted priors is convenient and flexible, it
@@ -1481,12 +1471,10 @@ assumptions about causal quantities of interest. For example, in an
 average causal effect implied by flat priors is \(1/3\). This can be
 demonstrated by querying the model as follows:
 
-\begin{verbatim}
-R> query <- 
-+  make_model("X -> Y") |>
-+  set_restrictions(decreasing("X", "Y")) |>
-+  query_model("Y[X=1] - Y[X=0]", using = "priors")
-\end{verbatim}
+\begin{CodeInput}
+R> query <- make_model("X -> Y") |> set_restrictions(decreasing("X", "Y")) |>
++    query_model("Y[X = 1] - Y[X = 0]", using = "priors")
+\end{CodeInput}
 
 More subtly, the \emph{structure} of a model, coupled with flat priors,
 has substantive importance for priors on causal quantities. For
@@ -1499,7 +1487,7 @@ identified, as is the case for many models considered here. For some
 quantities, the marginal posterior distribution reflects the marginal
 prior distribution \citep{poirier_revising_1998}.
 
-\subsubsection{Setting Parameters}\label{parameters}
+\subsubsection{Setting parameters}\label{parameters}
 
 By default, models include a vector of parameter values within the
 \texttt{parameters\_df} data frame. These values are useful for
@@ -1517,18 +1505,17 @@ The causal model below has two parameter sets, one for \(X\) and one for
 feature of the parameters is that they must sum to \(1\) within each
 parameter set.
 
-\begin{verbatim}
-R> make_model("X -> Y") |> 
-+  inspect("parameters")
-\end{verbatim}
+\begin{CodeInput}
+R> make_model("X -> Y") |> inspect("parameters")
+\end{CodeInput}
 
 \begin{verbatim}
-#> 
-#> parameters
-#> Model parameters with associated probabilities: 
-#> 
-#>  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
-#> 0.50 0.50 0.25 0.25 0.25 0.25
+
+parameters
+Model parameters with associated probabilities: 
+
+ X.0  X.1 Y.00 Y.10 Y.01 Y.11 
+0.50 0.50 0.25 0.25 0.25 0.25 
 \end{verbatim}
 
 The example below illustrates a change in the value of the parameter
@@ -1537,19 +1524,19 @@ type \texttt{Y.Y01} is set to be \(0.7\), while the other nodal types of
 this parameter set were re-normalized so that the parameters in the set
 still sum up to one.
 
-\begin{verbatim}
-R> make_model("X -> Y") |>
-+  set_parameters(statement = "Y[X=1] > Y[X=0]", parameters = .7) |>
-+  inspect("parameters")
-\end{verbatim}
+\begin{CodeInput}
+R> make_model("X -> Y") |> set_parameters(
++    statement = "Y[X = 1] > Y[X = 0]", parameters = .7) |>
++    inspect("parameters")
+\end{CodeInput}
 
 \begin{verbatim}
-#> 
-#> parameters
-#> Model parameters with associated probabilities: 
-#> 
-#>  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
-#>  0.5  0.5  0.1  0.1  0.7  0.1
+
+parameters
+Model parameters with associated probabilities: 
+
+ X.0  X.1 Y.00 Y.10 Y.01 Y.11 
+ 0.5  0.5  0.1  0.1  0.7  0.1 
 \end{verbatim}
 
 \subsection{Drawing and manipulating
@@ -1566,17 +1553,16 @@ Generating data requires a specification of parameter values. The
 parameter values in the parameters data frame are used by default.
 Otherwise users can provide parameters on the fly.
 
-\begin{verbatim}
-R> lipids_model |> 
-+  make_data(n = 4)
-\end{verbatim}
+\begin{CodeInput}
+R> lipids_model |> make_data(n = 4)
+\end{CodeInput}
 
 \begin{verbatim}
-#>   Z X Y
-#> 1 0 0 0
-#> 2 0 0 1
-#> 3 1 1 0
-#> 4 1 1 1
+  Z X Y
+1 0 0 0
+2 0 0 1
+3 1 1 0
+4 1 1 1
 \end{verbatim}
 
 The resulting data is ordered by data type, as shown in the example
@@ -1586,22 +1572,19 @@ from a prior or posterior distribution by specifying
 
 \subsubsection{Drawing incomplete data}\label{drawing-incomplete-data}
 
-\texttt{CausalQueries} can be used when researchers have gathered
-different amounts of data for different nodes. For example, a researcher
-might gather data on \(X\) and \(Y\) for all units, but only have data
-on \(M\) for some units. The \texttt{make\_data()} function enables
-users to simulate such data by specifying a data strategy that outlines
-the probabilities of observing data for different nodes, potentially
-based on previously observed nodes.
+\pkg{CausalQueries} can be used when researchers have gathered different
+amounts of data for different nodes. For example, a researcher might
+gather data on \(X\) and \(Y\) for all units, but only have data on
+\(M\) for some units. The \texttt{make\_data()} function enables users
+to simulate such data by specifying a data strategy that outlines the
+probabilities of observing data for different nodes, potentially based
+on previously observed nodes.
 
-\begin{verbatim}
-R> sample_data <-
-+  lipids_model |>
-+  make_data(n = 8,
-+            nodes = list(c("Z", "Y"), "X"),
-+            probs = list(1, .5),
-+            subsets = list(TRUE, "Z==1 & Y==0"))
-\end{verbatim}
+\begin{CodeInput}
+R> sample_data <- lipids_model |> make_data(
++    n = 8, nodes = list(c("Z", "Y"), "X"), probs = list(1, .5),
++    subsets = list(TRUE, "Z == 1 & Y == 0"))
+\end{CodeInput}
 
 \subsubsection{Reshaping data}\label{reshaping-data}
 
@@ -1610,29 +1593,28 @@ format, where each row represents a single observation. However, for
 model updating, the data should be in a ``compact'' format that
 summarizes the number of units for each data type, organized by data
 ``strategy,'' which indicates the nodes for which data was collected.
-The \texttt{CausalQueries} package provides function
+The \pkg{CausalQueries} package provides function
 \texttt{collapse\_data()} that allow users to convert data to compact
 format.
 
-\begin{verbatim}
-R> sample_data |> 
-+  collapse_data(lipids_model)
-\end{verbatim}
+\begin{CodeInput}
+R> sample_data |> collapse_data(lipids_model)
+\end{CodeInput}
 
 \begin{verbatim}
-#>     event strategy count
-#> 1  Z0X0Y0      ZXY     0
-#> 2  Z1X0Y0      ZXY     1
-#> 3  Z0X1Y0      ZXY     0
-#> 4  Z1X1Y0      ZXY     1
-#> 5  Z0X0Y1      ZXY     0
-#> 6  Z1X0Y1      ZXY     0
-#> 7  Z0X1Y1      ZXY     0
-#> 8  Z1X1Y1      ZXY     0
-#> 9    Z0Y0       ZY     1
-#> 10   Z1Y0       ZY     2
-#> 11   Z0Y1       ZY     1
-#> 12   Z1Y1       ZY     2
+    event strategy count
+1  Z0X0Y0      ZXY     0
+2  Z1X0Y0      ZXY     1
+3  Z0X1Y0      ZXY     0
+4  Z1X1Y0      ZXY     1
+5  Z0X0Y1      ZXY     0
+6  Z1X0Y1      ZXY     0
+7  Z0X1Y1      ZXY     0
+8  Z1X1Y1      ZXY     0
+9    Z0Y0       ZY     1
+10   Z1Y0       ZY     2
+11   Z0Y1       ZY     1
+12   Z1Y1       ZY     2
 \end{verbatim}
 
 In the same way, it is possible to move from compact to long format
@@ -1641,12 +1623,12 @@ using \texttt{expand\_data()}.\footnote{Note that \texttt{NA}'s are
 
 \section{Updating models}\label{sec-update}
 
-The approach used by the \texttt{CausalQueries} package to update
-parameter values given observed data relies on the Stan programming
-language \citep{carpenter_stan_2017}. Below we explain the data required
-by the generic Stan program implemented in the package, the structure of
-that program, and then show how to use the package to produce posterior
-draws of parameters.
+The approach used by the \pkg{CausalQueries} package to update parameter
+values given observed data relies on the Stan programming language
+\citep{carpenter_stan_2017}. Below we explain the data required by the
+generic Stan program implemented in the package, the structure of that
+program, and then show how to use the package to produce posterior draws
+of parameters.
 
 \subsection{Data for Stan}\label{data-for-stan}
 
@@ -1708,26 +1690,25 @@ sets and taking the product over sets. To illustrate, we can examine the
 parameter mapping matrix for a simple model using the \texttt{inspect()}
 function as follows:
 
-\begin{verbatim}
-R> make_model("X -> Y") |> 
-+  inspect("parameter_mapping") 
-\end{verbatim}
+\begin{CodeInput}
+R> make_model("X -> Y") |> inspect("parameter_mapping") 
+\end{CodeInput}
 
 \begin{verbatim}
-#> 
-#> parameter_mapping (Parameter mapping matrix) 
-#> 
-#>   Maps from parameters to data types, with
-#>   possibly multiple columns for each data type
-#>   in cases with confounding. 
-#> 
-#>      X0Y0 X1Y0 X0Y1 X1Y1
-#> X.0     1    0    1    0
-#> X.1     0    1    0    1
-#> Y.00    1    1    0    0
-#> Y.10    0    1    1    0
-#> Y.01    1    0    0    1
-#> Y.11    0    0    1    1
+
+parameter_mapping (Parameter mapping matrix) 
+
+  Maps from parameters to data types, with
+  possibly multiple columns for each data type
+  in cases with confounding. 
+
+     X0Y0 X1Y0 X0Y1 X1Y1
+X.0     1    0    1    0
+X.1     0    1    0    1
+Y.00    1    1    0    0
+Y.10    0    1    1    0
+Y.01    1    0    0    1
+Y.11    0    0    1    1
 \end{verbatim}
 
 The probability of each data type can be determined using the parameter
@@ -1782,14 +1763,14 @@ from the prior distribution.
 \subsection{Incomplete and censored
 data}\label{incomplete-and-censored-data}
 
-\texttt{CausalQueries} assumes that missing data is missing at random,
+\pkg{CausalQueries} assumes that missing data is missing at random,
 conditional on observed data. For instance, in an
 \(X \rightarrow M \rightarrow Y\) model, a researcher might have chosen
 to collect data on \(M\) in a random set of cases in which \(X=1\) and
 \(Y=1\). If there are positive relations at each stage, one may be more
 likely to observe \(M\) in cases in which \(M=1\). However, the
 observation of \(M\) is still random and conditional on the observed
-\(X\) and \(Y\) data. The Stan model in \texttt{CausalQueries} takes
+\(X\) and \(Y\) data. The Stan model in \pkg{CausalQueries} takes
 account of this kind of sampling by assessing the probability of
 observing a particular pattern of data within each data
 strategy.\footnote{For further discussion, see Section 9.2.3.2 in
@@ -1809,30 +1790,13 @@ data for \(X\) and \(Y\). If we are aware that data in which
 \(X \neq Y\) has been censored, then when we update, we do not move
 towards a belief that \(X\) causes \(Y\).
 
-\begin{verbatim}
+\begin{CodeInput}
 R> data <- data.frame(X = rep(0:1, 5), Y = rep(0:1, 5))
-R> 
-R> list(
-+  uncensored = 
-+    update_model(make_model("X -> Y"),
-+                 data),
-+  censored = 
-+    update_model(make_model("X -> Y"), 
-+                 data, 
-+                 censored_types = c("X1Y0",  "X0Y1"))
-+  ) |>
-+  query_model("Y[X=1] - Y[X=0]", using = "posteriors")
-\end{verbatim}
-
-\begin{verbatim}
-#> 
-#> Causal queries generated by query_model (all at population level)
-#> 
-#> |label           |model      |using      |  mean|    sd| cred.low| cred.high|
-#> |:---------------|:----------|:----------|-----:|-----:|--------:|---------:|
-#> |Y[X=1] - Y[X=0] |uncensored |posteriors | 0.590| 0.194|    0.168|     0.897|
-#> |Y[X=1] - Y[X=0] |censored   |posteriors | 0.018| 0.315|   -0.614|     0.629|
-\end{verbatim}
+R> list(uncensored = update_model(make_model("X -> Y"), data),
++    censored = update_model(make_model("X -> Y"), data, 
++    censored_types = c("X1Y0",  "X0Y1"))) |>
++    query_model("Y[X = 1] - Y[X = 0]", using = "posteriors")
+\end{CodeInput}
 
 \subsection{Output}\label{output}
 
@@ -1842,77 +1806,28 @@ data frame within the model list. You can access this posterior
 distribution directly using the \texttt{grab()} function (or use the
 \texttt{inspect()} function for a more detailed output) as shown below:
 
-\begin{verbatim}
-R> model <-
-+  make_model("X -> Y")  |> 
-+  update_model()
-R> 
+\begin{CodeInput}
+R> model <- make_model("X -> Y") |> update_model()
 R> posterior <- inspect(model, "posterior_distribution")  
-\end{verbatim}
-
-\begin{verbatim}
-#> 
-#> posterior_distribution
-#> Summary statistics of model parameters posterior distributions:
-#> 
-#>   Distributions matrix dimensions are 
-#>   4000 rows (draws) by 6 cols (parameters)
-#> 
-#>      mean   sd
-#> X.0  0.51 0.28
-#> X.1  0.49 0.28
-#> Y.00 0.25 0.19
-#> Y.10 0.25 0.19
-#> Y.01 0.25 0.19
-#> Y.11 0.25 0.20
-\end{verbatim}
+\end{CodeInput}
 
 Additionally, a distribution of causal types is stored by default.
 Optionally, the \texttt{stanfit} object and a distribution over event
 probabilities can also be saved as shown below:
 
-\begin{verbatim}
-R> lipids_model <- 
-+  lipids_model |> 
-+  update_model(keep_fit = TRUE,
-+               keep_event_probabilities = TRUE)
-\end{verbatim}
+\begin{CodeInput}
+R> lipids_model <- lipids_model |> update_model(
++    keep_fit = TRUE, keep_event_probabilities = TRUE)
+\end{CodeInput}
 
 The summary of the Stan model can be accessed using \texttt{inspect()}
 function and is saved in the updated model object by default. This
 provides two measures to help assess convergence.
 
-\begin{verbatim}
-R> make_model("X -> Y")  |> 
-+  update_model(keep_type_distribution = FALSE) |>
-+  inspect("stan_summary") 
-\end{verbatim}
-
-\begin{verbatim}
-#> 
-#> stan_summary
-#> Stan model summary:
-#> 
-#> Inference for Stan model: simplexes.
-#> 4 chains, each with iter=2000; warmup=1000; thin=1; 
-#> post-warmup draws per chain=1000, total post-warmup draws=4000.
-#> 
-#>                    mean se_mean   sd   2.5%   25%   50%   75% 97.5% n_eff Rhat
-#> X.0                0.50    0.01 0.29   0.03  0.25  0.49  0.74  0.97  3036 1.00
-#> X.1                0.50    0.01 0.29   0.03  0.26  0.51  0.75  0.97  3036 1.00
-#> Y.00               0.25    0.00 0.19   0.01  0.09  0.21  0.37  0.70  2031 1.00
-#> Y.10               0.25    0.00 0.19   0.01  0.09  0.21  0.37  0.71  4633 1.00
-#> Y.01               0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.72  4162 1.00
-#> Y.11               0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.71  4701 1.00
-#> lp__               1.00    0.02 0.96   0.03  0.30  0.72  1.39  3.43  2536 1.00
-#> log_sum_gammas[2]  1.85    0.03 1.19   0.36  1.00  1.58  2.41  4.93  1159 1.01
-#> lp__              -7.53    0.04 1.65 -11.75 -8.37 -7.15 -6.32 -5.44  1368 1.00
-#> 
-#> Samples were drawn using NUTS(diag_e) at Thu Jul  3 10:55:52 2025.
-#> For each parameter, n_eff is a crude measure of effective sample size,
-#> and Rhat is the potential scale reduction factor on split chains (at 
-#> convergence, Rhat=1).
-\end{verbatim}
+\begin{CodeInput}
+R> make_model("X -> Y") |> update_model(keep_type_distribution = FALSE) |>
++    inspect("stan_summary") 
+\end{CodeInput}
 
 This summary provides information on the distribution of parameters and
 convergence diagnostics, summarized in the \texttt{Rhat} column. The
@@ -1929,57 +1844,54 @@ diagnostics}\label{convergence-problems-and-diagnostics}
 There is no guarantee that updating will produce reliable posterior
 draws. Indeed for some models, convergence failure are predictable.
 Fortunately, \texttt{stan} provides warnings that alert users to
-possible problems. These warnings are retained by \texttt{CausalQueries}
+possible problems. These warnings are retained by \pkg{CausalQueries}
 and repeated in model summaries or when queries are posed.
 
 In the example below the missing data on \(M\) means that there is no
 information to assess whether the strong relation between \(X\) and
 \(Y\) is due to positive effects.
 
-\begin{verbatim}
-R> model <- 
-+  make_model("X -> M -> Y") |>
-+  update_model(data = data.frame(X = rep(0:1, 10000), Y = rep(0:1, 10000)), 
-+               iter = 5000,
-+               refresh = 0)
-\end{verbatim}
+\begin{CodeInput}
+R> model <- make_model("X -> M -> Y") |> update_model(
++    data = data.frame(X = rep(0:1, 10000), Y = rep(0:1, 10000)), 
++    iter = 5000, refresh = 0)
+\end{CodeInput}
 
 The print and summary methods returns warnings alerting users to the
 problem thus:
 
-\begin{verbatim}
+\begin{CodeInput}
 R> model
-\end{verbatim}
+\end{CodeInput}
 
 \begin{verbatim}
-#> 
-#> Causal statement: 
-#> M -> Y; X -> M
-#> 
-#> Number of nodal types by node:
-#> X M Y 
-#> 2 4 4 
-#> 
-#> Number of causal types: 32
-#> 
-#> Model has been updated and contains a posterior distribution with
-#> 4 chains, each with iter=5000; warmup=2500; thin=1;  
-#> Use inspect(model, 'stan_summary') to inspect stan summary
-#> 
-#> Warnings passed from rstan during updating:
-#> The largest R-hat is 1.73, indicating chains have not mixed
-#> Bulk Effective Samples Size (ESS) is too low
-#> Tail Effective Samples Size (ESS) is too low
+
+Causal statement: 
+M -> Y; X -> M
+
+Number of nodal types by node:
+X M Y 
+2 4 4 
+
+Number of causal types: 32
+
+Model has been updated and contains a posterior distribution with
+4 chains, each with iter=5000; warmup=2500; thin=1;  
+Use inspect(model, 'stan_summary') to inspect stan summary
+
+Warnings passed from rstan during updating:
+The largest R-hat is 1.73, indicating chains have not mixed
+Bulk Effective Samples Size (ESS) is too low
+Tail Effective Samples Size (ESS) is too low 
 \end{verbatim}
 
 If users wish to run more advanced diagnostics of performance, they can
 retain and access the ``raw'' Stan output as follows:
 
-\begin{verbatim}
-R> model <- 
-+  make_model("X -> Y") |> 
-+  update_model(refresh = 0, keep_fit = TRUE)
-\end{verbatim}
+\begin{CodeInput}
+R> model <- make_model("X -> Y") |> 
++    update_model(refresh = 0, keep_fit = TRUE)
+\end{CodeInput}
 
 Note that the raw output uses labels from the generic Stan model:
 \texttt{lambda} for the vector of parameters, corresponding to the
@@ -1989,42 +1901,41 @@ for the causal types (\texttt{inspect(model,\ "causal\_types")}) and
 \texttt{event\_probabilities} for the event probabilities
 (\texttt{inspect(model,\ "event\_probabilities")}).
 
-\begin{verbatim}
-R> model |> 
-+  inspect("stanfit")
-\end{verbatim}
+\begin{CodeInput}
+R> model |> inspect("stanfit")
+\end{CodeInput}
 
 \begin{verbatim}
-#> 
-#> stanfit
-#> Stan model summary:
-#> Inference for Stan model: simplexes.
-#> 4 chains, each with iter=2000; warmup=1000; thin=1; 
-#> post-warmup draws per chain=1000, total post-warmup draws=4000.
-#> 
-#>                    mean se_mean   sd   2.5%   25%   50%   75% 97.5% n_eff Rhat
-#> lambdas[1]         0.50    0.01 0.29   0.03  0.25  0.50  0.75  0.97  2558    1
-#> lambdas[2]         0.50    0.01 0.29   0.03  0.25  0.50  0.75  0.97  2558    1
-#> lambdas[3]         0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.71  2012    1
-#> lambdas[4]         0.26    0.00 0.20   0.01  0.10  0.21  0.38  0.72  4663    1
-#> lambdas[5]         0.25    0.00 0.20   0.01  0.08  0.20  0.37  0.71  4851    1
-#> lambdas[6]         0.25    0.00 0.19   0.01  0.09  0.20  0.36  0.71  4266    1
-#> log_sum_gammas[1]  0.99    0.02 0.99   0.03  0.28  0.69  1.37  3.68  2209    1
-#> log_sum_gammas[2]  1.87    0.03 1.21   0.34  0.99  1.61  2.45  5.02  1315    1
-#> types[1]           0.13    0.00 0.14   0.00  0.03  0.08  0.18  0.49  2317    1
-#> types[2]           0.12    0.00 0.13   0.00  0.02  0.07  0.18  0.49  2150    1
-#> types[3]           0.13    0.00 0.14   0.00  0.03  0.08  0.18  0.51  3350    1
-#> types[4]           0.13    0.00 0.13   0.00  0.03  0.08  0.18  0.50  3460    1
-#> types[5]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3676    1
-#> types[6]           0.12    0.00 0.14   0.00  0.02  0.08  0.18  0.51  3694    1
-#> types[7]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.47  3424    1
-#> types[8]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3166    1
-#> lp__              -7.55    0.05 1.66 -11.87 -8.39 -7.15 -6.33 -5.45  1357    1
-#> 
-#> Samples were drawn using NUTS(diag_e) at Thu Jul  3 10:56:10 2025.
-#> For each parameter, n_eff is a crude measure of effective sample size,
-#> and Rhat is the potential scale reduction factor on split chains (at 
-#> convergence, Rhat=1).
+
+stanfit
+Stan model summary:
+Inference for Stan model: simplexes.
+4 chains, each with iter=2000; warmup=1000; thin=1; 
+post-warmup draws per chain=1000, total post-warmup draws=4000.
+
+                   mean se_mean   sd   2.5%   25%   50%   75% 97.5% n_eff Rhat
+lambdas[1]         0.50    0.01 0.29   0.03  0.25  0.50  0.75  0.97  2558    1
+lambdas[2]         0.50    0.01 0.29   0.03  0.25  0.50  0.75  0.97  2558    1
+lambdas[3]         0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.71  2012    1
+lambdas[4]         0.26    0.00 0.20   0.01  0.10  0.21  0.38  0.72  4663    1
+lambdas[5]         0.25    0.00 0.20   0.01  0.08  0.20  0.37  0.71  4851    1
+lambdas[6]         0.25    0.00 0.19   0.01  0.09  0.20  0.36  0.71  4266    1
+log_sum_gammas[1]  0.99    0.02 0.99   0.03  0.28  0.69  1.37  3.68  2209    1
+log_sum_gammas[2]  1.87    0.03 1.21   0.34  0.99  1.61  2.45  5.02  1315    1
+types[1]           0.13    0.00 0.14   0.00  0.03  0.08  0.18  0.49  2317    1
+types[2]           0.12    0.00 0.13   0.00  0.02  0.07  0.18  0.49  2150    1
+types[3]           0.13    0.00 0.14   0.00  0.03  0.08  0.18  0.51  3350    1
+types[4]           0.13    0.00 0.13   0.00  0.03  0.08  0.18  0.50  3460    1
+types[5]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3676    1
+types[6]           0.12    0.00 0.14   0.00  0.02  0.08  0.18  0.51  3694    1
+types[7]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.47  3424    1
+types[8]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3166    1
+lp__              -7.55    0.05 1.66 -11.87 -8.39 -7.15 -6.33 -5.45  1357    1
+
+Samples were drawn using NUTS(diag_e) at Tue Jul  8 22:49:36 2025.
+For each parameter, n_eff is a crude measure of effective sample size,
+and Rhat is the potential scale reduction factor on split chains (at 
+convergence, Rhat=1).
 \end{verbatim}
 
 Users can then pass the \texttt{stanfit} object to other diagnostic
@@ -2032,11 +1943,11 @@ packages such as \texttt{bayesplot}.
 
 \section{Queries}\label{sec-query}
 
-\texttt{CausalQueries} provides functionality to pose and answer
-elaborate causal queries. The key approach is to code causal queries as
-functions of causal types and return a distribution over the queries
-implied by the distribution over causal types. The primary approach is
-to use \texttt{query\_model()} to generate an object of class
+\pkg{CausalQueries} provides functionality to pose and answer elaborate
+causal queries. The key approach is to code causal queries as functions
+of causal types and return a distribution over the queries implied by
+the distribution over causal types. The primary approach is to use
+\texttt{query\_model()} to generate an object of class
 \texttt{model\_query} (see Section~\ref{sec-classes}) which prints to a
 table or can be plotted directly. The next sections describe how such
 queries are calculated and the syntax used for posing queries.
@@ -2073,41 +1984,39 @@ The \texttt{realise\_outcomes()} function, when called on this model,
 outputs the realized values for all causal types, with row names
 indicating the corresponding causal types.
 
-\begin{verbatim}
-R> make_model("X -> Y") |> 
-+  realise_outcomes()
-\end{verbatim}
+\begin{CodeInput}
+R> make_model("X -> Y") |> realise_outcomes()
+\end{CodeInput}
 
 \begin{verbatim}
-#>      X Y
-#> 0.00 0 0
-#> 1.00 1 0
-#> 0.10 0 1
-#> 1.10 1 0
-#> 0.01 0 0
-#> 1.01 1 1
-#> 0.11 0 1
-#> 1.11 1 1
+     X Y
+0.00 0 0
+1.00 1 0
+0.10 0 1
+1.10 1 0
+0.01 0 0
+1.01 1 1
+0.11 0 1
+1.11 1 1
 \end{verbatim}
 
 Intervening on \(X\) \citep[see][]{pearl_causality_2009} with
 \(do(X=1)\) yields:
 
-\begin{verbatim}
-R> make_model("X -> Y") |> 
-+  realise_outcomes(dos = list(X = 1))
-\end{verbatim}
+\begin{CodeInput}
+R> make_model("X -> Y") |> realise_outcomes(dos = list(X = 1))
+\end{CodeInput}
 
 \begin{verbatim}
-#>      X Y
-#> 0.00 1 0
-#> 1.00 1 0
-#> 0.10 1 0
-#> 1.10 1 0
-#> 0.01 1 1
-#> 1.01 1 1
-#> 0.11 1 1
-#> 1.11 1 1
+     X Y
+0.00 1 0
+1.00 1 0
+0.10 1 0
+1.10 1 0
+0.01 1 1
+1.01 1 1
+0.11 1 1
+1.11 1 1
 \end{verbatim}
 
 Similarly, \texttt{realise\_outcomes()} can return the realized values
@@ -2115,7 +2024,7 @@ on all nodes for each causal type given arbitrary interventions.
 
 \subsection{Causal syntax}\label{sec-syntax}
 
-\texttt{CausalQueries} provides syntax for the formulation of various
+\pkg{CausalQueries} provides syntax for the formulation of various
 causal queries including queries on all rungs of the ``causal ladder''
 \citep{pearl_causality_2009}: prediction, such as the proportion of
 units where \(Y\) equals \(1\); intervention, such as the probability
@@ -2133,91 +2042,90 @@ to specific queries. Users can use logical statements to inquire about
 observed conditions without interventions for factual queries. For
 instance, consider the query about the proportion of units where \(Y\)
 equals \(1\), expressed as \texttt{"Y\ ==\ 1"}. Here, the logical
-operator \texttt{==} signifies that \texttt{CausalQueries} should
-consider units that meet the strict equality condition where \(Y\)
-equals \(1\).\footnote{\texttt{CausalQueries} also accepts \texttt{=} as
-  a shorthand for \texttt{==}, but \texttt{==} is preferred as it is the
+operator \texttt{==} signifies that \pkg{CausalQueries} should consider
+units that meet the strict equality condition where \(Y\) equals
+\(1\).\footnote{\pkg{CausalQueries} also accepts \texttt{=} as a
+  shorthand for \texttt{==}, but \texttt{==} is preferred as it is the
   standard logical operator.} When this query is executed, the
 \texttt{get\_query\_types()} function identifies all types that result
 in \(Y=1\) without any interventions.
 
-\begin{verbatim}
-R> make_model("X -> Y")  |> 
-+  get_query_types("Y==1")
-\end{verbatim}
+\begin{CodeInput}
+R> make_model("X -> Y")  |> get_query_types("Y == 1")
+\end{CodeInput}
 
 \begin{verbatim}
-#> 
-#> Causal types satisfying query's condition(s)  
-#> 
-#>  query =  Y==1 
-#> 
-#> X0.Y10  X1.Y01
-#> X0.Y11  X1.Y11
-#> 
-#> 
-#>  Number of causal types that meet condition(s) =  4
-#>  Total number of causal types in model =  8
+
+Causal types satisfying query's condition(s)  
+
+ query =  Y==1 
+
+X0.Y10  X1.Y01
+X0.Y11  X1.Y11
+
+
+ Number of causal types that meet condition(s) =  4
+ Total number of causal types in model =  8
 \end{verbatim}
 
 The key to forming causal queries is being able to ask about the values
 of variables, given that the values of some other variables are
 ``controlled.'' This corresponds to the application of the \(do\)
-operator in \citet{pearl_causality_2009}. In \texttt{CausalQueries},
-this is done by putting square brackets, \texttt{{[}\ {]}}, around
-variables that are intervened upon.
+operator in \citet{pearl_causality_2009}. In \pkg{CausalQueries}, this
+is done by putting square brackets, \texttt{{[}\ {]}}, around variables
+that are intervened upon.
 
-For instance, consider the query \texttt{Y{[}X=0{]}==1}. This query asks
-about the types for which \(Y\) equals \(1\) when \(X\) is set to \(0\).
-Since \(X\) is set to zero, \(X\) is placed inside the brackets. Given
-that \(Y\) equals \(1\) is a condition about potentially observed
-values, it is expressed using the logical operator \texttt{==}. The set
-of causal types that meets this query is quite different:
+For instance, consider the query \texttt{Y{[}X\ =\ 0{]}\ ==\ 1}. This
+query asks about the types for which \(Y\) equals \(1\) when \(X\) is
+set to \(0\). Since \(X\) is set to zero, \(X\) is placed inside the
+brackets. Given that \(Y\) equals \(1\) is a condition about potentially
+observed values, it is expressed using the logical operator \texttt{==}.
+The set of causal types that meets this query is quite different:
+
+\begin{CodeInput}
+R> make_model("X -> Y") |> get_query_types("Y[X = 0] == 1")
+\end{CodeInput}
 
 \begin{verbatim}
-R> make_model("X -> Y")  |> 
-+  get_query_types("Y[X=0]==1")
-\end{verbatim}
 
-\begin{verbatim}
-#> 
-#> Causal types satisfying query's condition(s)  
-#> 
-#>  query =  Y[X=0]==1 
-#> 
-#> X0.Y10  X1.Y10
-#> X0.Y11  X1.Y11
-#> 
-#> 
-#>  Number of causal types that meet condition(s) =  4
-#>  Total number of causal types in model =  8
+Causal types satisfying query's condition(s)  
+
+ query =  Y[X=0]==1 
+
+X0.Y10  X1.Y10
+X0.Y11  X1.Y11
+
+
+ Number of causal types that meet condition(s) =  4
+ Total number of causal types in model =  8
 \end{verbatim}
 
 When a node has multiple parents, it is possible to set the values of
 none, some, or all of the parents. For instance if \(X1\) and \(X2\) are
-parents of \(Y\) then \texttt{Y==1}, \texttt{Y{[}X1=1{]}==1}, and
-\texttt{Y{[}X1=1,\ X2=1{]}==1} queries cases for which \(Y=1\) when,
-respectively, neither parents values are controlled, when \(X1\) is set
-to \(1\) but \(X2\) is not controlled, and when both \(X1\) and \(X2\)
-are set to \(1\). For instance:
+parents of \(Y\) then \texttt{Y\ ==\ 1},
+\texttt{Y{[}X1\ =\ 1{]}\ ==\ 1}, and
+\texttt{Y{[}X1\ =\ 1,\ X2\ =\ 1{]}\ ==\ 1} queries cases for which
+\(Y=1\) when, respectively, neither parents values are controlled, when
+\(X1\) is set to \(1\) but \(X2\) is not controlled, and when both
+\(X1\) and \(X2\) are set to \(1\). For instance:
+
+\begin{CodeInput}
+R> make_model("X1 -> Y <- X2")  |> get_query_types(
++    "X1 == 1 & X2 == 1 & (Y[X1 = 1, X2 = 1] > Y[X1 = 0, X2 = 0])")
+\end{CodeInput}
 
 \begin{verbatim}
-R> make_model("X1 -> Y <- X2")  |>
-+  get_query_types("X1==1 & X2==1 & (Y[X1=1, X2=1] > Y[X1=0, X2=0])")
-\end{verbatim}
 
-\begin{verbatim}
-#> 
-#> Causal types satisfying query's condition(s)  
-#> 
-#>  query =  X1==1&X2==1&(Y[X1=1,X2=1]>Y[X1=0,X2=0]) 
-#> 
-#> X11.X21.Y0001  X11.X21.Y0101
-#> X11.X21.Y0011  X11.X21.Y0111
-#> 
-#> 
-#>  Number of causal types that meet condition(s) =  4
-#>  Total number of causal types in model =  64
+Causal types satisfying query's condition(s)  
+
+ query =  X1==1&X2==1&(Y[X1=1,X2=1]>Y[X1=0,X2=0]) 
+
+X11.X21.Y0001  X11.X21.Y0101
+X11.X21.Y0011  X11.X21.Y0111
+
+
+ Number of causal types that meet condition(s) =  4
+ Total number of causal types in model =  64
 \end{verbatim}
 
 In this case, the aim is to identify the types for which in fact
@@ -2229,13 +2137,14 @@ In this case, the aim is to identify the types for which in fact
 Many queries of interest are ``conditional'' queries. For example, the
 effect of \(X\) on \(Y\) for units for which \(W=1\) or the effect of
 \(X\) on \(Y\) for units for which \(Z\) positively affects \(X\). Such
-conditional queries are posed in \texttt{CausalQueries} by providing a
+conditional queries are posed in \pkg{CausalQueries} by providing a
 \texttt{given} statement and the \texttt{query} statement or by placing
 the condition following a \texttt{:\textbar{}:} separator in the query
-expression. For instance \texttt{"Y{[}X=1{]}==1\ :\textbar{}:\ X==0"}
-asks for the probability that \(Y=1\) when \(X\) is set to 1 for a case
-in which in fact \(X=0\). The entire query then becomes: for what units
-does the \texttt{query} condition hold among those units for which the
+expression. For instance
+\texttt{"Y{[}X\ =\ 1{]}\ ==\ 1\ :\textbar{}:\ X\ ==\ 0"} asks for the
+probability that \(Y=1\) when \(X\) is set to 1 for a case in which in
+fact \(X=0\). The entire query then becomes: for what units does the
+\texttt{query} condition hold among those units for which the
 \texttt{given} condition holds? The two parts can each be calculated
 using \texttt{get\_query\_types}. Thus, for instance, in an
 \(X \rightarrow Y\) model, the probability that \(X\) causes \(Y\) given
@@ -2251,40 +2160,39 @@ which can be constructed using relational operators. For instance, users
 can query whether \(X\) has a positive effect on \(Y\) by checking if
 \(Y\) is greater when \(X\) is set to \(1\) compared to when \(X\) is
 set to \(0\). This is expressed as
-\texttt{"Y{[}X=1{]}\ \textgreater{}\ Y{[}X=0{]}"}. The query ``\(X\) has
-some effect on \(Y\)'' is given by
-\texttt{"Y{[}X=1{]}\ !=\ Y{[}X=0{]}"}.
+\texttt{"Y{[}X\ =\ 1{]}\ \textgreater{}\ Y{[}X\ =\ 0{]}"}. The query
+``\(X\) has some effect on \(Y\)'' is given by
+\texttt{"Y{[}X\ =\ 1{]}\ !=\ Y{[}X\ =\ 0{]}"}.
 
 Linear operators can also be used over a set of simple statements. Thus
-\texttt{"Y{[}X=1{]}\ -\ Y{[}X=0{]}"} returns the average treatment
-effect. In essence, rather than returning a \texttt{TRUE} or
+\texttt{"Y{[}X\ =\ 1{]}\ -\ Y{[}X\ =\ 0{]}"} returns the average
+treatment effect. In essence, rather than returning a \texttt{TRUE} or
 \texttt{FALSE} for the two parts of the query, the case memberships are
 forced to numeric values (\(1\) or \(0\)), and the differences are
 taken, which can be a \(1\), \(0\) or \(-1\) depending on the causal
 type. Averaging provides the share of cases with positive effects, less
 the share of cases with negative effects.
 
-\begin{verbatim}
-R> make_model("X -> Y") |> 
-+  get_query_types("Y[X=1] - Y[X=0]")
-\end{verbatim}
+\begin{CodeInput}
+R> make_model("X -> Y") |> get_query_types("Y[X = 1] - Y[X = 0]")
+\end{CodeInput}
 
 \begin{verbatim}
-#> X0.Y00 X1.Y00 X0.Y10 X1.Y10 X0.Y01 X1.Y01 X0.Y11 X1.Y11 
-#>      0      0     -1     -1      1      1      0      0
+X0.Y00 X1.Y00 X0.Y10 X1.Y10 X0.Y01 X1.Y01 X0.Y11 X1.Y11 
+     0      0     -1     -1      1      1      0      0 
 \end{verbatim}
 
 \subsubsection{Nested queries}\label{nested-queries}
 
-\texttt{CausalQueries} lets users pose nested ``complex counterfactual''
+\pkg{CausalQueries} lets users pose nested ``complex counterfactual''
 queries. Rather than stipulating a value to which some node is to be
 set, the user can set the value to the value that the node would take
 given actions taken on ancestor nodes. For instance
-\texttt{"Y{[}M=M{[}X=0{]},\ X=1{]}==1"} queries the types for which
-\(Y\) equals \(1\) when \(X\) is set to \(1\), while keeping \(M\)
-constant at whatever value it would take if \(X\) were set to \(0\).
-Such values are important for defining queries such as the ``natural
-direct effect'' \citep{pearl2022direct}.
+\texttt{"Y{[}M\ =\ M{[}X\ =\ 0{]},\ X\ =\ 1{]}\ ==\ 1"} queries the
+types for which \(Y\) equals \(1\) when \(X\) is set to \(1\), while
+keeping \(M\) constant at whatever value it would take if \(X\) were set
+to \(0\). Such values are important for defining queries such as the
+``natural direct effect'' \citep{pearl2022direct}.
 
 \subsection{Quantifying queries}\label{quantifying-queries}
 
@@ -2299,17 +2207,13 @@ call plots the posterior distribution for the probability that \(Y\) is
 increasing in \(X\) for the \(X \rightarrow Y\) model. The resulting
 plot is shown in Figure~\ref{fig-posterior-dist}.
 
-\begin{verbatim}
+\begin{CodeInput}
 R> data  <- data.frame(X = rep(0:1, 50), Y = rep(0:1, 50))
-R> 
-R> model <- 
-+  make_model("X -> Y") |>
-+  update_model(data, iter  = 4000, refresh = 0)
-R> 
-R> model |> 
-+  grab("posterior_distribution")  |> 
-+  ggplot(aes(Y.01 - Y.10)) + geom_histogram() 
-\end{verbatim}
+R> model <-  make_model("X -> Y") |> update_model(
++    data, iter = 4000, refresh = 0)
+R> model |> grab("posterior_distribution")  |> 
++    ggplot(aes(Y.01 - Y.10)) + geom_histogram() 
+\end{CodeInput}
 
 \begin{figure}[t]
 
@@ -2333,14 +2237,11 @@ calculate the query with respect to the prior or posterior probability
 distributions. This can be done for a list of queries using
 \texttt{query\_distribution()} function as follows:
 
-\begin{verbatim}
-R> queries <- 
-+  make_model("X -> Y") |> 
-+  query_distribution(
-+    query = list(increasing = "(Y[X=1] > Y[X=0])",
-+                 ATE = "(Y[X=1] - Y[X=0])"), 
-+    using = "priors")
-\end{verbatim}
+\begin{CodeInput}
+R> queries <- make_model("X -> Y") |> query_distribution(
++    query = list(increasing = "(Y[X = 1] > Y[X = 0])", 
++    ATE = "(Y[X = 1] - Y[X = 0])"), using = "priors")
+\end{CodeInput}
 
 The result is a data frame with one column per query and rows for draws
 from prior or posterior distributions as requested.
@@ -2359,20 +2260,30 @@ conditional on values in a case. For instance, we might consult our
 posterior for the Lipids model and ask about the effect of \(X\) on
 \(Y\) for a case in which \(Z=1\), \(X=1\) and \(Y=1\).
 
-\begin{verbatim}
-R> lipids_model |>
-+  query_model(
-+    query = "Y[X=1] - Y[X=0] :|: X==1 & Y==1 & Z==1",
-+    using = "posteriors") |>
-+  plot()
-\end{verbatim}
+\begin{CodeInput}
+R> lipids_model |> query_model(
++    query = "Y[X = 1] - Y[X = 0] :|: X == 1 & Y == 1 & Z == 1",
++    using = "posteriors") |> plot()
+\end{CodeInput}
 
-\pandocbounded{\includegraphics[keepaspectratio]{paper_files/figure-pdf/case-level-query-1.pdf}}
+\begin{figure}[H]
 
-The result is what we should now believe for all cases in which \(Z=1\),
-\(X=1\), and \(Y=1\). It is the expected average effect among cases with
-this data type, so this expectation has an uncertainty attached to it,
-reflecting our uncertainty about the expectation.
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{paper_files/figure-pdf/fig-case-level-query-1.pdf}}
+
+}
+
+\caption{\label{fig-case-level-query}Illustration of case-level queries
+plotted.}
+
+\end{figure}%
+
+The result in Figure~\ref{fig-case-level-query} is what we should now
+believe for all cases in which \(Z=1\), \(X=1\), and \(Y=1\). It is the
+expected average effect among cases with this data type, so this
+expectation has an uncertainty attached to it, reflecting our
+uncertainty about the expectation.
 
 This can differ, however, from what we would infer if we were presented
 with a new case drawn from the population. When examining a new case, we
@@ -2397,16 +2308,26 @@ is (or is not) an effect in this specific case. The case-level query
 gives a single value without posterior standard deviation, representing
 the belief about this new case.
 
-\begin{verbatim}
-R> make_model("X -> M -> Y") |>
-+  update_model(data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)), iter = 4000) |>
-+  query_model("Y[X=1] > Y[X=0] :|: X==1 & Y==1 & M==1", 
-+            using = "posteriors",
-+            case_level = c(TRUE, FALSE)) |>
-+  plot()
-\end{verbatim}
+\begin{CodeInput}
+R> make_model("X -> M -> Y") |> update_model(
++    data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)), iter = 4000) |>
++    query_model("Y[X = 1] > Y[X = 0] :|: X == 1 & Y == 1 & M == 1", 
++    using = "posteriors", case_level = c(TRUE, FALSE)) |>
++    plot()
+\end{CodeInput}
 
-\pandocbounded{\includegraphics[keepaspectratio]{paper_files/figure-pdf/unnamed-chunk-28-1.pdf}}
+\begin{figure}[H]
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{paper_files/figure-pdf/fig-new-case-level-query-1.pdf}}
+
+}
+
+\caption{\label{fig-new-case-level-query}Illustration of new case-level
+queries plotted.}
+
+\end{figure}%
 
 \subsubsection{Batch queries}\label{batch-queries}
 
@@ -2427,63 +2348,61 @@ with respect to all combinations of supplied arguments.
 To illustrate, we return again to the lipids model but now consider two
 versions, one with and one without a monotonicity restriction imposed.
 
-\begin{verbatim}
+\begin{CodeInput}
 R> models <- list(
-+  Unrestricted = lipids_model |>
++    Unrestricted = lipids_model |> 
 +    update_model(data = lipids_data, refresh = 0),
-+  
-+  Restricted = lipids_model |>
-+    set_restrictions("X[Z=1] < X[Z=0]") |>
++    Restricted = lipids_model |> set_restrictions("X[Z = 1] < X[Z = 0]") |> 
 +    update_model(data = lipids_data, refresh = 0)
-+)
-\end{verbatim}
++    )
+\end{CodeInput}
 
 Table~\ref{tbl-batch-query} then shows the output from a single call to
 \texttt{query\_model()} with the \texttt{expand\_grid} argument set to
 \texttt{TRUE} to generate all combinations of list elements.
 
-\begin{verbatim}
-R> queries <- 
-+  query_model(
-+    models,  
-+    query = list(ATE = "Y[X=1] - Y[X=0]", 
-+                 POS = "Y[X=1] > Y[X=0] :|: Y==1 & X==1"),
-+    case_level = c(FALSE, TRUE),
-+    using = c("priors", "posteriors"),
+\begin{CodeInput}
+R> queries <- query_model(models, query = 
++    list(ATE = "Y[X=1] - Y[X=0]", 
++    POS = "Y[X=1] > Y[X=0] :|: Y==1 & X==1"),
++    case_level = c(FALSE, TRUE), using = c("priors", "posteriors"),
 +    expand_grid = TRUE)
-\end{verbatim}
+\end{CodeInput}
 
-\begin{longtable}[t]{cccccccc}
+\begin{table}
 
-\caption{\label{tbl-batch-query}Results for two queries on two models.}
+\centering{
 
-\tabularnewline
-
+\centering
+\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
+\begin{tabular}{cccccccc}
 \toprule
 label & model & query & given & using & case\_level & mean & sd\\
 \midrule
 ATE & Unrestricted & Y[X=1] - Y[X=0] & - & priors & FALSE & 0.00 & 0.20\\
 ATE & Restricted & Y[X=1] - Y[X=0] & - & priors & FALSE & 0.00 & 0.23\\
 ATE & Unrestricted & Y[X=1] - Y[X=0] & - & posteriors & FALSE & 0.56 & 0.10\\
-ATE & Restricted & Y[X=1] - Y[X=0] & - & posteriors & FALSE & 0.56 & 0.10\\
+ATE & Restricted & Y[X=1] - Y[X=0] & - & posteriors & FALSE & 0.55 & 0.10\\
 POS & Unrestricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & priors & FALSE & 0.50 & 0.22\\
-\addlinespace
 POS & Restricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & priors & FALSE & 0.49 & 0.24\\
 POS & Unrestricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & posteriors & FALSE & 0.95 & 0.04\\
 POS & Restricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & posteriors & FALSE & 0.95 & 0.04\\
 ATE & Unrestricted & Y[X=1] - Y[X=0] & - & priors & TRUE & 0.00 & NA\\
 ATE & Restricted & Y[X=1] - Y[X=0] & - & priors & TRUE & 0.00 & NA\\
-\addlinespace
 ATE & Unrestricted & Y[X=1] - Y[X=0] & - & posteriors & TRUE & 0.56 & NA\\
-ATE & Restricted & Y[X=1] - Y[X=0] & - & posteriors & TRUE & 0.56 & NA\\
+ATE & Restricted & Y[X=1] - Y[X=0] & - & posteriors & TRUE & 0.55 & NA\\
 POS & Unrestricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & priors & TRUE & 0.50 & NA\\
 POS & Restricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & priors & TRUE & 0.49 & NA\\
 POS & Unrestricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & posteriors & TRUE & 0.95 & NA\\
-\addlinespace
 POS & Restricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & posteriors & TRUE & 0.95 & NA\\
 \bottomrule
+\end{tabular}}
 
-\end{longtable}
+}
+
+\caption{\label{tbl-batch-query}Results for two queries on two models.}
+
+\end{table}%
 
 Figure~\ref{fig-batch} shows the default plot associated with this
 query.
@@ -2503,7 +2422,7 @@ multiple models.}
 
 \section{Summary and discussion}\label{summary-and-discussion}
 
-\texttt{CausalQueries} provides an intuitive user interface to generate,
+\pkg{CausalQueries} provides an intuitive user interface to generate,
 update, and query causal models defined over binary nodes.
 
 A particular strength is the flexibility users enjoy in specifying the
@@ -2547,8 +2466,12 @@ requirements}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4100}}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4100}}@{}}
 \toprule\noalign{}
+\endfirsthead
 \endhead
 \bottomrule\noalign{}
+\tabularnewline
+\caption{Computational details and software
+requirements.}\tabularnewline
 \endlastfoot
 Version & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
@@ -2698,7 +2621,7 @@ the Comprehensive \proglang{R} Archive Network (CRAN) at
 \section*{Acknowledgments}\label{acknowledgments}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, breakable, rightrule=.15mm, colframe=quarto-callout-color-frame, colback=white, arc=.35mm, left=2mm, opacityback=0, toprule=.15mm, leftrule=.75mm, bottomrule=.15mm]
+\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, left=2mm, colframe=quarto-callout-color-frame, breakable, arc=.35mm, leftrule=.75mm, rightrule=.15mm, toprule=.15mm, opacityback=0, colback=white]
 
 We thank Ben Goodrich, who provided generous insights on using
 \texttt{stan} for this project. We thank Alan M Jacobs for key work in
@@ -2729,14 +2652,12 @@ improvements.
 \addcontentsline{toc}{section}{Appendix A: Parallelization}
 
 If users have access to multiple cores, parallel processing can be
-implemented by including this line before running
-\texttt{CausalQueries}:
+implemented by including this line before running \pkg{CausalQueries}:
 
-\begin{verbatim}
-R> library(parallel)
-R> 
+\begin{CodeInput}
+R> library("parallel")
 R> options(mc.cores = parallel::detectCores())
-\end{verbatim}
+\end{CodeInput}
 
 Additionally, parallelizing across models or data while running MCMC
 chains in parallel can be achieved by setting up a nested parallel
@@ -2745,38 +2666,24 @@ parallel chains each simultaneously. More generally the number of
 parallel processes at the upper level of the nested parallel structure
 are given by \(\left \lfloor \frac{cores}{chains + 1} \right \rfloor\).
 
-\begin{verbatim}
-R> library(future)
-R> library(future.apply)
-R> 
+\begin{CodeInput}
+R> library("future")
+R> library("future.apply")
 R> chains <- 3
 R> cores <- 8
-R> 
 R> future::plan(list(
-+      future::tweak(future::multisession, 
-+                    workers = floor(cores/(chains + 1))),
-+      future::tweak(future::multisession, 
-+                    workers = chains)
-+    ))
-R> 
++    future::tweak(future::multisession, 
++    workers = floor(cores/(chains + 1))),
++    future::tweak(future::multisession, workers = chains)))
 R> model <- make_model("X -> Y")
-R> data <- list(data_1 = data.frame(X=0:1, Y=0:1), 
-+             data_2 = data.frame(X=0:1, Y=1:0))
-R> 
-R> results <-
-+future.apply::future_lapply(
-+  data,
-+  function(d) {
-+    update_model(
-+      model = model,
-+      data = d,
-+      chains = chains,
-+      refresh = 0
-+    )},
-+ future.seed = TRUE)
-\end{verbatim}
+R> data <- list(data_1 = data.frame(X = 0:1, Y = 0:1), 
++    data_2 = data.frame(X = 0:1, Y = 1:0))
+R> results <- future.apply::future_lapply(data, function(d) {
++    update_model(model = model, data = d, chains = chains, refresh = 0)},
++    future.seed = TRUE)
+\end{CodeInput}
 
-\newpage
+\newpage{}
 
 \section*{Appendix B: Stan code}\label{sec-stancode}
 \addcontentsline{toc}{section}{Appendix B: Stan code}
@@ -2894,7 +2801,7 @@ generated quantities {
 } 
 \end{verbatim}
 
-\newpage
+\newpage{}
 
 \section*{Appendix C: Benchmarks}\label{sec-benchmark}
 \addcontentsline{toc}{section}{Appendix C: Benchmarks}
@@ -2909,52 +2816,6 @@ run four parallel chains for each model with a relatively large number
 of the benchmarks are presented in Table~\ref{tbl-bench1} and
 Table~\ref{tbl-bench2}.
 
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.5618}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2360}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2022}}@{}}
-
-\caption{\label{tbl-bench1}Benchmarking 1}
-
-\tabularnewline
-
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Model
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-Number of parameters
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-Runtime (seconds)
-\end{minipage} \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-\(X1 \rightarrow Y\) & 6 & 7.24 \\
-\(X1 \rightarrow Y; X2 \rightarrow Y\) & 20 & 10.04 \\
-\(X1\rightarrow Y;X2\rightarrow Y;X3\rightarrow Y\) & 262 & 90.04 \\
-
-\end{longtable}
-
-\begin{longtable}[]{@{}lrr@{}}
-
-\caption{\label{tbl-bench2}Benchmarking 2}
-
-\tabularnewline
-
-\toprule\noalign{}
-Model & Number of observations & Runtime (seconds) \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-\(X1 \rightarrow Y\) & 10 & 8.81 \\
-\(X1 \rightarrow Y\) & 100 & 8.72 \\
-\(X1 \rightarrow Y\) & 1000 & 11.64 \\
-\(X1 \rightarrow Y\) & 10000 & 18.73 \\
-
-\end{longtable}
-
 Increasing the number of parents in a model greatly increases the number
 of parameters and computational time. The results suggests the
 computational time is convex in the number of parents. Unless model
@@ -2964,6 +2825,51 @@ places limits on feasible computability without further recourse to
 specialized methods for handling large causal models. In contrast, the
 results suggest that computational time is concave in the size of the
 data.
+
+\begin{table}
+
+\centering{
+
+\centering
+\begin{tabular}{ccc}
+\toprule
+Model & Number of parameters & Runtime (seconds)\\
+\midrule
+$X1 \rightarrow Y$ & 6 & 748.20\\
+$X1 \rightarrow Y; X2 \rightarrow Y$ & 20 & 1920.02\\
+$X1\rightarrow Y;X2\rightarrow Y;X3\rightarrow Y$ & 262 & 42280.72\\
+\bottomrule
+\end{tabular}
+
+}
+
+\caption{\label{tbl-bench1}Benchmarking 1.}
+
+\end{table}%
+
+\begin{table}
+
+\centering{
+
+\centering
+\begin{tabular}{ccc}
+\toprule
+Model & Number of observations & Runtime (seconds)\\
+\midrule
+$X1 \rightarrow Y$ & 10 & 580.19\\
+$X1 \rightarrow Y$ & 100 & 800.65\\
+$X1 \rightarrow Y$ & 1000 & 1460.37\\
+$X1 \rightarrow Y$ & 10000 & 3333.48\\
+\bottomrule
+\end{tabular}
+
+}
+
+\caption{\label{tbl-bench2}Benchmarking 2.}
+
+\end{table}%
+
+\newpage{}
 
 
 
