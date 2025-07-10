@@ -55,6 +55,7 @@ execute:
   warning: false
   error: false
   cache: false
+  prompt: true
 ---
 
 ```{r}
@@ -1439,7 +1440,7 @@ Increasing the number of parents in a model greatly increases the number of para
 #| warning: false
 #| message: false
 #| include: true
-#| eval: true
+#| eval: false
 
 iter  <- 4000
 times <- 5
@@ -1480,7 +1481,7 @@ data.frame(
 #| warning: false
 #| message: false
 #| include: true
-#| eval: true
+#| eval: false
 
 model <- CausalQueries::make_model("X -> Y")
 
