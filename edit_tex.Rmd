@@ -12,6 +12,9 @@ library(stringr)
 This .Rmd post-processes paper.tex file to fix bugs and formatting issues.
 
 I run code chunk by chunk rather as needed rather than knitting rmd 
+
+I then compile paper.tex manually
+
 ```{r}
 # This function replaces verbatim for CodeOutput
 # And wraps CodeInput + CodeOutput within CodeChunk 
