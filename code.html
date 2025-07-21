@@ -3,72 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<meta name="generator" content="litedown 0.7">
 <title>Replication code for ‘Making, Updating, and Querying Causal Models using CausalQueries’</title>
-<style type="text/css">
-/**
- * Prism.s theme ported from highlight.js's xcode style
- */
-pre code {
-  padding: 1em;
-}
-.token.comment {
-  color: #007400;
-}
-.token.punctuation {
-  color: #999;
-}
-.token.tag,
-.token.selector {
-  color: #aa0d91;
-}
-.token.boolean,
-.token.number,
-.token.constant,
-.token.symbol {
-  color: #1c00cf;
-}
-.token.property,
-.token.attr-name,
-.token.string,
-.token.char,
-.token.builtin {
-  color: #c41a16;
-}
-.token.inserted {
-  background-color: #ccffd8;
-}
-.token.deleted {
-  background-color: #ffebe9;
-}
-.token.operator,
-.token.entity,
-.token.url,
-.language-css .token.string,
-.style .token.string {
-  color: #9a6e3a;
-}
-.token.atrule,
-.token.attr-value,
-.token.keyword {
-  color: #836c28;
-}
-.token.function,
-.token.class-name {
-  color: #DD4A68;
-}
-.token.regex,
-.token.important,
-.token.variable {
-  color: #5c2699;
-}
-.token.important,
-.token.bold {
-  font-weight: bold;
-}
-.token.italic {
-  font-style: italic;
-}
-</style>
 <style type="text/css">
 body {
   font-family: sans-serif;
@@ -76,107 +12,131 @@ body {
   margin: auto;
   padding: 1em;
   line-height: 1.5;
-  box-sizing: border-box;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
 }
-body, .footnotes, code { font-size: .9em; }
+body, .abstract, code, .footnotes, footer, #refs, .caption { font-size: .9em; }
 li li { font-size: .95em; }
-*, *:before, *:after {
-  box-sizing: inherit;
-}
+ul:has(li > input[type="checkbox"]) { list-style: none; padding-left: 1em; }
+*, :before, :after { box-sizing: border-box; }
+a { color: steelblue; }
 pre, img { max-width: 100%; }
-pre, pre:hover {
-  white-space: pre-wrap;
-  word-break: break-all;
-}
-pre code {
-  display: block;
-  overflow-x: auto;
-}
+pre { white-space: pre-wrap; word-break: break-word; }
+pre code { display: block; padding: 1em; overflow-x: auto; }
 code { font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace; }
-:not(pre) > code, code[class] { background-color: #F8F8F8; }
-code.language-undefined, pre > code:not([class]) {
-  background-color: inherit;
-  border: 1px solid #eee;
+:not(pre, th) > code, code[class], div > .caption { background: #f8f8f8; }
+pre > code:is(:not([class]), .language-plain, .language-none, .plain), .box, .figure, .table { background: inherit; border: 1px solid #eee; }
+pre > code {
+  &.message { border-color: #9eeaf9; }
+  &.warning { background: #fff3cd; border-color: #fff3cd; }
+  &.error { background: #f8d7da; border-color: #f8d7da; }
 }
+.fenced-chunk { border-left: 1px solid #666; }
+.code-fence {
+  opacity: .4;
+  border: 1px dashed #666;
+  border-left: 2px solid;
+  &:hover { opacity: inherit; }
+}
+.box, .figure, .table, table { margin: 1em auto; }
+div > .caption { padding: 1px 1em; }
+.figure { p:has(img, svg), pre:has(svg) { text-align: center; } }
+.flex-col { display: flex; justify-content: space-between; }
 table {
-  margin: auto;
-  border-top: 1px solid #666;
+  &:only-child:not(.table > *) { margin: auto; }
+  th, td { padding: 5px; font-variant-numeric: tabular-nums; }
+  thead, tfoot, tr:nth-child(even) { background: whitesmoke; }
+  thead th { border-bottom: 1px solid #ddd; }
+  &:not(.datatable-table) {
+    border-top: 1px solid #666;
+    border-bottom: 1px solid #666;
+  }
 }
-table thead th { border-bottom: 1px solid #ddd; }
-th, td { padding: 5px; }
-thead, tfoot, tr:nth-child(even) { background: #eee; }
 blockquote {
   color: #666;
   margin: 0;
-  padding-left: 1em;
-  border-left: 0.5em solid #eee;
+  padding: 1px 1em;
+  border-left: .5em solid #eee;
 }
 hr, .footnotes::before { border: 1px dashed #ddd; }
 .frontmatter { text-align: center; }
-#TOC .numbered li { list-style: none; }
-#TOC .numbered { padding-left: 0; }
-#TOC .numbered ul { padding-left: 1em; }
-table, .body h2 { border-bottom: 1px solid #666; }
+#TOC {
+  a { text-decoration: none; }
+  ul { list-style: none; padding-left: 1em; }
+  & > ul { padding: 0; }
+  ul ul { border-left: 1px solid lightsteelblue; }
+}
+.body h2 { border-bottom: 1px solid #666; }
 .body .appendix, .appendix ~ h2 { border-bottom-style: dashed; }
-.footnote-ref a::before { content: "["; }
-.footnote-ref a::after { content: "]"; }
-section.footnotes::before {
-  content: "";
-  display: block;
-  max-width: 20em;
+.main-number::after { content: "."; }
+span[class^="ref-number-"] { font-weight: bold; }
+.ref-number-fig::after, .ref-number-tab::after { content: ":"; }
+.cross-ref-chp::before { content: "Chapter "; }
+.cross-ref-sec::before { content: "Section "; }
+.cross-ref-fig::before, .ref-number-fig::before { content: "Figure "; }
+.cross-ref-tab::before, .ref-number-tab::before { content: "Table "; }
+.cross-ref-eqn::before, .MathJax_ref:has(mjx-mtext > mjx-c + mjx-c)::before { content: "Equation "; }
+.abstract, #refs {
+  &::before { display: block; margin: 1em auto; font-weight: bold; }
+}
+.abstract::before { content: "Abstract"; text-align: center; }
+#refs::before { content: "Bibliography"; font-size: 1.5em; }
+.ref-paren-open::before { content: "("; }
+.ref-paren-close::after { content: ")"; }
+.ref-semicolon::after { content: "; "; }
+.ref-and::after { content: " and "; }
+.ref-et-al::after { content: " et al."; font-style: italic; }
+.footnote-ref a {
+  &::before { content: "["; }
+  &::after { content: "]"; }
+}
+section.footnotes {
+  margin-top: 2em;
+  &::before { content: ""; display: block; max-width: 20em; }
+}
+.fade {
+  background: repeating-linear-gradient(135deg, white, white 30px, #ddd 32px, #ddd 32px);
+  opacity: 0.6;
 }
 
 @media print {
-  body {
-    font-size: 12pt;
-    max-width: 100%;
-  }
-  tr, img { page-break-inside: avoid; }
+  body { max-width: 100%; }
+  tr, img { break-inside: avoid; }
 }
 @media only screen and (min-width: 992px) {
-  pre { white-space: pre; }
+  body:not(.pagesjs) pre:has(.line-numbers):not(:hover) { white-space: pre; }
 }
 </style>
-<script>
-$(document).ready(function(){
-    if (typeof $('[data-toggle="tooltip"]').tooltip === 'function') {
-        $('[data-toggle="tooltip"]').tooltip();
-    }
-    if ($('[data-toggle="popover"]').popover === 'function') {
-        $('[data-toggle="popover"]').popover();
-    }
-});
-</script>
-<link href="C:\Users\humphreys\AppData\Local\R\win-library\4.4\kableExtra\lightable-0.0.1\lightable.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.14/css/prism-xcode.min.css">
+<script src="https://cdn.jsdelivr.net/combine/npm/katex@0.16.22/dist/katex.min.js,npm/katex@0.16.22/dist/contrib/auto-render.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.14/js/render-katex.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js" defer></script>
 </head>
 <body>
 <div class="frontmatter">
 <div class="title"><h1>Replication code for ‘Making, Updating, and Querying Causal Models using CausalQueries’</h1></div>
 <div class="author"><h2>Till Tietz, Lily Medina, Georgiy Syunyaev, and Macartan Humphreys</h2></div>
-<div class="date"><h3>February 2025</h3></div>
+<div class="date"><h3>July 2025</h3></div>
 </div>
 <div class="body">
 <p>Generated by <code>knitr::spin()</code> from <code>code.R</code>.</p>
 <p>Note: final section of code for microbenchmarking is slow</p>
-<h2 id="set-up">Set up</h2>
+<h2 id="sec:set-up">Set up</h2>
 <pre><code class="language-r">data(&quot;lipids_data&quot;)
-
 lipids_data
 </code></pre>
-<h1 id="motivating-example">Motivating example</h1>
+<h1 id="chp:motivating-example">Motivating example</h1>
 <pre><code class="language-r">lipids_model &lt;-  make_model(&quot;Z -&gt; X -&gt; Y; X &lt;-&gt; Y&quot;) 
 </code></pre>
 <pre><code class="language-r">lipids_model &lt;- update_model(lipids_model, lipids_data)
 </code></pre>
-<pre><code class="language-r">lipids_queries &lt;-
-  query_model(
-    lipids_model,
-    queries = list(
-      ATE  = &quot;Y[X=1] - Y[X=0]&quot;,
-      PoC  = &quot;Y[X=1] - Y[X=0] :|: X==0 &amp; Y==0&quot;,
-      LATE = &quot;Y[X=1] - Y[X=0] :|: X[Z=1] &gt; X[Z=0]&quot;),
-    using = &quot;posteriors&quot;
-  )
+<pre><code class="language-r">lipids_queries &lt;- query_model(lipids_model, queries = list(
+  ATE = &quot;Y[X = 1] - Y[X = 0]&quot;,
+  PoC = &quot;Y[X = 1] - Y[X = 0] :|: X == 0 &amp; Y == 0&quot;,
+  LATE = &quot;Y[X = 1] - Y[X = 0] :|: X[Z = 1] &gt; X[Z = 0]&quot;),
+  using = &quot;posteriors&quot;)
 </code></pre>
 <table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
  <thead>
@@ -193,7 +153,7 @@ lipids_data
 <tbody>
   <tr>
    <td style="text-align:center;"> ATE </td>
-   <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
+   <td style="text-align:center;"> Y[X = 1] - Y[X = 0] </td>
    <td style="text-align:center;"> - </td>
    <td style="text-align:center;"> 0.55 </td>
    <td style="text-align:center;"> 0.10 </td>
@@ -202,8 +162,8 @@ lipids_data
   </tr>
   <tr>
    <td style="text-align:center;"> PoC </td>
-   <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
-   <td style="text-align:center;"> X==0 &amp; Y==0 </td>
+   <td style="text-align:center;"> Y[X = 1] - Y[X = 0] </td>
+   <td style="text-align:center;"> X == 0 &amp; Y == 0 </td>
    <td style="text-align:center;"> 0.63 </td>
    <td style="text-align:center;"> 0.15 </td>
    <td style="text-align:center;"> 0.38 </td>
@@ -211,8 +171,8 @@ lipids_data
   </tr>
   <tr>
    <td style="text-align:center;"> LATE </td>
-   <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
-   <td style="text-align:center;"> X[Z=1] &gt; X[Z=0] </td>
+   <td style="text-align:center;"> Y[X = 1] - Y[X = 0] </td>
+   <td style="text-align:center;"> X[Z = 1] &gt; X[Z = 0] </td>
    <td style="text-align:center;"> 0.70 </td>
    <td style="text-align:center;"> 0.05 </td>
    <td style="text-align:center;"> 0.59 </td>
@@ -222,18 +182,14 @@ lipids_data
 </table>
 <pre><code class="language-r">lipids_queries |&gt; plot()
 </code></pre>
-<p><img src="data:image/png;base64,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" alt="Illustration of queries plotted" /></p>
-<pre><code class="language-r">make_model(&quot;Z -&gt; X -&gt; Y; X &lt;-&gt; Y&quot;) |&gt;
-  update_model(lipids_data) |&gt;
-  query_model(
-    queries = list(
-      ATE  = &quot;Y[X=1] - Y[X=0]&quot;,
-      PoC  = &quot;Y[X=1] - Y[X=0] :|: X==0 &amp; Y==0&quot;,
-      LATE = &quot;Y[X=1] - Y[X=0] :|: X[Z=1] &gt; X[Z=0]&quot;),
-    using = &quot;posteriors&quot;) |&gt;
-  plot()
+<p><img src="data:image/png;base64,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" alt="Illustration of queries plotted." /></p>
+<pre><code class="language-r">make_model(&quot;Z -&gt; X -&gt; Y; X &lt;-&gt; Y&quot;) |&gt; update_model(lipids_data) |&gt;
+  query_model(queries = list(ATE = &quot;Y[X = 1] - Y[X = 0]&quot;,
+  PoC  = &quot;Y[X = 1] - Y[X = 0] :|: X == 0 &amp; Y == 0&quot;,
+  LATE = &quot;Y[X = 1] - Y[X = 0] :|: X[Z = 1] &gt; X[Z = 0]&quot;),
+  using = &quot;posteriors&quot;) |&gt; plot()
 </code></pre>
-<p><img src="data:image/png;base64,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" alt="plot of chunk unnamed-chunk-12" /></p>
+<p><img src="data:image/png;base64,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" alt="plot of chunk unnamed-chunk-8" /></p>
 <table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
  <thead>
   <tr>
@@ -424,84 +380,73 @@ lipids_data
   </tr>
 </tbody>
 </table>
-<h1 id="making-models">Making models</h1>
+<h1 id="chp:making-models">Making models</h1>
 <pre><code class="language-r">model &lt;- make_model(&quot;X -&gt; M -&gt; Y &lt;- X&quot;)
 </code></pre>
-<pre><code class="language-r">lipids_model |&gt; plot()
-
-lipids_model |&gt;
-  plot(x_coord = 1:3,
-       y_coord = 3:1,
-       textcol = &quot;black&quot;,
-       textsize = 3,
-       shape = c(15, 16, 16),
-       nodecol = &quot;lightgrey&quot;,
-       nodesize = 10)
+<pre><code class="language-r"># lipids_model |&gt; plot()
+# lipids_model |&gt; plot(x_coord = 1:3, y_coord = 3:1,
+#   textcol = &quot;black&quot;, textsize = 3, shape = c(15, 16, 16),
+#   nodecol = &quot;lightgrey&quot;, nodesize = 10)
+# 
 </code></pre>
 <div class="figure">
-<img src="data:image/png;base64,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" alt="Examples of model graphs. For help on options see `?plot_model`" width="60%" /><img src="data:image/png;base64,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" alt="Examples of model graphs. For help on options see `?plot_model`" width="60%" />
-<p class="caption">Examples of model graphs. For help on options see `?plot_model`</p>
+<img src="data:image/png;base64,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" alt="Examples of model graphs." width="50%" /><img src="data:image/png;base64,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" alt="Examples of model graphs." width="50%" />
+<p class="caption">Examples of model graphs.</p>
 </div>
-<h2 id="tailoring-models">Tailoring models</h2>
-<table>
-<thead>
-<tr>
-<th align="left">Model</th>
-<th align="center">Degrees of freedom</th>
-</tr>
-</thead>
+<h2 id="sec:tailoring-models">Tailoring models</h2>
+<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
+ <thead>
+  <tr>
+   <th style="text-align:left;"> Model </th>
+   <th style="text-align:center;"> Degrees of freedom </th>
+  </tr>
+ </thead>
 <tbody>
-<tr>
-<td align="left"><code>X -&gt; Y &lt;- W</code></td>
-<td align="center">17</td>
-</tr>
-<tr>
-<td align="left"><code>X -&gt; Y &lt;- W; X &lt;-&gt; W</code></td>
-<td align="center">18</td>
-</tr>
-<tr>
-<td align="left"><code>X -&gt; Y &lt;- W; X &lt;-&gt; Y; W &lt;-&gt; Y</code></td>
-<td align="center">62</td>
-</tr>
-<tr>
-<td align="left"><code>X -&gt; Y &lt;- W; X &lt;-&gt; Y; W &lt;-&gt; Y; X &lt;-&gt; W</code></td>
-<td align="center">63</td>
-</tr>
-<tr>
-<td align="left"><code>X -&gt; W -&gt; Y &lt;- X</code></td>
-<td align="center">19</td>
-</tr>
-<tr>
-<td align="left"><code>X -&gt; W -&gt; Y &lt;- X; W &lt;-&gt; Y</code></td>
-<td align="center">64</td>
-</tr>
-<tr>
-<td align="left"><code>X -&gt; W -&gt; Y &lt;- X; X &lt;-&gt; W; W &lt;-&gt; Y</code></td>
-<td align="center">67</td>
-</tr>
-<tr>
-<td align="left"><code>X -&gt; W -&gt; Y &lt;- X; X &lt;-&gt; W; W &lt;-&gt; Y; X &lt;-&gt; Y</code></td>
-<td align="center">127</td>
-</tr>
+  <tr>
+   <td style="text-align:left;"> X → Y ← W </td>
+   <td style="text-align:center;"> 17 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> X → Y ← W; X ↔ W </td>
+   <td style="text-align:center;"> 18 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> X → Y ← W; X ↔ Y; W ←→ Y </td>
+   <td style="text-align:center;"> 62 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> X → Y ← W; X ↔ Y; W ←→ Y; X ←→ W </td>
+   <td style="text-align:center;"> 63 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> X → W → Y ← X </td>
+   <td style="text-align:center;"> 19 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> X → W → Y ← X; W ←→ Y </td>
+   <td style="text-align:center;"> 64 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> X → W → Y ← X; X ←→ W; W ←→ Y </td>
+   <td style="text-align:center;"> 67 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> X → W → Y ← X; X ←→ W; W ←→ Y; X ←→ Y </td>
+   <td style="text-align:center;"> 127 </td>
+  </tr>
 </tbody>
 </table>
-<pre><code class="language-r">model_restricted &lt;- 
-  lipids_model |&gt; 
-  set_restrictions(&quot;X[Z=1] &lt; X[Z=0]&quot;)
+<pre><code class="language-r">model_restricted &lt;- lipids_model |&gt; set_restrictions(&quot;X[Z = 1] &lt; X[Z = 0]&quot;)
 </code></pre>
-<pre><code class="language-r">model &lt;- 
-  lipids_model |&gt;
-  set_restrictions(labels = list(X = &quot;01&quot;, Y = c(&quot;00&quot;, &quot;01&quot;, &quot;11&quot;)), 
-                   keep = TRUE)
+<pre><code class="language-r">model &lt;- lipids_model |&gt; set_restrictions(
+  labels = list(X = &quot;01&quot;, Y = c(&quot;00&quot;, &quot;01&quot;, &quot;11&quot;)), keep = TRUE)
 </code></pre>
-<pre><code class="language-r">model &lt;- lipids_model |&gt;
-  set_restrictions(labels = list(Y = &quot;?0&quot;))
+<pre><code class="language-r">model &lt;- lipids_model |&gt; set_restrictions(labels = list(Y = &quot;?0&quot;))
 </code></pre>
-<pre><code class="language-r">model &lt;- lipids_model |&gt;
-  set_restrictions(labels = list(Y = c('00', '11')), given = 'X.00')
+<pre><code class="language-r">model &lt;- lipids_model |&gt; set_restrictions(
+  labels = list(Y = c('00', '11')), given = 'X.00')
 </code></pre>
-<pre><code class="language-r">lipids_model |&gt; 
-  inspect(&quot;prior_hyperparameters&quot;, nodes = &quot;X&quot;) 
+<pre><code class="language-r">lipids_model |&gt; inspect(&quot;prior_hyperparameters&quot;, nodes = &quot;X&quot;) 
 </code></pre>
 <pre><code>## 
 ## prior_hyperparameters
@@ -510,13 +455,11 @@ lipids_model |&gt;
 ## X.00 X.10 X.01 X.11 
 ##    1    1    1    1
 </code></pre>
-<pre><code class="language-r">model &lt;- lipids_model |&gt; 
-  set_priors(distribution = &quot;jeffreys&quot;)
+<pre><code class="language-r">model &lt;- lipids_model |&gt; set_priors(distribution = &quot;jeffreys&quot;)
 </code></pre>
 <pre><code>## Altering all parameters.
 </code></pre>
-<pre><code class="language-r">lipids_model |&gt; 
-  set_priors(param_names = c(&quot;X.10&quot;, &quot;X.01&quot;), alphas = 3:4) |&gt; 
+<pre><code class="language-r">lipids_model |&gt; set_priors(param_names = c(&quot;X.10&quot;, &quot;X.01&quot;), alphas = 3:4) |&gt; 
   inspect(&quot;prior_hyperparameters&quot;, nodes = &quot;X&quot;)
 </code></pre>
 <pre><code>## 
@@ -526,8 +469,8 @@ lipids_model |&gt;
 ## X.00 X.10 X.01 X.11 
 ##    1    3    4    1
 </code></pre>
-<pre><code class="language-r">lipids_model |&gt;
-  set_priors(statement = &quot;X[Z=1] &gt; X[Z=0]&quot;, alphas = 3) |&gt;
+<pre><code class="language-r">lipids_model |&gt; set_priors(
+  statement = &quot;X[Z = 1] &gt; X[Z = 0]&quot;, alphas = 3) |&gt;
   inspect(&quot;prior_hyperparameters&quot;, nodes = &quot;X&quot;)
 </code></pre>
 <pre><code>## 
@@ -537,13 +480,10 @@ lipids_model |&gt;
 ## X.00 X.10 X.01 X.11 
 ##    1    1    3    1
 </code></pre>
-<pre><code class="language-r">query &lt;- 
-  make_model(&quot;X -&gt; Y&quot;) |&gt;
-  set_restrictions(decreasing(&quot;X&quot;, &quot;Y&quot;)) |&gt;
-  query_model(&quot;Y[X=1] - Y[X=0]&quot;, using = &quot;priors&quot;)
+<pre><code class="language-r">query &lt;- make_model(&quot;X -&gt; Y&quot;) |&gt; set_restrictions(decreasing(&quot;X&quot;, &quot;Y&quot;)) |&gt;
+  query_model(&quot;Y[X = 1] - Y[X = 0]&quot;, using = &quot;priors&quot;)
 </code></pre>
-<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt; 
-  inspect(&quot;parameters&quot;)
+<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt; inspect(&quot;parameters&quot;)
 </code></pre>
 <pre><code>## 
 ## parameters
@@ -552,8 +492,8 @@ lipids_model |&gt;
 ##  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
 ## 0.50 0.50 0.25 0.25 0.25 0.25
 </code></pre>
-<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt;
-  set_parameters(statement = &quot;Y[X=1] &gt; Y[X=0]&quot;, parameters = .7) |&gt;
+<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt; set_parameters(
+  statement = &quot;Y[X = 1] &gt; Y[X = 0]&quot;, parameters = .7) |&gt;
   inspect(&quot;parameters&quot;)
 </code></pre>
 <pre><code>## 
@@ -563,23 +503,17 @@ lipids_model |&gt;
 ##  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
 ##  0.5  0.5  0.1  0.1  0.7  0.1
 </code></pre>
-<h2 id="drawing-data">Drawing data</h2>
-<pre><code class="language-r">lipids_model |&gt; 
-  make_data(n = 4)
+<h2 id="sec:drawing-data">Drawing data</h2>
+<pre><code class="language-r">lipids_model |&gt; make_data(n = 4)
 </code></pre>
-<pre><code class="language-r">sample_data &lt;-
-  lipids_model |&gt;
-  make_data(n = 8,
-            nodes = list(c(&quot;Z&quot;, &quot;Y&quot;), &quot;X&quot;),
-            probs = list(1, .5),
-            subsets = list(TRUE, &quot;Z==1 &amp; Y==0&quot;))
+<pre><code class="language-r">sample_data &lt;- lipids_model |&gt; make_data(
+  n = 8, nodes = list(c(&quot;Z&quot;, &quot;Y&quot;), &quot;X&quot;), probs = list(1, .5),
+  subsets = list(TRUE, &quot;Z == 1 &amp; Y == 0&quot;))
 </code></pre>
-<pre><code class="language-r">sample_data |&gt; 
-  collapse_data(lipids_model)
+<pre><code class="language-r">sample_data |&gt; collapse_data(lipids_model)
 </code></pre>
-<h1 id="updating-models">Updating models</h1>
-<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt; 
-  inspect(&quot;parameter_mapping&quot;) 
+<h1 id="chp:updating-models">Updating models</h1>
+<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt; inspect(&quot;parameter_mapping&quot;) 
 </code></pre>
 <pre><code>## 
 ## parameter_mapping (Parameter mapping matrix) 
@@ -597,24 +531,16 @@ lipids_model |&gt;
 ## Y.11    0    0    1    1
 </code></pre>
 <pre><code class="language-r">data &lt;- data.frame(X = rep(0:1, 5), Y = rep(0:1, 5))
-
-list(
-  uncensored = 
-    update_model(make_model(&quot;X -&gt; Y&quot;),
-                 data),
-  censored = 
-    update_model(make_model(&quot;X -&gt; Y&quot;), 
-                 data, 
-                 censored_types = c(&quot;X1Y0&quot;,  &quot;X0Y1&quot;))
-  ) |&gt;
-  query_model(&quot;Y[X=1] - Y[X=0]&quot;, using = &quot;posteriors&quot;)
+list(uncensored = update_model(make_model(&quot;X -&gt; Y&quot;), data),
+  censored = update_model(make_model(&quot;X -&gt; Y&quot;), data, 
+    censored_types = c(&quot;X1Y0&quot;,  &quot;X0Y1&quot;))) |&gt;
+  query_model(&quot;Y[X = 1] - Y[X = 0]&quot;, using = &quot;posteriors&quot;) |&gt;
+select(-using)
 </code></pre>
 <pre><code>## 
-## Causal queries generated by query_model (all at population level)
+## Causal queries generated by query_model
 </code></pre>
-<pre><code class="language-r">model &lt;-
-  make_model(&quot;X -&gt; Y&quot;)  |&gt; 
-  update_model()
+<pre><code class="language-r">model &lt;- make_model(&quot;X -&gt; Y&quot;) |&gt; update_model()
 </code></pre>
 <pre><code>## No data provided
 </code></pre>
@@ -635,15 +561,12 @@ list(
 ## Y.01 0.25 0.19
 ## Y.11 0.25 0.20
 </code></pre>
-<pre><code class="language-r">lipids_model &lt;- 
-  lipids_model |&gt; 
-  update_model(keep_fit = TRUE,
-               keep_event_probabilities = TRUE)
+<pre><code class="language-r">lipids_model &lt;- lipids_model |&gt; update_model(
+  keep_fit = TRUE, keep_event_probabilities = TRUE)
 </code></pre>
 <pre><code>## No data provided
 </code></pre>
-<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;)  |&gt; 
-  update_model(keep_type_distribution = FALSE) |&gt;
+<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt; update_model(keep_type_distribution = FALSE) |&gt;
   inspect(&quot;stan_summary&quot;) 
 </code></pre>
 <pre><code>## No data provided
@@ -667,16 +590,14 @@ list(
 ## log_sum_gammas[2]  1.85    0.03 1.19   0.36  1.00  1.58  2.41  4.93  1159 1.01
 ## lp__              -7.53    0.04 1.65 -11.75 -8.37 -7.15 -6.32 -5.44  1368 1.00
 ## 
-## Samples were drawn using NUTS(diag_e) at Thu Feb 27 10:41:46 2025.
+## Samples were drawn using NUTS(diag_e) at Mon Jul 21 08:58:32 2025.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).
 </code></pre>
-<pre><code class="language-r">model &lt;- 
-  make_model(&quot;X -&gt; M -&gt; Y&quot;) |&gt;
-  update_model(data = data.frame(X = rep(0:1, 10000), Y = rep(0:1, 10000)), 
-               iter = 5000,
-               refresh = 0)
+<pre><code class="language-r">model &lt;- make_model(&quot;X -&gt; M -&gt; Y&quot;) |&gt; update_model(
+  data = data.frame(X = rep(0:1, 10000), Y = rep(0:1, 10000)), 
+  iter = 5000, refresh = 0)
 </code></pre>
 <pre><code class="language-r">model
 </code></pre>
@@ -699,14 +620,12 @@ list(
 ## Bulk Effective Samples Size (ESS) is too low
 ## Tail Effective Samples Size (ESS) is too low
 </code></pre>
-<pre><code class="language-r">model &lt;- 
-  make_model(&quot;X -&gt; Y&quot;) |&gt; 
+<pre><code class="language-r">model &lt;- make_model(&quot;X -&gt; Y&quot;) |&gt; 
   update_model(refresh = 0, keep_fit = TRUE)
 </code></pre>
 <pre><code>## No data provided
 </code></pre>
-<pre><code class="language-r">model |&gt; 
-  inspect(&quot;stanfit&quot;)
+<pre><code class="language-r">model |&gt; inspect(&quot;stanfit&quot;)
 </code></pre>
 <pre><code>## 
 ## stanfit
@@ -734,20 +653,17 @@ list(
 ## types[8]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3166    1
 ## lp__              -7.55    0.05 1.66 -11.87 -8.39 -7.15 -6.33 -5.45  1357    1
 ## 
-## Samples were drawn using NUTS(diag_e) at Thu Feb 27 10:42:02 2025.
+## Samples were drawn using NUTS(diag_e) at Mon Jul 21 08:58:51 2025.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).
 </code></pre>
-<h1 id="querying-models">Querying models</h1>
-<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt; 
-  realise_outcomes()
+<h1 id="chp:querying-models">Querying models</h1>
+<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt; realise_outcomes()
 </code></pre>
-<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt; 
-  realise_outcomes(dos = list(X = 1))
+<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt; realise_outcomes(dos = list(X = 1))
 </code></pre>
-<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;)  |&gt; 
-  get_query_types(&quot;Y==1&quot;)
+<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;)  |&gt; get_query_types(&quot;Y == 1&quot;)
 </code></pre>
 <pre><code>## 
 ## Causal types satisfying query's condition(s)  
@@ -761,23 +677,22 @@ list(
 ##  Number of causal types that meet condition(s) =  4
 ##  Total number of causal types in model =  8
 </code></pre>
-<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;)  |&gt; 
-  get_query_types(&quot;Y[X=1]==1&quot;)
+<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt; get_query_types(&quot;Y[X = 0] == 1&quot;)
 </code></pre>
 <pre><code>## 
 ## Causal types satisfying query's condition(s)  
 ## 
-##  query =  Y[X=1]==1 
+##  query =  Y[X=0]==1 
 ## 
-## X0.Y01  X1.Y01
+## X0.Y10  X1.Y10
 ## X0.Y11  X1.Y11
 ## 
 ## 
 ##  Number of causal types that meet condition(s) =  4
 ##  Total number of causal types in model =  8
 </code></pre>
-<pre><code class="language-r">make_model(&quot;X1 -&gt; Y &lt;- X2&quot;)  |&gt;
-  get_query_types(&quot;X1==1 &amp; X2==1 &amp; (Y[X1=1, X2=1] &gt; Y[X1=0, X2=0])&quot;)
+<pre><code class="language-r">make_model(&quot;X1 -&gt; Y &lt;- X2&quot;)  |&gt; get_query_types(
+  &quot;X1 == 1 &amp; X2 == 1 &amp; (Y[X1 = 1, X2 = 1] &gt; Y[X1 = 0, X2 = 0])&quot;)
 </code></pre>
 <pre><code>## 
 ## Causal types satisfying query's condition(s)  
@@ -791,67 +706,53 @@ list(
 ##  Number of causal types that meet condition(s) =  4
 ##  Total number of causal types in model =  64
 </code></pre>
-<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt; 
-  get_query_types(&quot;Y[X=1] - Y[X=0]&quot;)
+<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt; get_query_types(&quot;Y[X = 1] - Y[X = 0]&quot;)
 </code></pre>
 <pre><code>## X0.Y00 X1.Y00 X0.Y10 X1.Y10 X0.Y01 X1.Y01 X0.Y11 X1.Y11 
 ##      0      0     -1     -1      1      1      0      0
 </code></pre>
 <pre><code class="language-r">data  &lt;- data.frame(X = rep(0:1, 50), Y = rep(0:1, 50))
 
-model &lt;- 
-  make_model(&quot;X -&gt; Y&quot;) |&gt;
-  update_model(data, iter  = 4000, refresh = 0)
+model &lt;-  make_model(&quot;X -&gt; Y&quot;) |&gt; update_model(
+  data, iter = 4000, refresh = 0)
 
-model |&gt; 
-  grab(&quot;posterior_distribution&quot;)  |&gt; 
+model |&gt; grab(&quot;posterior_distribution&quot;)  |&gt; 
   ggplot(aes(Y.01 - Y.10)) + geom_histogram() 
 </code></pre>
 <pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 </code></pre>
 <div class="figure" style="text-align: center">
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfgAAAH4CAMAAACR9g9NAAAAq1BMVEUAAAAAAGYAOpAAZrYzMzM6ADo6AGY6OpA6kNtNTU1NTY5Nbm5NbqtNjshZWVlmAABmADpmAGZmOpBmtv9ujshuq+SOTU2ObquOjk2OyP+QOgCQOjqQOmaQ2/+rbk2rbo6r5P+2ZgC2Zjq2/7a2///Ijk3Ijm7Ijo7IyP/I///bkDrb///kq27kq47k///r6+v/tmb/yI7/25D/5Kv//7b//8j//9v//+T///+DjvxaAAAACXBIWXMAAAsSAAALEgHS3X78AAAOh0lEQVR4nO3dAXcU9RmF8VitkgoqxdAGK0ILsUiChgaY7//JOslmk43L7HtnZ+a9b2aeezxRD//zODM/Nru2cjho2CJ34L4A5hnwCx3wCx3wC50K/xWbzfrB3/3b3+WfWTs2RqTMhdyfuwG+XgT41EadCPCpjToR4FMbdSLApzbqRIBPbdSJAJ/aqBMBPrVRJwJ8aqNOBPjURp0I8KmNOhHgUxt1IsCnNupEgE9t1IkAn9qoEwE+tVEnAnxqo04E+NRGnQjwqY06EeBTG0Ui393ZdBcCfLEI8NmNIhHgsxtFIsBnN4pEgM9uFIkAn90oEgE+u1EkAnx2o0gE+OxGkQjw2Y0iEeCzG0UiwGc3ikSAz24UiQCf3SgS+a57o14I8MUiwGc3ikSAz24UiQCf3SgSAT67USQCfHajSKQo/O9s4u2AH/Wfwyu+WKToK75fXBrwdwZ8dqNIBPjsRpEI8NmNIhHgsxtFIsBnN4pEgM9uFIkAn90oEtkB3+unAfD3LAJ8dqNIBPjsRpEI8NmNIhHgsxtFIsBnN4pEgM9uFIkAn90oEgE+u1EkAnx2o0gE+OxGkQjw2Y0iEeCzG0UiwGc3ikSAz24UiQCf3SgSAT67USQCfHajSAT47EaRCPDZjSIR4LMbRSLAZzeKRIDPbhSJAJ/dKBIBPrtRJAJ8dqNIBPjsRpEI8NmNIhHgsxtFIsBnN4pEgM9uFIkAn92wRWRq4CdpAB+eluPSgAfe2gA+PC3HpQEPvLUBfHhajksDHnhrA/jwtByXBjzw1gbw4Wk5Lg144K0N4MPTclwa8MBbG8Bf78PTw0fNp+frLxun5bg04IvBnx4358fnR83r1ZeN03JcGvAF4R+dvWjOj66+tEfbjfp73rGr7Qk/8J+681v9tz+eXJqfrOAbXvGTRKq94ttdv9jPgJ8yUg2+/Vb/mvf4hEg1+NsP9HyqnzRSDb77tByXBjzw1gbw4Wk5Lg144K0N4MPTclwa8MBbG8CHp+W4NOCBtzaAD0/LcWnAA29tAB+eluPSgAfe2gA+PC3HpQEPvLUBfHhajksDHnhrA/jwtByXBjzw1gbw4Wk5Lg144K0N4MPTclwa8MBbG8CHp+W4NOCBtzaAD0/LcWnAA29tAB+eluPSgAfe2gA+PC3HpQEPvLUBfHhajksDHnhrA/jwtByXBjzw1gbw4Wk5Lg144K0N4MPTclwa8MBbG4mRPamBn6QBfHhajksDHnhrA/jwtByXBjzw1gbw4Wk5Lg144K0N4MPTclwa8MBbG8CHp+W4NOCBtzaAD0/LcWnAA29tAB+eluPSgL8P8KP8DnuL3yjwA6+BV7whMgr8wAsB3hABfqxImQsBXh/wwFsbwIen5bg04IG3NoAPT8txacADb20AH56W49KAB97aAD48LcelAQ+8tQF8eFqOSwN+kp8GwBeMAD9WpMyFAK8PeOCtDeDD03JcGvDAWxvAh6fluDTggbc2gA9Py3FpwANvbQAfnpbj0oAH3toAPjwtx6UBD7y1AXx4Wo5LAx54awP48LQclwY88NYG8OFpOS4NeOCtDeDD03JcGvDAWxvAh6fluDTggbc2gA9Py3FpwANvbQAfnpbj0oAH3toAPjwtx6UBD7y1AXx4Wo5LAx54awP48LQclwY88NYG8OFpOS4NeOCtDeDD03JcGvDAWxvAh6fluDTggbc2gA9Py3FpwBeD//T88OG79suj5urLxul+dxkN+GLwp8ftH+dHzevVl43T/e4yGvDF4H/9Z/uKP3vRnB9dfWmPthvlN1pc/CaA730N3fDti/z86OTF+svGTxP5Z5U0XvFjrPeF7HjFv1m/2M+AHzdSG759jz/nPX6SSG14PtVPFqkN331ajksDvgL8xeNX1192nO53l9GA98N/fHZwtb+83Xm6311GA94Pv+vFvnG6311GA74CfPPb5Sv+C77VTxopCH/xw8/x6X53GQ34EvB8q0+IFIRvXj6JT/e7y2jAV4C/+J73+OkjBeGl03JcGvAV4HnFZ0QKwl/tjwe7T/e7y2jAl4Hnf7IdPTIB9QTw778GfuRIefjVezzf6seOlIeXTstxacCXgL98yXd+qAd+30h5+I/PnrSf6vm/ZceOlIfnP8SYJlIenlf8NJHy8LzHTxOpD6+cluPSgC8B336bf//Xzv8YA/g9I+XhP/7Uor//hvf4kSPl4flUP02kPDyf6qeJlIfnU/00kfrwymk5Lg144K0N4MPTclwa8MBbGyNHJqcGfqQG8OFpOS4NeOCtDeDD03JcGvDAWxvAh6fluDTggbc2gA9Py3FpwANvbQAfnpbj0oAH3toAPjwtx6UBD7y1AXx4Wo5LAx54awP48LQclwY88NYG8OFpOS4NeOCtDeDD03JcGvDAWxvA7zo9we++N9Mlw/e+Pl7xE0WS4XvfDfATRYCPBjzw1gbw4Wk5Lg144K0N4MPTclwa8MBbG8CHp+W4NOCBtzaAD0/LcWnAA29tAB+eluPSgAfe2gA+PC3HpQEPvLUBfHhajksDHnhrA/jwtByXBjzw1gbw4Wk5Lg144K0N4MPTclwa8MBbG8CHp+W4NOCBtzaAD0/LcWnAA29tAB+eluPSgAfe2gA+PC3HpQEPvLUBfHhajksDHnhrA/jwtByXBjzw1gbw4Wk5Lg144K0N4MPTclwa8MBbG8CHp+W4NOCBtzaAD0/LcWnAA29tAB+eluPSgAfe2gA+PC3HpQEPvLUBfHhajksDHnhrA/jwtByXBjzw1sbgSDI18CM1gA9Py3FpwANvbQB/vU/PDx9tfNk4LcelAV8M/vyoOXnRfnl9fPVl47QclwZ8Mfj2Nf/Lm7MX7U+Aqy/t0XYT/JaMs5kVvvfV7oD/8PRR+5pvzU9W8A2v+J2zwve+m50f7q5f7GfAK5sL/Olxy817vL65wLef5R++41O9vrnAd5+W49KAB97aAD48LcelAQ+8tQF8eFqOSwMeeGsD+PC0HJcGPPDWBvDhaTkuDXjgrQ3gw9NyXBrwwFsbwIen5bg04IG3NoAPT8txafcY3kp9d73vBvgBEbf2xnrfDfADIm7tjfW+G+AHRNzaG+t9N8APiLi1N9b7boAfEHFrb6z33QA/IOLW3ljvuwF+QMStvbHedwP8gIhbu3PC3QA/IOL27ZxwN8APiLh9OyfcDfADIm7fzgl3A/yAiNu3c8LdAD8g4vbtnHA3wA+IuH07J9wN8AMibt/OCXcD/ICI27dzwt0APyDi9u2ccDfAD4i4fTsn3A3wAyJu384JdwP8gIjbt3PC3QA/IOL27ZxwN8APiLh9OyfcDfADIm7fzgl3A/yAiNu3c8LdAD8g4vbtnHA3wA+IuH07J9wN8AMibt/OCXcD/ICI27dzwt0APyDi9u2ccDfAD4i4fTsn3A3wAyJu384JdwP8gIjbt3PC3QA/IOL27ZxwN8APiLh9OyfcDfADIm7fzgl3A/yAiNu3c8LdAD8g4vbtnHA3PeEn+H367vHcvp0Trp1X/ICI27dzwt0APyDi9u2ccDfA94q4RcUJdwN8r4hbVJxwN8D3irhFxQl3A3yviFtUnHA3wPeKuEXFCXcDfK+IW1SccDfA94q4RcUJdwN8EHEb7jXhkQAfRNyGe014JMAHEbfhXhMeCfBBxG2414RHAnwQcRvuNeGRAB9E3IZ7TXgkwAcRt+FeEx4J8EHEbbjXhEcCfBBxG+414ZEAH0TchntNeCTABxG34V4THgnwQcRtuNeERwJ8EHEb7jXhkQAfRNyGe014JMAHEbfhXhMeCfBBxG2414RHAnwQcRvuNeGRAL8VcauNMOGRAL8VcauNMOGRAL8VcauNMOGRAL8VcauNMOGRAL8VcauNMOGRAL8VcauNMOGRAL8VcauNMOGRAL8VcauNMOGRAL8VcauNMOGRAL8VcauNMOGRAL8VcauNMOGRAN/MgvruhEcCfAN8PODvx4RHAnwDfDzg78eERwJ8A3w84O/HhEeyUHi3zMQTHsly4N0YmRMeCfBznPBI5gzvfvy+CY8V+DlOeKzAz3HCYwV+jhMeK/BznPBYgZ/jhMcK/BwnPFYF/tPzw0ebp4Pn3XNjwrsfeJUJj1WBPz9qXh9vnN563oMWR7ZuqvPH2GrCY1Xgz15c2jdftZv89/BjSVPgT1bwTf1v9fOIpFxIj1d8A3xOpAy8+z0+p1EnUgb+/nyqn0ekDPyfT8txaffmUaVFgE9t1IkAn9qoEwE+tVEnAnxqo04E+NRGnQjwqY06EeBTG3UiwKc26kSAT23UiQCf2qgTAT61UScCfGqjTgT41EadCPCpjToR4FMbdSIV4dls1gv+sz9rCqzMhdS5Eu1CgB9rZa5kUnh23wf8Qgf8Qgf8QtcXfv1f2p8eHh4eTXA9vS+k/fPDd84LubmSD0/XvwjBttOrX/1y+6shdqwv/O2vrWl+fdP3usbc+kLaP58eOy/k5krayzj3Xsnrw+PNC9q5vvC3v5ru3PqCv7kQP/z6Si7hrS/5D/9dPYlbox3rC3/762e9L/jbCzn1vuXcXkn7rf7bH72XsoI/mQL+5mfT/8z3ePM6O7r8o8KVNPbvgs2Er/ib9w/3PW6+s3o/U21cSfzWOu1Op3uPv/rE+OEf79xvrDcX0n6D/Zv3TWd9JdKH6WnXoqgXwr/HL3TAL3TAL3TAL3TAL3TAL3RLg//47Mnln14+uPz6x8HB5d9dPH7VcWD1Q9fH5rWlwTcff/q5pfzy8i8vfvj5/devmovvv3j1+QOrH7o+NrMtDr55/83bi7+/vf6rVvnjv/7z+NXnD6x+aHXMcalTbnnwzW8P/r1ivHxZv3zyp2/1mwdWP7Q+Nq8tEH79/t0Jf3MA+Hltrbj+Hn4N//Lg4Mu7B1Y/xLf6uWztuv7Utv2KvwPPh7u57OX63+E+969zdw7wr3NsbgN+oQN+oQN+oQN+oQN+oQN+ofs/JbVp31V3PJ0AAAAASUVORK5CYII=" alt="Posterior on "Probability $Y$ is increasing in $X$"." width="60%" />
-<p class="caption">Posterior on "Probability $Y$ is increasing in $X$".</p>
+<img src="data:image/png;base64,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" alt="Posterior on "Probability \(Y\) is increasing in \(X\)"." width="60%" />
+<p class="caption">Posterior on "Probability \(Y\) is increasing in \(X\)".</p>
 </div>
-<pre><code class="language-r">queries &lt;- 
-  make_model(&quot;X -&gt; Y&quot;) |&gt; 
-  query_distribution(
-    query = list(increasing = &quot;(Y[X=1] &gt; Y[X=0])&quot;,
-                 ATE = &quot;(Y[X=1] - Y[X=0])&quot;), 
-    using = &quot;priors&quot;)
+<pre><code class="language-r">queries &lt;- make_model(&quot;X -&gt; Y&quot;) |&gt; query_distribution(
+  query = list(increasing = &quot;(Y[X = 1] &gt; Y[X = 0])&quot;, 
+    ATE = &quot;(Y[X = 1] - Y[X = 0])&quot;), using = &quot;priors&quot;)
 </code></pre>
-<pre><code class="language-r">lipids_model |&gt;
-  query_model(
-    query = &quot;Y[X=1] - Y[X=0] :|: X==1 &amp; Y==1 &amp; Z==1&quot;,
-    using = &quot;posteriors&quot;) |&gt;
+<pre><code class="language-r">lipids_model |&gt; query_model(
+    query = &quot;Y[X = 1] - Y[X = 0] :|: X == 1 &amp; Y == 1 &amp; Z == 1&quot;,
+    using = &quot;posteriors&quot;) |&gt; plot()
+</code></pre>
+<p><img src="data:image/png;base64,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" alt="Illustration of case-level queries plotted." /></p>
+<pre><code class="language-r">make_model(&quot;X -&gt; M -&gt; Y&quot;) |&gt; update_model(
+  data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)), iter = 4000) |&gt;
+  query_model(&quot;Y[X = 1] &gt; Y[X = 0] :|: X == 1 &amp; Y == 1 &amp; M == 1&quot;, 
+  using = &quot;posteriors&quot;, case_level = c(TRUE, FALSE)) |&gt;
   plot()
 </code></pre>
-<p><img src="data:image/png;base64,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" alt="plot of chunk case-level-query" /></p>
-<pre><code class="language-r">make_model(&quot;X -&gt; M -&gt; Y&quot;) |&gt;
-  update_model(data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)), iter = 4000) |&gt;
-  query_model(&quot;Y[X=1] &gt; Y[X=0] :|: X==1 &amp; Y==1 &amp; M==1&quot;, 
-            using = &quot;posteriors&quot;,
-            case_level = c(TRUE, FALSE)) |&gt;
-  plot()
-</code></pre>
-<p><img src="data:image/png;base64,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" alt="plot of chunk unnamed-chunk-54" /></p>
+<p><img src="data:image/png;base64,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" alt="Illustration of new case-level queries plotted." /></p>
 <pre><code class="language-r">models &lt;- list(
-  Unrestricted = lipids_model |&gt;
+  Unrestricted = lipids_model |&gt; 
     update_model(data = lipids_data, refresh = 0),
-  
-  Restricted = lipids_model |&gt;
-    set_restrictions(&quot;X[Z=1] &lt; X[Z=0]&quot;) |&gt;
+  Restricted = lipids_model |&gt; set_restrictions(&quot;X[Z = 1] &lt; X[Z = 0]&quot;) |&gt; 
     update_model(data = lipids_data, refresh = 0)
 )
 </code></pre>
-<pre><code class="language-r">queries &lt;- 
-  query_model(
-    models,  
-    query = list(ATE = &quot;Y[X=1] - Y[X=0]&quot;, 
-                 POS = &quot;Y[X=1] &gt; Y[X=0] :|: Y==1 &amp; X==1&quot;),
-    case_level = c(FALSE, TRUE),
-    using = c(&quot;priors&quot;, &quot;posteriors&quot;),
-    expand_grid = TRUE)
+<pre><code class="language-r">queries &lt;- query_model(models, query = 
+  list(ATE = &quot;Y[X=1] - Y[X=0]&quot;, 
+    POS = &quot;Y[X=1] &gt; Y[X=0] :|: Y==1 &amp; X==1&quot;),
+  case_level = c(FALSE, TRUE), using = c(&quot;priors&quot;, &quot;posteriors&quot;),
+  expand_grid = TRUE)
 </code></pre>
 <table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
  <thead>
@@ -863,7 +764,6 @@ model |&gt;
    <th style="text-align:center;"> using </th>
    <th style="text-align:center;"> case_level </th>
    <th style="text-align:center;"> mean </th>
-   <th style="text-align:center;"> sd </th>
   </tr>
  </thead>
 <tbody>
@@ -875,7 +775,6 @@ model |&gt;
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> FALSE </td>
    <td style="text-align:center;"> 0.00 </td>
-   <td style="text-align:center;"> 0.20 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> ATE </td>
@@ -885,7 +784,6 @@ model |&gt;
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> FALSE </td>
    <td style="text-align:center;"> 0.00 </td>
-   <td style="text-align:center;"> 0.23 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> ATE </td>
@@ -895,7 +793,6 @@ model |&gt;
    <td style="text-align:center;"> posteriors </td>
    <td style="text-align:center;"> FALSE </td>
    <td style="text-align:center;"> 0.56 </td>
-   <td style="text-align:center;"> 0.10 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> ATE </td>
@@ -905,7 +802,6 @@ model |&gt;
    <td style="text-align:center;"> posteriors </td>
    <td style="text-align:center;"> FALSE </td>
    <td style="text-align:center;"> 0.56 </td>
-   <td style="text-align:center;"> 0.10 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> POS </td>
@@ -915,7 +811,6 @@ model |&gt;
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> FALSE </td>
    <td style="text-align:center;"> 0.50 </td>
-   <td style="text-align:center;"> 0.22 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> POS </td>
@@ -925,7 +820,6 @@ model |&gt;
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> FALSE </td>
    <td style="text-align:center;"> 0.49 </td>
-   <td style="text-align:center;"> 0.24 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> POS </td>
@@ -935,7 +829,6 @@ model |&gt;
    <td style="text-align:center;"> posteriors </td>
    <td style="text-align:center;"> FALSE </td>
    <td style="text-align:center;"> 0.95 </td>
-   <td style="text-align:center;"> 0.04 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> POS </td>
@@ -945,7 +838,6 @@ model |&gt;
    <td style="text-align:center;"> posteriors </td>
    <td style="text-align:center;"> FALSE </td>
    <td style="text-align:center;"> 0.95 </td>
-   <td style="text-align:center;"> 0.04 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> ATE </td>
@@ -955,7 +847,6 @@ model |&gt;
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> TRUE </td>
    <td style="text-align:center;"> 0.00 </td>
-   <td style="text-align:center;"> NA </td>
   </tr>
   <tr>
    <td style="text-align:center;"> ATE </td>
@@ -965,7 +856,6 @@ model |&gt;
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> TRUE </td>
    <td style="text-align:center;"> 0.00 </td>
-   <td style="text-align:center;"> NA </td>
   </tr>
   <tr>
    <td style="text-align:center;"> ATE </td>
@@ -975,7 +865,6 @@ model |&gt;
    <td style="text-align:center;"> posteriors </td>
    <td style="text-align:center;"> TRUE </td>
    <td style="text-align:center;"> 0.56 </td>
-   <td style="text-align:center;"> NA </td>
   </tr>
   <tr>
    <td style="text-align:center;"> ATE </td>
@@ -985,7 +874,6 @@ model |&gt;
    <td style="text-align:center;"> posteriors </td>
    <td style="text-align:center;"> TRUE </td>
    <td style="text-align:center;"> 0.56 </td>
-   <td style="text-align:center;"> NA </td>
   </tr>
   <tr>
    <td style="text-align:center;"> POS </td>
@@ -995,7 +883,6 @@ model |&gt;
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> TRUE </td>
    <td style="text-align:center;"> 0.50 </td>
-   <td style="text-align:center;"> NA </td>
   </tr>
   <tr>
    <td style="text-align:center;"> POS </td>
@@ -1005,7 +892,6 @@ model |&gt;
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> TRUE </td>
    <td style="text-align:center;"> 0.49 </td>
-   <td style="text-align:center;"> NA </td>
   </tr>
   <tr>
    <td style="text-align:center;"> POS </td>
@@ -1015,7 +901,6 @@ model |&gt;
    <td style="text-align:center;"> posteriors </td>
    <td style="text-align:center;"> TRUE </td>
    <td style="text-align:center;"> 0.95 </td>
-   <td style="text-align:center;"> NA </td>
   </tr>
   <tr>
    <td style="text-align:center;"> POS </td>
@@ -1025,48 +910,37 @@ model |&gt;
    <td style="text-align:center;"> posteriors </td>
    <td style="text-align:center;"> TRUE </td>
    <td style="text-align:center;"> 0.95 </td>
-   <td style="text-align:center;"> NA </td>
   </tr>
 </tbody>
 </table>
 <p>default plot associated with this query:</p>
 <p><img src="data:image/png;base64,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" alt="Default plotting for a a set of queries over multiple models." /></p>
-<h1 id="appendix">Appendix</h1>
-<h2 id="illustrative-code-for-parallelization">illustrative code for parallelization</h2>
-<pre><code class="language-r">library(parallel)
-
+<h1 id="chp:appendix">Appendix</h1>
+<h2 id="sec:illustrative-code-for-parallelization">illustrative code for parallelization</h2>
+<pre><code class="language-r">library(&quot;parallel&quot;)
 options(mc.cores = parallel::detectCores())
 </code></pre>
-<pre><code class="language-r">library(future)
-library(future.apply)
+<pre><code class="language-r">library(&quot;future&quot;)
+library(&quot;future.apply&quot;)
 
 chains &lt;- 3
 cores &lt;- 8
 
 future::plan(list(
-      future::tweak(future::multisession, 
-                    workers = floor(cores/(chains + 1))),
-      future::tweak(future::multisession, 
-                    workers = chains)
-    ))
+  future::tweak(future::multisession, 
+    workers = floor(cores/(chains + 1))),
+  future::tweak(future::multisession, workers = chains)))
 
 model &lt;- make_model(&quot;X -&gt; Y&quot;)
-data &lt;- list(data_1 = data.frame(X=0:1, Y=0:1), 
-             data_2 = data.frame(X=0:1, Y=1:0))
 
-results &lt;-
-future.apply::future_lapply(
-  data,
-  function(d) {
-    update_model(
-      model = model,
-      data = d,
-      chains = chains,
-      refresh = 0
-    )},
+data &lt;- list(data_1 = data.frame(X = 0:1, Y = 0:1), 
+  data_2 = data.frame(X = 0:1, Y = 1:0))
+
+results &lt;- future.apply::future_lapply(data, function(d) {
+  update_model(model = model, data = d, chains = chains, refresh = 0)},
  future.seed = TRUE)
 </code></pre>
-<h2 id="stan-code">stan code</h2>
+<h2 id="sec:stan-code">stan code</h2>
 <pre><code>S4 class stanmodel 'simplexes' coded as follows:
 functions {
   row_vector col_sums(matrix X) {
@@ -1168,68 +1042,64 @@ generated quantities {
   }
 } 
 </code></pre>
-<h2 id="benchmarking-slow">benchmarking (slow)</h2>
-<p>Table: Benchmarking 1</p>
-<table>
-<thead>
-<tr>
-<th align="left">Model</th>
-<th align="right">Number of parameters</th>
-<th align="right">Runtime (seconds)</th>
-</tr>
-</thead>
+<h2 id="sec:benchmarking-slow">benchmarking (slow)</h2>
+<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
+ <thead>
+  <tr>
+   <th style="text-align:center;"> Model </th>
+   <th style="text-align:center;"> Number of parameters </th>
+   <th style="text-align:center;"> Runtime (seconds) </th>
+  </tr>
+ </thead>
 <tbody>
-<tr>
-<td align="left">$X1 \rightarrow Y$</td>
-<td align="right">6</td>
-<td align="right">6.80</td>
-</tr>
-<tr>
-<td align="left">$X1 \rightarrow Y; X2 \rightarrow Y$</td>
-<td align="right">20</td>
-<td align="right">9.26</td>
-</tr>
-<tr>
-<td align="left">$X1\rightarrow Y;X2\rightarrow Y;X3\rightarrow Y$</td>
-<td align="right">262</td>
-<td align="right">96.35</td>
-</tr>
+  <tr>
+   <td style="text-align:center;"> X1 → Y </td>
+   <td style="text-align:center;"> 6 </td>
+   <td style="text-align:center;"> 8.35 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> X1 → Y; X2 → Y </td>
+   <td style="text-align:center;"> 20 </td>
+   <td style="text-align:center;"> 10.06 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> X1 → Y; X2 → Y; X3 → Y </td>
+   <td style="text-align:center;"> 262 </td>
+   <td style="text-align:center;"> 92.38 </td>
+  </tr>
 </tbody>
 </table>
-<p>Table: Benchmarking 2</p>
-<table>
-<thead>
-<tr>
-<th align="left">Model</th>
-<th align="right">Number of observations</th>
-<th align="right">Runtime (seconds)</th>
-</tr>
-</thead>
+<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
+ <thead>
+  <tr>
+   <th style="text-align:center;"> Model </th>
+   <th style="text-align:center;"> Number of observations </th>
+   <th style="text-align:center;"> Runtime (seconds) </th>
+  </tr>
+ </thead>
 <tbody>
-<tr>
-<td align="left">$X1 \rightarrow Y$</td>
-<td align="right">10</td>
-<td align="right">9.12</td>
-</tr>
-<tr>
-<td align="left">$X1 \rightarrow Y$</td>
-<td align="right">100</td>
-<td align="right">9.01</td>
-</tr>
-<tr>
-<td align="left">$X1 \rightarrow Y$</td>
-<td align="right">1000</td>
-<td align="right">10.99</td>
-</tr>
-<tr>
-<td align="left">$X1 \rightarrow Y$</td>
-<td align="right">10000</td>
-<td align="right">18.69</td>
-</tr>
+  <tr>
+   <td style="text-align:center;"> X1 → Y </td>
+   <td style="text-align:center;"> 10 </td>
+   <td style="text-align:center;"> 7.34 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> X1 → Y </td>
+   <td style="text-align:center;"> 100 </td>
+   <td style="text-align:center;"> 7.78 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> X1 → Y </td>
+   <td style="text-align:center;"> 10 </td>
+   <td style="text-align:center;"> 9.83 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> X1 → Y </td>
+   <td style="text-align:center;"> 100 </td>
+   <td style="text-align:center;"> 20.05 </td>
+  </tr>
 </tbody>
 </table>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js" defer></script>
 </body>
 </html>

@@ -163,7 +163,13 @@ Reviewers 1's comments were mostly formal. We address these in turn:
              0          0          0          0        Inf        Inf 
 ```
 
-> *The output from the updated package is:*
+> *The output from the updated package now includes a warning:*
+
+```{r, eval = FALSE}
+Warning message:
+In check_query(query) :
+  Non-linear transformations (such as / or ^) are not supported in querying.
+```
 
 18. In `?make_model`, the possibility for confounded `X<->Y` should be mentioned.  
 
@@ -175,7 +181,18 @@ Reviewers 1's comments were mostly formal. We address these in turn:
 
 20. In `summary.causal_model`, the meaning of the display column for a node is not immediately clear and might benefit from an example in the documentation.
 
-> *Implemented, with thanks.*
+> *We have sought to make this output more interpretable:*
+
+```{r, eval = FALSE}
+$Y
+0000  1000  0100  1100  0010  1010  0110  1110  0001  1001  
+
+  index            interpretation
+1  *---  Y = * if X1 = 0 & X2 = 0
+2  -*--  Y = * if X1 = 1 & X2 = 0
+3  --*-  Y = * if X1 = 0 & X2 = 1
+4  ---*  Y = * if X1 = 1 & X2 = 1
+```
 
 This careful set of reviews and the close reads have greatly strengthened this manuscript. 
 

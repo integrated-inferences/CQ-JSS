@@ -47,7 +47,6 @@ format:
       opts_chunk:
         prompt: true
         comment: ""
-#        dev: "tikz"
 bibliography: supp/cq_jss.bib
 fontsize: 11pt
 execute: 
@@ -62,7 +61,7 @@ execute:
 #| include: false
 #' ---
 #' title: "Replication code for 'Making, Updating, and Querying Causal Models using CausalQueries'"
-#' date: February 2025
+#' date: July 2025
 #' author: Till Tietz, Lily Medina, Georgiy Syunyaev, and Macartan Humphreys
 #' ---
 #' 
@@ -92,7 +91,12 @@ options(kableExtra.latex.load_packages = FALSE)
 library("kableExtra")
 options(mc.cores = parallel::detectCores())
 
+
+if(isTRUE(knitr::opts_knit$get("rmarkdown.pandoc.to") == "latex")) {
+  
 knitr::knit_hooks$set(source = function(x, options) {
+
+
   lines <- unlist(strsplit(x, "\n"))
   prompts <- character(length(lines))
   continuation <- FALSE
@@ -134,9 +138,23 @@ knitr::knit_hooks$set(source = function(x, options) {
          paste(formatted_lines, collapse = "\n"),
          "\n\\end{CodeInput}\n")
 })
+}
 
 set.seed(1, "L'Ecuyer-CMRG")
 theme_set(theme_bw())
+
+kabble <- function(x, align = "c", ...)  
+  x |>
+  knitr::kable(
+   digits = 2, 
+   align = align,
+   booktabs = TRUE, 
+   linesep = "",
+   longtable = TRUE,
+   ...) |>
+  kableExtra::kable_classic_2(latex_options = c("scale_down"))
+
+
 
 ```
 
@@ -233,10 +251,8 @@ The `model_query` object is a data frame containing estimates, and, when availab
 
 lipids_queries |>
   dplyr::select(label, query, given, mean, sd, starts_with("cred")) |>
-  knitr::kable(
-   format = "latex", digits = 2, booktabs = TRUE, 
-   align = "c", escape = TRUE, linesep = "") |>
-  kableExtra::kable_classic_2(latex_options = c("scale_down"))
+kabble(align = "c")
+
 
 ```
 
@@ -312,7 +328,7 @@ Both [autobounds]{.pkg} and [causaloptim]{.pkg} build on seminal approaches in @
 
 In summary, the main strength of [CausalQueries]{.pkg} is its ability to let users define an arbitrary DAG and pose any queries on it, using a canonical procedure to form Bayesian posteriors for those queries, regardless of whether they are identified. For instance, if researchers want to learn about the local average treatment effect and their model meets the conditions in @angrist_identification_1996, updating will recover valid estimates as data grows, even if researchers are unaware that the local average treatment effect is identified or unfamiliar with the specific estimation method proposed by @angrist_identification_1996.
 
-There are two main limitations of the models that [CausalQueries]{.pkg} can handle. First, [CausalQueries]{.pkg} is designed for models with a relatively small number of binary nodes. Since it does not limit the range of possible causal relationships in a model, the parameter space expands quickly with the model's complexity. This complexity growth depends on the causal structure and increases rapidly with the number of parents influencing a child node. A chain model like $A \rightarrow B \rightarrow C \rightarrow D \rightarrow E$ has only 18 parameters ($2^1 + 4\times 2^2$), while a model in which $A, B, C, D$ are all direct ancestors of $E$ has $65,544$ parameters ($4\times 2^1 + 2^{(2^4)}$). Switching from binary to nonbinary nodes has similar effects. The restriction to binary nodes is for computational, not conceptual, reasons.^[For more on computational constraints and strategies for updating and querying large models, see the [CausalQueriesTools]{.pkg} package available via `devtools::install_github("till-tietz/CausalQueriesTools")`. The main approach here is to divide large causal models into modules, update each module, and then reassemble them to pose queries. Also, see Section 9.4.1 of @humphreys_integrated_2023 for a method that represents non-binary data as a profile of outcomes on multiple binary nodes.]
+There are two main limitations of the models that [CausalQueries]{.pkg} can handle. First, [CausalQueries]{.pkg} is designed for models with a relatively small number of binary nodes. Since it does not limit the range of possible causal relationships in a model, the parameter space expands quickly with the model's complexity. This complexity growth depends on the causal structure and increases rapidly with the number of parents influencing a child node. A chain model like $A \rightarrow B \rightarrow C \rightarrow D \rightarrow E$ has only 18 parameters ($2^1 + 4\times 2^2$), while a model in which $A, B, C, D$ are all direct ancestors of $E$ has $65,544$ parameters ($4\times 2^1 + 2^{(2^4)}$). Switching from binary to nonbinary nodes has similar effects. The restriction to binary nodes is for computational, not conceptual, reasons.^[See Section 9.4.1 of @humphreys_integrated_2023 for a method that represents non-binary data as a profile of outcomes on multiple binary nodes.]
 
 Second, the package is designed for learning about populations from independently sampled units. Therefore, it does not inherently address issues of clustering, hierarchical structures, or purposive sampling. However, the broader framework can be adapted for these purposes [see Section 9.4 of @humphreys_integrated_2023]. The targets of inference are case-level or population-level quantities; [CausalQueries]{.pkg} is not well-suited for estimating sample quantities.
 
@@ -407,15 +423,7 @@ with_pars <-
 
 with_pars |> grab("parameters_df") |>
   dplyr::select(node, nodal_type, param_set, param_names, param_value, priors) |> 
-  knitr::kable(
-   format = "latex",
-   digits = 2,
-   booktabs = TRUE,
-   align = "c",
-   escape = TRUE,
-   longtable = TRUE,
-   linesep = "") |> 
-  kableExtra::kable_classic_2(latex_options = c("hold_position"))
+  kabble()
 
 ```
 
@@ -485,7 +493,7 @@ Plotting the model can help users verify that they have correctly defined its st
 ```{r}
 #| echo: true
 #| eval: false
-#| purl: true
+#| purl: false
 
 lipids_model |> plot()
 lipids_model |> plot(x_coord = 1:3, y_coord = 3:1, 
@@ -576,8 +584,9 @@ Unobserved confounding between two (or more) nodes arises when the nodal types f
 | $\theta^Y_{11}$ | $\Pr(\theta^X_0, \theta^Y_{11})$ | $\Pr(\theta^X_1, \theta^Y_{11})$ | $\Pr(\theta^Y_{11})$ |
 +-----------------+----------------------------------+----------------------------------+----------------------+
 | $\sum$          | $\Pr(\theta^X_0)$                | $\Pr(\theta^X_1)$                | 1                    |
-+-----------------+----------------------------------+----------------------------------+----------------------+
-: Nodal types in $X \rightarrow Y$ model. {#tbl-joint tbl-colwidths="\[25,25,25,25\]"}
+: Nodal types in an $X \rightarrow Y$ model. {#tbl-joint tbl-colwidths="\[25,25,25,25\]"}
+
+<!-- +-----------------+----------------------------------+----------------------------------+----------------------+ -->
 
 @tbl-joint has eight interior elements so that an unconstrained joint distribution would have seven degrees of freedom. A no-confounding assumption means that  $\Pr(\theta^X, \theta^Y) = \Pr(\theta^X)\Pr(\theta^Y)$. In this case, it is sufficient to put a distribution on the marginals, and there would be $3$ degrees of freedom for $Y$ and $1$ for $X$, totaling $4$ rather than $7$. To allow for an unconstrained joint distribution, the parameters data frame for this model would include two parameter families associated with the node $Y$. Each family represents the conditional distribution of $Y$'s nodal types, given $X$. For example, the parameter `Y01_X.1` can be interpreted as $\Pr(\theta^Y = \theta^Y_{01} | \theta^X=1)$. Refer to @tbl-lipidspar for an example of a parameter matrix with confounding. 
 
@@ -607,20 +616,26 @@ dof <- function(statement) {
   sum()
 }
 
-statements |> 
-  lapply(function(s) paste0("`", s, "`")) |> 
-  unlist() |> 
-  data.frame(
-    Model = _,
-    dof = unlist(lapply(statements, dof))) |>
-  knitr::kable(
-   format = "latex",
-    digits = 2,
-    booktabs = TRUE,
-    align = c("l", "c"),
-    escape = TRUE, 
-    linesep = "",
-    col.names = c("Model", "Degrees of freedom")) 
+
+
+data.frame(
+  Model = c(
+  "X → Y ← W",
+  "X → Y ← W; X ↔ W",
+  "X → Y ← W; X ↔ Y; W ←→ Y",
+  "X → Y ← W; X ↔ Y; W ←→ Y; X ←→ W",
+  "X → W → Y ← X",
+  "X → W → Y ← X; W ←→ Y",
+  "X → W → Y ← X; X ←→ W; W ←→ Y",
+  "X → W → Y ← X; X ←→ W; W ←→ Y; X ←→ Y"
+),
+  dof = unlist(lapply(statements, dof))
+) |> 
+  kabble(
+    col.names = c("Model", "Degrees of freedom"),
+    align = c("l", "c")
+  )
+
 
 ```
 
@@ -820,7 +835,7 @@ sample_data <- lipids_model |> make_data(
 
 #### Reshaping data
 
-Data produced by `make_data()` typically comes in a "long" format, where each row represents a single observation. However, for model updating, the data should be in a "compact" format that summarizes the number of units for each data type, organized by data "strategy," which indicates the nodes for which data was collected. The [CausalQueries]{.pkg} package provides function `collapse_data()` that allow users to convert data to compact format.
+Data produced by `make_data()` typically comes in a "long" format, where each row represents a single observation. However, it can be useful to have data  a "compact" format that summarizes the number of units for each data type, organized by data "strategy," indicating the nodes for which data was collected. The [CausalQueries]{.pkg} package provides function `collapse_data()` that allow users to convert data to compact format.
 
 ```{r}
 #| label: collapse-data
@@ -909,7 +924,8 @@ data <- data.frame(X = rep(0:1, 5), Y = rep(0:1, 5))
 list(uncensored = update_model(make_model("X -> Y"), data),
   censored = update_model(make_model("X -> Y"), data, 
     censored_types = c("X1Y0",  "X0Y1"))) |>
-  query_model("Y[X = 1] - Y[X = 0]", using = "posteriors")
+  query_model("Y[X = 1] - Y[X = 0]", using = "posteriors") |>
+select(-using)
 
 ```
 
@@ -1030,6 +1046,7 @@ The `realise_outcomes()` function, when called on this model, outputs the realiz
 ```{r}
 #| label: realise-outcomes
 #| echo: true
+#| include: true
 
 make_model("X -> Y") |> realise_outcomes()
 
@@ -1041,6 +1058,7 @@ Intervening on $X$ [see @pearl_causality_2009] with $do(X=1)$ yields:
 ```{r}
 #| label: realise-outcomes-do
 #| echo: true
+#| include: true
 
 make_model("X -> Y") |> realise_outcomes(dos = list(X = 1))
 
@@ -1236,15 +1254,8 @@ queries <- query_model(models, query =
 #| message: false
 
 queries |>
-  dplyr::select(-starts_with("cred")) |> 
-  knitr::kable(
-   format = "latex",
-   digits = 2,
-   booktabs = TRUE,
-   align = "c",
-   escape = TRUE,
-   linesep = "") |> 
-  kableExtra::kable_classic_2(latex_options = c("hold_position", "scale_down"))
+  dplyr::select(-starts_with("cred"), -sd) |> 
+  kabble(align = "c")
 
 ```
 
@@ -1440,7 +1451,7 @@ Increasing the number of parents in a model greatly increases the number of para
 #| warning: false
 #| message: false
 #| include: true
-#| eval: false
+#| eval: true
 
 iter  <- 4000
 times <- 5
@@ -1462,15 +1473,18 @@ benchmark_model <- microbenchmark::microbenchmark(
   times = times
 )
 
-data.frame(
-  Model = c("$X1 \\rightarrow Y$", 
-            "$X1 \\rightarrow Y; X2 \\rightarrow Y$", 
-            "$X1\\rightarrow Y;X2\\rightarrow Y;X3\\rightarrow Y$"),
+benchmark_1 <- data.frame(
+Model = c(
+  "X1 → Y",
+  "X1 → Y; X2 → Y",
+  "X1 → Y; X2 → Y; X3 → Y"
+  ),
   x = c(6, 20, 262),
-  t = (benchmark_model |> summary() |> pull(mean))) |> 
-  knitr::kable(escape = FALSE, digits = 2, format = "latex", booktabs = TRUE,
-    align = "c", col.names = c("Model", "Number of parameters", "Runtime (seconds)")) |> 
-  kableExtra::kable_classic_2(latex_options = "HOLD_position")
+  t = (benchmark_model |> summary() |> pull(mean))) 
+
+benchmark_1 |> 
+ kabble(col.names= c("Model", "Number of parameters", "Runtime (seconds)"), align = "c")  
+
 
 ```
 
@@ -1481,7 +1495,7 @@ data.frame(
 #| warning: false
 #| message: false
 #| include: true
-#| eval: false
+#| eval: true
 
 model <- CausalQueries::make_model("X -> Y")
 
@@ -1497,19 +1511,17 @@ benchmark_data <- microbenchmark::microbenchmark(
   times = times
 )
 
-data.frame(
-  Model = c("$X1 \\rightarrow Y$", 
-            "$X1 \\rightarrow Y$", 
-            "$X1 \\rightarrow Y$", 
-            "$X1 \\rightarrow Y$"),
-  x = c(10, 100, 1000, 10000),
+benchmark2 <- data.frame(
+  Model = c("X1 → Y", 
+            "X1 → Y", 
+            "X1 → Y", 
+            "X1 → Y"),
+  x = c(10, 100,  1000, 10000),
   t = (benchmark_data |> summary() |> pull(mean))
-) |>
-  knitr::kable(escape = FALSE, digits = 2, format = "latex", booktabs = TRUE,
-  align = "c", col.names = c("Model", "Number of observations", "Runtime (seconds)")) |> 
-  kableExtra::kable_classic_2(latex_options = "HOLD_position")
+) 
 
-
+benchmark2 |>
+ kabble(col.names = c("Model", "Number of observations", "Runtime (seconds)"), align = "c")
 ```
 
 {{< pagebreak >}}
