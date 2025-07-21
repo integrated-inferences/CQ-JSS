@@ -1,11 +1,13 @@
 # This function replaces verbatim for CodeOutput
 # And wraps CodeInput + CodeOutput within CodeChunk 
 
-wrap_code_blocks <- function(file_path) {
+library(stringr)
+wrap_code_blocks <- function(file_path, out_path = file_path) {
   # Read file
   tex <- readLines(file_path, warn = FALSE)
   content <- paste(tex, collapse = "\n")
   
+  content <-  gsub("←→", "$\\leftrightarrow$", content)
   # Step 1: Replace verbatim with CodeOutput, preserving whitespace
   verbatim_pattern <- "(?s)\\\\begin\\{verbatim\\}(\\s*?\n)(.*?)(\\\\end\\{verbatim\\})"
   content <- str_replace_all(content, verbatim_pattern, function(m) {
@@ -15,16 +17,12 @@ wrap_code_blocks <- function(file_path) {
     paste0("\\begin{CodeOutput}", ws, body, "\\end{CodeOutput}")
   })
   
-  # Step 2: Wrap CodeInput + CodeOutput (or vice versa) into CodeChunk
-  # Matches one or more CodeInput/CodeOutput pairs, uninterrupted
-  
   # Write back
-  writeLines(content, file_path)
+  writeLines(content, out_path)
   message("Done processing: verbatim replaced and code blocks grouped.")
 }
 
 
-wrap_code_blocks("paper.tex")
 
 # This function wraps codeInput + codeOutput within codeChunk environment 
 
@@ -61,10 +59,6 @@ wrap_code_chunks <- function(file_path) {
   writeLines(lines, file_path)
   message("✔ Done: Wrapped CodeInput/CodeOutput pairs with CodeChunk.")
 }
-
-
-wrap_code_chunks("paper.tex")
-
 
 ## This function only make sures that
 # R> lipids_queries |> plot()
@@ -133,4 +127,8 @@ fix_latex_code_and_figure <- function(tex_path) {
   message("Updated .tex file written to: ", tex_path)
 }
 
-fix_latex_code_and_figure("paper.tex")
+
+# Implement
+wrap_code_chunks("paper.tex", "CQ_JSS.tex")
+wrap_code_blocks("CQ_JSS.tex")
+fix_latex_code_and_figure("CQ_JSS.tex")

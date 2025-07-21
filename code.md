@@ -294,14 +294,6 @@ make_model("Z -> X -> Y; X <-> Y") |> update_model(lipids_data) |>
 ``` r
 model <- make_model("X -> M -> Y <- X")
 ```
-
-``` r
-# lipids_model |> plot()
-# lipids_model |> plot(x_coord = 1:3, y_coord = 3:1,
-#   textcol = "black", textsize = 3, shape = c(15, 16, 16),
-#   nodecol = "lightgrey", nodesize = 10)
-# 
-```
 <div class="figure">
 <img src="figure/fig-plots-1.png" alt="Examples of model graphs." width="50%" /><img src="figure/fig-plots-2.png" alt="Examples of model graphs." width="50%" />
 <p class="caption">Examples of model graphs.</p>
@@ -578,7 +570,7 @@ make_model("X -> Y") |> update_model(keep_type_distribution = FALSE) |>
 ## log_sum_gammas[2]  1.85    0.03 1.19   0.36  1.00  1.58  2.41  4.93  1159 1.01
 ## lp__              -7.53    0.04 1.65 -11.75 -8.37 -7.15 -6.32 -5.44  1368 1.00
 ## 
-## Samples were drawn using NUTS(diag_e) at Mon Jul 21 08:58:32 2025.
+## Samples were drawn using NUTS(diag_e) at Tue Jul 22 00:07:45 2025.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).
@@ -655,7 +647,7 @@ model |> inspect("stanfit")
 ## types[8]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3166    1
 ## lp__              -7.55    0.05 1.66 -11.87 -8.39 -7.15 -6.33 -5.45  1357    1
 ## 
-## Samples were drawn using NUTS(diag_e) at Mon Jul 21 08:58:51 2025.
+## Samples were drawn using NUTS(diag_e) at Tue Jul 22 00:08:05 2025.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).
@@ -1118,17 +1110,17 @@ generated quantities {
   <tr>
    <td style="text-align:center;"> X1 → Y </td>
    <td style="text-align:center;"> 6 </td>
-   <td style="text-align:center;"> 8.35 </td>
+   <td style="text-align:center;"> 9.22 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> X1 → Y; X2 → Y </td>
    <td style="text-align:center;"> 20 </td>
-   <td style="text-align:center;"> 10.06 </td>
+   <td style="text-align:center;"> 12.82 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> X1 → Y; X2 → Y; X3 → Y </td>
    <td style="text-align:center;"> 262 </td>
-   <td style="text-align:center;"> 92.38 </td>
+   <td style="text-align:center;"> 100.82 </td>
   </tr>
 </tbody>
 </table>
@@ -1144,22 +1136,22 @@ generated quantities {
   <tr>
    <td style="text-align:center;"> X1 → Y </td>
    <td style="text-align:center;"> 10 </td>
-   <td style="text-align:center;"> 7.34 </td>
+   <td style="text-align:center;"> 9.05 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> X1 → Y </td>
    <td style="text-align:center;"> 100 </td>
-   <td style="text-align:center;"> 7.78 </td>
+   <td style="text-align:center;"> 9.40 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> X1 → Y </td>
-   <td style="text-align:center;"> 10 </td>
-   <td style="text-align:center;"> 9.83 </td>
+   <td style="text-align:center;"> 1000 </td>
+   <td style="text-align:center;"> 11.73 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> X1 → Y </td>
-   <td style="text-align:center;"> 100 </td>
-   <td style="text-align:center;"> 20.05 </td>
+   <td style="text-align:center;"> 10000 </td>
+   <td style="text-align:center;"> 18.39 </td>
   </tr>
 </tbody>
 </table>

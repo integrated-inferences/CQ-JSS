@@ -383,12 +383,6 @@ lipids_data
 <h1 id="chp:making-models">Making models</h1>
 <pre><code class="language-r">model &lt;- make_model(&quot;X -&gt; M -&gt; Y &lt;- X&quot;)
 </code></pre>
-<pre><code class="language-r"># lipids_model |&gt; plot()
-# lipids_model |&gt; plot(x_coord = 1:3, y_coord = 3:1,
-#   textcol = &quot;black&quot;, textsize = 3, shape = c(15, 16, 16),
-#   nodecol = &quot;lightgrey&quot;, nodesize = 10)
-# 
-</code></pre>
 <div class="figure">
 <img src="data:image/png;base64,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" alt="Examples of model graphs." width="50%" /><img src="data:image/png;base64,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" alt="Examples of model graphs." width="50%" />
 <p class="caption">Examples of model graphs.</p>
@@ -590,7 +584,7 @@ select(-using)
 ## log_sum_gammas[2]  1.85    0.03 1.19   0.36  1.00  1.58  2.41  4.93  1159 1.01
 ## lp__              -7.53    0.04 1.65 -11.75 -8.37 -7.15 -6.32 -5.44  1368 1.00
 ## 
-## Samples were drawn using NUTS(diag_e) at Mon Jul 21 08:58:32 2025.
+## Samples were drawn using NUTS(diag_e) at Tue Jul 22 00:07:45 2025.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).
@@ -653,7 +647,7 @@ select(-using)
 ## types[8]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3166    1
 ## lp__              -7.55    0.05 1.66 -11.87 -8.39 -7.15 -6.33 -5.45  1357    1
 ## 
-## Samples were drawn using NUTS(diag_e) at Mon Jul 21 08:58:51 2025.
+## Samples were drawn using NUTS(diag_e) at Tue Jul 22 00:08:05 2025.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).
@@ -1055,17 +1049,17 @@ generated quantities {
   <tr>
    <td style="text-align:center;"> X1 → Y </td>
    <td style="text-align:center;"> 6 </td>
-   <td style="text-align:center;"> 8.35 </td>
+   <td style="text-align:center;"> 9.22 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> X1 → Y; X2 → Y </td>
    <td style="text-align:center;"> 20 </td>
-   <td style="text-align:center;"> 10.06 </td>
+   <td style="text-align:center;"> 12.82 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> X1 → Y; X2 → Y; X3 → Y </td>
    <td style="text-align:center;"> 262 </td>
-   <td style="text-align:center;"> 92.38 </td>
+   <td style="text-align:center;"> 100.82 </td>
   </tr>
 </tbody>
 </table>
@@ -1081,22 +1075,22 @@ generated quantities {
   <tr>
    <td style="text-align:center;"> X1 → Y </td>
    <td style="text-align:center;"> 10 </td>
-   <td style="text-align:center;"> 7.34 </td>
+   <td style="text-align:center;"> 9.05 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> X1 → Y </td>
    <td style="text-align:center;"> 100 </td>
-   <td style="text-align:center;"> 7.78 </td>
+   <td style="text-align:center;"> 9.40 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> X1 → Y </td>
-   <td style="text-align:center;"> 10 </td>
-   <td style="text-align:center;"> 9.83 </td>
+   <td style="text-align:center;"> 1000 </td>
+   <td style="text-align:center;"> 11.73 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> X1 → Y </td>
-   <td style="text-align:center;"> 100 </td>
-   <td style="text-align:center;"> 20.05 </td>
+   <td style="text-align:center;"> 10000 </td>
+   <td style="text-align:center;"> 18.39 </td>
   </tr>
 </tbody>
 </table>
