@@ -78,6 +78,7 @@ execute:
 
 # knitr::purl("paper.qmd",  "code.R")
 # knitr::spin("code.R")  
+# source("fix_tex.R")
 library("tidyverse")
 library("CausalQueries")
 library("microbenchmark")
@@ -810,6 +811,7 @@ Generating data requires a specification of parameter values. The parameter valu
 #| label: make-data
 #| echo: true
 #| eval: true
+#| include: true
 
 lipids_model |> make_data(n = 4)
 
@@ -886,7 +888,8 @@ In cases without confounding, there is a column for each data type; the matrix i
 #| echo: true
 #| eval: true
 #| purl: true 
-
+#| include: true
+#| 
 make_model("X -> Y") |> inspect("parameter_mapping") 
 
 ```
@@ -1274,7 +1277,8 @@ queries |>
 #| echo: false
 #| eval: true
 #| message: false
-
+#| include: false
+#| 
 queries |> plot()
 
 ```
@@ -1381,6 +1385,7 @@ We thank Ben Goodrich, who provided generous insights on using `stan` for this p
 If users have access to multiple cores,  parallel processing can be implemented by including this line before running [CausalQueries]{.pkg}:
 
 ```{r}
+#| include: false
 library("parallel")
 options(mc.cores = parallel::detectCores())
 ```
@@ -1389,7 +1394,8 @@ Additionally, parallelizing across models or data while running MCMC chains in p
 
 ```{r}
 #| echo: true
-
+#| include: true
+#| 
 library("future")
 library("future.apply")
 
@@ -1426,7 +1432,7 @@ Updating is performed using a generic Stan model. The data provided to Stan is g
 #| echo: false
 #| results: markup
 #| comment: ""
-
+#| include: true
 CausalQueries:::stanmodels$simplexes
 
 ```

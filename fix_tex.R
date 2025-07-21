@@ -7,7 +7,7 @@ wrap_code_blocks <- function(file_path, out_path = file_path) {
   tex <- readLines(file_path, warn = FALSE)
   content <- paste(tex, collapse = "\n")
   
-  content <-  gsub("←→", "$\\leftrightarrow$", content)
+  content <-  gsub("←→", "$\\\\leftrightarrow$", content)
   # Step 1: Replace verbatim with CodeOutput, preserving whitespace
   verbatim_pattern <- "(?s)\\\\begin\\{verbatim\\}(\\s*?\n)(.*?)(\\\\end\\{verbatim\\})"
   content <- str_replace_all(content, verbatim_pattern, function(m) {
