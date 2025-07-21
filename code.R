@@ -401,6 +401,7 @@ make_model("X -> Y") |> set_parameters(
 #| label: make-data
 #| echo: true
 #| eval: true
+#| include: true
 
 lipids_model |> make_data(n = 4)
 
@@ -437,7 +438,8 @@ sample_data |> collapse_data(lipids_model)
 #| echo: true
 #| eval: true
 #| purl: true 
-
+#| include: true
+#| 
 make_model("X -> Y") |> inspect("parameter_mapping") 
 
 
@@ -683,7 +685,8 @@ queries |>
 #| echo: false
 #| eval: true
 #| message: false
-
+#| include: false
+#| 
 queries |> plot()
 
 
@@ -700,13 +703,15 @@ queries |> plot()
 
 
 ## ----------------------------------------------------------------------------------------------
+#| include: false
 library("parallel")
 options(mc.cores = parallel::detectCores())
 
 
 ## ----------------------------------------------------------------------------------------------
 #| echo: true
-
+#| include: true
+#| 
 library("future")
 library("future.apply")
 
@@ -737,7 +742,7 @@ results <- future.apply::future_lapply(data, function(d) {
 #| echo: false
 #| results: markup
 #| comment: ""
-
+#| include: true
 CausalQueries:::stanmodels$simplexes
 
 
