@@ -129,6 +129,6 @@ fix_latex_code_and_figure <- function(tex_path) {
 
 
 # Implement
-wrap_code_chunks("paper.tex", "CQ_JSS.tex")
-wrap_code_blocks("CQ_JSS.tex")
+wrap_code_blocks("paper.tex", "CQ_JSS.tex")
+wrap_code_chunks("CQ_JSS.tex")
 fix_latex_code_and_figure("CQ_JSS.tex")
