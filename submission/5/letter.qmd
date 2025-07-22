@@ -3,7 +3,7 @@ title: "Cover letter: Making, Updating, and Querying Causal Models with `CausalQ
 format: pdf
 ---
 
-Berlin, July 2025
+Berlin, `r format(Sys.Date(), "%B %Y")`
 
 Dear Editors:
 
