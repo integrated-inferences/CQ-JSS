@@ -79,15 +79,17 @@
 \makesavenoteenv{longtable}
 \usepackage{graphicx}
 \makeatletter
-\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
-\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
-\makeatother
-% Scale images if necessary, so that they will not overflow the page
-% margins by default, and it is still possible to overwrite the defaults
-% using explicit options in \includegraphics[width, height, ...]{}
-\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
 % Set default figure placement to htbp
-\makeatletter
 \def\fps@figure{htbp}
 \makeatother
 
@@ -180,11 +182,9 @@
 \makeatletter
 \makeatother
 \makeatletter
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[interior hidden, boxrule=0pt, borderline west={3pt}{0pt}{shadecolor}, breakable, frame hidden, sharp corners, enhanced]}{\end{tcolorbox}}\fi
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[enhanced, interior hidden, breakable, boxrule=0pt, frame hidden, borderline west={3pt}{0pt}{shadecolor}, sharp corners]}{\end{tcolorbox}}\fi
 \makeatother
-\ifLuaTeX
-  \usepackage{selnolig}  % disable illegal ligatures
-\fi
+
 \usepackage{bookmark}
 
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
@@ -198,6 +198,7 @@
   citecolor={Blue},
   urlcolor={Blue},
   pdfcreator={LaTeX via pandoc}}
+
 
 %% -- Article metainformation (author, title, ...) -----------------------------
 
@@ -277,6 +278,7 @@ URL: \url{https://macartan.github.io/}\\
 \begin{document}
 \maketitle
 
+
 \section{Introduction: Causal models}\label{sec-intro}
 
 \pkg{CausalQueries} is an \proglang{R} package that lets users make,
@@ -329,12 +331,13 @@ The data on \(Z\), \(X\), and \(Y\) is given in
 \citet{chickering_clinicians_1996} and is also included in the
 \pkg{CausalQueries} package. The data looks as follows:
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> data("lipids_data")
 R> lipids_data
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
    event strategy count
 1 Z0X0Y0      ZXY   158
 2 Z1X0Y0      ZXY    52
@@ -344,7 +347,8 @@ R> lipids_data
 6 Z1X0Y1      ZXY    12
 7 Z0X1Y1      ZXY     0
 8 Z1X1Y1      ZXY    78
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 This data is reported in ``compact form,'' meaning it records the number
 of units (``count'') that display each possible pattern of outcomes on
@@ -432,19 +436,19 @@ LATE & Y[X = 1] - Y[X = 0] & X[Z = 1] > X[Z = 0] & 0.70 & 0.05 & 0.59 & 0.80\\
 
 For visual presentation of the results, output can also be plotted:
 
+\begin{figure}[H]
+\noindent
+\begin{minipage}{\linewidth}
+\vspace{1em}
 \begin{CodeInput}
 R> lipids_queries |> plot()
 \end{CodeInput}
-
-\begin{figure}[H]
-
-{\centering \includegraphics{paper_files/figure-pdf/queryplot-1.pdf}
-
-}
-
+\vspace{1em}
+\centering
+\includegraphics[keepaspectratio,width=0.9\linewidth]{paper_files/figure-pdf/queryplot-1.pdf}}
 \caption{Illustration of queries plotted.}
-
-\end{figure}%
+\end{minipage}
+\end{figure}
 
 These core functions can be combined in a single pipeline as follows:
 
@@ -475,11 +479,11 @@ highlighting their connections, strengths, and limitations in comparison
 to \pkg{CausalQueries}.
 
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1800}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1900}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1000}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1700}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.3600}}@{}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1800}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1900}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1700}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.3600}}@{}}
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 Software
@@ -509,6 +513,8 @@ Scope
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
+\tabularnewline
+\caption{Related software.}\label{tbl-software}\tabularnewline
 \endlastfoot
 \pkg{causalnex} & \citet{beaumont_causalnex_2021} & \proglang{Python} &
 \begin{minipage}[t]{\linewidth}\raggedright
@@ -606,7 +612,6 @@ Scope
   binary data
 \end{itemize}
 \end{minipage} \\
-\caption{Related software.}\label{tbl-software}\tabularnewline
 \end{longtable}
 
 \pkg{causalnex} is comprehensive software that offers functions for
@@ -1068,7 +1073,7 @@ R> lipids_model |> plot(x_coord = 1:3, y_coord = 3:1,
 
 \centering{
 
-\includegraphics[width=0.5\textwidth,height=\textheight]{paper_files/figure-pdf/fig-plots-1.pdf}
+\includegraphics[width=0.5\linewidth,height=\textheight,keepaspectratio]{paper_files/figure-pdf/fig-plots-1.pdf}
 
 }
 
@@ -1080,7 +1085,7 @@ R> lipids_model |> plot(x_coord = 1:3, y_coord = 3:1,
 
 \centering{
 
-\includegraphics[width=0.5\textwidth,height=\textheight]{paper_files/figure-pdf/fig-plots-2.pdf}
+\includegraphics[width=0.5\linewidth,height=\textheight,keepaspectratio]{paper_files/figure-pdf/fig-plots-2.pdf}
 
 }
 
@@ -1110,8 +1115,8 @@ Table~\ref{tbl-core} summarizes features of a causal model that can be
 examined using \texttt{inspect()}.
 
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.4000}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.6000}}@{}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.4000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.6000}}@{}}
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 Element
@@ -1129,6 +1134,9 @@ Description
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
+\tabularnewline
+\caption{Elements of a model that can be inspected using
+\texttt{inspect()}.}\label{tbl-core}\tabularnewline
 \endlastfoot
 \texttt{statement} & A character string describing causal relations
 using dagitty syntax. \\
@@ -1172,8 +1180,6 @@ parameter names. \\
 by Stan. \\
 \texttt{stan\_warnings} & A list of warnings produced by Stan during
 updating. \\
-\caption{Elements of a model that can be inspected using
-\texttt{inspect()}.}\label{tbl-core}\tabularnewline
 \end{longtable}
 
 \subsection{Tailoring models}\label{tailoring-models}
@@ -1194,10 +1200,10 @@ types for the nodes are not independent. For instance, in the
 types), as shown in Table~\ref{tbl-joint}.
 
 \begin{longtable}[]{@{}
-  >{\centering\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
-  >{\centering\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
-  >{\centering\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
-  >{\centering\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}@{}}
+  >{\centering\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\centering\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\centering\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\centering\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}@{}}
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\centering
 \end{minipage} & \begin{minipage}[b]{\linewidth}\centering
@@ -1221,6 +1227,9 @@ types), as shown in Table~\ref{tbl-joint}.
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
+\tabularnewline
+\caption{Nodal types in an \(X \rightarrow Y\)
+model.}\label{tbl-joint}\tabularnewline
 \endlastfoot
 \(\theta^Y_{00}\) & \(\Pr(\theta^X_0, \theta^Y_{00})\) &
 \(\Pr(\theta^X_1, \theta^Y_{00})\) & \(\Pr(\theta^Y_{00})\) \\
@@ -1230,8 +1239,6 @@ types), as shown in Table~\ref{tbl-joint}.
 \(\Pr(\theta^X_1, \theta^Y_{01})\) & \(\Pr(\theta^Y_{01})\) \\
 \(\theta^Y_{11}\) & \(\Pr(\theta^X_0, \theta^Y_{11})\) &
 \(\Pr(\theta^X_1, \theta^Y_{11})\) & \(\Pr(\theta^Y_{11})\) \\
-\caption{Nodal types in an \(X \rightarrow Y\)
-model.}\label{tbl-joint}\tabularnewline
 \end{longtable}
 
 Table~\ref{tbl-joint} has eight interior elements so that an
@@ -1260,13 +1267,13 @@ Model & Degrees of freedom\\
 \midrule
 X → Y ← W & 17\\
 X → Y ← W; X ↔ W & 18\\
-X → Y ← W; X ↔ Y; W ←→ Y & 62\\
-X → Y ← W; X ↔ Y; W ←→ Y; X ←→ W & 63\\
+X → Y ← W; X ↔ Y; W $\leftrightarrow$ Y & 62\\
+X → Y ← W; X ↔ Y; W $\leftrightarrow$ Y; X $\leftrightarrow$ W & 63\\
 X → W → Y ← X & 19\\
 \addlinespace
-X → W → Y ← X; W ←→ Y & 64\\
-X → W → Y ← X; X ←→ W; W ←→ Y & 67\\
-X → W → Y ← X; X ←→ W; W ←→ Y; X ←→ Y & 127\\
+X → W → Y ← X; W $\leftrightarrow$ Y & 64\\
+X → W → Y ← X; X $\leftrightarrow$ W; W $\leftrightarrow$ Y & 67\\
+X → W → Y ← X; X $\leftrightarrow$ W; W $\leftrightarrow$ Y; X $\leftrightarrow$ Y & 127\\
 \bottomrule
 
 
@@ -1368,18 +1375,20 @@ over these parameters.\footnote{Users can specify beliefs about
 Prior hyperparameters are set to unity by default, corresponding to
 uniform priors. Users can retrieve the model's priors as follows:
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> lipids_model |> inspect("prior_hyperparameters", nodes = "X") 
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
 
 prior_hyperparameters
 Alpha parameter values used for Dirichlet prior distributions:
 
 X.00 X.10 X.01 X.11 
    1    1    1    1 
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 Alternatively users can set Jeffreys priors using \texttt{set\_priors()}
 as follows:
@@ -1392,19 +1401,21 @@ Users can also provide custom priors. The simplest way to specify custom
 priors is to add them as a vector of numbers using
 \texttt{set\_priors()}. For instance:
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> lipids_model |> set_priors(param_names = c("X.10", "X.01"), alphas = 3:4) |> 
 +    inspect("prior_hyperparameters", nodes = "X")
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
 
 prior_hyperparameters
 Alpha parameter values used for Dirichlet prior distributions:
 
 X.00 X.10 X.01 X.11 
    1    3    4    1 
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 The priors here should be interpreted as indicating
 \(\alpha_X = (1, 3, 4, 1)\), which implies a distribution over
@@ -1416,20 +1427,22 @@ Providing priors as a vector of numbers for larger models can be hard.
 For that reason, \texttt{set\_priors()} allows for more targeted
 modifications of the parameter vector. For instance:
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> lipids_model |> set_priors(
 +    statement = "X[Z = 1] > X[Z = 0]", alphas = 3) |>
 +    inspect("prior_hyperparameters", nodes = "X")
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
 
 prior_hyperparameters
 Alpha parameter values used for Dirichlet prior distributions:
 
 X.00 X.10 X.01 X.11 
    1    1    3    1 
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 While setting highly targeted priors is convenient and flexible, it
 should be done with caution. Assigning priors to specific parameters in
@@ -1479,18 +1492,20 @@ The causal model below has two parameter sets, one for \(X\) and one for
 feature of the parameters is that they must sum to \(1\) within each
 parameter set.
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> make_model("X -> Y") |> inspect("parameters")
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
 
 parameters
 Model parameters with associated probabilities: 
 
  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
 0.50 0.50 0.25 0.25 0.25 0.25 
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 The example below illustrates a change in the value of the parameter
 that corresponds to a positive effect of \(X\) on \(Y\). Here, the nodal
@@ -1498,20 +1513,22 @@ type \texttt{Y.Y01} is set to be \(0.7\), while the other nodal types of
 this parameter set were re-normalized so that the parameters in the set
 still sum up to one.
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> make_model("X -> Y") |> set_parameters(
 +    statement = "Y[X = 1] > Y[X = 0]", parameters = .7) |>
 +    inspect("parameters")
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
 
 parameters
 Model parameters with associated probabilities: 
 
  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
  0.5  0.5  0.1  0.1  0.7  0.1 
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 \subsection{Drawing and manipulating
 data}\label{drawing-and-manipulating-data}
@@ -1527,17 +1544,19 @@ Generating data requires a specification of parameter values. The
 parameter values in the parameters data frame are used by default.
 Otherwise users can provide parameters on the fly.
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> lipids_model |> make_data(n = 4)
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
   Z X Y
 1 0 0 0
 2 0 0 1
 3 1 1 0
 4 1 1 1
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 The resulting data is ordered by data type, as shown in the example
 above. Users can also specify parameters directly or draw parameters
@@ -1570,11 +1589,12 @@ the nodes for which data was collected. The \pkg{CausalQueries} package
 provides function \texttt{collapse\_data()} that allow users to convert
 data to compact format.
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> sample_data |> collapse_data(lipids_model)
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
     event strategy count
 1  Z0X0Y0      ZXY     0
 2  Z1X0Y0      ZXY     1
@@ -1588,7 +1608,8 @@ R> sample_data |> collapse_data(lipids_model)
 10   Z1Y0       ZY     2
 11   Z0Y1       ZY     1
 12   Z1Y1       ZY     2
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 In the same way, it is possible to move from compact to long format
 using \texttt{expand\_data()}.\footnote{Note that \texttt{NA}'s are
@@ -1663,11 +1684,12 @@ sets and taking the product over sets. To illustrate, we can examine the
 parameter mapping matrix for a simple model using the \texttt{inspect()}
 function as follows:
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> make_model("X -> Y") |> inspect("parameter_mapping") 
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
 
 parameter_mapping (Parameter mapping matrix) 
 
@@ -1682,7 +1704,8 @@ Y.00    1    1    0    0
 Y.10    0    1    1    0
 Y.01    1    0    0    1
 Y.11    0    0    1    1
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 The probability of each data type can be determined using the parameter
 mapping matrix by combining a parameter vector with the corresponding
@@ -1763,6 +1786,7 @@ data for \(X\) and \(Y\). If we are aware that data in which
 \(X \neq Y\) has been censored, then when we update, we do not move
 towards a belief that \(X\) causes \(Y\).
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> data <- data.frame(X = rep(0:1, 5), Y = rep(0:1, 5))
 R> list(uncensored = update_model(make_model("X -> Y"), data),
@@ -1772,7 +1796,7 @@ R> list(uncensored = update_model(make_model("X -> Y"), data),
 +    select(-using)
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
 
 Causal queries generated by query_model
 
@@ -1780,7 +1804,8 @@ Causal queries generated by query_model
 |:----------|:----------|-----:|-----:|--------:|---------:|
 |uncensored |FALSE      | 0.590| 0.194|    0.168|     0.897|
 |censored   |FALSE      | 0.018| 0.315|   -0.614|     0.629|
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 \subsection{Output}\label{output}
 
@@ -1790,12 +1815,13 @@ data frame within the model list. You can access this posterior
 distribution directly using the \texttt{grab()} function (or use the
 \texttt{inspect()} function for a more detailed output) as shown below:
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> model <- make_model("X -> Y") |> update_model()
 R> posterior <- inspect(model, "posterior_distribution")  
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
 
 posterior_distribution
 Summary statistics of model parameters posterior distributions:
@@ -1810,7 +1836,8 @@ Y.00 0.25 0.19
 Y.10 0.25 0.19
 Y.01 0.25 0.19
 Y.11 0.25 0.20
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 Additionally, a distribution of causal types is stored by default.
 Optionally, the \texttt{stanfit} object and a distribution over event
@@ -1825,12 +1852,13 @@ The summary of the Stan model can be accessed using \texttt{inspect()}
 function and is saved in the updated model object by default. This
 provides two measures to help assess convergence.
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> make_model("X -> Y") |> update_model(keep_type_distribution = FALSE) |>
 +    inspect("stan_summary") 
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
 
 stan_summary
 Stan model summary:
@@ -1850,11 +1878,12 @@ lp__               1.00    0.02 0.96   0.03  0.30  0.72  1.39  3.43  2536 1.00
 log_sum_gammas[2]  1.85    0.03 1.19   0.36  1.00  1.58  2.41  4.93  1159 1.01
 lp__              -7.53    0.04 1.65 -11.75 -8.37 -7.15 -6.32 -5.44  1368 1.00
 
-Samples were drawn using NUTS(diag_e) at Mon Jul 21 17:51:54 2025.
+Samples were drawn using NUTS(diag_e) at Tue Jul 22 00:29:34 2025.
 For each parameter, n_eff is a crude measure of effective sample size,
 and Rhat is the potential scale reduction factor on split chains (at 
 convergence, Rhat=1).
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 This summary provides information on the distribution of parameters and
 convergence diagnostics, summarized in the \texttt{Rhat} column. The
@@ -1887,11 +1916,12 @@ R> model <- make_model("X -> M -> Y") |> update_model(
 The print and summary methods returns warnings alerting users to the
 problem thus:
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> model
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
 
 Causal statement: 
 M -> Y; X -> M
@@ -1910,7 +1940,8 @@ Warnings passed from rstan during updating:
 The largest R-hat is 1.73, indicating chains have not mixed
 Bulk Effective Samples Size (ESS) is too low
 Tail Effective Samples Size (ESS) is too low 
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 If users wish to run more advanced diagnostics of performance, they can
 retain and access the ``raw'' Stan output as follows:
@@ -1928,11 +1959,12 @@ for the causal types (\texttt{inspect(model,\ "causal\_types")}) and
 \texttt{event\_probabilities} for the event probabilities
 (\texttt{inspect(model,\ "event\_probabilities")}).
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> model |> inspect("stanfit")
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
 
 stanfit
 Stan model summary:
@@ -1959,11 +1991,12 @@ types[7]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.47  3424    1
 types[8]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3166    1
 lp__              -7.55    0.05 1.66 -11.87 -8.39 -7.15 -6.33 -5.45  1357    1
 
-Samples were drawn using NUTS(diag_e) at Mon Jul 21 17:52:09 2025.
+Samples were drawn using NUTS(diag_e) at Tue Jul 22 00:29:51 2025.
 For each parameter, n_eff is a crude measure of effective sample size,
 and Rhat is the potential scale reduction factor on split chains (at 
 convergence, Rhat=1).
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 Users can then pass the \texttt{stanfit} object to other diagnostic
 packages such as \texttt{bayesplot}.
@@ -2011,11 +2044,12 @@ The \texttt{realise\_outcomes()} function, when called on this model,
 outputs the realized values for all causal types, with row names
 indicating the corresponding causal types.
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> make_model("X -> Y") |> realise_outcomes()
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
      X Y
 0.00 0 0
 1.00 1 0
@@ -2025,16 +2059,18 @@ R> make_model("X -> Y") |> realise_outcomes()
 1.01 1 1
 0.11 0 1
 1.11 1 1
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 Intervening on \(X\) \citep[see][]{pearl_causality_2009} with
 \(do(X=1)\) yields:
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> make_model("X -> Y") |> realise_outcomes(dos = list(X = 1))
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
      X Y
 0.00 1 0
 1.00 1 0
@@ -2044,7 +2080,8 @@ R> make_model("X -> Y") |> realise_outcomes(dos = list(X = 1))
 1.01 1 1
 0.11 1 1
 1.11 1 1
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 Similarly, \texttt{realise\_outcomes()} can return the realized values
 on all nodes for each causal type given arbitrary interventions.
@@ -2077,11 +2114,12 @@ units that meet the strict equality condition where \(Y\) equals
 \texttt{get\_query\_types()} function identifies all types that result
 in \(Y=1\) without any interventions.
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> make_model("X -> Y")  |> get_query_types("Y == 1")
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
 
 Causal types satisfying query's condition(s)  
 
@@ -2093,7 +2131,8 @@ X0.Y11  X1.Y11
 
  Number of causal types that meet condition(s) =  4
  Total number of causal types in model =  8
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 The key to forming causal queries is being able to ask about the values
 of variables, given that the values of some other variables are
@@ -2109,11 +2148,12 @@ brackets. Given that \(Y\) equals \(1\) is a condition about potentially
 observed values, it is expressed using the logical operator \texttt{==}.
 The set of causal types that meets this query is quite different:
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> make_model("X -> Y") |> get_query_types("Y[X = 0] == 1")
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
 
 Causal types satisfying query's condition(s)  
 
@@ -2125,7 +2165,8 @@ X0.Y11  X1.Y11
 
  Number of causal types that meet condition(s) =  4
  Total number of causal types in model =  8
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 When a node has multiple parents, it is possible to set the values of
 none, some, or all of the parents. For instance if \(X1\) and \(X2\) are
@@ -2136,12 +2177,13 @@ parents of \(Y\) then \texttt{Y\ ==\ 1},
 \(X1\) is set to \(1\) but \(X2\) is not controlled, and when both
 \(X1\) and \(X2\) are set to \(1\). For instance:
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> make_model("X1 -> Y <- X2")  |> get_query_types(
 +    "X1 == 1 & X2 == 1 & (Y[X1 = 1, X2 = 1] > Y[X1 = 0, X2 = 0])")
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
 
 Causal types satisfying query's condition(s)  
 
@@ -2153,7 +2195,8 @@ X11.X21.Y0011  X11.X21.Y0111
 
  Number of causal types that meet condition(s) =  4
  Total number of causal types in model =  64
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 In this case, the aim is to identify the types for which in fact
 \(X1=1\) and \(X2=1\) and, \emph{in addition}, \(Y=0\) when
@@ -2200,14 +2243,16 @@ taken, which can be a \(1\), \(0\) or \(-1\) depending on the causal
 type. Averaging provides the share of cases with positive effects, less
 the share of cases with negative effects.
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> make_model("X -> Y") |> get_query_types("Y[X = 1] - Y[X = 0]")
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
 X0.Y00 X1.Y00 X0.Y10 X1.Y10 X0.Y01 X1.Y01 X0.Y11 X1.Y11 
      0      0     -1     -1      1      1      0      0 
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 \subsubsection{Nested queries}\label{nested-queries}
 
@@ -2246,7 +2291,7 @@ R> model |> grab("posterior_distribution")  |>
 
 \centering{
 
-\includegraphics[width=0.6\textwidth,height=\textheight]{paper_files/figure-pdf/fig-posterior-dist-1.pdf}
+\includegraphics[width=0.6\linewidth,height=\textheight,keepaspectratio]{paper_files/figure-pdf/fig-posterior-dist-1.pdf}
 
 }
 
@@ -2297,7 +2342,7 @@ R> lipids_model |> query_model(
 
 \centering{
 
-\includegraphics{paper_files/figure-pdf/fig-case-level-query-1.pdf}
+\pandocbounded{\includegraphics[keepaspectratio]{paper_files/figure-pdf/fig-case-level-query-1.pdf}}
 
 }
 
@@ -2347,7 +2392,7 @@ R> make_model("X -> M -> Y") |> update_model(
 
 \centering{
 
-\includegraphics{paper_files/figure-pdf/fig-new-case-level-query-1.pdf}
+\pandocbounded{\includegraphics[keepaspectratio]{paper_files/figure-pdf/fig-new-case-level-query-1.pdf}}
 
 }
 
@@ -2428,21 +2473,7 @@ POS & Restricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & posteriors & TRUE & 0.95\\
 \tabularnewline
 \end{longtable}
 
-Figure~\ref{fig-batch} shows the default plot associated with this
-query.
-
-\begin{figure}
-
-\centering{
-
-\includegraphics{paper_files/figure-pdf/fig-batch-1.pdf}
-
-}
-
-\caption{\label{fig-batch}Default plotting for a a set of queries over
-multiple models.}
-
-\end{figure}%
+\textbf{?@fig-batch} shows the default plot associated with this query.
 
 \section{Summary and discussion}\label{summary-and-discussion}
 
@@ -2486,13 +2517,16 @@ requirements}\label{computational-details-and-software-requirements}
 requirements}
 
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.1800}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.4100}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.4100}}@{}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1800}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4100}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4100}}@{}}
 \toprule\noalign{}
 \endfirsthead
 \endhead
 \bottomrule\noalign{}
+\tabularnewline
+\caption{Computational details and software
+requirements.}\tabularnewline
 \endlastfoot
 Version & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
@@ -2631,8 +2665,6 @@ R-Packages Imports & \begin{minipage}[t]{\linewidth}\raggedright
   Rcpp (\textgreater= 0.12.0) \textbar{}
 \end{itemize}
 \end{minipage} & \\
-\caption{Computational details and software
-requirements.}\tabularnewline
 \end{longtable}
 
 The results in this paper were obtained using
@@ -2644,7 +2676,7 @@ the Comprehensive \proglang{R} Archive Network (CRAN) at
 \section*{Acknowledgments}\label{acknowledgments}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, opacityback=0, rightrule=.15mm, breakable, arc=.35mm, leftrule=.75mm, colframe=quarto-callout-color-frame, colback=white, bottomrule=.15mm, left=2mm, toprule=.15mm]
+\begin{tcolorbox}[enhanced jigsaw, colframe=quarto-callout-color-frame, breakable, rightrule=.15mm, bottomrule=.15mm, opacityback=0, toprule=.15mm, arc=.35mm, colback=white, left=2mm, leftrule=.75mm]
 
 We thank Ben Goodrich, who provided generous insights on using
 \texttt{stan} for this project. We thank Alan M Jacobs for key work in
@@ -2677,11 +2709,6 @@ improvements.
 If users have access to multiple cores, parallel processing can be
 implemented by including this line before running \pkg{CausalQueries}:
 
-\begin{CodeInput}
-R> library("parallel")
-R> options(mc.cores = parallel::detectCores())
-\end{CodeInput}
-
 Additionally, parallelizing across models or data while running MCMC
 chains in parallel can be achieved by setting up a nested parallel
 process. With 8 cores one can run two updating processes with three
@@ -2689,6 +2716,7 @@ parallel chains each simultaneously. More generally the number of
 parallel processes at the upper level of the nested parallel structure
 are given by \(\left \lfloor \frac{cores}{chains + 1} \right \rfloor\).
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> library("future")
 R> library("future.apply")
@@ -2721,7 +2749,7 @@ Then, the likelihoods and priors are provided. At the end, a block for
 generated quantities is used to append a posterior distribution of
 causal types to the model.
 
-\begin{verbatim}
+\begin{CodeOutput}
 S4 class stanmodel 'simplexes' coded as follows:
 functions {
   row_vector col_sums(matrix X) {
@@ -2822,7 +2850,8 @@ generated quantities {
     types = rep_vector(1, n_types);
   }
 } 
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 \newpage{}
 
@@ -2854,9 +2883,9 @@ data.
 \toprule
 Model & Number of parameters & Runtime (seconds)\\
 \midrule
-X1 → Y & 6 & 6.97\\
-X1 → Y; X2 → Y & 20 & 9.44\\
-X1 → Y; X2 → Y; X3 → Y & 262 & 97.20\\
+X1 → Y & 6 & 7.32\\
+X1 → Y; X2 → Y & 20 & 10.96\\
+X1 → Y; X2 → Y; X3 → Y & 262 & 100.92\\
 \bottomrule
 
 
@@ -2870,10 +2899,10 @@ X1 → Y; X2 → Y; X3 → Y & 262 & 97.20\\
 \toprule
 Model & Number of observations & Runtime (seconds)\\
 \midrule
-X1 → Y & 10 & 9.18\\
-X1 → Y & 100 & 9.05\\
-X1 → Y & 1000 & 11.23\\
-X1 → Y & 10000 & 17.15\\
+X1 → Y & 10 & 9.19\\
+X1 → Y & 100 & 9.15\\
+X1 → Y & 1000 & 11.43\\
+X1 → Y & 10000 & 18.25\\
 \bottomrule
 
 
@@ -2883,6 +2912,7 @@ X1 → Y & 10000 & 17.15\\
 \end{longtable}
 
 \newpage{}
+
 
 
 

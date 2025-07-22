@@ -3,7 +3,7 @@
 
 ---
 title: "Replication code for 'Making, Updating, and Querying Causal Models using CausalQueries'"
-date: February 2025
+date: July 2025
 author: Till Tietz, Lily Medina, Georgiy Syunyaev, and Macartan Humphreys
 ---
 
@@ -16,7 +16,6 @@ Note: final section of code for microbenchmarking is slow
 
 ``` r
 data("lipids_data")
-
 lipids_data
 ```
 
@@ -33,15 +32,11 @@ lipids_model <- update_model(lipids_model, lipids_data)
 ```
 
 ``` r
-lipids_queries <-
-  query_model(
-    lipids_model,
-    queries = list(
-      ATE  = "Y[X=1] - Y[X=0]",
-      PoC  = "Y[X=1] - Y[X=0] :|: X==0 & Y==0",
-      LATE = "Y[X=1] - Y[X=0] :|: X[Z=1] > X[Z=0]"),
-    using = "posteriors"
-  )
+lipids_queries <- query_model(lipids_model, queries = list(
+  ATE = "Y[X = 1] - Y[X = 0]",
+  PoC = "Y[X = 1] - Y[X = 0] :|: X == 0 & Y == 0",
+  LATE = "Y[X = 1] - Y[X = 0] :|: X[Z = 1] > X[Z = 0]"),
+  using = "posteriors")
 ```
 <table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
  <thead>
@@ -58,7 +53,7 @@ lipids_queries <-
 <tbody>
   <tr>
    <td style="text-align:center;"> ATE </td>
-   <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
+   <td style="text-align:center;"> Y[X = 1] - Y[X = 0] </td>
    <td style="text-align:center;"> - </td>
    <td style="text-align:center;"> 0.55 </td>
    <td style="text-align:center;"> 0.10 </td>
@@ -67,8 +62,8 @@ lipids_queries <-
   </tr>
   <tr>
    <td style="text-align:center;"> PoC </td>
-   <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
-   <td style="text-align:center;"> X==0 &amp; Y==0 </td>
+   <td style="text-align:center;"> Y[X = 1] - Y[X = 0] </td>
+   <td style="text-align:center;"> X == 0 &amp; Y == 0 </td>
    <td style="text-align:center;"> 0.63 </td>
    <td style="text-align:center;"> 0.15 </td>
    <td style="text-align:center;"> 0.38 </td>
@@ -76,8 +71,8 @@ lipids_queries <-
   </tr>
   <tr>
    <td style="text-align:center;"> LATE </td>
-   <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
-   <td style="text-align:center;"> X[Z=1] &gt; X[Z=0] </td>
+   <td style="text-align:center;"> Y[X = 1] - Y[X = 0] </td>
+   <td style="text-align:center;"> X[Z = 1] &gt; X[Z = 0] </td>
    <td style="text-align:center;"> 0.70 </td>
    <td style="text-align:center;"> 0.05 </td>
    <td style="text-align:center;"> 0.59 </td>
@@ -86,28 +81,21 @@ lipids_queries <-
 </tbody>
 </table>
 
-
-
-
 ``` r
 lipids_queries |> plot()
 ```
 
-![Illustration of queries plotted](figure/queryplot-1.png)
+![Illustration of queries plotted.](figure/queryplot-1.png)
 
 ``` r
-make_model("Z -> X -> Y; X <-> Y") |>
-  update_model(lipids_data) |>
-  query_model(
-    queries = list(
-      ATE  = "Y[X=1] - Y[X=0]",
-      PoC  = "Y[X=1] - Y[X=0] :|: X==0 & Y==0",
-      LATE = "Y[X=1] - Y[X=0] :|: X[Z=1] > X[Z=0]"),
-    using = "posteriors") |>
-  plot()
+make_model("Z -> X -> Y; X <-> Y") |> update_model(lipids_data) |>
+  query_model(queries = list(ATE = "Y[X = 1] - Y[X = 0]",
+  PoC  = "Y[X = 1] - Y[X = 0] :|: X == 0 & Y == 0",
+  LATE = "Y[X = 1] - Y[X = 0] :|: X[Z = 1] > X[Z = 0]"),
+  using = "posteriors") |> plot()
 ```
 
-![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-1.png)
+![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-1.png)
 <table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
  <thead>
   <tr>
@@ -306,66 +294,77 @@ make_model("Z -> X -> Y; X <-> Y") |>
 ``` r
 model <- make_model("X -> M -> Y <- X")
 ```
-
-``` r
-lipids_model |> plot()
-
-lipids_model |>
-  plot(x_coord = 1:3,
-       y_coord = 3:1,
-       textcol = "black",
-       textsize = 3,
-       shape = c(15, 16, 16),
-       nodecol = "lightgrey",
-       nodesize = 10)
-```
-
 <div class="figure">
-<img src="figure/fig-plots-1.png" alt="Examples of model graphs. For help on options see `?plot_model`" width="60%" /><img src="figure/fig-plots-2.png" alt="Examples of model graphs. For help on options see `?plot_model`" width="60%" />
-<p class="caption">Examples of model graphs. For help on options see `?plot_model`</p>
+<img src="figure/fig-plots-1.png" alt="Examples of model graphs." width="50%" /><img src="figure/fig-plots-2.png" alt="Examples of model graphs." width="50%" />
+<p class="caption">Examples of model graphs.</p>
 </div>
 
 
 ## Tailoring models
 
-
-|Model                                         | Degrees of freedom |
-|:---------------------------------------------|:------------------:|
-|`X -> Y <- W`                                 |         17         |
-|`X -> Y <- W; X <-> W`                        |         18         |
-|`X -> Y <- W; X <-> Y; W <-> Y`               |         62         |
-|`X -> Y <- W; X <-> Y; W <-> Y; X <-> W`      |         63         |
-|`X -> W -> Y <- X`                            |         19         |
-|`X -> W -> Y <- X; W <-> Y`                   |         64         |
-|`X -> W -> Y <- X; X <-> W; W <-> Y`          |         67         |
-|`X -> W -> Y <- X; X <-> W; W <-> Y; X <-> Y` |        127         |
+<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
+ <thead>
+  <tr>
+   <th style="text-align:left;"> Model </th>
+   <th style="text-align:center;"> Degrees of freedom </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> X → Y ← W </td>
+   <td style="text-align:center;"> 17 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> X → Y ← W; X ↔ W </td>
+   <td style="text-align:center;"> 18 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> X → Y ← W; X ↔ Y; W ←→ Y </td>
+   <td style="text-align:center;"> 62 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> X → Y ← W; X ↔ Y; W ←→ Y; X ←→ W </td>
+   <td style="text-align:center;"> 63 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> X → W → Y ← X </td>
+   <td style="text-align:center;"> 19 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> X → W → Y ← X; W ←→ Y </td>
+   <td style="text-align:center;"> 64 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> X → W → Y ← X; X ←→ W; W ←→ Y </td>
+   <td style="text-align:center;"> 67 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> X → W → Y ← X; X ←→ W; W ←→ Y; X ←→ Y </td>
+   <td style="text-align:center;"> 127 </td>
+  </tr>
+</tbody>
+</table>
 
 ``` r
-model_restricted <- 
-  lipids_model |> 
-  set_restrictions("X[Z=1] < X[Z=0]")
+model_restricted <- lipids_model |> set_restrictions("X[Z = 1] < X[Z = 0]")
 ```
 
 ``` r
-model <- 
-  lipids_model |>
-  set_restrictions(labels = list(X = "01", Y = c("00", "01", "11")), 
-                   keep = TRUE)
+model <- lipids_model |> set_restrictions(
+  labels = list(X = "01", Y = c("00", "01", "11")), keep = TRUE)
 ```
 
 ``` r
-model <- lipids_model |>
-  set_restrictions(labels = list(Y = "?0"))
+model <- lipids_model |> set_restrictions(labels = list(Y = "?0"))
 ```
 
 ``` r
-model <- lipids_model |>
-  set_restrictions(labels = list(Y = c('00', '11')), given = 'X.00')
+model <- lipids_model |> set_restrictions(
+  labels = list(Y = c('00', '11')), given = 'X.00')
 ```
 
 ``` r
-lipids_model |> 
-  inspect("prior_hyperparameters", nodes = "X") 
+lipids_model |> inspect("prior_hyperparameters", nodes = "X") 
 ```
 
 ```
@@ -378,8 +377,7 @@ lipids_model |>
 ```
 
 ``` r
-model <- lipids_model |> 
-  set_priors(distribution = "jeffreys")
+model <- lipids_model |> set_priors(distribution = "jeffreys")
 ```
 
 ```
@@ -387,8 +385,7 @@ model <- lipids_model |>
 ```
 
 ``` r
-lipids_model |> 
-  set_priors(param_names = c("X.10", "X.01"), alphas = 3:4) |> 
+lipids_model |> set_priors(param_names = c("X.10", "X.01"), alphas = 3:4) |> 
   inspect("prior_hyperparameters", nodes = "X")
 ```
 
@@ -402,8 +399,8 @@ lipids_model |>
 ```
 
 ``` r
-lipids_model |>
-  set_priors(statement = "X[Z=1] > X[Z=0]", alphas = 3) |>
+lipids_model |> set_priors(
+  statement = "X[Z = 1] > X[Z = 0]", alphas = 3) |>
   inspect("prior_hyperparameters", nodes = "X")
 ```
 
@@ -417,15 +414,12 @@ lipids_model |>
 ```
 
 ``` r
-query <- 
-  make_model("X -> Y") |>
-  set_restrictions(decreasing("X", "Y")) |>
-  query_model("Y[X=1] - Y[X=0]", using = "priors")
+query <- make_model("X -> Y") |> set_restrictions(decreasing("X", "Y")) |>
+  query_model("Y[X = 1] - Y[X = 0]", using = "priors")
 ```
 
 ``` r
-make_model("X -> Y") |> 
-  inspect("parameters")
+make_model("X -> Y") |> inspect("parameters")
 ```
 
 ```
@@ -438,8 +432,8 @@ make_model("X -> Y") |>
 ```
 
 ``` r
-make_model("X -> Y") |>
-  set_parameters(statement = "Y[X=1] > Y[X=0]", parameters = .7) |>
+make_model("X -> Y") |> set_parameters(
+  statement = "Y[X = 1] > Y[X = 0]", parameters = .7) |>
   inspect("parameters")
 ```
 
@@ -457,22 +451,17 @@ make_model("X -> Y") |>
 
 
 ``` r
-lipids_model |> 
-  make_data(n = 4)
+lipids_model |> make_data(n = 4)
 ```
 
 ``` r
-sample_data <-
-  lipids_model |>
-  make_data(n = 8,
-            nodes = list(c("Z", "Y"), "X"),
-            probs = list(1, .5),
-            subsets = list(TRUE, "Z==1 & Y==0"))
+sample_data <- lipids_model |> make_data(
+  n = 8, nodes = list(c("Z", "Y"), "X"), probs = list(1, .5),
+  subsets = list(TRUE, "Z == 1 & Y == 0"))
 ```
 
 ``` r
-sample_data |> 
-  collapse_data(lipids_model)
+sample_data |> collapse_data(lipids_model)
 ```
 
 
@@ -480,8 +469,7 @@ sample_data |>
 
 
 ``` r
-make_model("X -> Y") |> 
-  inspect("parameter_mapping") 
+make_model("X -> Y") |> inspect("parameter_mapping") 
 ```
 
 ```
@@ -503,28 +491,20 @@ make_model("X -> Y") |>
 
 ``` r
 data <- data.frame(X = rep(0:1, 5), Y = rep(0:1, 5))
-
-list(
-  uncensored = 
-    update_model(make_model("X -> Y"),
-                 data),
-  censored = 
-    update_model(make_model("X -> Y"), 
-                 data, 
-                 censored_types = c("X1Y0",  "X0Y1"))
-  ) |>
-  query_model("Y[X=1] - Y[X=0]", using = "posteriors")
+list(uncensored = update_model(make_model("X -> Y"), data),
+  censored = update_model(make_model("X -> Y"), data, 
+    censored_types = c("X1Y0",  "X0Y1"))) |>
+  query_model("Y[X = 1] - Y[X = 0]", using = "posteriors") |>
+select(-using)
 ```
 
 ```
 ## 
-## Causal queries generated by query_model (all at population level)
+## Causal queries generated by query_model
 ```
 
 ``` r
-model <-
-  make_model("X -> Y")  |> 
-  update_model()
+model <- make_model("X -> Y") |> update_model()
 ```
 
 ```
@@ -553,10 +533,8 @@ posterior <- inspect(model, "posterior_distribution")
 ```
 
 ``` r
-lipids_model <- 
-  lipids_model |> 
-  update_model(keep_fit = TRUE,
-               keep_event_probabilities = TRUE)
+lipids_model <- lipids_model |> update_model(
+  keep_fit = TRUE, keep_event_probabilities = TRUE)
 ```
 
 ```
@@ -564,8 +542,7 @@ lipids_model <-
 ```
 
 ``` r
-make_model("X -> Y")  |> 
-  update_model(keep_type_distribution = FALSE) |>
+make_model("X -> Y") |> update_model(keep_type_distribution = FALSE) |>
   inspect("stan_summary") 
 ```
 
@@ -593,18 +570,16 @@ make_model("X -> Y")  |>
 ## log_sum_gammas[2]  1.85    0.03 1.19   0.36  1.00  1.58  2.41  4.93  1159 1.01
 ## lp__              -7.53    0.04 1.65 -11.75 -8.37 -7.15 -6.32 -5.44  1368 1.00
 ## 
-## Samples were drawn using NUTS(diag_e) at Thu Feb 27 10:41:46 2025.
+## Samples were drawn using NUTS(diag_e) at Tue Jul 22 00:07:45 2025.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).
 ```
 
 ``` r
-model <- 
-  make_model("X -> M -> Y") |>
-  update_model(data = data.frame(X = rep(0:1, 10000), Y = rep(0:1, 10000)), 
-               iter = 5000,
-               refresh = 0)
+model <- make_model("X -> M -> Y") |> update_model(
+  data = data.frame(X = rep(0:1, 10000), Y = rep(0:1, 10000)), 
+  iter = 5000, refresh = 0)
 ```
 
 ``` r
@@ -633,8 +608,7 @@ model
 ```
 
 ``` r
-model <- 
-  make_model("X -> Y") |> 
+model <- make_model("X -> Y") |> 
   update_model(refresh = 0, keep_fit = TRUE)
 ```
 
@@ -643,8 +617,7 @@ model <-
 ```
 
 ``` r
-model |> 
-  inspect("stanfit")
+model |> inspect("stanfit")
 ```
 
 ```
@@ -674,7 +647,7 @@ model |>
 ## types[8]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3166    1
 ## lp__              -7.55    0.05 1.66 -11.87 -8.39 -7.15 -6.33 -5.45  1357    1
 ## 
-## Samples were drawn using NUTS(diag_e) at Thu Feb 27 10:42:02 2025.
+## Samples were drawn using NUTS(diag_e) at Tue Jul 22 00:08:05 2025.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).
@@ -685,18 +658,15 @@ model |>
 
 
 ``` r
-make_model("X -> Y") |> 
-  realise_outcomes()
+make_model("X -> Y") |> realise_outcomes()
 ```
 
 ``` r
-make_model("X -> Y") |> 
-  realise_outcomes(dos = list(X = 1))
+make_model("X -> Y") |> realise_outcomes(dos = list(X = 1))
 ```
 
 ``` r
-make_model("X -> Y")  |> 
-  get_query_types("Y==1")
+make_model("X -> Y")  |> get_query_types("Y == 1")
 ```
 
 ```
@@ -714,17 +684,16 @@ make_model("X -> Y")  |>
 ```
 
 ``` r
-make_model("X -> Y")  |> 
-  get_query_types("Y[X=1]==1")
+make_model("X -> Y") |> get_query_types("Y[X = 0] == 1")
 ```
 
 ```
 ## 
 ## Causal types satisfying query's condition(s)  
 ## 
-##  query =  Y[X=1]==1 
+##  query =  Y[X=0]==1 
 ## 
-## X0.Y01  X1.Y01
+## X0.Y10  X1.Y10
 ## X0.Y11  X1.Y11
 ## 
 ## 
@@ -733,8 +702,8 @@ make_model("X -> Y")  |>
 ```
 
 ``` r
-make_model("X1 -> Y <- X2")  |>
-  get_query_types("X1==1 & X2==1 & (Y[X1=1, X2=1] > Y[X1=0, X2=0])")
+make_model("X1 -> Y <- X2")  |> get_query_types(
+  "X1 == 1 & X2 == 1 & (Y[X1 = 1, X2 = 1] > Y[X1 = 0, X2 = 0])")
 ```
 
 ```
@@ -752,8 +721,7 @@ make_model("X1 -> Y <- X2")  |>
 ```
 
 ``` r
-make_model("X -> Y") |> 
-  get_query_types("Y[X=1] - Y[X=0]")
+make_model("X -> Y") |> get_query_types("Y[X = 1] - Y[X = 0]")
 ```
 
 ```
@@ -764,12 +732,10 @@ make_model("X -> Y") |>
 ``` r
 data  <- data.frame(X = rep(0:1, 50), Y = rep(0:1, 50))
 
-model <- 
-  make_model("X -> Y") |>
-  update_model(data, iter  = 4000, refresh = 0)
+model <-  make_model("X -> Y") |> update_model(
+  data, iter = 4000, refresh = 0)
 
-model |> 
-  grab("posterior_distribution")  |> 
+model |> grab("posterior_distribution")  |> 
   ggplot(aes(Y.01 - Y.10)) + geom_histogram() 
 ```
 
@@ -783,55 +749,44 @@ model |>
 </div>
 
 ``` r
-queries <- 
-  make_model("X -> Y") |> 
-  query_distribution(
-    query = list(increasing = "(Y[X=1] > Y[X=0])",
-                 ATE = "(Y[X=1] - Y[X=0])"), 
-    using = "priors")
+queries <- make_model("X -> Y") |> query_distribution(
+  query = list(increasing = "(Y[X = 1] > Y[X = 0])", 
+    ATE = "(Y[X = 1] - Y[X = 0])"), using = "priors")
 ```
 
 ``` r
-lipids_model |>
-  query_model(
-    query = "Y[X=1] - Y[X=0] :|: X==1 & Y==1 & Z==1",
-    using = "posteriors") |>
-  plot()
+lipids_model |> query_model(
+    query = "Y[X = 1] - Y[X = 0] :|: X == 1 & Y == 1 & Z == 1",
+    using = "posteriors") |> plot()
 ```
 
-![plot of chunk case-level-query](figure/case-level-query-1.png)
+![Illustration of case-level queries plotted.](figure/fig-case-level-query-1.png)
 
 ``` r
-make_model("X -> M -> Y") |>
-  update_model(data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)), iter = 4000) |>
-  query_model("Y[X=1] > Y[X=0] :|: X==1 & Y==1 & M==1", 
-            using = "posteriors",
-            case_level = c(TRUE, FALSE)) |>
+make_model("X -> M -> Y") |> update_model(
+  data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)), iter = 4000) |>
+  query_model("Y[X = 1] > Y[X = 0] :|: X == 1 & Y == 1 & M == 1", 
+  using = "posteriors", case_level = c(TRUE, FALSE)) |>
   plot()
 ```
 
-![plot of chunk unnamed-chunk-54](figure/unnamed-chunk-54-1.png)
+![Illustration of new case-level queries plotted.](figure/fig-new-case-level-query-1.png)
 
 ``` r
 models <- list(
-  Unrestricted = lipids_model |>
+  Unrestricted = lipids_model |> 
     update_model(data = lipids_data, refresh = 0),
-  
-  Restricted = lipids_model |>
-    set_restrictions("X[Z=1] < X[Z=0]") |>
+  Restricted = lipids_model |> set_restrictions("X[Z = 1] < X[Z = 0]") |> 
     update_model(data = lipids_data, refresh = 0)
 )
 ```
 
 ``` r
-queries <- 
-  query_model(
-    models,  
-    query = list(ATE = "Y[X=1] - Y[X=0]", 
-                 POS = "Y[X=1] > Y[X=0] :|: Y==1 & X==1"),
-    case_level = c(FALSE, TRUE),
-    using = c("priors", "posteriors"),
-    expand_grid = TRUE)
+queries <- query_model(models, query = 
+  list(ATE = "Y[X=1] - Y[X=0]", 
+    POS = "Y[X=1] > Y[X=0] :|: Y==1 & X==1"),
+  case_level = c(FALSE, TRUE), using = c("priors", "posteriors"),
+  expand_grid = TRUE)
 ```
 <table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
  <thead>
@@ -843,7 +798,6 @@ queries <-
    <th style="text-align:center;"> using </th>
    <th style="text-align:center;"> case_level </th>
    <th style="text-align:center;"> mean </th>
-   <th style="text-align:center;"> sd </th>
   </tr>
  </thead>
 <tbody>
@@ -855,7 +809,6 @@ queries <-
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> FALSE </td>
    <td style="text-align:center;"> 0.00 </td>
-   <td style="text-align:center;"> 0.20 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> ATE </td>
@@ -865,7 +818,6 @@ queries <-
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> FALSE </td>
    <td style="text-align:center;"> 0.00 </td>
-   <td style="text-align:center;"> 0.23 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> ATE </td>
@@ -875,7 +827,6 @@ queries <-
    <td style="text-align:center;"> posteriors </td>
    <td style="text-align:center;"> FALSE </td>
    <td style="text-align:center;"> 0.56 </td>
-   <td style="text-align:center;"> 0.10 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> ATE </td>
@@ -885,7 +836,6 @@ queries <-
    <td style="text-align:center;"> posteriors </td>
    <td style="text-align:center;"> FALSE </td>
    <td style="text-align:center;"> 0.56 </td>
-   <td style="text-align:center;"> 0.10 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> POS </td>
@@ -895,7 +845,6 @@ queries <-
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> FALSE </td>
    <td style="text-align:center;"> 0.50 </td>
-   <td style="text-align:center;"> 0.22 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> POS </td>
@@ -905,7 +854,6 @@ queries <-
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> FALSE </td>
    <td style="text-align:center;"> 0.49 </td>
-   <td style="text-align:center;"> 0.24 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> POS </td>
@@ -915,7 +863,6 @@ queries <-
    <td style="text-align:center;"> posteriors </td>
    <td style="text-align:center;"> FALSE </td>
    <td style="text-align:center;"> 0.95 </td>
-   <td style="text-align:center;"> 0.04 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> POS </td>
@@ -925,7 +872,6 @@ queries <-
    <td style="text-align:center;"> posteriors </td>
    <td style="text-align:center;"> FALSE </td>
    <td style="text-align:center;"> 0.95 </td>
-   <td style="text-align:center;"> 0.04 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> ATE </td>
@@ -935,7 +881,6 @@ queries <-
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> TRUE </td>
    <td style="text-align:center;"> 0.00 </td>
-   <td style="text-align:center;"> NA </td>
   </tr>
   <tr>
    <td style="text-align:center;"> ATE </td>
@@ -945,7 +890,6 @@ queries <-
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> TRUE </td>
    <td style="text-align:center;"> 0.00 </td>
-   <td style="text-align:center;"> NA </td>
   </tr>
   <tr>
    <td style="text-align:center;"> ATE </td>
@@ -955,7 +899,6 @@ queries <-
    <td style="text-align:center;"> posteriors </td>
    <td style="text-align:center;"> TRUE </td>
    <td style="text-align:center;"> 0.56 </td>
-   <td style="text-align:center;"> NA </td>
   </tr>
   <tr>
    <td style="text-align:center;"> ATE </td>
@@ -965,7 +908,6 @@ queries <-
    <td style="text-align:center;"> posteriors </td>
    <td style="text-align:center;"> TRUE </td>
    <td style="text-align:center;"> 0.56 </td>
-   <td style="text-align:center;"> NA </td>
   </tr>
   <tr>
    <td style="text-align:center;"> POS </td>
@@ -975,7 +917,6 @@ queries <-
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> TRUE </td>
    <td style="text-align:center;"> 0.50 </td>
-   <td style="text-align:center;"> NA </td>
   </tr>
   <tr>
    <td style="text-align:center;"> POS </td>
@@ -985,7 +926,6 @@ queries <-
    <td style="text-align:center;"> priors </td>
    <td style="text-align:center;"> TRUE </td>
    <td style="text-align:center;"> 0.49 </td>
-   <td style="text-align:center;"> NA </td>
   </tr>
   <tr>
    <td style="text-align:center;"> POS </td>
@@ -995,7 +935,6 @@ queries <-
    <td style="text-align:center;"> posteriors </td>
    <td style="text-align:center;"> TRUE </td>
    <td style="text-align:center;"> 0.95 </td>
-   <td style="text-align:center;"> NA </td>
   </tr>
   <tr>
    <td style="text-align:center;"> POS </td>
@@ -1005,7 +944,6 @@ queries <-
    <td style="text-align:center;"> posteriors </td>
    <td style="text-align:center;"> TRUE </td>
    <td style="text-align:center;"> 0.95 </td>
-   <td style="text-align:center;"> NA </td>
   </tr>
 </tbody>
 </table>
@@ -1024,39 +962,29 @@ default plot associated with this query:
 
 
 ``` r
-library(parallel)
-
+library("parallel")
 options(mc.cores = parallel::detectCores())
 ```
 
 ``` r
-library(future)
-library(future.apply)
+library("future")
+library("future.apply")
 
 chains <- 3
 cores <- 8
 
 future::plan(list(
-      future::tweak(future::multisession, 
-                    workers = floor(cores/(chains + 1))),
-      future::tweak(future::multisession, 
-                    workers = chains)
-    ))
+  future::tweak(future::multisession, 
+    workers = floor(cores/(chains + 1))),
+  future::tweak(future::multisession, workers = chains)))
 
 model <- make_model("X -> Y")
-data <- list(data_1 = data.frame(X=0:1, Y=0:1), 
-             data_2 = data.frame(X=0:1, Y=1:0))
 
-results <-
-future.apply::future_lapply(
-  data,
-  function(d) {
-    update_model(
-      model = model,
-      data = d,
-      chains = chains,
-      refresh = 0
-    )},
+data <- list(data_1 = data.frame(X = 0:1, Y = 0:1), 
+  data_2 = data.frame(X = 0:1, Y = 1:0))
+
+results <- future.apply::future_lapply(data, function(d) {
+  update_model(model = model, data = d, chains = chains, refresh = 0)},
  future.seed = TRUE)
 ```
 
@@ -1170,21 +1098,61 @@ generated quantities {
 
 ## benchmarking (slow)
 
-
-Table: Benchmarking 1
-
-|Model                                             | Number of parameters| Runtime (seconds)|
-|:-------------------------------------------------|--------------------:|-----------------:|
-|$X1 \rightarrow Y$                                |                    6|              6.80|
-|$X1 \rightarrow Y; X2 \rightarrow Y$              |                   20|              9.26|
-|$X1\rightarrow Y;X2\rightarrow Y;X3\rightarrow Y$ |                  262|             96.35|
-
-Table: Benchmarking 2
-
-|Model              | Number of observations| Runtime (seconds)|
-|:------------------|----------------------:|-----------------:|
-|$X1 \rightarrow Y$ |                     10|              9.12|
-|$X1 \rightarrow Y$ |                    100|              9.01|
-|$X1 \rightarrow Y$ |                   1000|             10.99|
-|$X1 \rightarrow Y$ |                  10000|             18.69|
+<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
+ <thead>
+  <tr>
+   <th style="text-align:center;"> Model </th>
+   <th style="text-align:center;"> Number of parameters </th>
+   <th style="text-align:center;"> Runtime (seconds) </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:center;"> X1 → Y </td>
+   <td style="text-align:center;"> 6 </td>
+   <td style="text-align:center;"> 9.22 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> X1 → Y; X2 → Y </td>
+   <td style="text-align:center;"> 20 </td>
+   <td style="text-align:center;"> 12.82 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> X1 → Y; X2 → Y; X3 → Y </td>
+   <td style="text-align:center;"> 262 </td>
+   <td style="text-align:center;"> 100.82 </td>
+  </tr>
+</tbody>
+</table>
+<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
+ <thead>
+  <tr>
+   <th style="text-align:center;"> Model </th>
+   <th style="text-align:center;"> Number of observations </th>
+   <th style="text-align:center;"> Runtime (seconds) </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:center;"> X1 → Y </td>
+   <td style="text-align:center;"> 10 </td>
+   <td style="text-align:center;"> 9.05 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> X1 → Y </td>
+   <td style="text-align:center;"> 100 </td>
+   <td style="text-align:center;"> 9.40 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> X1 → Y </td>
+   <td style="text-align:center;"> 1000 </td>
+   <td style="text-align:center;"> 11.73 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> X1 → Y </td>
+   <td style="text-align:center;"> 10000 </td>
+   <td style="text-align:center;"> 18.39 </td>
+  </tr>
+</tbody>
+</table>
 
