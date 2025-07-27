@@ -1,4 +1,5 @@
 % Options for packages loaded elsewhere
+% Options for packages loaded elsewhere
 \PassOptionsToPackage{unicode}{hyperref}
 \PassOptionsToPackage{hyphens}{url}
 \PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
@@ -6,21 +7,22 @@
 \documentclass[
   11pt,
   article]{jss}
-
+\usepackage{xcolor}
 \usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
 \usepackage{iftex}
 \ifPDFTeX
   \usepackage[T1]{fontenc}
   \usepackage[utf8]{inputenc}
   \usepackage{textcomp} % provide euro and other symbols
 \else % if luatex or xetex
-  \usepackage{unicode-math}
+  \usepackage{unicode-math} % this also loads fontspec
   \defaultfontfeatures{Scale=MatchLowercase}
   \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
 \fi
 \usepackage{lmodern}
-\ifPDFTeX\else  
-    % xetex/luatex font selection
+\ifPDFTeX\else
+  % xetex/luatex font selection
 \fi
 % Use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
@@ -38,9 +40,6 @@
 }{% if KOMA class
   \KOMAoptions{parskip=half}}
 \makeatother
-\usepackage{xcolor}
-\setlength{\emergencystretch}{3em} % prevent overfull lines
-\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
 % Make \paragraph and \subparagraph free-standing
 \makeatletter
 \ifx\paragraph\undefined\else
@@ -66,8 +65,7 @@
 \makeatother
 
 
-\providecommand{\tightlist}{%
-  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}\usepackage{longtable,booktabs,array}
+\usepackage{longtable,booktabs,array}
 \usepackage{calc} % for calculating minipage widths
 % Correct order of tables after \paragraph or \subparagraph
 \usepackage{etoolbox}
@@ -79,17 +77,32 @@
 \makesavenoteenv{longtable}
 \usepackage{graphicx}
 \makeatletter
-\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
-\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
-\makeatother
-% Scale images if necessary, so that they will not overflow the page
-% margins by default, and it is still possible to overwrite the defaults
-% using explicit options in \includegraphics[width, height, ...]{}
-\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
 % Set default figure placement to htbp
-\makeatletter
 \def\fps@figure{htbp}
 \makeatother
+
+
+
+
+
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+
+
+
 
 \usepackage{booktabs}
 \usepackage{longtable}
@@ -180,15 +193,11 @@
 \makeatletter
 \makeatother
 \makeatletter
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[interior hidden, boxrule=0pt, borderline west={3pt}{0pt}{shadecolor}, breakable, frame hidden, sharp corners, enhanced]}{\end{tcolorbox}}\fi
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[frame hidden, enhanced, boxrule=0pt, borderline west={3pt}{0pt}{shadecolor}, interior hidden, sharp corners, breakable]}{\end{tcolorbox}}\fi
 \makeatother
-\ifLuaTeX
-  \usepackage{selnolig}  % disable illegal ligatures
-\fi
 \usepackage{bookmark}
-
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
-\urlstyle{same} % disable monospaced font for URLs
+\urlstyle{same}
 \hypersetup{
   pdftitle={Making, Updating, and Querying Causal Models with },
   pdfauthor={Till Tietz; Lily Medina; Georgiy Syunyaev; Macartan Humphreys},
@@ -198,6 +207,7 @@
   citecolor={Blue},
   urlcolor={Blue},
   pdfcreator={LaTeX via pandoc}}
+
 
 %% -- Article metainformation (author, title, ...) -----------------------------
 
@@ -276,6 +286,7 @@ URL: \url{https://macartan.github.io/}\\
 
 \begin{document}
 \maketitle
+
 
 \section{Introduction: Causal models}\label{sec-intro}
 
@@ -413,13 +424,13 @@ lipids data.\footnote{Note that the ``using'' column is omitted to
 \citet{chickering_clinicians_1996}, while row 3 provides inferences for
 the local average treatment effects (LATE).
 
-\begin{longtable}[t]{ccccccc}
+\begin{longtable}{ccccccc}
 
 \toprule
 label & query & given & mean & sd & cred.low & cred.high\\
 \midrule
 ATE & Y[X = 1] - Y[X = 0] & - & 0.55 & 0.10 & 0.37 & 0.73\\
-PoC & Y[X = 1] - Y[X = 0] & X == 0 \& Y == 0 & 0.63 & 0.15 & 0.38 & 0.89\\
+PoC & Y[X = 1] - Y[X = 0] & X == 0 \& Y == 0 & 0.64 & 0.15 & 0.37 & 0.89\\
 LATE & Y[X = 1] - Y[X = 0] & X[Z = 1] > X[Z = 0] & 0.70 & 0.05 & 0.59 & 0.80\\
 \bottomrule
 
@@ -438,7 +449,7 @@ R> lipids_queries |> plot()
 
 \begin{figure}[H]
 
-{\centering \includegraphics{paper_files/figure-pdf/queryplot-1.pdf}
+{\centering \pandocbounded{\includegraphics[keepaspectratio]{paper_files/figure-pdf/queryplot-1.pdf}}
 
 }
 
@@ -475,11 +486,11 @@ highlighting their connections, strengths, and limitations in comparison
 to \pkg{CausalQueries}.
 
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1800}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1900}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1000}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.1700}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.3600}}@{}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1800}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1900}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1700}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.3600}}@{}}
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 Software
@@ -509,6 +520,8 @@ Scope
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
+\tabularnewline
+\caption{Related software.}\label{tbl-software}\tabularnewline
 \endlastfoot
 \pkg{causalnex} & \citet{beaumont_causalnex_2021} & \proglang{Python} &
 \begin{minipage}[t]{\linewidth}\raggedright
@@ -606,7 +619,6 @@ Scope
   binary data
 \end{itemize}
 \end{minipage} \\
-\caption{Related software.}\label{tbl-software}\tabularnewline
 \end{longtable}
 
 \pkg{causalnex} is comprehensive software that offers functions for
@@ -889,7 +901,7 @@ values. Together, the parameters describe a full joint probability
 distribution over types for \(Z\), \(X\) and \(Y\) that is faithful to
 the graph.
 
-\begin{longtable}[t]{cccccc}
+\begin{longtable}{cccccc}
 
 \toprule
 node & nodal\_type & param\_set & param\_names & param\_value & priors\\
@@ -899,25 +911,21 @@ Z & 1 & Z & Z.1 & 0.16 & 1\\
 X & 00 & X & X.00 & 0.12 & 1\\
 X & 10 & X & X.10 & 0.08 & 1\\
 X & 01 & X & X.01 & 0.11 & 1\\
-\addlinespace
 X & 11 & X & X.11 & 0.69 & 1\\
 Y & 00 & Y.X.00 & Y.00\_X.00 & 0.38 & 1\\
 Y & 10 & Y.X.00 & Y.10\_X.00 & 0.00 & 1\\
 Y & 01 & Y.X.00 & Y.01\_X.00 & 0.20 & 1\\
 Y & 11 & Y.X.00 & Y.11\_X.00 & 0.42 & 1\\
-\addlinespace
 Y & 00 & Y.X.01 & Y.00\_X.01 & 0.40 & 1\\
 Y & 10 & Y.X.01 & Y.10\_X.01 & 0.38 & 1\\
 Y & 01 & Y.X.01 & Y.01\_X.01 & 0.06 & 1\\
 Y & 11 & Y.X.01 & Y.11\_X.01 & 0.16 & 1\\
 Y & 00 & Y.X.10 & Y.00\_X.10 & 0.71 & 1\\
-\addlinespace
 Y & 10 & Y.X.10 & Y.10\_X.10 & 0.15 & 1\\
 Y & 01 & Y.X.10 & Y.01\_X.10 & 0.05 & 1\\
 Y & 11 & Y.X.10 & Y.11\_X.10 & 0.09 & 1\\
 Y & 00 & Y.X.11 & Y.00\_X.11 & 0.65 & 1\\
 Y & 10 & Y.X.11 & Y.10\_X.11 & 0.04 & 1\\
-\addlinespace
 Y & 01 & Y.X.11 & Y.01\_X.11 & 0.01 & 1\\
 Y & 11 & Y.X.11 & Y.11\_X.11 & 0.30 & 1\\
 \bottomrule
@@ -1068,7 +1076,7 @@ R> lipids_model |> plot(x_coord = 1:3, y_coord = 3:1,
 
 \centering{
 
-\includegraphics[width=0.5\textwidth,height=\textheight]{paper_files/figure-pdf/fig-plots-1.pdf}
+\includegraphics[width=0.5\linewidth,height=\textheight,keepaspectratio]{paper_files/figure-pdf/fig-plots-1.pdf}
 
 }
 
@@ -1080,7 +1088,7 @@ R> lipids_model |> plot(x_coord = 1:3, y_coord = 3:1,
 
 \centering{
 
-\includegraphics[width=0.5\textwidth,height=\textheight]{paper_files/figure-pdf/fig-plots-2.pdf}
+\includegraphics[width=0.5\linewidth,height=\textheight,keepaspectratio]{paper_files/figure-pdf/fig-plots-2.pdf}
 
 }
 
@@ -1110,8 +1118,8 @@ Table~\ref{tbl-core} summarizes features of a causal model that can be
 examined using \texttt{inspect()}.
 
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.4000}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 2\tabcolsep) * \real{0.6000}}@{}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.4000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.6000}}@{}}
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 Element
@@ -1129,6 +1137,9 @@ Description
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
+\tabularnewline
+\caption{Elements of a model that can be
+inspected.}\label{tbl-core}\tabularnewline
 \endlastfoot
 \texttt{statement} & A character string describing causal relations
 using dagitty syntax. \\
@@ -1172,8 +1183,6 @@ parameter names. \\
 by Stan. \\
 \texttt{stan\_warnings} & A list of warnings produced by Stan during
 updating. \\
-\caption{Elements of a model that can be inspected using
-\texttt{inspect()}.}\label{tbl-core}\tabularnewline
 \end{longtable}
 
 \subsection{Tailoring models}\label{tailoring-models}
@@ -1194,10 +1203,10 @@ types for the nodes are not independent. For instance, in the
 types), as shown in Table~\ref{tbl-joint}.
 
 \begin{longtable}[]{@{}
-  >{\centering\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
-  >{\centering\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
-  >{\centering\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
-  >{\centering\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}@{}}
+  >{\centering\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\centering\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\centering\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\centering\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}@{}}
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\centering
 \end{minipage} & \begin{minipage}[b]{\linewidth}\centering
@@ -1221,6 +1230,9 @@ types), as shown in Table~\ref{tbl-joint}.
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
+\tabularnewline
+\caption{Nodal types in an \(X \rightarrow Y\)
+model.}\label{tbl-joint}\tabularnewline
 \endlastfoot
 \(\theta^Y_{00}\) & \(\Pr(\theta^X_0, \theta^Y_{00})\) &
 \(\Pr(\theta^X_1, \theta^Y_{00})\) & \(\Pr(\theta^Y_{00})\) \\
@@ -1230,8 +1242,7 @@ types), as shown in Table~\ref{tbl-joint}.
 \(\Pr(\theta^X_1, \theta^Y_{01})\) & \(\Pr(\theta^Y_{01})\) \\
 \(\theta^Y_{11}\) & \(\Pr(\theta^X_0, \theta^Y_{11})\) &
 \(\Pr(\theta^X_1, \theta^Y_{11})\) & \(\Pr(\theta^Y_{11})\) \\
-\caption{Nodal types in an \(X \rightarrow Y\)
-model.}\label{tbl-joint}\tabularnewline
+\(\sum\) & \(\Pr(\theta^X_0)\) & \(\Pr(\theta^X_1)\) & 1 \\
 \end{longtable}
 
 Table~\ref{tbl-joint} has eight interior elements so that an
@@ -1253,7 +1264,7 @@ The confounding structure can influence the number of parameters based
 on the underlying DAG. Table~\ref{tbl-dof} demonstrates the number of
 independent parameters required for different types of confounding.
 
-\begin{longtable}[t]{lc}
+\begin{longtable}{lc}
 
 \toprule
 Model & Degrees of freedom\\
@@ -1263,7 +1274,6 @@ X → Y ← W; X ↔ W & 18\\
 X → Y ← W; X ↔ Y; W ←→ Y & 62\\
 X → Y ← W; X ↔ Y; W ←→ Y; X ←→ W & 63\\
 X → W → Y ← X & 19\\
-\addlinespace
 X → W → Y ← X; W ←→ Y & 64\\
 X → W → Y ← X; X ←→ W; W ←→ Y & 67\\
 X → W → Y ← X; X ←→ W; W ←→ Y; X ←→ Y & 127\\
@@ -1290,7 +1300,8 @@ estimates of the complier average treatment effect. In
 which \(X\) decreases in \(Z\) as follows:
 
 \begin{CodeInput}
-R> model_restricted <- lipids_model |> set_restrictions("X[Z = 1] < X[Z = 0]")
+R> model_restricted <- lipids_model |> 
++    set_restrictions("X[Z = 1] < X[Z = 0]")
 \end{CodeInput}
 
 If we wanted to retain only this nodal type rather than remove it, we
@@ -1393,7 +1404,8 @@ priors is to add them as a vector of numbers using
 \texttt{set\_priors()}. For instance:
 
 \begin{CodeInput}
-R> lipids_model |> set_priors(param_names = c("X.10", "X.01"), alphas = 3:4) |> 
+R> lipids_model |> set_priors(
++    param_names = c("X.10", "X.01"), alphas = 3:4) |> 
 +    inspect("prior_hyperparameters", nodes = "X")
 \end{CodeInput}
 
@@ -1446,7 +1458,8 @@ average causal effect implied by flat priors is \(1/3\). This can be
 demonstrated by querying the model as follows:
 
 \begin{CodeInput}
-R> query <- make_model("X -> Y") |> set_restrictions(decreasing("X", "Y")) |>
+R> query <- make_model("X -> Y") |> 
++    set_restrictions(decreasing("X", "Y")) |>
 +    query_model("Y[X = 1] - Y[X = 0]", using = "priors")
 \end{CodeInput}
 
@@ -1773,13 +1786,7 @@ R> list(uncensored = update_model(make_model("X -> Y"), data),
 \end{CodeInput}
 
 \begin{verbatim}
-
-Causal queries generated by query_model
-
-|model      |case_level |  mean|    sd| cred.low| cred.high|
-|:----------|:----------|-----:|-----:|--------:|---------:|
-|uncensored |FALSE      | 0.590| 0.194|    0.168|     0.897|
-|censored   |FALSE      | 0.018| 0.315|   -0.614|     0.629|
+: 
 \end{verbatim}
 
 \subsection{Output}\label{output}
@@ -1794,23 +1801,6 @@ distribution directly using the \texttt{grab()} function (or use the
 R> model <- make_model("X -> Y") |> update_model()
 R> posterior <- inspect(model, "posterior_distribution")  
 \end{CodeInput}
-
-\begin{verbatim}
-
-posterior_distribution
-Summary statistics of model parameters posterior distributions:
-
-  Distributions matrix dimensions are 
-  4000 rows (draws) by 6 cols (parameters)
-
-     mean   sd
-X.0  0.51 0.28
-X.1  0.49 0.28
-Y.00 0.25 0.19
-Y.10 0.25 0.19
-Y.01 0.25 0.19
-Y.11 0.25 0.20
-\end{verbatim}
 
 Additionally, a distribution of causal types is stored by default.
 Optionally, the \texttt{stanfit} object and a distribution over event
@@ -1829,32 +1819,6 @@ provides two measures to help assess convergence.
 R> make_model("X -> Y") |> update_model(keep_type_distribution = FALSE) |>
 +    inspect("stan_summary") 
 \end{CodeInput}
-
-\begin{verbatim}
-
-stan_summary
-Stan model summary:
-
-Inference for Stan model: simplexes.
-4 chains, each with iter=2000; warmup=1000; thin=1; 
-post-warmup draws per chain=1000, total post-warmup draws=4000.
-
-                   mean se_mean   sd   2.5%   25%   50%   75% 97.5% n_eff Rhat
-X.0                0.50    0.01 0.29   0.03  0.25  0.49  0.74  0.97  3036 1.00
-X.1                0.50    0.01 0.29   0.03  0.26  0.51  0.75  0.97  3036 1.00
-Y.00               0.25    0.00 0.19   0.01  0.09  0.21  0.37  0.70  2031 1.00
-Y.10               0.25    0.00 0.19   0.01  0.09  0.21  0.37  0.71  4633 1.00
-Y.01               0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.72  4162 1.00
-Y.11               0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.71  4701 1.00
-lp__               1.00    0.02 0.96   0.03  0.30  0.72  1.39  3.43  2536 1.00
-log_sum_gammas[2]  1.85    0.03 1.19   0.36  1.00  1.58  2.41  4.93  1159 1.01
-lp__              -7.53    0.04 1.65 -11.75 -8.37 -7.15 -6.32 -5.44  1368 1.00
-
-Samples were drawn using NUTS(diag_e) at Mon Jul 21 17:51:54 2025.
-For each parameter, n_eff is a crude measure of effective sample size,
-and Rhat is the potential scale reduction factor on split chains (at 
-convergence, Rhat=1).
-\end{verbatim}
 
 This summary provides information on the distribution of parameters and
 convergence diagnostics, summarized in the \texttt{Rhat} column. The
@@ -1959,7 +1923,7 @@ types[7]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.47  3424    1
 types[8]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3166    1
 lp__              -7.55    0.05 1.66 -11.87 -8.39 -7.15 -6.33 -5.45  1357    1
 
-Samples were drawn using NUTS(diag_e) at Mon Jul 21 17:52:09 2025.
+Samples were drawn using NUTS(diag_e) at Sun Jul 27 16:06:48 2025.
 For each parameter, n_eff is a crude measure of effective sample size,
 and Rhat is the potential scale reduction factor on split chains (at 
 convergence, Rhat=1).
@@ -2246,7 +2210,7 @@ R> model |> grab("posterior_distribution")  |>
 
 \centering{
 
-\includegraphics[width=0.6\textwidth,height=\textheight]{paper_files/figure-pdf/fig-posterior-dist-1.pdf}
+\includegraphics[width=0.6\linewidth,height=\textheight,keepaspectratio]{paper_files/figure-pdf/fig-posterior-dist-1.pdf}
 
 }
 
@@ -2297,7 +2261,7 @@ R> lipids_model |> query_model(
 
 \centering{
 
-\includegraphics{paper_files/figure-pdf/fig-case-level-query-1.pdf}
+\pandocbounded{\includegraphics[keepaspectratio]{paper_files/figure-pdf/fig-case-level-query-1.pdf}}
 
 }
 
@@ -2347,7 +2311,7 @@ R> make_model("X -> M -> Y") |> update_model(
 
 \centering{
 
-\includegraphics{paper_files/figure-pdf/fig-new-case-level-query-1.pdf}
+\pandocbounded{\includegraphics[keepaspectratio]{paper_files/figure-pdf/fig-new-case-level-query-1.pdf}}
 
 }
 
@@ -2396,7 +2360,7 @@ R> queries <- query_model(models, query =
 +    expand_grid = TRUE)
 \end{CodeInput}
 
-\begin{longtable}[t]{ccccccc}
+\begin{longtable}{ccccccc}
 
 \toprule
 label & model & query & given & using & case\_level & mean\\
@@ -2404,21 +2368,18 @@ label & model & query & given & using & case\_level & mean\\
 ATE & Unrestricted & Y[X=1] - Y[X=0] & - & priors & FALSE & 0.00\\
 ATE & Restricted & Y[X=1] - Y[X=0] & - & priors & FALSE & 0.00\\
 ATE & Unrestricted & Y[X=1] - Y[X=0] & - & posteriors & FALSE & 0.56\\
-ATE & Restricted & Y[X=1] - Y[X=0] & - & posteriors & FALSE & 0.56\\
+ATE & Restricted & Y[X=1] - Y[X=0] & - & posteriors & FALSE & 0.55\\
 POS & Unrestricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & priors & FALSE & 0.50\\
-\addlinespace
 POS & Restricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & priors & FALSE & 0.49\\
 POS & Unrestricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & posteriors & FALSE & 0.95\\
 POS & Restricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & posteriors & FALSE & 0.95\\
 ATE & Unrestricted & Y[X=1] - Y[X=0] & - & priors & TRUE & 0.00\\
 ATE & Restricted & Y[X=1] - Y[X=0] & - & priors & TRUE & 0.00\\
-\addlinespace
 ATE & Unrestricted & Y[X=1] - Y[X=0] & - & posteriors & TRUE & 0.56\\
-ATE & Restricted & Y[X=1] - Y[X=0] & - & posteriors & TRUE & 0.56\\
+ATE & Restricted & Y[X=1] - Y[X=0] & - & posteriors & TRUE & 0.55\\
 POS & Unrestricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & priors & TRUE & 0.50\\
 POS & Restricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & priors & TRUE & 0.49\\
 POS & Unrestricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & posteriors & TRUE & 0.95\\
-\addlinespace
 POS & Restricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & posteriors & TRUE & 0.95\\
 \bottomrule
 
@@ -2435,7 +2396,7 @@ query.
 
 \centering{
 
-\includegraphics{paper_files/figure-pdf/fig-batch-1.pdf}
+\pandocbounded{\includegraphics[keepaspectratio]{paper_files/figure-pdf/fig-batch-1.pdf}}
 
 }
 
@@ -2486,11 +2447,10 @@ requirements}\label{computational-details-and-software-requirements}
 requirements}
 
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.1800}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.4100}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.4100}}@{}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1800}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4100}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4100}}@{}}
 \toprule\noalign{}
-\endfirsthead
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
@@ -2498,7 +2458,7 @@ Version & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
 \item
-  1.3.3
+  1.4.3
 \end{itemize}
 \end{minipage} & \\
 Availability & \begin{minipage}[t]{\linewidth}\raggedright
@@ -2631,9 +2591,9 @@ R-Packages Imports & \begin{minipage}[t]{\linewidth}\raggedright
   Rcpp (\textgreater= 0.12.0) \textbar{}
 \end{itemize}
 \end{minipage} & \\
-\caption{Computational details and software
-requirements.}\tabularnewline
 \end{longtable}
+
+Computational details and software requirements.
 
 The results in this paper were obtained using
 \proglang{R}\textasciitilde4.3 with the \pkg{MASS}\textasciitilde7.3-60
@@ -2644,7 +2604,7 @@ the Comprehensive \proglang{R} Archive Network (CRAN) at
 \section*{Acknowledgments}\label{acknowledgments}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, opacityback=0, rightrule=.15mm, breakable, arc=.35mm, leftrule=.75mm, colframe=quarto-callout-color-frame, colback=white, bottomrule=.15mm, left=2mm, toprule=.15mm]
+\begin{tcolorbox}[enhanced jigsaw, colframe=quarto-callout-color-frame, toprule=.15mm, bottomrule=.15mm, breakable, left=2mm, opacityback=0, arc=.35mm, colback=white, leftrule=.75mm, rightrule=.15mm]
 
 We thank Ben Goodrich, who provided generous insights on using
 \texttt{stan} for this project. We thank Alan M Jacobs for key work in
@@ -2676,11 +2636,6 @@ improvements.
 
 If users have access to multiple cores, parallel processing can be
 implemented by including this line before running \pkg{CausalQueries}:
-
-\begin{CodeInput}
-R> library("parallel")
-R> options(mc.cores = parallel::detectCores())
-\end{CodeInput}
 
 Additionally, parallelizing across models or data while running MCMC
 chains in parallel can be achieved by setting up a nested parallel
@@ -2849,14 +2804,14 @@ specialized methods for handling large causal models. In contrast, the
 results suggest that computational time is concave in the size of the
 data.
 
-\begin{longtable}[t]{ccc}
+\begin{longtable}{ccc}
 
 \toprule
 Model & Number of parameters & Runtime (seconds)\\
 \midrule
-X1 → Y & 6 & 6.97\\
-X1 → Y; X2 → Y & 20 & 9.44\\
-X1 → Y; X2 → Y; X3 → Y & 262 & 97.20\\
+X1 → Y & 6 & 817.59\\
+X1 → Y; X2 → Y & 20 & 1939.72\\
+X1 → Y; X2 → Y; X3 → Y & 262 & 42139.41\\
 \bottomrule
 
 
@@ -2865,15 +2820,15 @@ X1 → Y; X2 → Y; X3 → Y & 262 & 97.20\\
 \tabularnewline
 \end{longtable}
 
-\begin{longtable}[t]{ccc}
+\begin{longtable}{ccc}
 
 \toprule
 Model & Number of observations & Runtime (seconds)\\
 \midrule
-X1 → Y & 10 & 9.18\\
-X1 → Y & 100 & 9.05\\
-X1 → Y & 1000 & 11.23\\
-X1 → Y & 10000 & 17.15\\
+X1 → Y & 10 & 552.22\\
+X1 → Y & 100 & 755.94\\
+X1 → Y & 1000 & 1345.50\\
+X1 → Y & 10000 & 3316.22\\
 \bottomrule
 
 
@@ -2883,6 +2838,7 @@ X1 → Y & 10000 & 17.15\\
 \end{longtable}
 
 \newpage{}
+
 
 
 
