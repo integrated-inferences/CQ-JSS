@@ -1,5 +1,4 @@
 % Options for packages loaded elsewhere
-% Options for packages loaded elsewhere
 \PassOptionsToPackage{unicode}{hyperref}
 \PassOptionsToPackage{hyphens}{url}
 \PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
@@ -7,22 +6,21 @@
 \documentclass[
   11pt,
   article]{jss}
-\usepackage{xcolor}
+
 \usepackage{amsmath,amssymb}
-\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
 \usepackage{iftex}
 \ifPDFTeX
   \usepackage[T1]{fontenc}
   \usepackage[utf8]{inputenc}
   \usepackage{textcomp} % provide euro and other symbols
 \else % if luatex or xetex
-  \usepackage{unicode-math} % this also loads fontspec
+  \usepackage{unicode-math}
   \defaultfontfeatures{Scale=MatchLowercase}
   \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
 \fi
 \usepackage{lmodern}
-\ifPDFTeX\else
-  % xetex/luatex font selection
+\ifPDFTeX\else  
+    % xetex/luatex font selection
 \fi
 % Use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
@@ -40,6 +38,9 @@
 }{% if KOMA class
   \KOMAoptions{parskip=half}}
 \makeatother
+\usepackage{xcolor}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
 % Make \paragraph and \subparagraph free-standing
 \makeatletter
 \ifx\paragraph\undefined\else
@@ -65,7 +66,8 @@
 \makeatother
 
 
-\usepackage{longtable,booktabs,array}
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}\usepackage{longtable,booktabs,array}
 \usepackage{calc} % for calculating minipage widths
 % Correct order of tables after \paragraph or \subparagraph
 \usepackage{etoolbox}
@@ -90,19 +92,6 @@
 % Set default figure placement to htbp
 \def\fps@figure{htbp}
 \makeatother
-
-
-
-
-
-\setlength{\emergencystretch}{3em} % prevent overfull lines
-
-\providecommand{\tightlist}{%
-  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
-
-
-
-
 
 \usepackage{booktabs}
 \usepackage{longtable}
@@ -193,11 +182,13 @@
 \makeatletter
 \makeatother
 \makeatletter
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[frame hidden, enhanced, boxrule=0pt, borderline west={3pt}{0pt}{shadecolor}, interior hidden, sharp corners, breakable]}{\end{tcolorbox}}\fi
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[frame hidden, borderline west={3pt}{0pt}{shadecolor}, enhanced, sharp corners, boxrule=0pt, breakable, interior hidden]}{\end{tcolorbox}}\fi
 \makeatother
+
 \usepackage{bookmark}
+
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
-\urlstyle{same}
+\urlstyle{same} % disable monospaced font for URLs
 \hypersetup{
   pdftitle={Making, Updating, and Querying Causal Models with },
   pdfauthor={Till Tietz; Lily Medina; Georgiy Syunyaev; Macartan Humphreys},
@@ -382,7 +373,7 @@ Users generate the stipulated causal model using \pkg{CausalQueries} as
 follows:
 
 \begin{CodeInput}
-R> lipids_model <-  make_model("Z -> X -> Y; X <-> Y")
+R> lipids_model <-  make_model("Z -> X -> Y; X <-> Y") 
 \end{CodeInput}
 
 The result is an object of class \texttt{causal\_model}, with associated
@@ -432,7 +423,7 @@ the local average treatment effects (LATE).
 label & query & given & mean & sd & cred.low & cred.high\\
 \midrule
 ATE & Y[X = 1] - Y[X = 0] & - & 0.55 & 0.10 & 0.37 & 0.73\\
-PoC & Y[X = 1] - Y[X = 0] & X == 0 \& Y == 0 & 0.64 & 0.15 & 0.37 & 0.89\\
+PoC & Y[X = 1] - Y[X = 0] & X == 0 \& Y == 0 & 0.63 & 0.15 & 0.38 & 0.89\\
 LATE & Y[X = 1] - Y[X = 0] & X[Z = 1] > X[Z = 0] & 0.70 & 0.05 & 0.59 & 0.80\\
 \bottomrule
 
@@ -731,7 +722,7 @@ from][]{humphreys_integrated_2023}}, we define a causal model as
 follows:
 
 \begin{definition}
-
+  
   A ``\textbf{causal model}'' is:
   \begin{enumerate}
     \item an ordered collection of ``endogenous nodes" $Y = \{Y_1, Y_2, \dots, Y_n\}$,
@@ -739,7 +730,7 @@ follows:
     \item an ordered collection of functions $F = \{f_{Y_1}, f_{Y_2}, \dots, f_{Y_n}\}$ with $f_{Y_j}$ specifying, for each $j$, how outcome $Y_j$ depends on $\theta_j$ and realizations of endogenous nodes prior to $Y_j$,
     \item a probability distribution, $\lambda$, over $\Theta$.
   \end{enumerate}
-
+  
 \end{definition}
 
 Elements 1-3 define a ``\textbf{structural causal model}.'' These
@@ -819,7 +810,7 @@ For instance, in the Lipids model, the joint distribution of nodal types
 can be simplified as shown in Equation~\ref{eq-join}.
 
 \begin{equation}\phantomsection\label{eq-join}{
-\Pr(\theta^Z = \theta^Z_1, \theta^X = \theta^X_{10}, \theta^Y = \theta^Y_{11}) =
+\Pr(\theta^Z = \theta^Z_1, \theta^X = \theta^X_{10}, \theta^Y = \theta^Y_{11}) = 
 \Pr(\theta^Z = \theta^Z_1)\Pr(\theta^X = \theta^X_{10})\Pr(\theta^Y = \theta^Y_{11}|\theta^X = \theta^X_{10})
 }\end{equation}
 
@@ -828,7 +819,7 @@ represent \(\Pr(\theta^Z)\) and \(\Pr(\theta^X)\) but also the
 conditional probability \(\Pr(\theta^Y|\theta^X)\):
 
 \begin{equation}\phantomsection\label{eq-join2}{
-\Pr(\theta^Z = \theta^Z_1, \theta^X = \theta^X_{10}, \theta^Y = \theta^Y_{11}) =
+\Pr(\theta^Z = \theta^Z_1, \theta^X = \theta^X_{10}, \theta^Y = \theta^Y_{11}) = 
 \lambda^Z_1\lambda^X_{10}\lambda^{Y|\theta^X_{10}}_{11}
 }\end{equation}
 
@@ -876,7 +867,7 @@ Thus for instance in the case of an \(X \rightarrow Y\) model, letting
 probabilities are:
 
 \[
-w(\lambda) = \left\{\begin{array}{ccc} w_{00} & = & \lambda^X_0(\lambda^Y_{00} + \lambda^Y_{01})\\
+w(\lambda) = \left\{\begin{array}{ccc} w_{00} & = & \lambda^X_0(\lambda^Y_{00} + \lambda^Y_{01})\\ 
 w_{01} & = & \lambda^X_0(\lambda^Y_{11} + \lambda^Y_{10})\\
 w_{10} & = & \lambda^X_1(\lambda^Y_{00} + \lambda^Y_{10})\\
 w_{11} & = & \lambda^X_1(\lambda^Y_{11} + \lambda^Y_{01})\end{array} \right.
@@ -1067,8 +1058,8 @@ available for the objects of class \texttt{ggplot}.
 
 \begin{CodeInput}
 R> lipids_model |> plot()
-R> lipids_model |> plot(x_coord = 1:3, y_coord = 3:1,
-+    textcol = "black", textsize = 3, shape = c(15, 16, 16),
+R> lipids_model |> plot(x_coord = 1:3, y_coord = 3:1, 
++    textcol = "black", textsize = 3, shape = c(15, 16, 16), 
 +    nodecol = "lightgrey", nodesize = 10)
 \end{CodeInput}
 
@@ -1272,9 +1263,9 @@ independent parameters required for different types of confounding.
 Model & Degrees of freedom\\
 \midrule
 X → Y ← W & 17\\
-X → Y ← W; X ↔ W & 18\\
-X → Y ← W; X ↔ Y; W $\leftrightarrow$ Y & 62\\
-X → Y ← W; X ↔ Y; W $\leftrightarrow$ Y; X $\leftrightarrow$ W & 63\\
+X → Y ← W; X $\leftrightarrow$ W & 18\\
+X → Y ← W; X $\leftrightarrow$ Y; W $\leftrightarrow$ Y & 62\\
+X → Y ← W; X $\leftrightarrow$ Y; W $\leftrightarrow$ Y; X $\leftrightarrow$ W & 63\\
 X → W → Y ← X & 19\\
 X → W → Y ← X; W $\leftrightarrow$ Y & 64\\
 X → W → Y ← X; X $\leftrightarrow$ W; W $\leftrightarrow$ Y & 67\\
@@ -1302,7 +1293,7 @@ estimates of the complier average treatment effect. In
 which \(X\) decreases in \(Z\) as follows:
 
 \begin{CodeInput}
-R> model_restricted <- lipids_model |>
+R> model_restricted <- lipids_model |> 
 +    set_restrictions("X[Z = 1] < X[Z = 0]")
 \end{CodeInput}
 
@@ -1383,7 +1374,7 @@ uniform priors. Users can retrieve the model's priors as follows:
 
 \begin{CodeChunk}
 \begin{CodeInput}
-R> lipids_model |> inspect("prior_hyperparameters", nodes = "X")
+R> lipids_model |> inspect("prior_hyperparameters", nodes = "X") 
 \end{CodeInput}
 
 \begin{CodeOutput}
@@ -1391,8 +1382,8 @@ R> lipids_model |> inspect("prior_hyperparameters", nodes = "X")
 prior_hyperparameters
 Alpha parameter values used for Dirichlet prior distributions:
 
-X.00 X.10 X.01 X.11
-   1    1    1    1
+X.00 X.10 X.01 X.11 
+   1    1    1    1 
 \end{CodeOutput}
 \end{CodeChunk}
 
@@ -1410,7 +1401,7 @@ priors is to add them as a vector of numbers using
 \begin{CodeChunk}
 \begin{CodeInput}
 R> lipids_model |> set_priors(
-+    param_names = c("X.10", "X.01"), alphas = 3:4) |>
++    param_names = c("X.10", "X.01"), alphas = 3:4) |> 
 +    inspect("prior_hyperparameters", nodes = "X")
 \end{CodeInput}
 
@@ -1419,8 +1410,8 @@ R> lipids_model |> set_priors(
 prior_hyperparameters
 Alpha parameter values used for Dirichlet prior distributions:
 
-X.00 X.10 X.01 X.11
-   1    3    4    1
+X.00 X.10 X.01 X.11 
+   1    3    4    1 
 \end{CodeOutput}
 \end{CodeChunk}
 
@@ -1446,8 +1437,8 @@ R> lipids_model |> set_priors(
 prior_hyperparameters
 Alpha parameter values used for Dirichlet prior distributions:
 
-X.00 X.10 X.01 X.11
-   1    1    3    1
+X.00 X.10 X.01 X.11 
+   1    1    3    1 
 \end{CodeOutput}
 \end{CodeChunk}
 
@@ -1466,7 +1457,7 @@ average causal effect implied by flat priors is \(1/3\). This can be
 demonstrated by querying the model as follows:
 
 \begin{CodeInput}
-R> query <- make_model("X -> Y") |>
+R> query <- make_model("X -> Y") |> 
 +    set_restrictions(decreasing("X", "Y")) |>
 +    query_model("Y[X = 1] - Y[X = 0]", using = "priors")
 \end{CodeInput}
@@ -1508,10 +1499,10 @@ R> make_model("X -> Y") |> inspect("parameters")
 \begin{CodeOutput}
 
 parameters
-Model parameters with associated probabilities:
+Model parameters with associated probabilities: 
 
- X.0  X.1 Y.00 Y.10 Y.01 Y.11
-0.50 0.50 0.25 0.25 0.25 0.25
+ X.0  X.1 Y.00 Y.10 Y.01 Y.11 
+0.50 0.50 0.25 0.25 0.25 0.25 
 \end{CodeOutput}
 \end{CodeChunk}
 
@@ -1531,10 +1522,10 @@ R> make_model("X -> Y") |> set_parameters(
 \begin{CodeOutput}
 
 parameters
-Model parameters with associated probabilities:
+Model parameters with associated probabilities: 
 
- X.0  X.1 Y.00 Y.10 Y.01 Y.11
- 0.5  0.5  0.1  0.1  0.7  0.1
+ X.0  X.1 Y.00 Y.10 Y.01 Y.11 
+ 0.5  0.5  0.1  0.1  0.7  0.1 
 \end{CodeOutput}
 \end{CodeChunk}
 
@@ -1694,16 +1685,16 @@ function as follows:
 
 \begin{CodeChunk}
 \begin{CodeInput}
-R> make_model("X -> Y") |> inspect("parameter_mapping")
+R> make_model("X -> Y") |> inspect("parameter_mapping") 
 \end{CodeInput}
 
 \begin{CodeOutput}
 
-parameter_mapping (Parameter mapping matrix)
+parameter_mapping (Parameter mapping matrix) 
 
   Maps from parameters to data types, with
   possibly multiple columns for each data type
-  in cases with confounding.
+  in cases with confounding. 
 
      X0Y0 X1Y0 X0Y1 X1Y1
 X.0     1    0    1    0
@@ -1798,14 +1789,20 @@ towards a belief that \(X\) causes \(Y\).
 \begin{CodeInput}
 R> data <- data.frame(X = rep(0:1, 5), Y = rep(0:1, 5))
 R> list(uncensored = update_model(make_model("X -> Y"), data),
-+    censored = update_model(make_model("X -> Y"), data,
++    censored = update_model(make_model("X -> Y"), data, 
 +    censored_types = c("X1Y0",  "X0Y1"))) |>
 +    query_model("Y[X = 1] - Y[X = 0]", using = "posteriors") |>
 +    select(-using)
 \end{CodeInput}
 
 \begin{CodeOutput}
-:
+
+Causal queries generated by query_model
+
+|model      |case_level |  mean|    sd| cred.low| cred.high|
+|:----------|:----------|-----:|-----:|--------:|---------:|
+|uncensored |FALSE      | 0.590| 0.194|    0.168|     0.897|
+|censored   |FALSE      | 0.018| 0.315|   -0.614|     0.629|
 \end{CodeOutput}
 \end{CodeChunk}
 
@@ -1817,10 +1814,29 @@ data frame within the model list. You can access this posterior
 distribution directly using the \texttt{grab()} function (or use the
 \texttt{inspect()} function for a more detailed output) as shown below:
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> model <- make_model("X -> Y") |> update_model()
-R> posterior <- inspect(model, "posterior_distribution")
+R> posterior <- inspect(model, "posterior_distribution")  
 \end{CodeInput}
+
+\begin{CodeOutput}
+
+posterior_distribution
+Summary statistics of model parameters posterior distributions:
+
+  Distributions matrix dimensions are 
+  4000 rows (draws) by 6 cols (parameters)
+
+     mean   sd
+X.0  0.51 0.28
+X.1  0.49 0.28
+Y.00 0.25 0.19
+Y.10 0.25 0.19
+Y.01 0.25 0.19
+Y.11 0.25 0.20
+\end{CodeOutput}
+\end{CodeChunk}
 
 Additionally, a distribution of causal types is stored by default.
 Optionally, the \texttt{stanfit} object and a distribution over event
@@ -1835,10 +1851,38 @@ The summary of the Stan model can be accessed using \texttt{inspect()}
 function and is saved in the updated model object by default. This
 provides two measures to help assess convergence.
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> make_model("X -> Y") |> update_model(keep_type_distribution = FALSE) |>
-+    inspect("stan_summary")
++    inspect("stan_summary") 
 \end{CodeInput}
+
+\begin{CodeOutput}
+
+stan_summary
+Stan model summary:
+
+Inference for Stan model: simplexes.
+4 chains, each with iter=2000; warmup=1000; thin=1; 
+post-warmup draws per chain=1000, total post-warmup draws=4000.
+
+                   mean se_mean   sd   2.5%   25%   50%   75% 97.5% n_eff...
+X.0                0.50    0.01 0.29   0.03  0.25  0.49  0.74  0.97  3036...
+X.1                0.50    0.01 0.29   0.03  0.26  0.51  0.75  0.97  3036...
+Y.00               0.25    0.00 0.19   0.01  0.09  0.21  0.37  0.70  2031...
+Y.10               0.25    0.00 0.19   0.01  0.09  0.21  0.37  0.71  4633...
+Y.01               0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.72  4162...
+Y.11               0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.71  4701...
+lp__               1.00    0.02 0.96   0.03  0.30  0.72  1.39  3.43  2536...
+log_sum_gammas[2]  1.85    0.03 1.19   0.36  1.00  1.58  2.41  4.93  1159...
+lp__              -7.53    0.04 1.65 -11.75 -8.37 -7.15 -6.32 -5.44  1368...
+
+Samples were drawn using NUTS(diag_e) at Wed Jul 30 10:29:24 2025.
+For each parameter, n_eff is a crude measure of effective sample size,
+and Rhat is the potential scale reduction factor on split chains (at 
+convergence, Rhat=1).
+\end{CodeOutput}
+\end{CodeChunk}
 
 This summary provides information on the distribution of parameters and
 convergence diagnostics, summarized in the \texttt{Rhat} column. The
@@ -1864,7 +1908,7 @@ information to assess whether the strong relation between \(X\) and
 
 \begin{CodeInput}
 R> model <- make_model("X -> M -> Y") |> update_model(
-+    data = data.frame(X = rep(0:1, 10000), Y = rep(0:1, 10000)),
++    data = data.frame(X = rep(0:1, 10000), Y = rep(0:1, 10000)), 
 +    iter = 5000, refresh = 0)
 \end{CodeInput}
 
@@ -1878,23 +1922,23 @@ R> model
 
 \begin{CodeOutput}
 
-Causal statement:
+Causal statement: 
 M -> Y; X -> M
 
 Number of nodal types by node:
-X M Y
-2 4 4
+X M Y 
+2 4 4 
 
 Number of causal types: 32
 
 Model has been updated and contains a posterior distribution with
-4 chains, each with iter=5000; warmup=2500; thin=1;
+4 chains, each with iter=5000; warmup=2500; thin=1;  
 Use inspect(model, 'stan_summary') to inspect stan summary
 
 Warnings passed from rstan during updating:
 The largest R-hat is 1.73, indicating chains have not mixed
 Bulk Effective Samples Size (ESS) is too low
-Tail Effective Samples Size (ESS) is too low
+Tail Effective Samples Size (ESS) is too low 
 \end{CodeOutput}
 \end{CodeChunk}
 
@@ -1902,7 +1946,7 @@ If users wish to run more advanced diagnostics of performance, they can
 retain and access the ``raw'' Stan output as follows:
 
 \begin{CodeInput}
-R> model <- make_model("X -> Y") |>
+R> model <- make_model("X -> Y") |> 
 +    update_model(refresh = 0, keep_fit = TRUE)
 \end{CodeInput}
 
@@ -1924,7 +1968,7 @@ R> model |> inspect("stanfit")
 stanfit
 Stan model summary:
 Inference for Stan model: simplexes.
-4 chains, each with iter=2000; warmup=1000; thin=1;
+4 chains, each with iter=2000; warmup=1000; thin=1; 
 post-warmup draws per chain=1000, total post-warmup draws=4000.
 
                    mean se_mean   sd   2.5%   25%   50%   75% 97.5% n_eff...
@@ -1946,9 +1990,9 @@ types[7]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.47  3424...
 types[8]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3166...
 lp__              -7.55    0.05 1.66 -11.87 -8.39 -7.15 -6.33 -5.45  1357...
 
-Samples were drawn using NUTS(diag_e) at Sun Jul 27 16:06:48 2025.
+Samples were drawn using NUTS(diag_e) at Wed Jul 30 10:29:44 2025.
 For each parameter, n_eff is a crude measure of effective sample size,
-and Rhat is the potential scale reduction factor on split chains (at
+and Rhat is the potential scale reduction factor on split chains (at 
 convergence, Rhat=1).
 \end{CodeOutput}
 \end{CodeChunk}
@@ -2076,9 +2120,9 @@ R> make_model("X -> Y")  |> get_query_types("Y == 1")
 
 \begin{CodeOutput}
 
-Causal types satisfying query's condition(s)
+Causal types satisfying query's condition(s)  
 
- query =  Y==1
+ query =  Y==1 
 
 X0.Y10  X1.Y01
 X0.Y11  X1.Y11
@@ -2110,9 +2154,9 @@ R> make_model("X -> Y") |> get_query_types("Y[X = 0] == 1")
 
 \begin{CodeOutput}
 
-Causal types satisfying query's condition(s)
+Causal types satisfying query's condition(s)  
 
- query =  Y[X=0]==1
+ query =  Y[X=0]==1 
 
 X0.Y10  X1.Y10
 X0.Y11  X1.Y11
@@ -2140,9 +2184,9 @@ R> make_model("X1 -> Y <- X2")  |> get_query_types(
 
 \begin{CodeOutput}
 
-Causal types satisfying query's condition(s)
+Causal types satisfying query's condition(s)  
 
- query =  X1==1&X2==1&(Y[X1=1,X2=1]>Y[X1=0,X2=0])
+ query =  X1==1&X2==1&(Y[X1=1,X2=1]>Y[X1=0,X2=0]) 
 
 X11.X21.Y0001  X11.X21.Y0101
 X11.X21.Y0011  X11.X21.Y0111
@@ -2204,8 +2248,8 @@ R> make_model("X -> Y") |> get_query_types("Y[X = 1] - Y[X = 0]")
 \end{CodeInput}
 
 \begin{CodeOutput}
-X0.Y00 X1.Y00 X0.Y10 X1.Y10 X0.Y01 X1.Y01 X0.Y11 X1.Y11
-     0      0     -1     -1      1      1      0      0
+X0.Y00 X1.Y00 X0.Y10 X1.Y10 X0.Y01 X1.Y01 X0.Y11 X1.Y11 
+     0      0     -1     -1      1      1      0      0 
 \end{CodeOutput}
 \end{CodeChunk}
 
@@ -2238,8 +2282,8 @@ plot is shown in Figure~\ref{fig-posterior-dist}.
 R> data  <- data.frame(X = rep(0:1, 50), Y = rep(0:1, 50))
 R> model <-  make_model("X -> Y") |> update_model(
 +    data, iter = 4000, refresh = 0)
-R> model |> grab("posterior_distribution")  |>
-+    ggplot(aes(Y.01 - Y.10)) + geom_histogram()
+R> model |> grab("posterior_distribution")  |> 
++    ggplot(aes(Y.01 - Y.10)) + geom_histogram() 
 \end{CodeInput}
 
 \begin{figure}[t]
@@ -2266,7 +2310,7 @@ distributions. This can be done for a list of queries using
 
 \begin{CodeInput}
 R> queries <- make_model("X -> Y") |> query_distribution(
-+    query = list(increasing = "(Y[X = 1] > Y[X = 0])",
++    query = list(increasing = "(Y[X = 1] > Y[X = 0])", 
 +    ATE = "(Y[X = 1] - Y[X = 0])"), using = "priors")
 \end{CodeInput}
 
@@ -2338,7 +2382,7 @@ the belief about this new case.
 \begin{CodeInput}
 R> make_model("X -> M -> Y") |> update_model(
 +    data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)), iter = 4000) |>
-+    query_model("Y[X = 1] > Y[X = 0] :|: X == 1 & Y == 1 & M == 1",
++    query_model("Y[X = 1] > Y[X = 0] :|: X == 1 & Y == 1 & M == 1", 
 +    using = "posteriors", case_level = c(TRUE, FALSE)) |>
 +    plot()
 \end{CodeInput}
@@ -2377,9 +2421,9 @@ versions, one with and one without a monotonicity restriction imposed.
 
 \begin{CodeInput}
 R> models <- list(
-+    Unrestricted = lipids_model |>
++    Unrestricted = lipids_model |> 
 +    update_model(data = lipids_data, refresh = 0),
-+    Restricted = lipids_model |> set_restrictions("X[Z = 1] < X[Z = 0]") |>
++    Restricted = lipids_model |> set_restrictions("X[Z = 1] < X[Z = 0]") |> 
 +    update_model(data = lipids_data, refresh = 0)
 +    )
 \end{CodeInput}
@@ -2389,8 +2433,8 @@ Table~\ref{tbl-batch-query} then shows the output from a single call to
 \texttt{TRUE} to generate all combinations of list elements.
 
 \begin{CodeInput}
-R> queries <- query_model(models, query =
-+    list(ATE = "Y[X=1] - Y[X=0]",
+R> queries <- query_model(models, query = 
++    list(ATE = "Y[X=1] - Y[X=0]", 
 +    POS = "Y[X=1] > Y[X=0] :|: Y==1 & X==1"),
 +    case_level = c(FALSE, TRUE), using = c("priors", "posteriors"),
 +    expand_grid = TRUE)
@@ -2404,7 +2448,7 @@ label & model & query & given & using & case\_level & mean\\
 ATE & Unrestricted & Y[X=1] - Y[X=0] & - & priors & FALSE & 0.00\\
 ATE & Restricted & Y[X=1] - Y[X=0] & - & priors & FALSE & 0.00\\
 ATE & Unrestricted & Y[X=1] - Y[X=0] & - & posteriors & FALSE & 0.56\\
-ATE & Restricted & Y[X=1] - Y[X=0] & - & posteriors & FALSE & 0.55\\
+ATE & Restricted & Y[X=1] - Y[X=0] & - & posteriors & FALSE & 0.56\\
 POS & Unrestricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & priors & FALSE & 0.50\\
 POS & Restricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & priors & FALSE & 0.49\\
 POS & Unrestricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & posteriors & FALSE & 0.95\\
@@ -2412,7 +2456,7 @@ POS & Restricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & posteriors & FALSE & 0.95\\
 ATE & Unrestricted & Y[X=1] - Y[X=0] & - & priors & TRUE & 0.00\\
 ATE & Restricted & Y[X=1] - Y[X=0] & - & priors & TRUE & 0.00\\
 ATE & Unrestricted & Y[X=1] - Y[X=0] & - & posteriors & TRUE & 0.56\\
-ATE & Restricted & Y[X=1] - Y[X=0] & - & posteriors & TRUE & 0.55\\
+ATE & Restricted & Y[X=1] - Y[X=0] & - & posteriors & TRUE & 0.56\\
 POS & Unrestricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & priors & TRUE & 0.50\\
 POS & Restricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & priors & TRUE & 0.49\\
 POS & Unrestricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & posteriors & TRUE & 0.95\\
@@ -2640,7 +2684,7 @@ the Comprehensive \proglang{R} Archive Network (CRAN) at
 \section*{Acknowledgments}\label{acknowledgments}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, colframe=quarto-callout-color-frame, toprule=.15mm, bottomrule=.15mm, breakable, left=2mm, opacityback=0, arc=.35mm, colback=white, leftrule=.75mm, rightrule=.15mm]
+\begin{tcolorbox}[enhanced jigsaw, colback=white, bottomrule=.15mm, leftrule=.75mm, breakable, opacityback=0, arc=.35mm, left=2mm, colframe=quarto-callout-color-frame, rightrule=.15mm, toprule=.15mm]
 
 We thank Ben Goodrich, who provided generous insights on using
 \texttt{stan} for this project. We thank Alan M Jacobs for key work in
@@ -2687,11 +2731,11 @@ R> library("future.apply")
 R> chains <- 3
 R> cores <- 8
 R> future::plan(list(
-+    future::tweak(future::multisession,
++    future::tweak(future::multisession, 
 +    workers = floor(cores/(chains + 1))),
 +    future::tweak(future::multisession, workers = chains)))
 R> model <- make_model("X -> Y")
-R> data <- list(data_1 = data.frame(X = 0:1, Y = 0:1),
+R> data <- list(data_1 = data.frame(X = 0:1, Y = 0:1), 
 +    data_2 = data.frame(X = 0:1, Y = 1:0))
 R> results <- future.apply::future_lapply(data, function(d) {
 +    update_model(model = model, data = d, chains = chains, refresh = 0)},
@@ -2813,7 +2857,7 @@ generated quantities {
   } else {
     types = rep_vector(1, n_types);
   }
-}
+} 
 \end{CodeOutput}
 \end{CodeChunk}
 
@@ -2847,9 +2891,9 @@ data.
 \toprule
 Model & Number of parameters & Runtime (seconds)\\
 \midrule
-X1 → Y & 6 & 817.59\\
-X1 → Y; X2 → Y & 20 & 1939.72\\
-X1 → Y; X2 → Y; X3 → Y & 262 & 42139.41\\
+X1 → Y & 6 & 7.33\\
+X1 → Y; X2 → Y & 20 & 8.66\\
+X1 → Y; X2 → Y; X3 → Y & 262 & 59.96\\
 \bottomrule
 
 
@@ -2863,10 +2907,10 @@ X1 → Y; X2 → Y; X3 → Y & 262 & 42139.41\\
 \toprule
 Model & Number of observations & Runtime (seconds)\\
 \midrule
-X1 → Y & 10 & 552.22\\
-X1 → Y & 100 & 755.94\\
-X1 → Y & 1000 & 1345.50\\
-X1 → Y & 10000 & 3316.22\\
+X1 → Y & 10 & 8.95\\
+X1 → Y & 100 & 7.77\\
+X1 → Y & 1000 & 10.80\\
+X1 → Y & 10000 & 11.13\\
 \bottomrule
 
 

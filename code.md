@@ -3,7 +3,7 @@
 
 ---
 title: "Replication code for 'Making, Updating, and Querying Causal Models using CausalQueries'"
-date: July 2025
+date: 2025-07-30
 author: Till Tietz, Lily Medina, Georgiy Syunyaev, and Macartan Humphreys
 ---
 
@@ -346,7 +346,8 @@ model <- make_model("X -> M -> Y <- X")
 </table>
 
 ``` r
-model_restricted <- lipids_model |> set_restrictions("X[Z = 1] < X[Z = 0]")
+model_restricted <- lipids_model |> 
+  set_restrictions("X[Z = 1] < X[Z = 0]")
 ```
 
 ``` r
@@ -385,7 +386,8 @@ model <- lipids_model |> set_priors(distribution = "jeffreys")
 ```
 
 ``` r
-lipids_model |> set_priors(param_names = c("X.10", "X.01"), alphas = 3:4) |> 
+lipids_model |> set_priors(
+  param_names = c("X.10", "X.01"), alphas = 3:4) |> 
   inspect("prior_hyperparameters", nodes = "X")
 ```
 
@@ -414,7 +416,8 @@ lipids_model |> set_priors(
 ```
 
 ``` r
-query <- make_model("X -> Y") |> set_restrictions(decreasing("X", "Y")) |>
+query <- make_model("X -> Y") |> 
+  set_restrictions(decreasing("X", "Y")) |>
   query_model("Y[X = 1] - Y[X = 0]", using = "priors")
 ```
 
@@ -559,18 +562,28 @@ make_model("X -> Y") |> update_model(keep_type_distribution = FALSE) |>
 ## 4 chains, each with iter=2000; warmup=1000; thin=1; 
 ## post-warmup draws per chain=1000, total post-warmup draws=4000.
 ## 
-##                    mean se_mean   sd   2.5%   25%   50%   75% 97.5% n_eff Rhat
-## X.0                0.50    0.01 0.29   0.03  0.25  0.49  0.74  0.97  3036 1.00
-## X.1                0.50    0.01 0.29   0.03  0.26  0.51  0.75  0.97  3036 1.00
-## Y.00               0.25    0.00 0.19   0.01  0.09  0.21  0.37  0.70  2031 1.00
-## Y.10               0.25    0.00 0.19   0.01  0.09  0.21  0.37  0.71  4633 1.00
-## Y.01               0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.72  4162 1.00
-## Y.11               0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.71  4701 1.00
-## lp__               1.00    0.02 0.96   0.03  0.30  0.72  1.39  3.43  2536 1.00
-## log_sum_gammas[2]  1.85    0.03 1.19   0.36  1.00  1.58  2.41  4.93  1159 1.01
-## lp__              -7.53    0.04 1.65 -11.75 -8.37 -7.15 -6.32 -5.44  1368 1.00
+##                    mean se_mean   sd   2.5%   25%   50%   75% 97.5%
+## X.0                0.50    0.01 0.29   0.03  0.25  0.49  0.74  0.97
+## X.1                0.50    0.01 0.29   0.03  0.26  0.51  0.75  0.97
+## Y.00               0.25    0.00 0.19   0.01  0.09  0.21  0.37  0.70
+## Y.10               0.25    0.00 0.19   0.01  0.09  0.21  0.37  0.71
+## Y.01               0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.72
+## Y.11               0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.71
+## lp__               1.00    0.02 0.96   0.03  0.30  0.72  1.39  3.43
+## log_sum_gammas[2]  1.85    0.03 1.19   0.36  1.00  1.58  2.41  4.93
+## lp__              -7.53    0.04 1.65 -11.75 -8.37 -7.15 -6.32 -5.44
+##                   n_eff Rhat
+## X.0                3036 1.00
+## X.1                3036 1.00
+## Y.00               2031 1.00
+## Y.10               4633 1.00
+## Y.01               4162 1.00
+## Y.11               4701 1.00
+## lp__               2536 1.00
+## log_sum_gammas[2]  1159 1.01
+## lp__               1368 1.00
 ## 
-## Samples were drawn using NUTS(diag_e) at Tue Jul 22 00:07:45 2025.
+## Samples were drawn using NUTS(diag_e) at Wed Jul 30 10:37:35 2025.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).
@@ -628,26 +641,44 @@ model |> inspect("stanfit")
 ## 4 chains, each with iter=2000; warmup=1000; thin=1; 
 ## post-warmup draws per chain=1000, total post-warmup draws=4000.
 ## 
-##                    mean se_mean   sd   2.5%   25%   50%   75% 97.5% n_eff Rhat
-## lambdas[1]         0.50    0.01 0.29   0.03  0.25  0.50  0.75  0.97  2558    1
-## lambdas[2]         0.50    0.01 0.29   0.03  0.25  0.50  0.75  0.97  2558    1
-## lambdas[3]         0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.71  2012    1
-## lambdas[4]         0.26    0.00 0.20   0.01  0.10  0.21  0.38  0.72  4663    1
-## lambdas[5]         0.25    0.00 0.20   0.01  0.08  0.20  0.37  0.71  4851    1
-## lambdas[6]         0.25    0.00 0.19   0.01  0.09  0.20  0.36  0.71  4266    1
-## log_sum_gammas[1]  0.99    0.02 0.99   0.03  0.28  0.69  1.37  3.68  2209    1
-## log_sum_gammas[2]  1.87    0.03 1.21   0.34  0.99  1.61  2.45  5.02  1315    1
-## types[1]           0.13    0.00 0.14   0.00  0.03  0.08  0.18  0.49  2317    1
-## types[2]           0.12    0.00 0.13   0.00  0.02  0.07  0.18  0.49  2150    1
-## types[3]           0.13    0.00 0.14   0.00  0.03  0.08  0.18  0.51  3350    1
-## types[4]           0.13    0.00 0.13   0.00  0.03  0.08  0.18  0.50  3460    1
-## types[5]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3676    1
-## types[6]           0.12    0.00 0.14   0.00  0.02  0.08  0.18  0.51  3694    1
-## types[7]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.47  3424    1
-## types[8]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3166    1
-## lp__              -7.55    0.05 1.66 -11.87 -8.39 -7.15 -6.33 -5.45  1357    1
+##                    mean se_mean   sd   2.5%   25%   50%   75% 97.5%
+## lambdas[1]         0.50    0.01 0.29   0.03  0.25  0.50  0.75  0.97
+## lambdas[2]         0.50    0.01 0.29   0.03  0.25  0.50  0.75  0.97
+## lambdas[3]         0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.71
+## lambdas[4]         0.26    0.00 0.20   0.01  0.10  0.21  0.38  0.72
+## lambdas[5]         0.25    0.00 0.20   0.01  0.08  0.20  0.37  0.71
+## lambdas[6]         0.25    0.00 0.19   0.01  0.09  0.20  0.36  0.71
+## log_sum_gammas[1]  0.99    0.02 0.99   0.03  0.28  0.69  1.37  3.68
+## log_sum_gammas[2]  1.87    0.03 1.21   0.34  0.99  1.61  2.45  5.02
+## types[1]           0.13    0.00 0.14   0.00  0.03  0.08  0.18  0.49
+## types[2]           0.12    0.00 0.13   0.00  0.02  0.07  0.18  0.49
+## types[3]           0.13    0.00 0.14   0.00  0.03  0.08  0.18  0.51
+## types[4]           0.13    0.00 0.13   0.00  0.03  0.08  0.18  0.50
+## types[5]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49
+## types[6]           0.12    0.00 0.14   0.00  0.02  0.08  0.18  0.51
+## types[7]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.47
+## types[8]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49
+## lp__              -7.55    0.05 1.66 -11.87 -8.39 -7.15 -6.33 -5.45
+##                   n_eff Rhat
+## lambdas[1]         2558    1
+## lambdas[2]         2558    1
+## lambdas[3]         2012    1
+## lambdas[4]         4663    1
+## lambdas[5]         4851    1
+## lambdas[6]         4266    1
+## log_sum_gammas[1]  2209    1
+## log_sum_gammas[2]  1315    1
+## types[1]           2317    1
+## types[2]           2150    1
+## types[3]           3350    1
+## types[4]           3460    1
+## types[5]           3676    1
+## types[6]           3694    1
+## types[7]           3424    1
+## types[8]           3166    1
+## lp__               1357    1
 ## 
-## Samples were drawn using NUTS(diag_e) at Tue Jul 22 00:08:05 2025.
+## Samples were drawn using NUTS(diag_e) at Wed Jul 30 10:37:57 2025.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).
@@ -961,10 +992,6 @@ default plot associated with this query:
 ## illustrative code for parallelization
 
 
-``` r
-library("parallel")
-options(mc.cores = parallel::detectCores())
-```
 
 ``` r
 library("future")
@@ -1110,17 +1137,17 @@ generated quantities {
   <tr>
    <td style="text-align:center;"> X1 → Y </td>
    <td style="text-align:center;"> 6 </td>
-   <td style="text-align:center;"> 9.22 </td>
+   <td style="text-align:center;"> 8.49 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> X1 → Y; X2 → Y </td>
    <td style="text-align:center;"> 20 </td>
-   <td style="text-align:center;"> 12.82 </td>
+   <td style="text-align:center;"> 10.07 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> X1 → Y; X2 → Y; X3 → Y </td>
    <td style="text-align:center;"> 262 </td>
-   <td style="text-align:center;"> 100.82 </td>
+   <td style="text-align:center;"> 57.68 </td>
   </tr>
 </tbody>
 </table>
@@ -1136,22 +1163,22 @@ generated quantities {
   <tr>
    <td style="text-align:center;"> X1 → Y </td>
    <td style="text-align:center;"> 10 </td>
-   <td style="text-align:center;"> 9.05 </td>
+   <td style="text-align:center;"> 8.88 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> X1 → Y </td>
    <td style="text-align:center;"> 100 </td>
-   <td style="text-align:center;"> 9.40 </td>
+   <td style="text-align:center;"> 8.18 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> X1 → Y </td>
    <td style="text-align:center;"> 1000 </td>
-   <td style="text-align:center;"> 11.73 </td>
+   <td style="text-align:center;"> 12.11 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> X1 → Y </td>
    <td style="text-align:center;"> 10000 </td>
-   <td style="text-align:center;"> 18.39 </td>
+   <td style="text-align:center;"> 11.00 </td>
   </tr>
 </tbody>
 </table>

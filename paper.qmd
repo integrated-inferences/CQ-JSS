@@ -75,10 +75,9 @@ execute:
 ```{r}
 #| label: preamble
 #| include: false
-
 # knitr::purl("paper.qmd",  "code.R")
 # knitr::spin("code.R")  
-# source("fix_tex.R")
+# source("paper_fix_format.R")
 library("tidyverse")
 library("CausalQueries")
 library("microbenchmark")
@@ -628,9 +627,9 @@ dof <- function(statement) {
 data.frame(
   Model = c(
   "X → Y ← W",
-  "X → Y ← W; X ↔ W",
-  "X → Y ← W; X ↔ Y; W ←→ Y",
-  "X → Y ← W; X ↔ Y; W ←→ Y; X ←→ W",
+  "X → Y ← W; X ←→ W",
+  "X → Y ← W; X ←→ Y; W ←→ Y",
+  "X → Y ← W; X ←→ Y; W ←→ Y; X ←→ W",
   "X → W → Y ← X",
   "X → W → Y ← X; W ←→ Y",
   "X → W → Y ← X; X ←→ W; W ←→ Y",
@@ -1242,7 +1241,7 @@ models <- list(
 )
 ```
 
-@tbl-batch-query then  shows the output from a single call to `query_model()` with the `expand_grid` argument set to `TRUE` to generate all combinations of list elements. 
+@tbl-batch-query then shows the output from a single call to `query_model()` with the `expand_grid` argument set to `TRUE` to generate all combinations of list elements. 
 
 
 ```{r}
@@ -1250,11 +1249,15 @@ models <- list(
 #| echo: true
 #| eval: true
 
-queries <- query_model(models, query = 
-  list(ATE = "Y[X=1] - Y[X=0]", 
-    POS = "Y[X=1] > Y[X=0] :|: Y==1 & X==1"),
-  case_level = c(FALSE, TRUE), using = c("priors", "posteriors"),
-  expand_grid = TRUE)
+queries <- 
+  query_model(
+    models, 
+     query = list(
+       ATE = "Y[X=1] - Y[X=0]", 
+       POS = "Y[X=1] > Y[X=0] :|: Y==1 & X==1"),
+    case_level = c(FALSE, TRUE), 
+    using = c("priors", "posteriors"),
+    expand_grid = TRUE)
 
 ```
 
@@ -1267,8 +1270,7 @@ queries <- query_model(models, query =
 
 queries |>
   dplyr::select(-starts_with("cred"), -sd) |> 
-  kabble(align = "c")
-
+  kabble(align = "c") 
 ```
 
 ```{r}
@@ -1473,6 +1475,9 @@ Increasing the number of parents in a model greatly increases the number of para
 
 iter  <- 4000
 times <- 5
+
+iter  <- 1000
+times <- 1
 
 model <- list(
   CausalQueries::make_model("X -> Y"),
