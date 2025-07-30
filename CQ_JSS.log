@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (MiKTeX 25.2) (preloaded format=pdflatex 2025.3.20)  22 JUL 2025 00:55
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (MiKTeX 25.2) (preloaded format=pdflatex 2025.3.20)  30 JUL 2025 10:56
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1175,20 +1175,8 @@ File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
 File: paper_files/figure-pdf/queryplot-1.pdf Graphic file (type pdf)
 <use paper_files/figure-pdf/queryplot-1.pdf>
 Package pdftex.def Info: paper_files/figure-pdf/queryplot-1.pdf  used on input 
-line 448.
-(pdftex.def)             Requested size: 398.38567pt x 149.39394pt.
-
-! Extra }, or forgotten \endgroup.
-l.448 ...{paper_files/figure-pdf/queryplot-1.pdf}}
-                                                  
-I've deleted a group-closing symbol because it seems to be
-spurious, as in `$x}$'. But perhaps the } is legitimate and
-you forgot something else, as in `\hbox{$x}'. In such cases
-the way to recover is to insert both the forgotten and the
-deleted material, e.g., by typing `I$}'.
-
-
-pdfTeX warning (font expansion): font should be expanded before its first use
+line 445.
+(pdftex.def)             Requested size: 354.12434pt x 132.79645pt.
 
 
 
@@ -1207,8 +1195,6 @@ Overfull \hbox (5.39365pt too wide) in paragraph at lines 507--508
  []
 
 
-
-
 Overfull \hbox (5.47499pt too wide) has occurred while \output is active
 \T1/lmr/m/n/10.95 4 []
  []
@@ -1221,6 +1207,8 @@ Overfull \hbox (5.47499pt too wide) has occurred while \output is active
  []
 
 [5]
+pdfTeX warning (font expansion): font should be expanded before its first use
+
 
 
 Overfull \hbox (5.47499pt too wide) has occurred while \output is active
@@ -1255,6 +1243,20 @@ Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 
 [10]
 pdfTeX warning (font expansion): font should be expanded before its first use
+<paper_files/figure-pdf/fig-plots-1.pdf, id=231, 289.08pt x 433.62pt>
+File: paper_files/figure-pdf/fig-plots-1.pdf Graphic file (type pdf)
+<use paper_files/figure-pdf/fig-plots-1.pdf>
+Package pdftex.def Info: paper_files/figure-pdf/fig-plots-1.pdf  used on input 
+line 1072.
+(pdftex.def)             Requested size: 110.66316pt x 165.99475pt.
+
+pdfTeX warning (font expansion): font should be expanded before its first use
+<paper_files/figure-pdf/fig-plots-2.pdf, id=232, 289.08pt x 433.62pt>
+File: paper_files/figure-pdf/fig-plots-2.pdf Graphic file (type pdf)
+<use paper_files/figure-pdf/fig-plots-2.pdf>
+Package pdftex.def Info: paper_files/figure-pdf/fig-plots-2.pdf  used on input 
+line 1084.
+(pdftex.def)             Requested size: 110.66316pt x 165.99475pt.
 
 
 
@@ -1263,73 +1265,19 @@ Overfull \hbox (10.94998pt too wide) has occurred while \output is active
  []
 
 [11]
-<paper_files/figure-pdf/fig-plots-1.pdf, id=245, 289.08pt x 433.62pt>
-File: paper_files/figure-pdf/fig-plots-1.pdf Graphic file (type pdf)
-<use paper_files/figure-pdf/fig-plots-1.pdf>
-Package pdftex.def Info: paper_files/figure-pdf/fig-plots-1.pdf  used on input 
-line 1076.
-(pdftex.def)             Requested size: 110.66316pt x 165.99475pt.
-
-pdfTeX warning (font expansion): font should be expanded before its first use
-<paper_files/figure-pdf/fig-plots-2.pdf, id=246, 289.08pt x 433.62pt>
-File: paper_files/figure-pdf/fig-plots-2.pdf Graphic file (type pdf)
-<use paper_files/figure-pdf/fig-plots-2.pdf>
-Package pdftex.def Info: paper_files/figure-pdf/fig-plots-2.pdf  used on input 
-line 1088.
-(pdftex.def)             Requested size: 110.66316pt x 165.99475pt.
-
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 \T1/lmr/m/n/10.95 12 []
  []
 
 [12 <./paper_files/figure-pdf/fig-plots-1.pdf> <./paper_files/figure-pdf/fig-pl
 ots-2.pdf>]
+
+
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 [] \T1/lmr/m/n/10.95 13
  []
 
 [13]
-
-! LaTeX Error: Unicode character ↔ (U+2194)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.1269 X → Y ← W; X ↔
-                            W & 18\\
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-! LaTeX Error: Unicode character ↔ (U+2194)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.1270 X → Y ← W; X ↔
-                            Y; W $\leftrightarrow$ Y & 62\\
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
-! LaTeX Error: Unicode character ↔ (U+2194)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.1271 X → Y ← W; X ↔
-                            Y; W $\leftrightarrow$ Y; X $\leftrightarrow$ W ...
-
-You may provide a definition with
-\DeclareUnicodeCharacter 
-
-
 
 
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
@@ -1338,7 +1286,7 @@ Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 
 [14]
 LaTeX Font Info:    Trying to load font information for TS1+lmtt on input line 
-1334.
+1331.
  (C:\Program Files\MiKTeX\tex/latex/lm\ts1lmtt.fd
 File: ts1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
@@ -1440,11 +1388,11 @@ Overfull \hbox (10.94998pt too wide) has occurred while \output is active
  []
 
 [28]
-<paper_files/figure-pdf/fig-posterior-dist-1.pdf, id=430, 353.32pt x 264.99pt>
+<paper_files/figure-pdf/fig-posterior-dist-1.pdf, id=435, 353.32pt x 264.99pt>
 File: paper_files/figure-pdf/fig-posterior-dist-1.pdf Graphic file (type pdf)
 <use paper_files/figure-pdf/fig-posterior-dist-1.pdf>
 Package pdftex.def Info: paper_files/figure-pdf/fig-posterior-dist-1.pdf  used 
-on input line 2294.
+on input line 2293.
 (pdftex.def)             Requested size: 265.59856pt x 199.19891pt.
 
 
@@ -1454,13 +1402,21 @@ Overfull \hbox (10.94998pt too wide) has occurred while \output is active
  []
 
 [29 <./paper_files/figure-pdf/fig-posterior-dist-1.pdf>]
-<paper_files/figure-pdf/fig-case-level-query-1.pdf, id=448, 578.16pt x 216.81pt
+<paper_files/figure-pdf/fig-case-level-query-1.pdf, id=450, 578.16pt x 216.81pt
 >
 File: paper_files/figure-pdf/fig-case-level-query-1.pdf Graphic file (type pdf)
 
 <use paper_files/figure-pdf/fig-case-level-query-1.pdf>
 Package pdftex.def Info: paper_files/figure-pdf/fig-case-level-query-1.pdf  use
-d on input line 2345.
+d on input line 2344.
+(pdftex.def)             Requested size: 354.12434pt x 132.79645pt.
+<paper_files/figure-pdf/fig-new-case-level-query-1.pdf, id=452, 578.16pt x 216.
+81pt>
+File: paper_files/figure-pdf/fig-new-case-level-query-1.pdf Graphic file (type 
+pdf)
+<use paper_files/figure-pdf/fig-new-case-level-query-1.pdf>
+Package pdftex.def Info: paper_files/figure-pdf/fig-new-case-level-query-1.pdf 
+ used on input line 2394.
 (pdftex.def)             Requested size: 354.12434pt x 132.79645pt.
 
 
@@ -1470,15 +1426,9 @@ Overfull \hbox (10.94998pt too wide) has occurred while \output is active
  []
 
 [30 <./paper_files/figure-pdf/fig-case-level-query-1.pdf>]
-<paper_files/figure-pdf/fig-new-case-level-query-1.pdf, id=462, 578.16pt x 216.
-81pt>
-File: paper_files/figure-pdf/fig-new-case-level-query-1.pdf Graphic file (type 
-pdf)
-<use paper_files/figure-pdf/fig-new-case-level-query-1.pdf>
-Package pdftex.def Info: paper_files/figure-pdf/fig-new-case-level-query-1.pdf 
- used on input line 2395.
-(pdftex.def)             Requested size: 354.12434pt x 132.79645pt.
-
+Overfull \hbox (10.97166pt too wide) in alignment at lines 2443--2470
+ [] [] [] [] [] [] [] 
+ []
 
 
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
@@ -1486,10 +1436,12 @@ Overfull \hbox (10.94998pt too wide) has occurred while \output is active
  []
 
 [31 <./paper_files/figure-pdf/fig-new-case-level-query-1.pdf>]
-Overfull \hbox (10.97166pt too wide) in alignment at lines 2444--2474
- [] [] [] [] [] [] [] 
- []
-
+<paper_files/figure-pdf/fig-batch-1.pdf, id=480, 578.16pt x 289.08pt>
+File: paper_files/figure-pdf/fig-batch-1.pdf Graphic file (type pdf)
+<use paper_files/figure-pdf/fig-batch-1.pdf>
+Package pdftex.def Info: paper_files/figure-pdf/fig-batch-1.pdf  used on input 
+line 2479.
+(pdftex.def)             Requested size: 354.12434pt x 177.06194pt.
 
 
 
@@ -1497,7 +1449,7 @@ Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 \T1/lmr/m/n/10.95 32 []
  []
 
-[32]
+[32 <./paper_files/figure-pdf/fig-batch-1.pdf>]
 
 
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
@@ -1566,32 +1518,32 @@ Overfull \hbox (10.94998pt too wide) has occurred while \output is active
  []
 
 [42]
-Underfull \hbox (badness 10000) in paragraph at lines 2920--2920
+Underfull \hbox (badness 10000) in paragraph at lines 2928--2928
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2920--2920
+Underfull \hbox (badness 10000) in paragraph at lines 2928--2928
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2920--2920
+Underfull \hbox (badness 10000) in paragraph at lines 2928--2928
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2920--2920
+Underfull \hbox (badness 10000) in paragraph at lines 2928--2928
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2920--2920
+Underfull \hbox (badness 10000) in paragraph at lines 2928--2928
 
  []
 
 LaTeX Font Info:    Font shape `T1/pzc/m/n' in size <13> not available
-(Font)              Font shape `T1/pzc/m/it' tried instead on input line 2920.
+(Font)              Font shape `T1/pzc/m/it' tried instead on input line 2928.
 
 
 
@@ -1606,10 +1558,10 @@ L3 programming layer <2025-01-18>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 35575 strings out of 473522
- 697234 string characters out of 5724664
- 1137600 words of memory out of 5000000
- 57724 multiletter control sequences out of 15000+600000
+ 35583 strings out of 473522
+ 697593 string characters out of 5724664
+ 1137673 words of memory out of 5000000
+ 57731 multiletter control sequences out of 15000+600000
  678421 words of font info for 245 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  99i,14n,101p,1005b,919s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -1632,9 +1584,9 @@ e1/public/lm/lmsy8.pfb><C:/Program Files/MiKTeX/fonts/type1/public/lm/lmtt10.pf
 b><C:/Program Files/MiKTeX/fonts/type1/public/lm/lmtt9.pfb><C:/Program Files/Mi
 KTeX/fonts/type1/public/lm/lmtto10.pfb><C:/Program Files/MiKTeX/fonts/type1/urw
 /zapfchan/uzcmi8a.pfb>
-Output written on CQ_JSS.pdf (43 pages, 760473 bytes).
+Output written on CQ_JSS.pdf (43 pages, 766267 bytes).
 PDF statistics:
- 880 PDF objects out of 1000 (max. 8388607)
- 181 named destinations out of 1000 (max. 500000)
- 47512 words of extra memory for PDF output out of 51595 (max. 10000000)
+ 888 PDF objects out of 1000 (max. 8388607)
+ 182 named destinations out of 1000 (max. 500000)
+ 47517 words of extra memory for PDF output out of 51595 (max. 10000000)
 

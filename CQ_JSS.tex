@@ -182,7 +182,7 @@
 \makeatletter
 \makeatother
 \makeatletter
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[enhanced, interior hidden, breakable, boxrule=0pt, frame hidden, borderline west={3pt}{0pt}{shadecolor}, sharp corners]}{\end{tcolorbox}}\fi
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[frame hidden, borderline west={3pt}{0pt}{shadecolor}, enhanced, sharp corners, boxrule=0pt, breakable, interior hidden]}{\end{tcolorbox}}\fi
 \makeatother
 
 \usepackage{bookmark}
@@ -417,7 +417,7 @@ lipids data.\footnote{Note that the ``using'' column is omitted to
 \citet{chickering_clinicians_1996}, while row 3 provides inferences for
 the local average treatment effects (LATE).
 
-\begin{longtable}[t]{ccccccc}
+\begin{longtable}{ccccccc}
 
 \toprule
 label & query & given & mean & sd & cred.low & cred.high\\
@@ -436,19 +436,19 @@ LATE & Y[X = 1] - Y[X = 0] & X[Z = 1] > X[Z = 0] & 0.70 & 0.05 & 0.59 & 0.80\\
 
 For visual presentation of the results, output can also be plotted:
 
-\begin{figure}[H]
-\noindent
-\begin{minipage}{\linewidth}
-\vspace{1em}
 \begin{CodeInput}
 R> lipids_queries |> plot()
 \end{CodeInput}
-\vspace{1em}
-\centering
-\includegraphics[keepaspectratio,width=0.9\linewidth]{paper_files/figure-pdf/queryplot-1.pdf}}
+
+\begin{figure}[H]
+
+{\centering \pandocbounded{\includegraphics[keepaspectratio]{paper_files/figure-pdf/queryplot-1.pdf}}
+
+}
+
 \caption{Illustration of queries plotted.}
-\end{minipage}
-\end{figure}
+
+\end{figure}%
 
 These core functions can be combined in a single pipeline as follows:
 
@@ -894,7 +894,7 @@ values. Together, the parameters describe a full joint probability
 distribution over types for \(Z\), \(X\) and \(Y\) that is faithful to
 the graph.
 
-\begin{longtable}[t]{cccccc}
+\begin{longtable}{cccccc}
 
 \toprule
 node & nodal\_type & param\_set & param\_names & param\_value & priors\\
@@ -904,25 +904,21 @@ Z & 1 & Z & Z.1 & 0.16 & 1\\
 X & 00 & X & X.00 & 0.12 & 1\\
 X & 10 & X & X.10 & 0.08 & 1\\
 X & 01 & X & X.01 & 0.11 & 1\\
-\addlinespace
 X & 11 & X & X.11 & 0.69 & 1\\
 Y & 00 & Y.X.00 & Y.00\_X.00 & 0.38 & 1\\
 Y & 10 & Y.X.00 & Y.10\_X.00 & 0.00 & 1\\
 Y & 01 & Y.X.00 & Y.01\_X.00 & 0.20 & 1\\
 Y & 11 & Y.X.00 & Y.11\_X.00 & 0.42 & 1\\
-\addlinespace
 Y & 00 & Y.X.01 & Y.00\_X.01 & 0.40 & 1\\
 Y & 10 & Y.X.01 & Y.10\_X.01 & 0.38 & 1\\
 Y & 01 & Y.X.01 & Y.01\_X.01 & 0.06 & 1\\
 Y & 11 & Y.X.01 & Y.11\_X.01 & 0.16 & 1\\
 Y & 00 & Y.X.10 & Y.00\_X.10 & 0.71 & 1\\
-\addlinespace
 Y & 10 & Y.X.10 & Y.10\_X.10 & 0.15 & 1\\
 Y & 01 & Y.X.10 & Y.01\_X.10 & 0.05 & 1\\
 Y & 11 & Y.X.10 & Y.11\_X.10 & 0.09 & 1\\
 Y & 00 & Y.X.11 & Y.00\_X.11 & 0.65 & 1\\
 Y & 10 & Y.X.11 & Y.10\_X.11 & 0.04 & 1\\
-\addlinespace
 Y & 01 & Y.X.11 & Y.01\_X.11 & 0.01 & 1\\
 Y & 11 & Y.X.11 & Y.11\_X.11 & 0.30 & 1\\
 \bottomrule
@@ -1135,8 +1131,8 @@ Description
 \endhead
 \bottomrule\noalign{}
 \tabularnewline
-\caption{Elements of a model that can be inspected using
-\texttt{inspect()}.}\label{tbl-core}\tabularnewline
+\caption{Elements of a model that can be
+inspected.}\label{tbl-core}\tabularnewline
 \endlastfoot
 \texttt{statement} & A character string describing causal relations
 using dagitty syntax. \\
@@ -1239,6 +1235,7 @@ model.}\label{tbl-joint}\tabularnewline
 \(\Pr(\theta^X_1, \theta^Y_{01})\) & \(\Pr(\theta^Y_{01})\) \\
 \(\theta^Y_{11}\) & \(\Pr(\theta^X_0, \theta^Y_{11})\) &
 \(\Pr(\theta^X_1, \theta^Y_{11})\) & \(\Pr(\theta^Y_{11})\) \\
+\(\sum\) & \(\Pr(\theta^X_0)\) & \(\Pr(\theta^X_1)\) & 1 \\
 \end{longtable}
 
 Table~\ref{tbl-joint} has eight interior elements so that an
@@ -1260,17 +1257,16 @@ The confounding structure can influence the number of parameters based
 on the underlying DAG. Table~\ref{tbl-dof} demonstrates the number of
 independent parameters required for different types of confounding.
 
-\begin{longtable}[t]{lc}
+\begin{longtable}{lc}
 
 \toprule
 Model & Degrees of freedom\\
 \midrule
 X → Y ← W & 17\\
-X → Y ← W; X ↔ W & 18\\
-X → Y ← W; X ↔ Y; W $\leftrightarrow$ Y & 62\\
-X → Y ← W; X ↔ Y; W $\leftrightarrow$ Y; X $\leftrightarrow$ W & 63\\
+X → Y ← W; X $\leftrightarrow$ W & 18\\
+X → Y ← W; X $\leftrightarrow$ Y; W $\leftrightarrow$ Y & 62\\
+X → Y ← W; X $\leftrightarrow$ Y; W $\leftrightarrow$ Y; X $\leftrightarrow$ W & 63\\
 X → W → Y ← X & 19\\
-\addlinespace
 X → W → Y ← X; W $\leftrightarrow$ Y & 64\\
 X → W → Y ← X; X $\leftrightarrow$ W; W $\leftrightarrow$ Y & 67\\
 X → W → Y ← X; X $\leftrightarrow$ W; W $\leftrightarrow$ Y; X $\leftrightarrow$ Y & 127\\
@@ -1297,7 +1293,8 @@ estimates of the complier average treatment effect. In
 which \(X\) decreases in \(Z\) as follows:
 
 \begin{CodeInput}
-R> model_restricted <- lipids_model |> set_restrictions("X[Z = 1] < X[Z = 0]")
+R> model_restricted <- lipids_model |> 
++    set_restrictions("X[Z = 1] < X[Z = 0]")
 \end{CodeInput}
 
 If we wanted to retain only this nodal type rather than remove it, we
@@ -1403,7 +1400,8 @@ priors is to add them as a vector of numbers using
 
 \begin{CodeChunk}
 \begin{CodeInput}
-R> lipids_model |> set_priors(param_names = c("X.10", "X.01"), alphas = 3:4) |> 
+R> lipids_model |> set_priors(
++    param_names = c("X.10", "X.01"), alphas = 3:4) |> 
 +    inspect("prior_hyperparameters", nodes = "X")
 \end{CodeInput}
 
@@ -1459,7 +1457,8 @@ average causal effect implied by flat priors is \(1/3\). This can be
 demonstrated by querying the model as follows:
 
 \begin{CodeInput}
-R> query <- make_model("X -> Y") |> set_restrictions(decreasing("X", "Y")) |>
+R> query <- make_model("X -> Y") |> 
++    set_restrictions(decreasing("X", "Y")) |>
 +    query_model("Y[X = 1] - Y[X = 0]", using = "priors")
 \end{CodeInput}
 
@@ -1867,18 +1866,18 @@ Inference for Stan model: simplexes.
 4 chains, each with iter=2000; warmup=1000; thin=1; 
 post-warmup draws per chain=1000, total post-warmup draws=4000.
 
-                   mean se_mean   sd   2.5%   25%   50%   75% 97.5% n_eff Rhat
-X.0                0.50    0.01 0.29   0.03  0.25  0.49  0.74  0.97  3036 1.00
-X.1                0.50    0.01 0.29   0.03  0.26  0.51  0.75  0.97  3036 1.00
-Y.00               0.25    0.00 0.19   0.01  0.09  0.21  0.37  0.70  2031 1.00
-Y.10               0.25    0.00 0.19   0.01  0.09  0.21  0.37  0.71  4633 1.00
-Y.01               0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.72  4162 1.00
-Y.11               0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.71  4701 1.00
-lp__               1.00    0.02 0.96   0.03  0.30  0.72  1.39  3.43  2536 1.00
-log_sum_gammas[2]  1.85    0.03 1.19   0.36  1.00  1.58  2.41  4.93  1159 1.01
-lp__              -7.53    0.04 1.65 -11.75 -8.37 -7.15 -6.32 -5.44  1368 1.00
+                   mean se_mean   sd   2.5%   25%   50%   75% 97.5% n_eff...
+X.0                0.50    0.01 0.29   0.03  0.25  0.49  0.74  0.97  3036...
+X.1                0.50    0.01 0.29   0.03  0.26  0.51  0.75  0.97  3036...
+Y.00               0.25    0.00 0.19   0.01  0.09  0.21  0.37  0.70  2031...
+Y.10               0.25    0.00 0.19   0.01  0.09  0.21  0.37  0.71  4633...
+Y.01               0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.72  4162...
+Y.11               0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.71  4701...
+lp__               1.00    0.02 0.96   0.03  0.30  0.72  1.39  3.43  2536...
+log_sum_gammas[2]  1.85    0.03 1.19   0.36  1.00  1.58  2.41  4.93  1159...
+lp__              -7.53    0.04 1.65 -11.75 -8.37 -7.15 -6.32 -5.44  1368...
 
-Samples were drawn using NUTS(diag_e) at Tue Jul 22 00:29:34 2025.
+Samples were drawn using NUTS(diag_e) at Wed Jul 30 10:29:24 2025.
 For each parameter, n_eff is a crude measure of effective sample size,
 and Rhat is the potential scale reduction factor on split chains (at 
 convergence, Rhat=1).
@@ -1972,26 +1971,26 @@ Inference for Stan model: simplexes.
 4 chains, each with iter=2000; warmup=1000; thin=1; 
 post-warmup draws per chain=1000, total post-warmup draws=4000.
 
-                   mean se_mean   sd   2.5%   25%   50%   75% 97.5% n_eff Rhat
-lambdas[1]         0.50    0.01 0.29   0.03  0.25  0.50  0.75  0.97  2558    1
-lambdas[2]         0.50    0.01 0.29   0.03  0.25  0.50  0.75  0.97  2558    1
-lambdas[3]         0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.71  2012    1
-lambdas[4]         0.26    0.00 0.20   0.01  0.10  0.21  0.38  0.72  4663    1
-lambdas[5]         0.25    0.00 0.20   0.01  0.08  0.20  0.37  0.71  4851    1
-lambdas[6]         0.25    0.00 0.19   0.01  0.09  0.20  0.36  0.71  4266    1
-log_sum_gammas[1]  0.99    0.02 0.99   0.03  0.28  0.69  1.37  3.68  2209    1
-log_sum_gammas[2]  1.87    0.03 1.21   0.34  0.99  1.61  2.45  5.02  1315    1
-types[1]           0.13    0.00 0.14   0.00  0.03  0.08  0.18  0.49  2317    1
-types[2]           0.12    0.00 0.13   0.00  0.02  0.07  0.18  0.49  2150    1
-types[3]           0.13    0.00 0.14   0.00  0.03  0.08  0.18  0.51  3350    1
-types[4]           0.13    0.00 0.13   0.00  0.03  0.08  0.18  0.50  3460    1
-types[5]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3676    1
-types[6]           0.12    0.00 0.14   0.00  0.02  0.08  0.18  0.51  3694    1
-types[7]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.47  3424    1
-types[8]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3166    1
-lp__              -7.55    0.05 1.66 -11.87 -8.39 -7.15 -6.33 -5.45  1357    1
+                   mean se_mean   sd   2.5%   25%   50%   75% 97.5% n_eff...
+lambdas[1]         0.50    0.01 0.29   0.03  0.25  0.50  0.75  0.97  2558...
+lambdas[2]         0.50    0.01 0.29   0.03  0.25  0.50  0.75  0.97  2558...
+lambdas[3]         0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.71  2012...
+lambdas[4]         0.26    0.00 0.20   0.01  0.10  0.21  0.38  0.72  4663...
+lambdas[5]         0.25    0.00 0.20   0.01  0.08  0.20  0.37  0.71  4851...
+lambdas[6]         0.25    0.00 0.19   0.01  0.09  0.20  0.36  0.71  4266...
+log_sum_gammas[1]  0.99    0.02 0.99   0.03  0.28  0.69  1.37  3.68  2209...
+log_sum_gammas[2]  1.87    0.03 1.21   0.34  0.99  1.61  2.45  5.02  1315...
+types[1]           0.13    0.00 0.14   0.00  0.03  0.08  0.18  0.49  2317...
+types[2]           0.12    0.00 0.13   0.00  0.02  0.07  0.18  0.49  2150...
+types[3]           0.13    0.00 0.14   0.00  0.03  0.08  0.18  0.51  3350...
+types[4]           0.13    0.00 0.13   0.00  0.03  0.08  0.18  0.50  3460...
+types[5]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3676...
+types[6]           0.12    0.00 0.14   0.00  0.02  0.08  0.18  0.51  3694...
+types[7]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.47  3424...
+types[8]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3166...
+lp__              -7.55    0.05 1.66 -11.87 -8.39 -7.15 -6.33 -5.45  1357...
 
-Samples were drawn using NUTS(diag_e) at Tue Jul 22 00:29:51 2025.
+Samples were drawn using NUTS(diag_e) at Wed Jul 30 10:29:44 2025.
 For each parameter, n_eff is a crude measure of effective sample size,
 and Rhat is the potential scale reduction factor on split chains (at 
 convergence, Rhat=1).
@@ -2441,7 +2440,7 @@ R> queries <- query_model(models, query =
 +    expand_grid = TRUE)
 \end{CodeInput}
 
-\begin{longtable}[t]{ccccccc}
+\begin{longtable}{ccccccc}
 
 \toprule
 label & model & query & given & using & case\_level & mean\\
@@ -2451,19 +2450,16 @@ ATE & Restricted & Y[X=1] - Y[X=0] & - & priors & FALSE & 0.00\\
 ATE & Unrestricted & Y[X=1] - Y[X=0] & - & posteriors & FALSE & 0.56\\
 ATE & Restricted & Y[X=1] - Y[X=0] & - & posteriors & FALSE & 0.56\\
 POS & Unrestricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & priors & FALSE & 0.50\\
-\addlinespace
 POS & Restricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & priors & FALSE & 0.49\\
 POS & Unrestricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & posteriors & FALSE & 0.95\\
 POS & Restricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & posteriors & FALSE & 0.95\\
 ATE & Unrestricted & Y[X=1] - Y[X=0] & - & priors & TRUE & 0.00\\
 ATE & Restricted & Y[X=1] - Y[X=0] & - & priors & TRUE & 0.00\\
-\addlinespace
 ATE & Unrestricted & Y[X=1] - Y[X=0] & - & posteriors & TRUE & 0.56\\
 ATE & Restricted & Y[X=1] - Y[X=0] & - & posteriors & TRUE & 0.56\\
 POS & Unrestricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & priors & TRUE & 0.50\\
 POS & Restricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & priors & TRUE & 0.49\\
 POS & Unrestricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & posteriors & TRUE & 0.95\\
-\addlinespace
 POS & Restricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & posteriors & TRUE & 0.95\\
 \bottomrule
 
@@ -2473,7 +2469,21 @@ POS & Restricted & Y[X=1] > Y[X=0] & Y==1 \& X==1 & posteriors & TRUE & 0.95\\
 \tabularnewline
 \end{longtable}
 
-\textbf{?@fig-batch} shows the default plot associated with this query.
+Figure~\ref{fig-batch} shows the default plot associated with this
+query.
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{paper_files/figure-pdf/fig-batch-1.pdf}}
+
+}
+
+\caption{\label{fig-batch}Default plotting for a a set of queries over
+multiple models.}
+
+\end{figure}%
 
 \section{Summary and discussion}\label{summary-and-discussion}
 
@@ -2521,18 +2531,14 @@ requirements}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4100}}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4100}}@{}}
 \toprule\noalign{}
-\endfirsthead
 \endhead
 \bottomrule\noalign{}
-\tabularnewline
-\caption{Computational details and software
-requirements.}\tabularnewline
 \endlastfoot
 Version & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
 \item
-  1.3.3
+  1.4.3
 \end{itemize}
 \end{minipage} & \\
 Availability & \begin{minipage}[t]{\linewidth}\raggedright
@@ -2667,6 +2673,8 @@ R-Packages Imports & \begin{minipage}[t]{\linewidth}\raggedright
 \end{minipage} & \\
 \end{longtable}
 
+Computational details and software requirements.
+
 The results in this paper were obtained using
 \proglang{R}\textasciitilde4.3 with the \pkg{MASS}\textasciitilde7.3-60
 package. \proglang{R} itself and all packages used are available from
@@ -2676,7 +2684,7 @@ the Comprehensive \proglang{R} Archive Network (CRAN) at
 \section*{Acknowledgments}\label{acknowledgments}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, colframe=quarto-callout-color-frame, breakable, rightrule=.15mm, bottomrule=.15mm, opacityback=0, toprule=.15mm, arc=.35mm, colback=white, left=2mm, leftrule=.75mm]
+\begin{tcolorbox}[enhanced jigsaw, colback=white, bottomrule=.15mm, leftrule=.75mm, breakable, opacityback=0, arc=.35mm, left=2mm, colframe=quarto-callout-color-frame, rightrule=.15mm, toprule=.15mm]
 
 We thank Ben Goodrich, who provided generous insights on using
 \texttt{stan} for this project. We thank Alan M Jacobs for key work in
@@ -2878,14 +2886,14 @@ specialized methods for handling large causal models. In contrast, the
 results suggest that computational time is concave in the size of the
 data.
 
-\begin{longtable}[t]{ccc}
+\begin{longtable}{ccc}
 
 \toprule
 Model & Number of parameters & Runtime (seconds)\\
 \midrule
-X1 → Y & 6 & 7.32\\
-X1 → Y; X2 → Y & 20 & 10.96\\
-X1 → Y; X2 → Y; X3 → Y & 262 & 100.92\\
+X1 → Y & 6 & 7.33\\
+X1 → Y; X2 → Y & 20 & 8.66\\
+X1 → Y; X2 → Y; X3 → Y & 262 & 59.96\\
 \bottomrule
 
 
@@ -2894,15 +2902,15 @@ X1 → Y; X2 → Y; X3 → Y & 262 & 100.92\\
 \tabularnewline
 \end{longtable}
 
-\begin{longtable}[t]{ccc}
+\begin{longtable}{ccc}
 
 \toprule
 Model & Number of observations & Runtime (seconds)\\
 \midrule
-X1 → Y & 10 & 9.19\\
-X1 → Y & 100 & 9.15\\
-X1 → Y & 1000 & 11.43\\
-X1 → Y & 10000 & 18.25\\
+X1 → Y & 10 & 8.95\\
+X1 → Y & 100 & 7.77\\
+X1 → Y & 1000 & 10.80\\
+X1 → Y & 10000 & 11.13\\
 \bottomrule
 
 
