@@ -884,9 +884,10 @@ CausalQueries:::stanmodels$simplexes
 #| tbl-cap: "Benchmarking 1."
 #| echo: true
 #| eval: true
+#| warning: false
 #| message: false
 
-iter  <- 4000
+iter  <- 5000
 times <- 5
 
 model <- list(
@@ -900,9 +901,12 @@ data <- expand_grid(X1 = 0:1, X2 = 0:1, X3 = 0:1) |> uncount(20) |>
 
 
 benchmark_model <- microbenchmark::microbenchmark(
-  m1 = CausalQueries::update_model(model[[1]], data, iter = iter, refresh = 0),
-  m2 = CausalQueries::update_model(model[[2]], data, iter = iter, refresh = 0),
-  m3 = CausalQueries::update_model(model[[3]], data, iter = iter, refresh = 0),
+  m1 = CausalQueries::update_model(model[[1]], data, 
+  iter = iter, refresh = 0),
+  m2 = CausalQueries::update_model(model[[2]], data, 
+  iter = iter, refresh = 0),
+  m3 = CausalQueries::update_model(model[[3]], data, 
+  iter = iter, refresh = 0),
   times = times
 )
 
@@ -927,6 +931,7 @@ benchmark_1 |>
 #| tbl-cap: "Benchmarking 2."
 #| echo: true
 #| message: false
+#| warning: false
 #| eval: true
 
 model <- CausalQueries::make_model("X -> Y")
@@ -936,12 +941,16 @@ data <- lapply(10^c(1:4), function(n) {
 })
 
 benchmark_data <- microbenchmark::microbenchmark(
-  d0 = CausalQueries::update_model(model, data[[1]], iter = iter, refresh = 0),
-  d1 = CausalQueries::update_model(model, data[[2]], iter = iter, refresh = 0),
-  d2 = CausalQueries::update_model(model, data[[3]], iter = iter, refresh = 0),
-  d3 = CausalQueries::update_model(model, data[[4]], iter = iter, refresh = 0),
+  d0 = CausalQueries::update_model(model, data[[1]], 
+    iter = iter, refresh = 0),
+  d1 = CausalQueries::update_model(model, data[[2]], 
+    iter = iter, refresh = 0),
+  d2 = CausalQueries::update_model(model, data[[3]], 
+    iter = iter, refresh = 0),
+  d3 = CausalQueries::update_model(model, data[[4]], 
+    iter = iter, refresh = 0),
   times = times
-)
+  )
 
 benchmark2 <- data.frame(
   Model = c("X1 → Y", 

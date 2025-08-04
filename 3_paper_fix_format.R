@@ -89,5 +89,5 @@ fix_code_file <- function(file_path) {
 }
 
 # Implement
-process_code_blocks("paper.tex", "CQ_JSS.tex")
+process_code_blocks("2_paper.tex", "CQ_JSS.tex")
 fix_code_file("code.R")

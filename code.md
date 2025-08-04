@@ -3,7 +3,7 @@
 
 ---
 title: "Replication code for 'Making, Updating, and Querying Causal Models using CausalQueries'"
-date: 2025-07-30
+date: 2025-08-05
 author: Till Tietz, Lily Medina, Georgiy Syunyaev, and Macartan Humphreys
 format:
   html: 
@@ -22,12 +22,12 @@ library("tidyverse")
 ```
 
 ```
-## ── Attaching core tidyverse packages ───────────────────────── tidyverse 2.0.0 ──
-## ✔ dplyr     1.1.4     ✔ purrr     1.1.0
+## ── Attaching core tidyverse packages ─────────────────────── tidyverse 2.0.0 ──
+## ✔ dplyr     1.1.4     ✔ purrr     1.0.4
 ## ✔ forcats   1.0.0     ✔ readr     2.1.5
 ## ✔ ggplot2   3.5.2     ✔ tibble    3.3.0
 ## ✔ lubridate 1.9.4     ✔ tidyr     1.3.1
-## ── Conflicts ─────────────────────────────────────────── tidyverse_conflicts() ──
+## ── Conflicts ───────────────────────────────────────── tidyverse_conflicts() ──
 ## ✖ dplyr::filter() masks stats::filter()
 ## ✖ dplyr::lag()    masks stats::lag()
 ## ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
@@ -56,6 +56,7 @@ library("rstan")
 ## change `threads_per_chain` option:
 ## rstan_options(threads_per_chain = 1)
 ## 
+## Do not specify '-march=native' in 'LOCAL_CPPFLAGS' or a Makevars file
 ## 
 ## Attaching package: 'rstan'
 ## 
@@ -224,9 +225,9 @@ kabble(align = "c")
    <td style="text-align:center;"> PoC </td>
    <td style="text-align:center;"> Y[X = 1] - Y[X = 0] </td>
    <td style="text-align:center;"> X == 0 &amp; Y == 0 </td>
-   <td style="text-align:center;"> 0.64 </td>
+   <td style="text-align:center;"> 0.63 </td>
    <td style="text-align:center;"> 0.15 </td>
-   <td style="text-align:center;"> 0.37 </td>
+   <td style="text-align:center;"> 0.38 </td>
    <td style="text-align:center;"> 0.89 </td>
   </tr>
   <tr>
@@ -818,7 +819,7 @@ make_model("X -> Y") |> update_model(keep_type_distribution = FALSE,
 ## log_sum_gammas[2]  1.86    0.05 1.27   0.34  0.99  1.59  2.42  4.99   649 1.01
 ## lp__              -7.58    0.05 1.72 -11.74 -8.44 -7.17 -6.34 -5.43  1185 1.00
 ## 
-## Samples were drawn using NUTS(diag_e) at Wed Jul 30 16:25:32 2025.
+## Samples were drawn using NUTS(diag_e) at Tue Aug  5 00:13:42 2025.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).
@@ -895,7 +896,7 @@ model |> inspect("stanfit")
 ## types[8]           0.13    0.00 0.13   0.00  0.03  0.08  0.19  0.49  3863 1.00
 ## lp__              -7.53    0.04 1.65 -11.75 -8.37 -7.15 -6.32 -5.44  1368 1.00
 ## 
-## Samples were drawn using NUTS(diag_e) at Wed Jul 30 16:25:44 2025.
+## Samples were drawn using NUTS(diag_e) at Tue Aug  5 00:13:57 2025.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).
@@ -1396,7 +1397,7 @@ CausalQueries:::stanmodels$simplexes
 
 
 ``` r
-iter  <- 4000
+iter  <- 5000
 times <- 5
 
 model <- list(
@@ -1410,104 +1411,15 @@ data <- expand_grid(X1 = 0:1, X2 = 0:1, X3 = 0:1) |> uncount(20) |>
 
 
 benchmark_model <- microbenchmark::microbenchmark(
-  m1 = CausalQueries::update_model(model[[1]], data, iter = iter, refresh = 0),
-  m2 = CausalQueries::update_model(model[[2]], data, iter = iter, refresh = 0),
-  m3 = CausalQueries::update_model(model[[3]], data, iter = iter, refresh = 0),
+  m1 = CausalQueries::update_model(model[[1]], data, 
+  iter = iter, refresh = 0),
+  m2 = CausalQueries::update_model(model[[2]], data, 
+  iter = iter, refresh = 0),
+  m3 = CausalQueries::update_model(model[[3]], data, 
+  iter = iter, refresh = 0),
   times = times
 )
-```
 
-```
-## Warning: The largest R-hat is 1.18, indicating chains have not mixed.
-## Running the chains for more iterations may help. See
-## https://mc-stan.org/misc/warnings.html#r-hat
-```
-
-```
-## Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
-## Running the chains for more iterations may help. See
-## https://mc-stan.org/misc/warnings.html#bulk-ess
-```
-
-```
-## Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
-## Running the chains for more iterations may help. See
-## https://mc-stan.org/misc/warnings.html#tail-ess
-```
-
-```
-## Warning: The largest R-hat is 1.13, indicating chains have not mixed.
-## Running the chains for more iterations may help. See
-## https://mc-stan.org/misc/warnings.html#r-hat
-```
-
-```
-## Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
-## Running the chains for more iterations may help. See
-## https://mc-stan.org/misc/warnings.html#bulk-ess
-```
-
-```
-## Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
-## Running the chains for more iterations may help. See
-## https://mc-stan.org/misc/warnings.html#tail-ess
-```
-
-```
-## Warning: The largest R-hat is 1.05, indicating chains have not mixed.
-## Running the chains for more iterations may help. See
-## https://mc-stan.org/misc/warnings.html#r-hat
-```
-
-```
-## Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
-## Running the chains for more iterations may help. See
-## https://mc-stan.org/misc/warnings.html#bulk-ess
-```
-
-```
-## Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
-## Running the chains for more iterations may help. See
-## https://mc-stan.org/misc/warnings.html#tail-ess
-```
-
-```
-## Warning: The largest R-hat is 1.07, indicating chains have not mixed.
-## Running the chains for more iterations may help. See
-## https://mc-stan.org/misc/warnings.html#r-hat
-```
-
-```
-## Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
-## Running the chains for more iterations may help. See
-## https://mc-stan.org/misc/warnings.html#bulk-ess
-```
-
-```
-## Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
-## Running the chains for more iterations may help. See
-## https://mc-stan.org/misc/warnings.html#tail-ess
-```
-
-```
-## Warning: The largest R-hat is 1.07, indicating chains have not mixed.
-## Running the chains for more iterations may help. See
-## https://mc-stan.org/misc/warnings.html#r-hat
-```
-
-```
-## Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
-## Running the chains for more iterations may help. See
-## https://mc-stan.org/misc/warnings.html#bulk-ess
-```
-
-```
-## Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
-## Running the chains for more iterations may help. See
-## https://mc-stan.org/misc/warnings.html#tail-ess
-```
-
-``` r
 benchmark_1 <- data.frame(
 Model = c(
   "X1 → Y",
@@ -1533,17 +1445,17 @@ benchmark_1 |>
   <tr>
    <td style="text-align:center;"> X1 → Y </td>
    <td style="text-align:center;"> 6 </td>
-   <td style="text-align:center;"> 5.32 </td>
+   <td style="text-align:center;"> 7.42 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> X1 → Y; X2 → Y </td>
    <td style="text-align:center;"> 20 </td>
-   <td style="text-align:center;"> 6.59 </td>
+   <td style="text-align:center;"> 9.91 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> X1 → Y; X2 → Y; X3 → Y </td>
    <td style="text-align:center;"> 262 </td>
-   <td style="text-align:center;"> 54.48 </td>
+   <td style="text-align:center;"> 94.30 </td>
   </tr>
 </tbody>
 </table>
@@ -1556,75 +1468,17 @@ data <- lapply(10^c(1:4), function(n) {
 })
 
 benchmark_data <- microbenchmark::microbenchmark(
-  d0 = CausalQueries::update_model(model, data[[1]], iter = iter, refresh = 0),
-  d1 = CausalQueries::update_model(model, data[[2]], iter = iter, refresh = 0),
-  d2 = CausalQueries::update_model(model, data[[3]], iter = iter, refresh = 0),
-  d3 = CausalQueries::update_model(model, data[[4]], iter = iter, refresh = 0),
+  d0 = CausalQueries::update_model(model, data[[1]], 
+    iter = iter, refresh = 0),
+  d1 = CausalQueries::update_model(model, data[[2]], 
+    iter = iter, refresh = 0),
+  d2 = CausalQueries::update_model(model, data[[3]], 
+    iter = iter, refresh = 0),
+  d3 = CausalQueries::update_model(model, data[[4]], 
+    iter = iter, refresh = 0),
   times = times
-)
-```
+  )
 
-```
-## Warning: There were 221 divergent transitions after warmup. See
-## https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
-## to find out why this is a problem and how to eliminate them.
-```
-
-```
-## Warning: Examine the pairs() plot to diagnose sampling problems
-```
-
-```
-## Warning: The largest R-hat is 1.1, indicating chains have not mixed.
-## Running the chains for more iterations may help. See
-## https://mc-stan.org/misc/warnings.html#r-hat
-```
-
-```
-## Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
-## Running the chains for more iterations may help. See
-## https://mc-stan.org/misc/warnings.html#bulk-ess
-```
-
-```
-## Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
-## Running the chains for more iterations may help. See
-## https://mc-stan.org/misc/warnings.html#tail-ess
-```
-
-```
-## Warning: There were 6 divergent transitions after warmup. See
-## https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
-## to find out why this is a problem and how to eliminate them.
-```
-
-```
-## Warning: Examine the pairs() plot to diagnose sampling problems
-```
-
-```
-## Warning: There were 46 divergent transitions after warmup. See
-## https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
-## to find out why this is a problem and how to eliminate them.
-```
-
-```
-## Warning: Examine the pairs() plot to diagnose sampling problems
-```
-
-```
-## Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
-## Running the chains for more iterations may help. See
-## https://mc-stan.org/misc/warnings.html#bulk-ess
-```
-
-```
-## Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
-## Running the chains for more iterations may help. See
-## https://mc-stan.org/misc/warnings.html#tail-ess
-```
-
-``` r
 benchmark2 <- data.frame(
   Model = c("X1 → Y", 
             "X1 → Y", 
@@ -1650,22 +1504,22 @@ benchmark2 |>
   <tr>
    <td style="text-align:center;"> X1 → Y </td>
    <td style="text-align:center;"> 10 </td>
-   <td style="text-align:center;"> 5.09 </td>
+   <td style="text-align:center;"> 8.41 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> X1 → Y </td>
    <td style="text-align:center;"> 100 </td>
-   <td style="text-align:center;"> 5.19 </td>
+   <td style="text-align:center;"> 8.34 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> X1 → Y </td>
    <td style="text-align:center;"> 1000 </td>
-   <td style="text-align:center;"> 5.88 </td>
+   <td style="text-align:center;"> 11.25 </td>
   </tr>
   <tr>
    <td style="text-align:center;"> X1 → Y </td>
    <td style="text-align:center;"> 10000 </td>
-   <td style="text-align:center;"> 7.82 </td>
+   <td style="text-align:center;"> 20.48 </td>
   </tr>
 </tbody>
 </table>
