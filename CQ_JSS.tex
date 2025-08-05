@@ -182,7 +182,7 @@
 \makeatletter
 \makeatother
 \makeatletter
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[boxrule=0pt, enhanced, borderline west={3pt}{0pt}{shadecolor}, sharp corners, interior hidden, breakable, frame hidden]}{\end{tcolorbox}}\fi
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[boxrule=0pt, borderline west={3pt}{0pt}{shadecolor}, enhanced, sharp corners, interior hidden, breakable, frame hidden]}{\end{tcolorbox}}\fi
 \makeatother
 
 \usepackage{bookmark}
@@ -203,8 +203,8 @@
 %% -- Article metainformation (author, title, ...) -----------------------------
 
 %% Author information
-\author{Till Tietz~\orcidlink{0000-0002-2916-9059}\\Humboldt
-University \And Lily Medina~\orcidlink{0009-0004-2423-524X}\\University
+\author{Till Tietz~\orcidlink{0000-0002-2916-9059}\\Independent
+Researcher \And Lily Medina~\orcidlink{0009-0004-2423-524X}\\University
 of California, Berkeley \AND Georgiy
 Syunyaev~\orcidlink{0000-0002-4391-6313}\\Vanderbilt
 University \And Macartan Humphreys~\orcidlink{0000-0001-7029-2326}\\WZB}
@@ -250,8 +250,6 @@ user-specified candidate vector of parameters.}
 %% in the following format:
 \Address{
 Till Tietz\\
-Humboldt University\\
-Berlin Germany\\
 E-mail: \email{ttietz2014@gmail.com}\\
 URL: \url{https://github.com/till-tietz}\\
 \\~
@@ -707,6 +705,8 @@ However, the broader framework can be adapted for these purposes
 inference are case-level or population-level quantities;
 \pkg{CausalQueries} is not well-suited for estimating sample quantities.
 
+\newpage
+
 \section{Statistical model}\label{sec-theory}
 
 The core conceptual framework used by \pkg{CausalQueries} is that
@@ -750,32 +750,34 @@ outcomes. Adding the final element of the definition then gives us the
 fully specified causal model.
 
 With discrete-valued nodes, it is possible to identify all potential
-responses of a node to its parents, which we call ``nodal types''
-(``response functions'' in \citet{pearl_causality_2009}). If a node
-\(i\) can take on \(k_i\) possible values, then the set of possible
-values that the parents of \(j\) can assume is
-\(m_j :=\prod_{i\in PA_j}k_i\). Consequently, there are \(k_j^{m_j}\)
-different ways that node \(j\) might respond to its parents. For binary
-nodes, this simplifies to \(2^{\left(2^{|PA_j|}\right)}\). Thus, an
-endogenous node with no parents has 2 nodal types; a binary node with
-one binary parent has four types; and a binary node with two parents has
-16 types, and so forth.
+responses of a node to possible values of its parents, which we call the
+set of ``nodal types'' (``response functions'' in
+\citet{pearl_causality_2009}). If a node \(i\) can take on \(k_i\)
+possible values, then the set of possible values that the parents of
+\(j\) can assume is \(m_j :=\prod_{i\in PA_j}k_i\). Consequently, there
+are \(k_j^{m_j}\) different ways that node \(j\) might respond to its
+parents. For binary nodes, this simplifies to
+\(2^{\left(2^{|PA_j|}\right)}\). Thus, an endogenous node with no
+parents has 2 nodal types; a binary node with one binary parent has four
+types; and a binary node with two parents has 16 types, and so forth.
 
 As a practical matter we need to label response types. In
 \pkg{CausalQueries} this is done using subscripts that indicate the
 response given different combinations of parents. A node, \(Y\), with
-one binary parent, \(X\), has a nodal types subscripted with two values
-indicating the two possible values of \(Y\)'s parent (0 or 1):
+one binary parent, \(X\), has nodal types subscripted with two values
+indicating the two possible values of \(Y\)'s parent (\(0\) or \(1\)):
 \((\theta_{00}, \theta_{01}, \theta_{10}, \theta_{11})\), where
-\(\theta_{ab}\) labels nodal type \((Y(X=0) = a,Y(X=1) = b)\). The same
-approach is used for nodes with more (or fewer) nodal types, where the
-\(i\)th digit in the subscript corresponding to the value the node takes
-when the parents take on the \(i\)th combination of possible parent
-values (listed in colexicographic binary order given the specified
-ordering of parents).\footnote{A similar approach may be used for non
-  binary nodes though in this case the index components can take on more
-  values and then length of indices adjust to reflect the set of all
-  possible parent value combinations.}
+\(\theta_{ab}\) denotes a nodal type for which \(Y\) takes the value
+\(a\) under the intervention \(\text{do}(X = 0)\) and the value \(b\)
+under \(\text{do}(X = 1)\). The same approach is used for nodes with
+more (or fewer) nodal types, where the \(i\)th digit in the subscript
+corresponds to the value the node takes when the parents take on the
+\(i\)th combination of possible parent values (listed in colexicographic
+binary order given the specified ordering of parents).\footnote{A
+  similar approach may be used for non binary nodes though in this case
+  the index components can take on more values and then length of
+  indices adjust to reflect the set of all possible parent value
+  combinations.}
 
 The complete set of possible causal reactions of a given unit to all
 possible values of its parents is represented by its collection of nodal
@@ -882,7 +884,7 @@ values for the Lipids model. We see here that we have two types for the
 exogenous node \(Z\), four for \(X\) (representing the strata familiar
 from instrumental variables analysis: never takers, always takers,
 defiers, and compliers) and four for \(Y\). For \(Z\) and \(X\) we have
-parameters corresponding to probability of these nodal types. For
+parameters corresponding to the probability of these nodal types. For
 instance \texttt{Z.0} is the probability that \(Z=0\). \texttt{Z.1} is
 the complementary probability that \(Z=1\). Things are a little more
 complicated for distributions on nodal types for \(Y\) however: because
@@ -939,14 +941,14 @@ w_{000}=\Pr(Z=0, X=0, Y=0) = \lambda^Z_0\lambda^X_{00}(\lambda^{Y|\lambda^X_{00}
 
 The value of the \pkg{CausalQueries} package is that it enables users to
 specify arbitrary models of this form, determine all the implied nodal
-and causal types, and update these models using given priors and data.
-This is achieved by calculating event probabilities based on all
-possible parameter vectors and subsequently the likelihood of the data
-given the model. Additionally, the package allows users to pose
-arbitrary queries on a model to evaluate the values of estimands of
-interest, which are functions of the values or counterfactual values of
-nodes, \emph{conditional} on the values or counterfactual values of
-nodes.
+and causal types, place priors over these models, and update over these
+models using given priors and data. This is achieved by calculating
+event probabilities based on all possible parameter vectors and
+subsequently the likelihood of the data given the model. Additionally,
+the package allows users to pose arbitrary queries on a model to
+evaluate the values of estimands of interest, which are functions of the
+values or counterfactual values of nodes, \emph{conditional} on the
+values or counterfactual values of nodes.
 
 The following sections review the classes and methods used by
 \pkg{CausalQueries} and the key functionalities for making, updating,
@@ -1877,7 +1879,7 @@ lp__               1.02    0.02 1.00   0.03  0.29  0.71  1.43  3.75  2419...
 log_sum_gammas[2]  1.86    0.05 1.27   0.34  0.99  1.59  2.42  4.99   649...
 lp__              -7.58    0.05 1.72 -11.74 -8.44 -7.17 -6.34 -5.43  1185...
 
-Samples were drawn using NUTS(diag_e) at Mon Aug  4 23:57:39 2025.
+Samples were drawn using NUTS(diag_e) at Tue Aug  5 17:52:24 2025.
 For each parameter, n_eff is a crude measure of effective sample size,
 and Rhat is the potential scale reduction factor on split chains (at 
 convergence, Rhat=1).
@@ -1990,7 +1992,7 @@ types[7]           0.12    0.00 0.13   0.00  0.03  0.08  0.17  0.49  3841...
 types[8]           0.13    0.00 0.13   0.00  0.03  0.08  0.19  0.49  3863...
 lp__              -7.53    0.04 1.65 -11.75 -8.37 -7.15 -6.32 -5.44  1368...
 
-Samples were drawn using NUTS(diag_e) at Mon Aug  4 23:57:55 2025.
+Samples were drawn using NUTS(diag_e) at Tue Aug  5 17:52:39 2025.
 For each parameter, n_eff is a crude measure of effective sample size,
 and Rhat is the potential scale reduction factor on split chains (at 
 convergence, Rhat=1).
@@ -2062,7 +2064,7 @@ R> make_model("X -> Y") |> realise_outcomes()
 \end{CodeChunk}
 
 Intervening on \(X\) \citep[see][]{pearl_causality_2009} with
-\(do(X=1)\) yields:
+\(\text{do}(X=1)\) yields:
 
 \begin{CodeChunk}
 \begin{CodeInput}
@@ -2591,11 +2593,11 @@ Testing Environments R & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
 \item
+  R 4.5.1
+\item
+  R 4.4.3
+\item
   R 4.4.2
-\item
-  R 4.3.3
-\item
-  R 4.2.3
 \item
   r-devel
 \end{itemize}
@@ -2688,7 +2690,7 @@ the Comprehensive \proglang{R} Archive Network (CRAN) at
 \section*{Acknowledgments}\label{acknowledgments}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, colback=white, arc=.35mm, opacityback=0, rightrule=.15mm, toprule=.15mm, left=2mm, bottomrule=.15mm, colframe=quarto-callout-color-frame, breakable]
+\begin{tcolorbox}[enhanced jigsaw, colback=white, toprule=.15mm, bottomrule=.15mm, left=2mm, arc=.35mm, leftrule=.75mm, breakable, rightrule=.15mm, colframe=quarto-callout-color-frame, opacityback=0]
 
 We thank Ben Goodrich, who provided generous insights on using
 \texttt{stan} for this project. We thank Alan M Jacobs for key work in
@@ -2876,7 +2878,7 @@ specifications of the hardware system used to produce them. The first
 benchmark considers the effect of model complexity on updating time. The
 second benchmark considers the effect of data size on updating time. We
 run four parallel chains for each model with a relatively large number
-(4000) of iterations each time, all replicated five times. The results
+(4000) of iterations each time, all replicated eight times. The results
 of the benchmarks are presented in Table~\ref{tbl-bench1} and
 Table~\ref{tbl-bench2}.
 
@@ -2895,9 +2897,9 @@ data.
 \toprule
 Model & Number of parameters & Runtime (seconds)\\
 \midrule
-X1 → Y & 6 & 7.37\\
-X1 → Y; X2 → Y & 20 & 10.30\\
-X1 → Y; X2 → Y; X3 → Y & 262 & 97.51\\
+X1 → Y & 6 & 6.08\\
+X1 → Y; X2 → Y & 20 & 7.71\\
+X1 → Y; X2 → Y; X3 → Y & 262 & 63.41\\
 \bottomrule
 
 
@@ -2911,10 +2913,10 @@ X1 → Y; X2 → Y; X3 → Y & 262 & 97.51\\
 \toprule
 Model & Number of observations & Runtime (seconds)\\
 \midrule
-X1 → Y & 10 & 7.97\\
-X1 → Y & 100 & 8.37\\
-X1 → Y & 1000 & 10.76\\
-X1 → Y & 10000 & 19.92\\
+X1 → Y & 10 & 4.79\\
+X1 → Y & 100 & 5.30\\
+X1 → Y & 1000 & 5.68\\
+X1 → Y & 10000 & 7.88\\
 \bottomrule
 
 

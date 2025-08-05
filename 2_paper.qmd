@@ -85,7 +85,35 @@ library("rstan")
 
 options(kableExtra.latex.load_packages = FALSE)
 library("kableExtra")
+
 options(mc.cores = parallel::detectCores())
+set.seed(1, "L'Ecuyer-CMRG")
+theme_set(theme_bw())
+
+
+kabble <- function(
+    x, 
+    align = "c", 
+    format = ifelse(knitr::is_html_output(), "html", "latex"), 
+    ...) {
+  x |>
+    knitr::kable(
+      format = format,
+      digits = 2,
+      align = align,
+      booktabs = TRUE, 
+      linesep = "",
+      longtable = TRUE,
+      ...) |>
+    kableExtra::kable_classic_2(latex_options = c("scale_down"))
+}
+
+```
+
+```{r}
+#| label: preamble_2
+#| include: false
+#| purl: false
 
 
 if (knitr::is_latex_output()) {
@@ -134,26 +162,6 @@ knitr::knit_hooks$set(source = function(x, options) {
          paste(formatted_lines, collapse = "\n"),
          "\n\\end{CodeInput}\n")
 })
-}
-
-set.seed(1, "L'Ecuyer-CMRG")
-theme_set(theme_bw())
-
-kabble <- function(
-    x, 
-    align = "c", 
-    format = ifelse(knitr::is_html_output(), "html", "latex"), 
-    ...) {
-  x |>
-    knitr::kable(
-      format = format,
-      digits = 2,
-      align = align,
-      booktabs = TRUE, 
-      linesep = "",
-      longtable = TRUE,
-      ...) |>
-    kableExtra::kable_classic_2(latex_options = c("scale_down"))
 }
 
 ```
@@ -337,7 +345,9 @@ In summary, the main strength of [CausalQueries]{.pkg} is its ability to let use
 
 There are two main limitations of the models that [CausalQueries]{.pkg} can handle. First, [CausalQueries]{.pkg} is designed for models with a relatively small number of binary nodes. Since it does not limit the range of possible causal relationships in a model, the parameter space expands quickly with the model's complexity. This complexity growth depends on the causal structure and increases rapidly with the number of parents influencing a child node. A chain model like $A \rightarrow B \rightarrow C \rightarrow D \rightarrow E$ has only 18 parameters ($2^1 + 4\times 2^2$), while a model in which $A, B, C, D$ are all direct ancestors of $E$ has $65,544$ parameters ($4\times 2^1 + 2^{(2^4)}$). Switching from binary to nonbinary nodes has similar effects. The restriction to binary nodes is for computational, not conceptual, reasons.^[See Section 9.4.1 of @humphreys_integrated_2023 for a method that represents non-binary data as a profile of outcomes on multiple binary nodes.]
 
-Second, the package is designed for learning about populations from independently sampled units. Therefore, it does not inherently address issues of clustering, hierarchical structures, or purposive sampling. However, the broader framework can be adapted for these purposes [see Section 9.4 of @humphreys_integrated_2023]. The targets of inference are case-level or population-level quantities; [CausalQueries]{.pkg} is not well-suited for estimating sample quantities.
+Second, the package is designed for learning about populations from independently sampled units. Therefore, it does not inherently address issues of clustering, hierarchical structures, or purposive sampling. However, the broader framework can be adapted for these purposes [see Section 9.4 of @humphreys_integrated_2023]. The targets of inference are case-level or population-level quantities; [CausalQueries]{.pkg} is not well-suited for estimating sample quantities. 
+
+\newpage
 
 ## Statistical model {#sec-theory}
 
@@ -372,9 +382,9 @@ Elements 1-3 define a "**structural causal model**." These components pin down a
 
 Specifying a structural causal model involves making possibly strong assumptions, for example about which nodes are not plausibly causes of other nodes. Even still, without information on the distribution of exogenous nodes, a structural causal model is generally not rich enough to allow us to make probabilistic statements about the distribution of outcomes. Adding the final element of the definition then gives us the fully specified causal model.
 
-With discrete-valued nodes, it is possible to identify all potential responses of a node to its parents,  which we call "nodal types" ("response functions" in @pearl_causality_2009). If a node $i$ can take on $k_i$ possible values, then the set of possible values that the parents of $j$ can assume is $m_j :=\prod_{i\in PA_j}k_i$. Consequently, there are $k_j^{m_j}$ different ways that node $j$ might respond to its parents. For binary nodes, this simplifies to $2^{\left(2^{|PA_j|}\right)}$. Thus, an endogenous node with no parents has 2 nodal types; a binary node with one binary parent has four types; and a binary node with two parents has 16 types, and so forth.
+With discrete-valued nodes, it is possible to identify all potential responses of a node to possible values of its parents,  which we call the set of "nodal types" ("response functions" in @pearl_causality_2009). If a node $i$ can take on $k_i$ possible values, then the set of possible values that the parents of $j$ can assume is $m_j :=\prod_{i\in PA_j}k_i$. Consequently, there are $k_j^{m_j}$ different ways that node $j$ might respond to its parents. For binary nodes, this simplifies to $2^{\left(2^{|PA_j|}\right)}$. Thus, an endogenous node with no parents has 2 nodal types; a binary node with one binary parent has four types; and a binary node with two parents has 16 types, and so forth.
 
-As a practical matter we need to label response types. In [CausalQueries]{.pkg} this is done using subscripts that indicate the response given different combinations of parents. A node, $Y$, with one binary parent, $X$, has a nodal types subscripted with two values indicating the two possible values of $Y$'s parent (0 or 1):  $(\theta_{00}, \theta_{01}, \theta_{10}, \theta_{11})$,  where $\theta_{ab}$ labels nodal type  $(Y(X=0) = a,Y(X=1) = b)$. The same approach is used for nodes with more (or fewer) nodal types, where the $i$th digit in the subscript corresponding to the value the node takes when the parents take on the $i$th combination of possible parent values (listed in colexicographic binary order given the specified ordering of parents).^[A similar approach may be used for non binary nodes though in this case the index components can take on more values and then length of indices adjust to reflect the set of all possible parent value combinations.] 
+As a practical matter we need to label response types. In [CausalQueries]{.pkg} this is done using subscripts that indicate the response given different combinations of parents. A node, $Y$, with one binary parent, $X$, has nodal types subscripted with two values indicating the two possible values of $Y$'s parent ($0$ or $1$): $(\theta_{00}, \theta_{01}, \theta_{10}, \theta_{11})$, where $\theta_{ab}$ denotes a nodal type for which $Y$ takes the value $a$ under the intervention $\text{do}(X = 0)$ and the value $b$ under $\text{do}(X = 1)$. The same approach is used for nodes with more (or fewer) nodal types, where the $i$th digit in the subscript corresponds to the value the node takes when the parents take on the $i$th combination of possible parent values (listed in colexicographic binary order given the specified ordering of parents).^[A similar approach may be used for non binary nodes though in this case the index components can take on more values and then length of indices adjust to reflect the set of all possible parent value combinations.] 
 
 
 The complete set of possible causal reactions of a given unit to all possible values of its parents is represented by its collection of nodal types at each node. We refer to this collection as a unit's "causal type," denoted as $\theta$. These causal types correspond to the principal strata, which are familiar from the study of instrumental variables [@frangakis_principal_2002].
@@ -423,7 +433,7 @@ $$
 
 where $\lambda^Y_{01}=\Pr(\theta^Y = \theta^Y_{01})$ and the subscripts ($0$, $00$, $01$, \dots)  summarize the responses of nodes to parent combinations, as described above.
 
-For a more complex example, @tbl-lipidspar illustrates key values for the Lipids model. We see here that we have two types for the exogenous node $Z$, four for $X$ (representing the strata familiar from instrumental variables analysis: never takers, always takers, defiers, and compliers) and four for $Y$. For $Z$ and $X$ we have parameters corresponding to probability of these nodal types. For instance `Z.0` is the probability that $Z=0$. `Z.1` is the complementary probability that $Z=1$. Things are a little more complicated for distributions on nodal types for $Y$ however: because of confounding between $X$ and $Y$ we have parameters that capture the conditional probability of the nodal types for $Y$ *given* the nodal types for $X$. We see there are four sets of these parameters. The next to final column shows a sample set of parameter values. Together, the parameters describe a full joint probability distribution over types for $Z$, $X$ and $Y$ that is faithful to the graph.
+For a more complex example, @tbl-lipidspar illustrates key values for the Lipids model. We see here that we have two types for the exogenous node $Z$, four for $X$ (representing the strata familiar from instrumental variables analysis: never takers, always takers, defiers, and compliers) and four for $Y$. For $Z$ and $X$ we have parameters corresponding to the probability of these nodal types. For instance `Z.0` is the probability that $Z=0$. `Z.1` is the complementary probability that $Z=1$. Things are a little more complicated for distributions on nodal types for $Y$ however: because of confounding between $X$ and $Y$ we have parameters that capture the conditional probability of the nodal types for $Y$ *given* the nodal types for $X$. We see there are four sets of these parameters. The next to final column shows a sample set of parameter values. Together, the parameters describe a full joint probability distribution over types for $Z$, $X$ and $Y$ that is faithful to the graph.
 
 ```{r}
 #| label: tbl-lipidspar
@@ -447,7 +457,7 @@ $$
 w_{000}=\Pr(Z=0, X=0, Y=0) = \lambda^Z_0\lambda^X_{00}(\lambda^{Y|\lambda^X_{00}}_{00}+\lambda^{Y|\lambda^X_{00}}_{01}) + \lambda^Z_0\lambda^X_{01}(\lambda^{Y|\lambda^X_{01}}_{00}+\lambda^{Y|\lambda^X_{01}}_{01})
 $$
 
-The value of the [CausalQueries]{.pkg} package is that it enables users to specify arbitrary models of this form, determine all the implied nodal and causal types, and update these models using given priors and data. This is achieved by calculating event probabilities based on all possible parameter vectors and subsequently the likelihood of the data given the model. Additionally, the package allows users to pose arbitrary queries on a model to evaluate the values of estimands of interest, which are functions of the values or counterfactual values of nodes, *conditional* on the values or counterfactual values of nodes.
+The value of the [CausalQueries]{.pkg} package is that it enables users to specify arbitrary models of this form, determine all the implied nodal and causal types, place priors over these models, and update over these models using given priors and data. This is achieved by calculating event probabilities based on all possible parameter vectors and subsequently the likelihood of the data given the model. Additionally, the package allows users to pose arbitrary queries on a model to evaluate the values of estimands of interest, which are functions of the values or counterfactual values of nodes, *conditional* on the values or counterfactual values of nodes.
 
 The following sections review the classes and methods used by [CausalQueries]{.pkg} and the key functionalities for making, updating, and querying causal models.
 
@@ -1109,7 +1119,7 @@ make_model("X -> Y") |> realise_outcomes()
 
 ```
 
-Intervening on $X$ [see @pearl_causality_2009] with $do(X=1)$ yields:
+Intervening on $X$ [see @pearl_causality_2009] with $\text{do}(X=1)$ yields:
 
 ```{r}
 #| label: realise-outcomes-do
@@ -1515,7 +1525,7 @@ CausalQueries:::stanmodels$simplexes
 #' # Appendix C: Benchmarks
 ```
 
-We present a brief summary of model updating benchmarks. Note that these benchmarks are not generally reproducible and depend on the specifications of the hardware system used to produce them. The first benchmark considers the effect of model complexity on updating time. The second benchmark considers the effect of data size on updating time. We run four parallel chains for each model with a relatively large number (4000) of iterations each time, all replicated five times. The results of the benchmarks are presented in @tbl-bench1 and @tbl-bench2.
+We present a brief summary of model updating benchmarks. Note that these benchmarks are not generally reproducible and depend on the specifications of the hardware system used to produce them. The first benchmark considers the effect of model complexity on updating time. The second benchmark considers the effect of data size on updating time. We run four parallel chains for each model with a relatively large number (4000) of iterations each time, all replicated eight times. The results of the benchmarks are presented in @tbl-bench1 and @tbl-bench2.
 
 Increasing the number of parents in a model greatly increases the number of parameters and computational time. The results suggests the computational time is convex in the number of parents. Unless model restrictions are imposed, four parents would yield 65,536 parameters. The rapid growth of the parameter space with increasing model complexity places limits on feasible computability without further recourse to specialized methods for handling large causal models. In contrast, the results suggest that computational time is concave in the size of the data.
 
@@ -1527,8 +1537,8 @@ Increasing the number of parents in a model greatly increases the number of para
 #| warning: false
 #| message: false
 
-iter  <- 5000
-times <- 5
+iter  <- 4000
+times <- 8
 
 model <- list(
   CausalQueries::make_model("X -> Y"),

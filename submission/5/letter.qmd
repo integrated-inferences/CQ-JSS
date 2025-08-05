@@ -5,13 +5,15 @@ format: pdf
 
 Berlin, `r format(Sys.Date(), "%B %Y")`
 
+
 Dear Editors:
 
-Thank you and the reviewers for these useful comments on our manuscript. 
+Thank you and the reviewers for these very useful comments on our manuscript. 
+
+
+Reviewers 1 provided useful guidance especially regarding coding, formatting, and style.
 
 We address these in turn:
-
-Reviewers 1's comments were mostly formal. We address these in turn:
 
 1. `\section`, `\subsection`, etc. should be in sentence style  
 
@@ -87,7 +89,9 @@ Reviewers 1's comments were mostly formal. We address these in turn:
 
 # Reviewer 2
 
-1. Page 6, paragraph 4, line 1: ”...define arbitrary DAG...” should be ”...define an arbitrary DAG...”.  
+Reviewer 2 provided a number of very helpful substantive comments as well as useful suggestions for the package.
+
+1. Page 6, paragraph 4, line 1: "...define arbitrary DAG..." should be "...define an arbitrary DAG...".  
 
 > *Corrected, with thanks.*
 
@@ -95,11 +99,11 @@ Reviewers 1's comments were mostly formal. We address these in turn:
 
 > *Corrected, with thanks.*
 
-3. Page 7, Definition 1, item 3: For consistency with items 1 and 2, the authors may want to replace ”a collection of functions...” with ”an ordered collection of functions...”.  
+3. Page 7, Definition 1, item 3: For consistency with items 1 and 2, the authors may want to replace "a collection of functions..." with "an ordered collection of functions...".  
 
 > *Edited, with thanks.*
 
-4. Also, since the paper's introduction refers to ”...causal models consistent with the structural model...” it would be beneficial to add a note on how these terms are distinguished in this paper somewhere.  
+4. Also, since the paper's introduction refers to "...causal models consistent with the structural model..." it would be beneficial to add a note on how these terms are distinguished in this paper somewhere.  
 
 > *We add a paragraph distinguishing between these types of model beside the introduction of the definition.*
 
@@ -107,7 +111,7 @@ Reviewers 1's comments were mostly formal. We address these in turn:
 
 > *Edited, with thanks.*
 
-6. Page 7, third paragraph following Definition 1: It is unclear what ”...align the domain...” means. Using ”...partition the domain...” is more clear and standard terminology. Pearl calls this a canonical partition.  
+6. Page 7, third paragraph following Definition 1: It is unclear what "...align the domain..." means. Using "...partition the domain..." is more clear and standard terminology. Pearl calls this a canonical partition.  
 
 > *Edited, with thanks.*
 
@@ -115,9 +119,9 @@ Reviewers 1's comments were mostly formal. We address these in turn:
 
 > *Edited, with thanks.*
 
-8. Page 8, line 14: Following common terminology on distributions over variables, ”...Dirichlet distribution over $\lambda_j$...” should be either ”...Dirichlet distribution over $\theta_j$...” or "...Dirichlet distribution for $\lambda$...”. Likewise, the displayed Bayesian updating equation following the paragraph should use $\theta$ in place of $\lambda$, since $\lambda$ is itself the probability of the causal type $\theta$.  
+8. Page 8, line 14: Following common terminology on distributions over variables, "...Dirichlet distribution over $\lambda^j$..." should be either "...Dirichlet distribution over $\theta^j$..." or "...Dirichlet distribution for $\lambda$...". Likewise, the displayed Bayesian updating equation following the paragraph should use $\theta$ in place of $\lambda$, since $\lambda$ is itself the probability of the causal type $\theta$.  
 
-> *Please note: We have maintained the existing language here. The reason is that the `CausalQueries` package in fact updates over the $\lambda$s. The reviewer correctly notes that the $\lambda$ terms characterize the distribution over the $\theta$s; they are thus part of the definition of a causal model. However `CausalQueries` works on distributions over the $\lambda$s, that is it lets users update over causal models. Intuitively one might think of $\lambda_j$ as capturing the share of units of type $\theta^j$; if a unit is drawn at random then the probability that a unit has type $\theta^j$ is $\lambda_j$. We assume however that there is uncertainty not just over $\theta^j$ but over the shares, $\lambda_j$ and so we update over these shares.*
+> *Please note: We have maintained the existing language here. The reason is that the `CausalQueries` package in fact updates over the $\lambda$s. The reviewer correctly notes that the $\lambda$ terms characterize the distribution over the $\theta$s; they are thus part of the definition of a causal model. However `CausalQueries` works on distributions over the $\lambda$s, that is it lets users update over causal models. Intuitively one might think of $\lambda^j$ as capturing the share of units of type $\theta^j$; if a unit is drawn at random then the probability that a unit has type $\theta^j$ is $\lambda^j$. We assume however that there is uncertainty not just over $\theta^j$ but over the shares, $\lambda^j$ and so we update over these shares.*
 
 9. Page 8, bottom: In the displayed multinomial, the parameter N has not been defined.  
 
@@ -125,13 +129,13 @@ Reviewers 1's comments were mostly formal. We address these in turn:
 
 10. Page 9, first displayed formula: Here it becomes relevant what kinds of responses the subscripts actually encode.  
 
-> *This is correct; we have now added text providing the encoding we use explicitly: "As a practical matter we need to label response types. In [CausalQueries]{.pkg} this is done using subscripts that indicate the response given different combinations of parents. A node, $Y$, with one binary parent, $X$, has a nodal types subscripted with two values indicating the two possible values of $Y$'s parent (0 or 1): $(\theta_{00}, \theta_{01}, \theta_{10}, \theta_{11})$, where $\theta_{ab}$ labels nodal type $(Y(X=0) = a,Y(X=1) = b)$. The same approach is used for nodes with more (or fewer) nodal types, where the $i$th digit in the subscript corresponds to the value the node takes when the parents take on the $i$th combination of possible parent values (listed in colexicographic binary order given the specified ordering of parents)."*
+> *This is correct, thank you. We have now added text providing the encoding we use explicitly: "As a practical matter we need to label response types. In [CausalQueries]{.pkg} this is done using subscripts that indicate the response given different combinations of parents. A node, $Y$, with one binary parent, $X$, has nodal types subscripted with two values indicating the two possible values of $Y$'s parent ($0$ or $1$): $(\theta_{00}, \theta_{01}, \theta_{10}, \theta_{11})$, where $\theta_{ab}$ denotes a nodal type for which $Y$ takes the value $a$ under the intervention $\text{do}(X = 0)$ and the value $b$ under $\text{do}(X = 1)$. The same approach is used for nodes with more (or fewer) nodal types, where the $i$th digit in the subscript corresponds to the value the node takes when the parents take on the $i$th combination of possible parent values (listed in colexicographic binary order given the specified ordering of parents)."*
 
 11. Page 16–17: Regarding caution and sensitivity to priors, the authors may also want to refer to Richardson et al. [2011].  
 
 > *Added, with thanks.*
 
-12. Page 17, line 1: In ”...when models are not identified...”, the word models should rather be replaced by estimands or queries.  
+12. Page 17, line 1: In "...when models are not identified...", the word models should rather be replaced by estimands or queries.  
 
 > *Edited, with thanks.*
 
@@ -139,15 +143,15 @@ Reviewers 1's comments were mostly formal. We address these in turn:
 
 > *Corrected, with thanks.*
 
-14. Page 28, first line of paragraph following second code block: ”...in addition...” should be ”... and in addition,...” or ”...in addition to...”.  
+14. Page 28, first line of paragraph following second code block: "...in addition..." should be "... and in addition,..." or "...in addition to...".  
 
 > *Corrected, with thanks.*
 
-15. Page 29, example under “Nested queries”: The authors may want to add a note that the query `Y[M=M[X=0],X=1]==1` is commonly referred to as a natural direct effect in mediation analysis by Pearl.  
+15. Page 29, example under “Nested queries": The authors may want to add a note that the query `Y[M=M[X=0],X=1]==1` is commonly referred to as a natural direct effect in mediation analysis by Pearl.  
 
 > *Added, with thanks.*
 
-16. Page 32, sentence before code block: ”...limits model...” should be ”...lipids model...”.  
+16. Page 32, sentence before code block: "...limits model..." should be "...lipids model...".  
 
 > *Corrected, with thanks.*
 
@@ -168,24 +172,40 @@ Reviewers 1's comments were mostly formal. We address these in turn:
 ```{r, eval = FALSE}
 Warning message:
 In check_query(query) :
-  Non-linear transformations (such as / or ^) are not supported in querying.
+  Non-linear transformations (such as /, ^, exp() or log()) 
+  are not supported in querying.
 ```
 
 18. In `?make_model`, the possibility for confounded `X<->Y` should be mentioned.  
 
-> *Added, with thanks.*
+> *Added to the most recent package update, with thanks.*
 
 19. Also nice to have: links to documentations of related functions mentioned, e.g., to set priors and set parameters in `?make_model`.  
 
-> *Implemented, with thanks.*
+> *Implemented in the most recent package update, with thanks.*
 
 20. In `summary.causal_model`, the meaning of the display column for a node is not immediately clear and might benefit from an example in the documentation.
 
-> *We have sought to make this output more interpretable:*
+> *We have sought to make this output more interpretable in the most recent package update:*
 
 ```{r, eval = FALSE}
-$Y
-0000  1000  0100  1100  0010  1010  0110  1110  0001  1001  
+> make_model("X1 -> Y <- X2") |> summary() 
+
+Causal statement: 
+X1 -> Y; X2 -> Y
+
+Nodal types: 
+
+Nodal types for X1:
+0  1
+
+Nodal types for X2:
+0  1
+
+Nodal types for Y:
+0000  1000  0100  1100  0010  1010  0110  1110  0001  ...
+
+Guide to interpreting nodal types for Y:
 
   index            interpretation
 1  *---  Y = * if X1 = 0 & X2 = 0

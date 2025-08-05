@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<meta name="generator" content="litedown 0.7">
+<title>Replication code for ‘Making, Updating, and Querying Causal Models using CausalQueries’</title>
+<style type="text/css">
+body {
+  font-family: sans-serif;
+  max-width: 800px;
+  margin: auto;
+  padding: 1em;
+  line-height: 1.5;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+body, .abstract, code, .footnotes, footer, #refs, .caption { font-size: .9em; }
+li li { font-size: .95em; }
+ul:has(li > input[type="checkbox"]) { list-style: none; padding-left: 1em; }
+*, :before, :after { box-sizing: border-box; }
+a { color: steelblue; }
+pre, img { max-width: 100%; }
+pre { white-space: pre-wrap; word-break: break-word; }
+pre code { display: block; padding: 1em; overflow-x: auto; }
+code { font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace; }
+:not(pre, th) > code, code[class], div > .caption { background: #f8f8f8; }
+pre > code:is(:not([class]), .language-plain, .language-none, .plain), .box, .figure, .table { background: inherit; border: 1px solid #eee; }
+pre > code {
+  &.message { border-color: #9eeaf9; }
+  &.warning { background: #fff3cd; border-color: #fff3cd; }
+  &.error { background: #f8d7da; border-color: #f8d7da; }
+}
+.fenced-chunk { border-left: 1px solid #666; }
+.code-fence {
+  opacity: .4;
+  border: 1px dashed #666;
+  border-left: 2px solid;
+  &:hover { opacity: inherit; }
+}
+.box, .figure, .table, table { margin: 1em auto; }
+div > .caption { padding: 1px 1em; }
+.figure { p:has(img, svg), pre:has(svg) { text-align: center; } }
+.flex-col { display: flex; justify-content: space-between; }
+table {
+  &:only-child:not(.table > *) { margin: auto; }
+  th, td { padding: 5px; font-variant-numeric: tabular-nums; }
+  thead, tfoot, tr:nth-child(even) { background: whitesmoke; }
+  thead th { border-bottom: 1px solid #ddd; }
+  &:not(.datatable-table) {
+    border-top: 1px solid #666;
+    border-bottom: 1px solid #666;
+  }
+}
+blockquote {
+  color: #666;
+  margin: 0;
+  padding: 1px 1em;
+  border-left: .5em solid #eee;
+}
+hr, .footnotes::before { border: 1px dashed #ddd; }
+.frontmatter { text-align: center; }
+#TOC {
+  a { text-decoration: none; }
+  ul { list-style: none; padding-left: 1em; }
+  & > ul { padding: 0; }
+  ul ul { border-left: 1px solid lightsteelblue; }
+}
+.body h2 { border-bottom: 1px solid #666; }
+.body .appendix, .appendix ~ h2 { border-bottom-style: dashed; }
+.main-number::after { content: "."; }
+span[class^="ref-number-"] { font-weight: bold; }
+.ref-number-fig::after, .ref-number-tab::after { content: ":"; }
+.cross-ref-chp::before { content: "Chapter "; }
+.cross-ref-sec::before { content: "Section "; }
+.cross-ref-fig::before, .ref-number-fig::before { content: "Figure "; }
+.cross-ref-tab::before, .ref-number-tab::before { content: "Table "; }
+.cross-ref-eqn::before, .MathJax_ref:has(mjx-mtext > mjx-c + mjx-c)::before { content: "Equation "; }
+.abstract, #refs {
+  &::before { display: block; margin: 1em auto; font-weight: bold; }
+}
+.abstract::before { content: "Abstract"; text-align: center; }
+#refs::before { content: "Bibliography"; font-size: 1.5em; }
+.ref-paren-open::before { content: "("; }
+.ref-paren-close::after { content: ")"; }
+.ref-semicolon::after { content: "; "; }
+.ref-and::after { content: " and "; }
+.ref-et-al::after { content: " et al."; font-style: italic; }
+.footnote-ref a {
+  &::before { content: "["; }
+  &::after { content: "]"; }
+}
+section.footnotes {
+  margin-top: 2em;
+  &::before { content: ""; display: block; max-width: 20em; }
+}
+.fade {
+  background: repeating-linear-gradient(135deg, white, white 30px, #ddd 32px, #ddd 32px);
+  opacity: 0.6;
+}
+
+@media print {
+  body { max-width: 100%; }
+  tr, img { break-inside: avoid; }
+}
+@media only screen and (min-width: 992px) {
+  body:not(.pagesjs) pre:has(.line-numbers):not(:hover) { white-space: pre; }
+}
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.14/css/prism-xcode.min.css">
+<script src="https://cdn.jsdelivr.net/combine/npm/katex@0.16.22/dist/katex.min.js,npm/katex@0.16.22/dist/contrib/auto-render.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.14/js/render-katex.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js" defer></script>
+</head>
+<body>
+<div class="frontmatter">
+<div class="title"><h1>Replication code for ‘Making, Updating, and Querying Causal Models using CausalQueries’</h1></div>
+<div class="author"><h2>Till Tietz, Lily Medina, Georgiy Syunyaev, and Macartan Humphreys</h2></div>
+<div class="date"><h3>2025-08-05</h3></div>
+</div>
+<div class="body">
+<p>Generated by <code>knitr::spin()</code> from <code>code.R</code>.</p>
+<p>Note: final section of code for microbenchmarking is slow</p>
+<h2 id="sec:set-up">Set up</h2>
+<pre><code class="language-r">library(&quot;tidyverse&quot;)
+</code></pre>
+<pre><code>## ── Attaching core tidyverse packages ─────────────────────────────────────────────────────────────────────────────────────────── tidyverse 2.0.0 ──
+## ✔ dplyr     1.1.4     ✔ purrr     1.1.0
+## ✔ forcats   1.0.0     ✔ readr     2.1.5
+## ✔ ggplot2   3.5.2     ✔ tibble    3.3.0
+## ✔ lubridate 1.9.4     ✔ tidyr     1.3.1
+## ── Conflicts ───────────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()
+## ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors
+</code></pre>
+<pre><code class="language-r">library(&quot;CausalQueries&quot;)
+library(&quot;microbenchmark&quot;)
+library(&quot;parallel&quot;)
+library(&quot;future&quot;)
+library(&quot;future.apply&quot;)
+library(&quot;knitr&quot;)
+library(&quot;rstan&quot;)
+</code></pre>
+<pre><code>## Loading required package: StanHeaders
+## 
+## rstan version 2.32.7 (Stan version 2.32.2)
+## 
+## For execution on a local, multicore CPU with excess RAM we recommend calling
+## options(mc.cores = parallel::detectCores()).
+## To avoid recompilation of unchanged Stan programs, we recommend calling
+## rstan_options(auto_write = TRUE)
+## For within-chain threading using `reduce_sum()` or `map_rect()` Stan functions,
+## change `threads_per_chain` option:
+## rstan_options(threads_per_chain = 1)
+## 
+## Do not specify '-march=native' in 'LOCAL_CPPFLAGS' or a Makevars file
+## 
+## Attaching package: 'rstan'
+## 
+## The following object is masked from 'package:tidyr':
+## 
+##     extract
+</code></pre>
+<pre><code class="language-r">options(kableExtra.latex.load_packages = FALSE)
+library(&quot;kableExtra&quot;)
+</code></pre>
+<pre><code>## 
+## Attaching package: 'kableExtra'
+## 
+## The following object is masked from 'package:dplyr':
+## 
+##     group_rows
+</code></pre>
+<pre><code class="language-r">options(mc.cores = parallel::detectCores())
+set.seed(1, &quot;L'Ecuyer-CMRG&quot;)
+theme_set(theme_bw())
+
+
+kabble &lt;- function(
+    x, 
+    align = &quot;c&quot;, 
+    format = ifelse(knitr::is_html_output(), &quot;html&quot;, &quot;latex&quot;), 
+    ...) {
+  x |&gt;
+    knitr::kable(
+      format = format,
+      digits = 2,
+      align = align,
+      booktabs = TRUE, 
+      linesep = &quot;&quot;,
+      longtable = TRUE,
+      ...) |&gt;
+    kableExtra::kable_classic_2(latex_options = c(&quot;scale_down&quot;))
+}
+</code></pre>
+<h1 id="chp:motivating-example_1">Motivating example</h1>
+<pre><code class="language-r">data(&quot;lipids_data&quot;)
+lipids_data
+</code></pre>
+<pre><code>##    event strategy count
+## 1 Z0X0Y0      ZXY   158
+## 2 Z1X0Y0      ZXY    52
+## 3 Z0X1Y0      ZXY     0
+## 4 Z1X1Y0      ZXY    23
+## 5 Z0X0Y1      ZXY    14
+## 6 Z1X0Y1      ZXY    12
+## 7 Z0X1Y1      ZXY     0
+## 8 Z1X1Y1      ZXY    78
+</code></pre>
+<h1 id="chp:motivating-example_2">Motivating example</h1>
+<pre><code class="language-r">lipids_model &lt;-  make_model(&quot;Z -&gt; X -&gt; Y; X &lt;-&gt; Y&quot;) 
+</code></pre>
+<pre><code class="language-r">lipids_model &lt;- update_model(lipids_model, lipids_data)
+</code></pre>
+<pre><code class="language-r">lipids_queries &lt;- query_model(lipids_model, queries = list(
+  ATE = &quot;Y[X = 1] - Y[X = 0]&quot;,
+  PoC = &quot;Y[X = 1] - Y[X = 0] :|: X == 0 &amp; Y == 0&quot;,
+  LATE = &quot;Y[X = 1] - Y[X = 0] :|: X[Z = 1] &gt; X[Z = 0]&quot;),
+  using = &quot;posteriors&quot;)
+</code></pre>
+<pre><code class="language-r">lipids_queries |&gt;
+  dplyr::select(label, query, given, mean, sd, starts_with(&quot;cred&quot;)) |&gt;
+kabble(align = &quot;c&quot;)
+</code></pre>
+<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
+ <thead>
+  <tr>
+   <th style="text-align:center;"> label </th>
+   <th style="text-align:center;"> query </th>
+   <th style="text-align:center;"> given </th>
+   <th style="text-align:center;"> mean </th>
+   <th style="text-align:center;"> sd </th>
+   <th style="text-align:center;"> cred.low </th>
+   <th style="text-align:center;"> cred.high </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Y[X = 1] - Y[X = 0] </td>
+   <td style="text-align:center;"> - </td>
+   <td style="text-align:center;"> 0.55 </td>
+   <td style="text-align:center;"> 0.10 </td>
+   <td style="text-align:center;"> 0.37 </td>
+   <td style="text-align:center;"> 0.73 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> PoC </td>
+   <td style="text-align:center;"> Y[X = 1] - Y[X = 0] </td>
+   <td style="text-align:center;"> X == 0 &amp; Y == 0 </td>
+   <td style="text-align:center;"> 0.63 </td>
+   <td style="text-align:center;"> 0.15 </td>
+   <td style="text-align:center;"> 0.38 </td>
+   <td style="text-align:center;"> 0.89 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> LATE </td>
+   <td style="text-align:center;"> Y[X = 1] - Y[X = 0] </td>
+   <td style="text-align:center;"> X[Z = 1] &gt; X[Z = 0] </td>
+   <td style="text-align:center;"> 0.70 </td>
+   <td style="text-align:center;"> 0.05 </td>
+   <td style="text-align:center;"> 0.59 </td>
+   <td style="text-align:center;"> 0.80 </td>
+  </tr>
+</tbody>
+</table>
+<pre><code class="language-r">lipids_queries |&gt; plot()
+</code></pre>
+<p><img src="data:image/png;base64,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" alt="Illustration of queries plotted." /></p>
+<h1 id="chp:statistical-model">Statistical model</h1>
+<pre><code class="language-r">with_pars &lt;- 
+  lipids_model |&gt;
+  set_parameters(param_type = &quot;prior_draw&quot;) 
+
+with_pars |&gt; grab(&quot;parameters_df&quot;) |&gt;
+  dplyr::select(node, nodal_type, param_set, param_names, param_value, priors) |&gt; 
+  kabble()
+</code></pre>
+<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
+ <thead>
+  <tr>
+   <th style="text-align:center;"> node </th>
+   <th style="text-align:center;"> nodal_type </th>
+   <th style="text-align:center;"> param_set </th>
+   <th style="text-align:center;"> param_names </th>
+   <th style="text-align:center;"> param_value </th>
+   <th style="text-align:center;"> priors </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:center;"> Z </td>
+   <td style="text-align:center;"> 0 </td>
+   <td style="text-align:center;"> Z </td>
+   <td style="text-align:center;"> Z.0 </td>
+   <td style="text-align:center;"> 0.57 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Z </td>
+   <td style="text-align:center;"> 1 </td>
+   <td style="text-align:center;"> Z </td>
+   <td style="text-align:center;"> Z.1 </td>
+   <td style="text-align:center;"> 0.43 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> X </td>
+   <td style="text-align:center;"> 00 </td>
+   <td style="text-align:center;"> X </td>
+   <td style="text-align:center;"> X.00 </td>
+   <td style="text-align:center;"> 0.24 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> X </td>
+   <td style="text-align:center;"> 10 </td>
+   <td style="text-align:center;"> X </td>
+   <td style="text-align:center;"> X.10 </td>
+   <td style="text-align:center;"> 0.30 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> X </td>
+   <td style="text-align:center;"> 01 </td>
+   <td style="text-align:center;"> X </td>
+   <td style="text-align:center;"> X.01 </td>
+   <td style="text-align:center;"> 0.20 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> X </td>
+   <td style="text-align:center;"> 11 </td>
+   <td style="text-align:center;"> X </td>
+   <td style="text-align:center;"> X.11 </td>
+   <td style="text-align:center;"> 0.27 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 00 </td>
+   <td style="text-align:center;"> Y.X.00 </td>
+   <td style="text-align:center;"> Y.00_X.00 </td>
+   <td style="text-align:center;"> 0.71 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 10 </td>
+   <td style="text-align:center;"> Y.X.00 </td>
+   <td style="text-align:center;"> Y.10_X.00 </td>
+   <td style="text-align:center;"> 0.19 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 01 </td>
+   <td style="text-align:center;"> Y.X.00 </td>
+   <td style="text-align:center;"> Y.01_X.00 </td>
+   <td style="text-align:center;"> 0.00 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 11 </td>
+   <td style="text-align:center;"> Y.X.00 </td>
+   <td style="text-align:center;"> Y.11_X.00 </td>
+   <td style="text-align:center;"> 0.10 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 00 </td>
+   <td style="text-align:center;"> Y.X.01 </td>
+   <td style="text-align:center;"> Y.00_X.01 </td>
+   <td style="text-align:center;"> 0.15 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 10 </td>
+   <td style="text-align:center;"> Y.X.01 </td>
+   <td style="text-align:center;"> Y.10_X.01 </td>
+   <td style="text-align:center;"> 0.40 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 01 </td>
+   <td style="text-align:center;"> Y.X.01 </td>
+   <td style="text-align:center;"> Y.01_X.01 </td>
+   <td style="text-align:center;"> 0.39 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 11 </td>
+   <td style="text-align:center;"> Y.X.01 </td>
+   <td style="text-align:center;"> Y.11_X.01 </td>
+   <td style="text-align:center;"> 0.06 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 00 </td>
+   <td style="text-align:center;"> Y.X.10 </td>
+   <td style="text-align:center;"> Y.00_X.10 </td>
+   <td style="text-align:center;"> 0.17 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 10 </td>
+   <td style="text-align:center;"> Y.X.10 </td>
+   <td style="text-align:center;"> Y.10_X.10 </td>
+   <td style="text-align:center;"> 0.65 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 01 </td>
+   <td style="text-align:center;"> Y.X.10 </td>
+   <td style="text-align:center;"> Y.01_X.10 </td>
+   <td style="text-align:center;"> 0.14 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 11 </td>
+   <td style="text-align:center;"> Y.X.10 </td>
+   <td style="text-align:center;"> Y.11_X.10 </td>
+   <td style="text-align:center;"> 0.04 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 00 </td>
+   <td style="text-align:center;"> Y.X.11 </td>
+   <td style="text-align:center;"> Y.00_X.11 </td>
+   <td style="text-align:center;"> 0.24 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 10 </td>
+   <td style="text-align:center;"> Y.X.11 </td>
+   <td style="text-align:center;"> Y.10_X.11 </td>
+   <td style="text-align:center;"> 0.71 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 01 </td>
+   <td style="text-align:center;"> Y.X.11 </td>
+   <td style="text-align:center;"> Y.01_X.11 </td>
+   <td style="text-align:center;"> 0.04 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> Y </td>
+   <td style="text-align:center;"> 11 </td>
+   <td style="text-align:center;"> Y.X.11 </td>
+   <td style="text-align:center;"> Y.11_X.11 </td>
+   <td style="text-align:center;"> 0.01 </td>
+   <td style="text-align:center;"> 1 </td>
+  </tr>
+</tbody>
+</table>
+<h1 id="chp:making-models">Making models</h1>
+<pre><code class="language-r">model &lt;- make_model(&quot;X -&gt; M -&gt; Y &lt;- X&quot;)
+</code></pre>
+<h2 id="sec:graphing">Graphing</h2>
+<pre><code class="language-r">lipids_model |&gt; plot()
+lipids_model |&gt; plot(x_coord = 1:3, y_coord = 3:1, textcol = &quot;black&quot;,
+  textsize = 3, shape = c(15, 16, 16), nodecol = &quot;lightgrey&quot;, nodesize = 10)
+</code></pre>
+<div class="figure">
+<img src="data:image/png;base64,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" alt="Examples of model graphs." width="50%" /><img src="data:image/png;base64,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" alt="Examples of model graphs." width="50%" />
+<p class="caption">Examples of model graphs.</p>
+</div>
+<h2 id="sec:tailoring-models">Tailoring models</h2>
+<pre><code class="language-r">statements &lt;- list(&quot;X -&gt; Y &lt;- W&quot;, 
+                   &quot;X -&gt; Y &lt;- W; X &lt;-&gt; W&quot;, 
+                   &quot;X -&gt; Y &lt;- W; X &lt;-&gt; Y; W &lt;-&gt; Y&quot;,
+                   &quot;X -&gt; Y &lt;- W; X &lt;-&gt; Y; W &lt;-&gt; Y; X &lt;-&gt; W&quot;, 
+                   &quot;X -&gt; W -&gt; Y &lt;- X&quot;,
+                   &quot;X -&gt; W -&gt; Y &lt;- X; W &lt;-&gt; Y&quot;,
+                   &quot;X -&gt; W -&gt; Y &lt;- X; X &lt;-&gt; W; W &lt;-&gt; Y&quot;, 
+                   &quot;X -&gt; W -&gt; Y &lt;- X; X &lt;-&gt; W; W &lt;-&gt; Y; X &lt;-&gt; Y&quot;)
+
+dof &lt;- function(statement) {
+  make_model(statement, add_causal_types = FALSE) |&gt;
+  grab(&quot;parameters_df&quot;)  |&gt;
+  group_by(param_set) |&gt;
+  summarize(n  = n() - 1) |&gt;
+  pull(n) |&gt;
+  sum()
+}
+
+
+
+data.frame(
+  Model = c(
+  &quot;X → Y ← W&quot;,
+  &quot;X → Y ← W; X ←→ W&quot;,
+  &quot;X → Y ← W; X ←→ Y; W ←→ Y&quot;,
+  &quot;X → Y ← W; X ←→ Y; W ←→ Y; X ←→ W&quot;,
+  &quot;X → W → Y ← X&quot;,
+  &quot;X → W → Y ← X; W ←→ Y&quot;,
+  &quot;X → W → Y ← X; X ←→ W; W ←→ Y&quot;,
+  &quot;X → W → Y ← X; X ←→ W; W ←→ Y; X ←→ Y&quot;
+),
+  dof = unlist(lapply(statements, dof))
+) |&gt; 
+  kabble(
+    col.names = c(&quot;Model&quot;, &quot;Degrees of freedom&quot;),
+    align = c(&quot;l&quot;, &quot;c&quot;)
+  )
+</code></pre>
+<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
+ <thead>
+  <tr>
+   <th style="text-align:left;"> Model </th>
+   <th style="text-align:center;"> Degrees of freedom </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> X → Y ← W </td>
+   <td style="text-align:center;"> 17 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> X → Y ← W; X ←→ W </td>
+   <td style="text-align:center;"> 18 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> X → Y ← W; X ←→ Y; W ←→ Y </td>
+   <td style="text-align:center;"> 62 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> X → Y ← W; X ←→ Y; W ←→ Y; X ←→ W </td>
+   <td style="text-align:center;"> 63 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> X → W → Y ← X </td>
+   <td style="text-align:center;"> 19 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> X → W → Y ← X; W ←→ Y </td>
+   <td style="text-align:center;"> 64 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> X → W → Y ← X; X ←→ W; W ←→ Y </td>
+   <td style="text-align:center;"> 67 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> X → W → Y ← X; X ←→ W; W ←→ Y; X ←→ Y </td>
+   <td style="text-align:center;"> 127 </td>
+  </tr>
+</tbody>
+</table>
+<pre><code class="language-r">model_restricted &lt;- lipids_model |&gt; 
+  set_restrictions(&quot;X[Z = 1] &lt; X[Z = 0]&quot;)
+</code></pre>
+<pre><code class="language-r">model &lt;- lipids_model |&gt; set_restrictions(
+  labels = list(X = &quot;01&quot;, Y = c(&quot;00&quot;, &quot;01&quot;, &quot;11&quot;)), keep = TRUE)
+</code></pre>
+<pre><code class="language-r">model &lt;- lipids_model |&gt; set_restrictions(labels = list(Y = &quot;?0&quot;))
+</code></pre>
+<pre><code class="language-r">model &lt;- lipids_model |&gt; set_restrictions(
+  labels = list(Y = c('00', '11')), given = 'X.00')
+</code></pre>
+<pre><code class="language-r">lipids_model |&gt; inspect(&quot;prior_hyperparameters&quot;, nodes = &quot;X&quot;) 
+</code></pre>
+<pre><code>## 
+## prior_hyperparameters
+## Alpha parameter values used for Dirichlet prior distributions:
+## 
+## X.00 X.10 X.01 X.11 
+##    1    1    1    1
+</code></pre>
+<pre><code class="language-r">model &lt;- lipids_model |&gt; set_priors(distribution = &quot;jeffreys&quot;)
+</code></pre>
+<pre><code>## Altering all parameters.
+</code></pre>
+<pre><code class="language-r">lipids_model |&gt; set_priors(
+  param_names = c(&quot;X.10&quot;, &quot;X.01&quot;), alphas = 3:4) |&gt; 
+  inspect(&quot;prior_hyperparameters&quot;, nodes = &quot;X&quot;)
+</code></pre>
+<pre><code>## 
+## prior_hyperparameters
+## Alpha parameter values used for Dirichlet prior distributions:
+## 
+## X.00 X.10 X.01 X.11 
+##    1    3    4    1
+</code></pre>
+<pre><code class="language-r">lipids_model |&gt; set_priors(
+  statement = &quot;X[Z = 1] &gt; X[Z = 0]&quot;, alphas = 3) |&gt;
+  inspect(&quot;prior_hyperparameters&quot;, nodes = &quot;X&quot;)
+</code></pre>
+<pre><code>## 
+## prior_hyperparameters
+## Alpha parameter values used for Dirichlet prior distributions:
+## 
+## X.00 X.10 X.01 X.11 
+##    1    1    3    1
+</code></pre>
+<pre><code class="language-r">query &lt;- make_model(&quot;X -&gt; Y&quot;) |&gt; 
+  set_restrictions(decreasing(&quot;X&quot;, &quot;Y&quot;)) |&gt;
+  query_model(&quot;Y[X = 1] - Y[X = 0]&quot;, using = &quot;priors&quot;)
+</code></pre>
+<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt; inspect(&quot;parameters&quot;)
+</code></pre>
+<pre><code>## 
+## parameters
+## Model parameters with associated probabilities: 
+## 
+##  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
+## 0.50 0.50 0.25 0.25 0.25 0.25
+</code></pre>
+<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt; set_parameters(
+  statement = &quot;Y[X = 1] &gt; Y[X = 0]&quot;, parameters = .7) |&gt;
+  inspect(&quot;parameters&quot;)
+</code></pre>
+<pre><code>## 
+## parameters
+## Model parameters with associated probabilities: 
+## 
+##  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
+##  0.5  0.5  0.1  0.1  0.7  0.1
+</code></pre>
+<h2 id="sec:drawing-and-manipulating-data">Drawing and manipulating data</h2>
+<pre><code class="language-r">lipids_model |&gt; make_data(n = 4)
+</code></pre>
+<pre><code>##   Z X Y
+## 1 0 1 1
+## 2 1 0 0
+## 3 1 1 1
+## 4 1 1 1
+</code></pre>
+<pre><code class="language-r">sample_data &lt;- lipids_model |&gt; make_data(
+  n = 8, nodes = list(c(&quot;Z&quot;, &quot;Y&quot;), &quot;X&quot;), probs = list(1, .5),
+  subsets = list(TRUE, &quot;Z == 1 &amp; Y == 0&quot;))
+</code></pre>
+<pre><code class="language-r">sample_data |&gt; collapse_data(lipids_model)
+</code></pre>
+<pre><code>##     event strategy count
+## 1  Z0X0Y0      ZXY     0
+## 2  Z1X0Y0      ZXY     0
+## 3  Z0X1Y0      ZXY     0
+## 4  Z1X1Y0      ZXY     0
+## 5  Z0X0Y1      ZXY     1
+## 6  Z1X0Y1      ZXY     0
+## 7  Z0X1Y1      ZXY     0
+## 8  Z1X1Y1      ZXY     0
+## 9    Z0Y0       ZY     2
+## 10   Z1Y0       ZY     1
+## 11   Z0Y1       ZY     2
+## 12   Z1Y1       ZY     2
+</code></pre>
+<h1 id="chp:updating-models">Updating models</h1>
+<h2 id="sec:how-the-stan-program-works">How the Stan program works</h2>
+<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt; inspect(&quot;parameter_mapping&quot;) 
+</code></pre>
+<pre><code>## 
+## parameter_mapping (Parameter mapping matrix) 
+## 
+##   Maps from parameters to data types, with
+##   possibly multiple columns for each data type
+##   in cases with confounding. 
+## 
+##      X0Y0 X1Y0 X0Y1 X1Y1
+## X.0     1    0    1    0
+## X.1     0    1    0    1
+## Y.00    1    1    0    0
+## Y.10    0    1    1    0
+## Y.01    1    0    0    1
+## Y.11    0    0    1    1
+</code></pre>
+<h2 id="sec:incomplete-and-censored-data">Incomplete and censored data</h2>
+<pre><code class="language-r">data &lt;- data.frame(X = rep(0:1, 5), Y = rep(0:1, 5))
+list(uncensored = update_model(make_model(&quot;X -&gt; Y&quot;), 
+  data = data, refresh = 0),
+    censored = update_model(make_model(&quot;X -&gt; Y&quot;), data = data, 
+    censored_types = c(&quot;X1Y0&quot;,  &quot;X0Y1&quot;), refresh = 0)) |&gt;
+  query_model(&quot;Y[X = 1] - Y[X = 0]&quot;, using = &quot;posteriors&quot;) |&gt;
+  dplyr::select(-using)
+</code></pre>
+<pre><code>## 
+## Causal queries generated by query_model
+## 
+## |model      |case_level |  mean|    sd| cred.low| cred.high|
+## |:----------|:----------|-----:|-----:|--------:|---------:|
+## |uncensored |FALSE      | 0.590| 0.196|    0.145|     0.897|
+## |censored   |FALSE      | 0.015| 0.318|   -0.625|     0.641|
+</code></pre>
+<h2 id="sec:output">Output</h2>
+<pre><code class="language-r">model &lt;- make_model(&quot;X -&gt; Y&quot;) |&gt; update_model()
+posterior &lt;- inspect(model, &quot;posterior_distribution&quot;)  
+</code></pre>
+<pre><code>## 
+## posterior_distribution
+## Summary statistics of model parameters posterior distributions:
+## 
+##   Distributions matrix dimensions are 
+##   4000 rows (draws) by 6 cols (parameters)
+## 
+##      mean   sd
+## X.0  0.49 0.29
+## X.1  0.51 0.29
+## Y.00 0.25 0.20
+## Y.10 0.26 0.20
+## Y.01 0.25 0.19
+## Y.11 0.24 0.19
+</code></pre>
+<pre><code class="language-r">lipids_model &lt;- lipids_model |&gt; update_model(
+  keep_fit = TRUE, keep_event_probabilities = TRUE)
+</code></pre>
+<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt; update_model(keep_type_distribution = FALSE, 
+  refresh = 0) |&gt; inspect(&quot;stan_summary&quot;) 
+</code></pre>
+<pre><code>## 
+## stan_summary
+## Stan model summary:
+## 
+## Inference for Stan model: simplexes.
+## 4 chains, each with iter=2000; warmup=1000; thin=1; 
+## post-warmup draws per chain=1000, total post-warmup draws=4000.
+## 
+##                    mean se_mean   sd   2.5%   25%   50%   75% 97.5% n_eff Rhat
+## X.0                0.49    0.01 0.29   0.02  0.24  0.49  0.75  0.97  2976 1.00
+## X.1                0.51    0.01 0.29   0.03  0.25  0.51  0.76  0.98  2976 1.00
+## Y.00               0.25    0.01 0.19   0.01  0.09  0.20  0.37  0.71  1419 1.00
+## Y.10               0.25    0.00 0.19   0.01  0.09  0.20  0.37  0.71  4026 1.00
+## Y.01               0.25    0.00 0.19   0.01  0.09  0.21  0.37  0.71  4142 1.00
+## Y.11               0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.71  4265 1.00
+## lp__               1.02    0.02 1.00   0.03  0.29  0.71  1.43  3.75  2419 1.00
+## log_sum_gammas[2]  1.86    0.05 1.27   0.34  0.99  1.59  2.42  4.99   649 1.01
+## lp__              -7.58    0.05 1.72 -11.74 -8.44 -7.17 -6.34 -5.43  1185 1.00
+## 
+## Samples were drawn using NUTS(diag_e) at Tue Aug  5 18:07:50 2025.
+## For each parameter, n_eff is a crude measure of effective sample size,
+## and Rhat is the potential scale reduction factor on split chains (at 
+## convergence, Rhat=1).
+</code></pre>
+<h2 id="sec:convergence-problems-and-diagnostics">Convergence problems and diagnostics</h2>
+<pre><code class="language-r">model &lt;- make_model(&quot;X -&gt; M -&gt; Y&quot;) |&gt; update_model(
+  data = data.frame(X = rep(0:1, 10000), Y = rep(0:1, 10000)), 
+  iter = 5000, refresh = 0)
+</code></pre>
+<pre><code class="language-r">model
+</code></pre>
+<pre><code>## 
+## Causal statement: 
+## M -&gt; Y; X -&gt; M
+## 
+## Number of nodal types by node:
+## X M Y 
+## 2 4 4 
+## 
+## Number of causal types: 32
+## 
+## Model has been updated and contains a posterior distribution with
+## 4 chains, each with iter=5000; warmup=2500; thin=1;  
+## Use inspect(model, 'stan_summary') to inspect stan summary
+## 
+## Warnings passed from rstan during updating:
+## The largest R-hat is 1.53, indicating chains have not mixed
+## Bulk Effective Samples Size (ESS) is too low
+## Tail Effective Samples Size (ESS) is too low
+</code></pre>
+<pre><code class="language-r">model &lt;- make_model(&quot;X -&gt; Y&quot;) |&gt; 
+  update_model(refresh = 0, keep_fit = TRUE)
+</code></pre>
+<pre><code class="language-r">model |&gt; inspect(&quot;stanfit&quot;)
+</code></pre>
+<pre><code>## 
+## stanfit
+## Stan model summary:
+## Inference for Stan model: simplexes.
+## 4 chains, each with iter=2000; warmup=1000; thin=1; 
+## post-warmup draws per chain=1000, total post-warmup draws=4000.
+## 
+##                    mean se_mean   sd   2.5%   25%   50%   75% 97.5% n_eff Rhat
+## lambdas[1]         0.50    0.01 0.29   0.03  0.25  0.49  0.74  0.97  3036 1.00
+## lambdas[2]         0.50    0.01 0.29   0.03  0.26  0.51  0.75  0.97  3036 1.00
+## lambdas[3]         0.25    0.00 0.19   0.01  0.09  0.21  0.37  0.70  2031 1.00
+## lambdas[4]         0.25    0.00 0.19   0.01  0.09  0.21  0.37  0.71  4633 1.00
+## lambdas[5]         0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.72  4162 1.00
+## lambdas[6]         0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.71  4701 1.00
+## log_sum_gammas[1]  1.00    0.02 0.96   0.03  0.30  0.72  1.39  3.43  2536 1.00
+## log_sum_gammas[2]  1.85    0.03 1.19   0.36  1.00  1.58  2.41  4.93  1159 1.01
+## types[1]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.50  2065 1.00
+## types[2]           0.13    0.00 0.13   0.00  0.03  0.08  0.18  0.48  2390 1.00
+## types[3]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.50  3785 1.00
+## types[4]           0.13    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3407 1.00
+## types[5]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.48  3507 1.00
+## types[6]           0.13    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3619 1.00
+## types[7]           0.12    0.00 0.13   0.00  0.03  0.08  0.17  0.49  3841 1.00
+## types[8]           0.13    0.00 0.13   0.00  0.03  0.08  0.19  0.49  3863 1.00
+## lp__              -7.53    0.04 1.65 -11.75 -8.37 -7.15 -6.32 -5.44  1368 1.00
+## 
+## Samples were drawn using NUTS(diag_e) at Tue Aug  5 18:08:01 2025.
+## For each parameter, n_eff is a crude measure of effective sample size,
+## and Rhat is the potential scale reduction factor on split chains (at 
+## convergence, Rhat=1).
+</code></pre>
+<h1 id="chp:querying-models">Querying models</h1>
+<h2 id="sec:calculating-factual-and-counterfactual-quantities">Calculating factual and counterfactual quantities</h2>
+<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt; realise_outcomes()
+</code></pre>
+<pre><code>##      X Y
+## 0.00 0 0
+## 1.00 1 0
+## 0.10 0 1
+## 1.10 1 0
+## 0.01 0 0
+## 1.01 1 1
+## 0.11 0 1
+## 1.11 1 1
+</code></pre>
+<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt; realise_outcomes(dos = list(X = 1))
+</code></pre>
+<pre><code>##      X Y
+## 0.00 1 0
+## 1.00 1 0
+## 0.10 1 0
+## 1.10 1 0
+## 0.01 1 1
+## 1.01 1 1
+## 0.11 1 1
+## 1.11 1 1
+</code></pre>
+<h2 id="sec:causal-syntax">Causal syntax</h2>
+<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;)  |&gt; get_query_types(&quot;Y == 1&quot;)
+</code></pre>
+<pre><code>## 
+## Causal types satisfying query's condition(s)  
+## 
+##  query =  Y==1 
+## 
+## X0.Y10  X1.Y01
+## X0.Y11  X1.Y11
+## 
+## 
+##  Number of causal types that meet condition(s) =  4
+##  Total number of causal types in model =  8
+</code></pre>
+<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt; get_query_types(&quot;Y[X = 0] == 1&quot;)
+</code></pre>
+<pre><code>## 
+## Causal types satisfying query's condition(s)  
+## 
+##  query =  Y[X=0]==1 
+## 
+## X0.Y10  X1.Y10
+## X0.Y11  X1.Y11
+## 
+## 
+##  Number of causal types that meet condition(s) =  4
+##  Total number of causal types in model =  8
+</code></pre>
+<pre><code class="language-r">make_model(&quot;X1 -&gt; Y &lt;- X2&quot;)  |&gt; get_query_types(
+  &quot;X1 == 1 &amp; X2 == 1 &amp; (Y[X1 = 1, X2 = 1] &gt; Y[X1 = 0, X2 = 0])&quot;)
+</code></pre>
+<pre><code>## 
+## Causal types satisfying query's condition(s)  
+## 
+##  query =  X1==1&amp;X2==1&amp;(Y[X1=1,X2=1]&gt;Y[X1=0,X2=0]) 
+## 
+## X11.X21.Y0001  X11.X21.Y0101
+## X11.X21.Y0011  X11.X21.Y0111
+## 
+## 
+##  Number of causal types that meet condition(s) =  4
+##  Total number of causal types in model =  64
+</code></pre>
+<pre><code class="language-r">make_model(&quot;X -&gt; Y&quot;) |&gt; get_query_types(&quot;Y[X = 1] - Y[X = 0]&quot;)
+</code></pre>
+<pre><code>## X0.Y00 X1.Y00 X0.Y10 X1.Y10 X0.Y01 X1.Y01 X0.Y11 X1.Y11 
+##      0      0     -1     -1      1      1      0      0
+</code></pre>
+<h2 id="sec:quantifying-queries">Quantifying queries</h2>
+<pre><code class="language-r">data  &lt;- data.frame(X = rep(0:1, 50), Y = rep(0:1, 50))
+
+model &lt;-  make_model(&quot;X -&gt; Y&quot;) |&gt; update_model(
+  data, iter = 4000, refresh = 0)
+
+model |&gt; grab(&quot;posterior_distribution&quot;)  |&gt; 
+  ggplot(aes(Y.01 - Y.10)) + geom_histogram() 
+</code></pre>
+<div class="figure" style="text-align: center">
+<img src="data:image/png;base64,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" alt="Posterior on "Probability \(Y\) is increasing in \(X\)"." width="60%" />
+<p class="caption">Posterior on "Probability \(Y\) is increasing in \(X\)".</p>
+</div>
+<pre><code class="language-r">queries &lt;- make_model(&quot;X -&gt; Y&quot;) |&gt; query_distribution(
+  query = list(increasing = &quot;(Y[X = 1] &gt; Y[X = 0])&quot;, 
+    ATE = &quot;(Y[X = 1] - Y[X = 0])&quot;), using = &quot;priors&quot;)
+</code></pre>
+<pre><code class="language-r">lipids_model |&gt; query_model(
+    query = &quot;Y[X = 1] - Y[X = 0] :|: X == 1 &amp; Y == 1 &amp; Z == 1&quot;,
+    using = &quot;posteriors&quot;) |&gt; plot()
+</code></pre>
+<p><img src="data:image/png;base64,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" alt="Illustration of case-level queries plotted." /></p>
+<pre><code class="language-r">make_model(&quot;X -&gt; M -&gt; Y&quot;) |&gt; update_model(
+  data.frame(X = rep(0:1, 8), Y = rep(0:1, 8)), iter = 4000, refresh = 0) |&gt;
+  query_model(&quot;Y[X = 1] &gt; Y[X = 0] :|: X == 1 &amp; Y == 1 &amp; M == 1&quot;, 
+  using = &quot;posteriors&quot;, case_level = c(TRUE, FALSE)) |&gt;
+  plot()
+</code></pre>
+<p><img src="data:image/png;base64,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" alt="Illustration of new case-level queries plotted." /></p>
+<pre><code class="language-r">models &lt;- list(
+  Unrestricted = lipids_model |&gt; 
+    update_model(data = lipids_data, refresh = 0),
+  Restricted = lipids_model |&gt; set_restrictions(&quot;X[Z = 1] &lt; X[Z = 0]&quot;) |&gt; 
+    update_model(data = lipids_data, refresh = 0)
+)
+</code></pre>
+<pre><code class="language-r">queries &lt;- 
+  query_model(
+    models, 
+     query = list(
+       ATE = &quot;Y[X=1] - Y[X=0]&quot;, 
+       POS = &quot;Y[X=1] &gt; Y[X=0] :|: Y==1 &amp; X==1&quot;),
+    case_level = c(FALSE, TRUE), 
+    using = c(&quot;priors&quot;, &quot;posteriors&quot;),
+    expand_grid = TRUE)
+</code></pre>
+<pre><code class="language-r">queries |&gt;
+  dplyr::select(-starts_with(&quot;cred&quot;), -sd) |&gt; 
+  kabble(align = &quot;c&quot;) 
+</code></pre>
+<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
+ <thead>
+  <tr>
+   <th style="text-align:center;"> label </th>
+   <th style="text-align:center;"> model </th>
+   <th style="text-align:center;"> query </th>
+   <th style="text-align:center;"> given </th>
+   <th style="text-align:center;"> using </th>
+   <th style="text-align:center;"> case_level </th>
+   <th style="text-align:center;"> mean </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Unrestricted </td>
+   <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
+   <td style="text-align:center;"> - </td>
+   <td style="text-align:center;"> priors </td>
+   <td style="text-align:center;"> FALSE </td>
+   <td style="text-align:center;"> 0.00 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Restricted </td>
+   <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
+   <td style="text-align:center;"> - </td>
+   <td style="text-align:center;"> priors </td>
+   <td style="text-align:center;"> FALSE </td>
+   <td style="text-align:center;"> 0.00 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Unrestricted </td>
+   <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
+   <td style="text-align:center;"> - </td>
+   <td style="text-align:center;"> posteriors </td>
+   <td style="text-align:center;"> FALSE </td>
+   <td style="text-align:center;"> 0.56 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Restricted </td>
+   <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
+   <td style="text-align:center;"> - </td>
+   <td style="text-align:center;"> posteriors </td>
+   <td style="text-align:center;"> FALSE </td>
+   <td style="text-align:center;"> 0.55 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> POS </td>
+   <td style="text-align:center;"> Unrestricted </td>
+   <td style="text-align:center;"> Y[X=1] &gt; Y[X=0] </td>
+   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
+   <td style="text-align:center;"> priors </td>
+   <td style="text-align:center;"> FALSE </td>
+   <td style="text-align:center;"> 0.50 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> POS </td>
+   <td style="text-align:center;"> Restricted </td>
+   <td style="text-align:center;"> Y[X=1] &gt; Y[X=0] </td>
+   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
+   <td style="text-align:center;"> priors </td>
+   <td style="text-align:center;"> FALSE </td>
+   <td style="text-align:center;"> 0.49 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> POS </td>
+   <td style="text-align:center;"> Unrestricted </td>
+   <td style="text-align:center;"> Y[X=1] &gt; Y[X=0] </td>
+   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
+   <td style="text-align:center;"> posteriors </td>
+   <td style="text-align:center;"> FALSE </td>
+   <td style="text-align:center;"> 0.95 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> POS </td>
+   <td style="text-align:center;"> Restricted </td>
+   <td style="text-align:center;"> Y[X=1] &gt; Y[X=0] </td>
+   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
+   <td style="text-align:center;"> posteriors </td>
+   <td style="text-align:center;"> FALSE </td>
+   <td style="text-align:center;"> 0.95 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Unrestricted </td>
+   <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
+   <td style="text-align:center;"> - </td>
+   <td style="text-align:center;"> priors </td>
+   <td style="text-align:center;"> TRUE </td>
+   <td style="text-align:center;"> 0.00 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Restricted </td>
+   <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
+   <td style="text-align:center;"> - </td>
+   <td style="text-align:center;"> priors </td>
+   <td style="text-align:center;"> TRUE </td>
+   <td style="text-align:center;"> 0.00 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Unrestricted </td>
+   <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
+   <td style="text-align:center;"> - </td>
+   <td style="text-align:center;"> posteriors </td>
+   <td style="text-align:center;"> TRUE </td>
+   <td style="text-align:center;"> 0.56 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> ATE </td>
+   <td style="text-align:center;"> Restricted </td>
+   <td style="text-align:center;"> Y[X=1] - Y[X=0] </td>
+   <td style="text-align:center;"> - </td>
+   <td style="text-align:center;"> posteriors </td>
+   <td style="text-align:center;"> TRUE </td>
+   <td style="text-align:center;"> 0.55 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> POS </td>
+   <td style="text-align:center;"> Unrestricted </td>
+   <td style="text-align:center;"> Y[X=1] &gt; Y[X=0] </td>
+   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
+   <td style="text-align:center;"> priors </td>
+   <td style="text-align:center;"> TRUE </td>
+   <td style="text-align:center;"> 0.50 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> POS </td>
+   <td style="text-align:center;"> Restricted </td>
+   <td style="text-align:center;"> Y[X=1] &gt; Y[X=0] </td>
+   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
+   <td style="text-align:center;"> priors </td>
+   <td style="text-align:center;"> TRUE </td>
+   <td style="text-align:center;"> 0.49 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> POS </td>
+   <td style="text-align:center;"> Unrestricted </td>
+   <td style="text-align:center;"> Y[X=1] &gt; Y[X=0] </td>
+   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
+   <td style="text-align:center;"> posteriors </td>
+   <td style="text-align:center;"> TRUE </td>
+   <td style="text-align:center;"> 0.95 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> POS </td>
+   <td style="text-align:center;"> Restricted </td>
+   <td style="text-align:center;"> Y[X=1] &gt; Y[X=0] </td>
+   <td style="text-align:center;"> Y==1 &amp; X==1 </td>
+   <td style="text-align:center;"> posteriors </td>
+   <td style="text-align:center;"> TRUE </td>
+   <td style="text-align:center;"> 0.95 </td>
+  </tr>
+</tbody>
+</table>
+<p>default plot associated with this query:</p>
+<pre><code class="language-r">queries |&gt; plot()
+</code></pre>
+<p><img src="data:image/png;base64,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" alt="Default plotting for a a set of queries over multiple models." /></p>
+<h1 id="chp:appendix-a-parallelization">Appendix A: Parallelization</h1>
+<pre><code class="language-r">library(&quot;parallel&quot;)
+options(mc.cores = parallel::detectCores())
+</code></pre>
+<pre><code class="language-r">library(&quot;future&quot;)
+library(&quot;future.apply&quot;)
+
+chains &lt;- 3
+cores &lt;- 8
+
+future::plan(list(
+  future::tweak(future::multisession, 
+    workers = floor(cores/(chains + 1))),
+  future::tweak(future::multisession, workers = chains)))
+
+model &lt;- make_model(&quot;X -&gt; Y&quot;)
+
+data &lt;- list(data_1 = data.frame(X = 0:1, Y = 0:1), 
+  data_2 = data.frame(X = 0:1, Y = 1:0))
+
+results &lt;- future.apply::future_lapply(data, function(d) {
+  update_model(model = model, data = d, chains = chains, refresh = 0)},
+ future.seed = TRUE)
+</code></pre>
+<h1 id="chp:appendix-b-stan-code">Appendix B: Stan code</h1>
+<pre><code class="language-r">CausalQueries:::stanmodels$simplexes
+</code></pre>
+<pre><code>## S4 class stanmodel 'simplexes' coded as follows:
+## functions {
+##   row_vector col_sums(matrix X) {
+##     row_vector[cols(X)] s;
+##     s = rep_row_vector(1, rows(X)) * X;
+##     return s;
+##   }
+## }
+## data {
+##   int&lt;lower=1&gt; n_params;
+##   int&lt;lower=1&gt; n_paths;
+##   int&lt;lower=1&gt; n_types;
+##   int&lt;lower=1&gt; n_param_sets;
+##   int&lt;lower=1&gt; n_nodes;
+##   array[n_param_sets] int&lt;lower=1&gt; n_param_each;
+##   int&lt;lower=1&gt; n_data;
+##   int&lt;lower=1&gt; n_events;
+##   int&lt;lower=1&gt; n_strategies;
+##   int&lt;lower=0, upper=1&gt; keep_type_distribution;
+##   vector&lt;lower=0&gt;[n_params] lambdas_prior;
+##   array[n_param_sets] int&lt;lower=1&gt; l_starts;
+##   array[n_param_sets] int&lt;lower=1&gt; l_ends;
+##   array[n_nodes] int&lt;lower=1&gt; node_starts;
+##   array[n_nodes] int&lt;lower=1&gt; node_ends;
+##   array[n_strategies] int&lt;lower=1&gt; strategy_starts;
+##   array[n_strategies] int&lt;lower=1&gt; strategy_ends;
+##   matrix[n_params, n_types] P;
+##   matrix[n_params, n_paths] parmap;
+##   matrix[n_paths, n_data] map;
+##   matrix&lt;lower=0, upper=1&gt;[n_events, n_data] E;
+##   array[n_events] int&lt;lower=0&gt; Y;
+## }
+## parameters {
+##   vector&lt;lower=0&gt;[n_params - n_param_sets] gamma;
+## }
+## transformed parameters {
+##   vector&lt;lower=0, upper=1&gt;[n_params] lambdas;
+##   vector&lt;lower=1&gt;[n_param_sets] sum_gammas;
+##   matrix[n_params, n_paths] parlam;
+##   matrix[n_nodes, n_paths] parlam2;
+##   vector&lt;lower=0, upper=1&gt;[n_paths] w_0;
+##   vector&lt;lower=0, upper=1&gt;[n_data] w;
+##   vector&lt;lower=0, upper=1&gt;[n_events] w_full;
+##   vector[n_param_sets] log_sum_gammas;
+##   // Handle cases where parameter set has only one value
+##   for (i in 1:n_param_sets) {
+##     if (l_starts[i] &gt;= l_ends[i]) {
+##       sum_gammas[i] = 1;
+##       lambdas[l_starts[i]] = 1;
+##     } else {
+##       sum_gammas[i] = 1 + sum(gamma[(l_starts[i] - (i - 1)):(l_ends[i] - i)]);
+##       lambdas[l_starts[i]:l_ends[i]] =
+##         append_row(1, gamma[(l_starts[i] - (i - 1)):(l_ends[i] - i)]) /
+##         sum_gammas[i];
+##     }
+##   }
+##   // Mapping from parameters to data types
+##   parlam = rep_matrix(lambdas, n_paths) .* parmap;
+##   // Sum probability over nodes on each path
+##   for (i in 1:n_nodes) {
+##     parlam2[i, ] = col_sums(parlam[(node_starts[i]):(node_ends[i]), ]);
+##   }
+##   // Compute probability of data type on each path
+##   for (i in 1:n_paths) {
+##     w_0[i] = exp(sum(log(parlam2[, i])));
+##   }
+##   // Map to n_data columns instead of n_paths (if confounding)
+##   w = map' * w_0;
+##   // Extend/reduce to cover all observed data types
+##   w_full = E * w;
+##   // Calculate log sum gammas once for efficiency
+##   log_sum_gammas = log(sum_gammas);
+## }
+## model {
+##   // Dirichlet distributions
+##   for (i in 1:n_param_sets) {
+##     target += dirichlet_lpdf(lambdas[l_starts[i]:l_ends[i]] |
+##                              lambdas_prior[l_starts[i]:l_ends[i]]);
+##     target += -n_param_each[i] * log_sum_gammas[i];
+##   }
+##   // Multinomial likelihoods (handling censoring)
+##   for (i in 1:n_strategies) {
+##     target += multinomial_lpmf(
+##       Y[strategy_starts[i]:strategy_ends[i]] |
+##       w_full[strategy_starts[i]:strategy_ends[i]] /
+##       sum(w_full[strategy_starts[i]:strategy_ends[i]])
+##     );
+##   }
+## }
+## // Option to export distribution of causal types
+## generated quantities {
+##   vector[n_types] types;
+##   if (keep_type_distribution == 1) {
+##     for (i in 1:n_types) {
+##       types[i] = prod(P[, i] .* lambdas + 1 - P[, i]);
+##     }
+##   } else {
+##     types = rep_vector(1, n_types);
+##   }
+## }
+</code></pre>
+<h1 id="chp:appendix-c-benchmarks">Appendix C: Benchmarks</h1>
+<pre><code class="language-r">iter  &lt;- 4000
+times &lt;- 8
+
+model &lt;- list(
+  CausalQueries::make_model(&quot;X -&gt; Y&quot;),
+  CausalQueries::make_model(&quot;X1 -&gt; Y &lt;- X2&quot;),
+  CausalQueries::make_model(&quot;X1 -&gt; Y; X2 -&gt; Y; X3 -&gt; Y&quot;)
+)
+
+data &lt;- expand_grid(X1 = 0:1, X2 = 0:1, X3 = 0:1) |&gt; uncount(20) |&gt;
+  mutate(Y = 1 * (X1 - X2 * X3 + rnorm(n()) &gt; 0))
+
+
+benchmark_model &lt;- microbenchmark::microbenchmark(
+  m1 = CausalQueries::update_model(model[[1]], data, 
+  iter = iter, refresh = 0),
+  m2 = CausalQueries::update_model(model[[2]], data, 
+  iter = iter, refresh = 0),
+  m3 = CausalQueries::update_model(model[[3]], data, 
+  iter = iter, refresh = 0),
+  times = times
+)
+
+benchmark_1 &lt;- data.frame(
+Model = c(
+  &quot;X1 → Y&quot;,
+  &quot;X1 → Y; X2 → Y&quot;,
+  &quot;X1 → Y; X2 → Y; X3 → Y&quot;
+  ),
+  x = c(6, 20, 262),
+  t = (benchmark_model |&gt; summary() |&gt; pull(mean))) 
+
+benchmark_1 |&gt; 
+ kabble(col.names = c(&quot;Model&quot;, &quot;Number of parameters&quot;, &quot;Runtime (seconds)&quot;), align = &quot;c&quot;)  
+</code></pre>
+<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
+ <thead>
+  <tr>
+   <th style="text-align:center;"> Model </th>
+   <th style="text-align:center;"> Number of parameters </th>
+   <th style="text-align:center;"> Runtime (seconds) </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:center;"> X1 → Y </td>
+   <td style="text-align:center;"> 6 </td>
+   <td style="text-align:center;"> 5.72 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> X1 → Y; X2 → Y </td>
+   <td style="text-align:center;"> 20 </td>
+   <td style="text-align:center;"> 6.94 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> X1 → Y; X2 → Y; X3 → Y </td>
+   <td style="text-align:center;"> 262 </td>
+   <td style="text-align:center;"> 60.56 </td>
+  </tr>
+</tbody>
+</table>
+<pre><code class="language-r">model &lt;- CausalQueries::make_model(&quot;X -&gt; Y&quot;)
+
+data &lt;- lapply(10^c(1:4), function(n) {
+  CausalQueries::make_data(model, n)
+})
+
+benchmark_data &lt;- microbenchmark::microbenchmark(
+  d0 = CausalQueries::update_model(model, data[[1]], 
+    iter = iter, refresh = 0),
+  d1 = CausalQueries::update_model(model, data[[2]], 
+    iter = iter, refresh = 0),
+  d2 = CausalQueries::update_model(model, data[[3]], 
+    iter = iter, refresh = 0),
+  d3 = CausalQueries::update_model(model, data[[4]], 
+    iter = iter, refresh = 0),
+  times = times
+  )
+
+benchmark2 &lt;- data.frame(
+  Model = c(&quot;X1 → Y&quot;, 
+            &quot;X1 → Y&quot;, 
+            &quot;X1 → Y&quot;, 
+            &quot;X1 → Y&quot;),
+  x = c(10, 100,  1000, 10000),
+  t = (benchmark_data |&gt; summary() |&gt; pull(mean))
+) 
+
+benchmark2 |&gt;
+ kabble(col.names = c(&quot;Model&quot;, &quot;Number of observations&quot;, &quot;Runtime (seconds)&quot;), align = &quot;c&quot;)
+</code></pre>
+<table class=" lightable-classic-2" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; margin-left: auto; margin-right: auto;'>
+ <thead>
+  <tr>
+   <th style="text-align:center;"> Model </th>
+   <th style="text-align:center;"> Number of observations </th>
+   <th style="text-align:center;"> Runtime (seconds) </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:center;"> X1 → Y </td>
+   <td style="text-align:center;"> 10 </td>
+   <td style="text-align:center;"> 5.16 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> X1 → Y </td>
+   <td style="text-align:center;"> 100 </td>
+   <td style="text-align:center;"> 5.53 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> X1 → Y </td>
+   <td style="text-align:center;"> 1000 </td>
+   <td style="text-align:center;"> 5.52 </td>
+  </tr>
+  <tr>
+   <td style="text-align:center;"> X1 → Y </td>
+   <td style="text-align:center;"> 10000 </td>
+   <td style="text-align:center;"> 7.73 </td>
+  </tr>
+</tbody>
+</table>
+</div>
+</body>
+</html>
