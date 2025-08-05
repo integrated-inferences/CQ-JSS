@@ -5,11 +5,7 @@ keywords-formatted: [causal model, Bayesian updating, DAG, Stan]
 author:
   - name: Till Tietz
     affiliations:
-      - name: Humboldt University
-        department: Humboldt University
-        city: Berlin
-        country: Germany
-        postal-code: 10785
+      - name: Independent Researcher
     email: ttietz2014@gmail.com
     orcid: 0000-0002-2916-9059
     url: https://github.com/till-tietz
@@ -1391,9 +1387,9 @@ We identify several areas for future expansion of the package's functionality. O
 |                         | -   MacOS                                                                            |
 |                         | -   Windows                                                                          |
 +-------------------------+--------------------------------------------------------------------------------------+
-| Testing Environments R  | -   R 4.4.2                                                                          |
-|                         | -   R 4.3.3                                                                          |
-|                         | -   R 4.2.3                                                                          |
+| Testing Environments R  | -   R 4.5.1                                                                          |
+|                         | -   R 4.4.3                                                                          |
+|                         | -   R 4.4.2                                                                          |
 |                         | -   r-devel                                                                          |
 +-------------------------+--------------------------------------------------------------------------------------+
 | R Version               | -   R(\>= 4.2.0)                                                                     |

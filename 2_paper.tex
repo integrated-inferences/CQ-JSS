@@ -182,7 +182,7 @@
 \makeatletter
 \makeatother
 \makeatletter
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[boxrule=0pt, enhanced, borderline west={3pt}{0pt}{shadecolor}, sharp corners, interior hidden, breakable, frame hidden]}{\end{tcolorbox}}\fi
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[boxrule=0pt, frame hidden, interior hidden, borderline west={3pt}{0pt}{shadecolor}, enhanced, breakable, sharp corners]}{\end{tcolorbox}}\fi
 \makeatother
 
 \usepackage{bookmark}
@@ -203,8 +203,8 @@
 %% -- Article metainformation (author, title, ...) -----------------------------
 
 %% Author information
-\author{Till Tietz~\orcidlink{0000-0002-2916-9059}\\Humboldt
-University \And Lily Medina~\orcidlink{0009-0004-2423-524X}\\University
+\author{Till Tietz~\orcidlink{0000-0002-2916-9059}\\Independent
+Researcher \And Lily Medina~\orcidlink{0009-0004-2423-524X}\\University
 of California, Berkeley \AND Georgiy
 Syunyaev~\orcidlink{0000-0002-4391-6313}\\Vanderbilt
 University \And Macartan Humphreys~\orcidlink{0000-0001-7029-2326}\\WZB}
@@ -250,8 +250,6 @@ user-specified candidate vector of parameters.}
 %% in the following format:
 \Address{
 Till Tietz\\
-Humboldt University\\
-Berlin Germany\\
 E-mail: \email{ttietz2014@gmail.com}\\
 URL: \url{https://github.com/till-tietz}\\
 \\~
@@ -421,7 +419,7 @@ the local average treatment effects (LATE).
 label & query & given & mean & sd & cred.low & cred.high\\
 \midrule
 ATE & Y[X = 1] - Y[X = 0] & - & 0.55 & 0.10 & 0.37 & 0.73\\
-PoC & Y[X = 1] - Y[X = 0] & X == 0 \& Y == 0 & 0.63 & 0.15 & 0.38 & 0.89\\
+PoC & Y[X = 1] - Y[X = 0] & X == 0 \& Y == 0 & 0.64 & 0.15 & 0.37 & 0.89\\
 LATE & Y[X = 1] - Y[X = 0] & X[Z = 1] > X[Z = 0] & 0.70 & 0.05 & 0.59 & 0.80\\
 \bottomrule
 
@@ -1854,7 +1852,7 @@ lp__               1.02    0.02 1.00   0.03  0.29  0.71  1.43  3.75  2419 1.00
 log_sum_gammas[2]  1.86    0.05 1.27   0.34  0.99  1.59  2.42  4.99   649 1.01
 lp__              -7.58    0.05 1.72 -11.74 -8.44 -7.17 -6.34 -5.43  1185 1.00
 
-Samples were drawn using NUTS(diag_e) at Mon Aug  4 23:57:39 2025.
+Samples were drawn using NUTS(diag_e) at Tue Aug  5 14:30:11 2025.
 For each parameter, n_eff is a crude measure of effective sample size,
 and Rhat is the potential scale reduction factor on split chains (at 
 convergence, Rhat=1).
@@ -1963,7 +1961,7 @@ types[7]           0.12    0.00 0.13   0.00  0.03  0.08  0.17  0.49  3841 1.00
 types[8]           0.13    0.00 0.13   0.00  0.03  0.08  0.19  0.49  3863 1.00
 lp__              -7.53    0.04 1.65 -11.75 -8.37 -7.15 -6.32 -5.44  1368 1.00
 
-Samples were drawn using NUTS(diag_e) at Mon Aug  4 23:57:55 2025.
+Samples were drawn using NUTS(diag_e) at Tue Aug  5 14:30:16 2025.
 For each parameter, n_eff is a crude measure of effective sample size,
 and Rhat is the potential scale reduction factor on split chains (at 
 convergence, Rhat=1).
@@ -2551,11 +2549,11 @@ Testing Environments R & \begin{minipage}[t]{\linewidth}\raggedright
 \begin{itemize}
 \tightlist
 \item
+  R 4.5.1
+\item
+  R 4.4.3
+\item
   R 4.4.2
-\item
-  R 4.3.3
-\item
-  R 4.2.3
 \item
   r-devel
 \end{itemize}
@@ -2648,7 +2646,7 @@ the Comprehensive \proglang{R} Archive Network (CRAN) at
 \section*{Acknowledgments}\label{acknowledgments}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, colback=white, arc=.35mm, opacityback=0, rightrule=.15mm, toprule=.15mm, left=2mm, bottomrule=.15mm, colframe=quarto-callout-color-frame, breakable]
+\begin{tcolorbox}[enhanced jigsaw, opacityback=0, left=2mm, toprule=.15mm, leftrule=.75mm, breakable, colframe=quarto-callout-color-frame, arc=.35mm, rightrule=.15mm, bottomrule=.15mm, colback=white]
 
 We thank Ben Goodrich, who provided generous insights on using
 \texttt{stan} for this project. We thank Alan M Jacobs for key work in
@@ -2853,9 +2851,9 @@ data.
 \toprule
 Model & Number of parameters & Runtime (seconds)\\
 \midrule
-X1 → Y & 6 & 7.37\\
-X1 → Y; X2 → Y & 20 & 10.30\\
-X1 → Y; X2 → Y; X3 → Y & 262 & 97.51\\
+X1 → Y & 6 & 2.64\\
+X1 → Y; X2 → Y & 20 & 5.98\\
+X1 → Y; X2 → Y; X3 → Y & 262 & 111.60\\
 \bottomrule
 
 
@@ -2869,10 +2867,10 @@ X1 → Y; X2 → Y; X3 → Y & 262 & 97.51\\
 \toprule
 Model & Number of observations & Runtime (seconds)\\
 \midrule
-X1 → Y & 10 & 7.97\\
-X1 → Y & 100 & 8.37\\
-X1 → Y & 1000 & 10.76\\
-X1 → Y & 10000 & 19.92\\
+X1 → Y & 10 & 1.52\\
+X1 → Y & 100 & 2.52\\
+X1 → Y & 1000 & 5.06\\
+X1 → Y & 10000 & 12.27\\
 \bottomrule
 
 
