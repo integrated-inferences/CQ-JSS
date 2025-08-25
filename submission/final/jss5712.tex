@@ -182,7 +182,7 @@
 \makeatletter
 \makeatother
 \makeatletter
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[boxrule=0pt, frame hidden, interior hidden, borderline west={3pt}{0pt}{shadecolor}, enhanced, breakable, sharp corners]}{\end{tcolorbox}}\fi
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[boxrule=0pt, borderline west={3pt}{0pt}{shadecolor}, enhanced, sharp corners, frame hidden, interior hidden, breakable]}{\end{tcolorbox}}\fi
 \makeatother
 
 \usepackage{bookmark}
@@ -329,12 +329,13 @@ The data on \(Z\), \(X\), and \(Y\) is given in
 \citet{chickering_clinicians_1996} and is also included in the
 \pkg{CausalQueries} package. The data looks as follows:
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> data("lipids_data")
 R> lipids_data
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
    event strategy count
 1 Z0X0Y0      ZXY   158
 2 Z1X0Y0      ZXY    52
@@ -344,7 +345,8 @@ R> lipids_data
 6 Z1X0Y1      ZXY    12
 7 Z0X1Y1      ZXY     0
 8 Z1X1Y1      ZXY    78
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 This data is reported in ``compact form,'' meaning it records the number
 of units (``count'') that display each possible pattern of outcomes on
@@ -419,7 +421,7 @@ the local average treatment effects (LATE).
 label & query & given & mean & sd & cred.low & cred.high\\
 \midrule
 ATE & Y[X = 1] - Y[X = 0] & - & 0.55 & 0.10 & 0.37 & 0.73\\
-PoC & Y[X = 1] - Y[X = 0] & X == 0 \& Y == 0 & 0.64 & 0.15 & 0.37 & 0.89\\
+PoC & Y[X = 1] - Y[X = 0] & X == 0 \& Y == 0 & 0.63 & 0.15 & 0.38 & 0.89\\
 LATE & Y[X = 1] - Y[X = 0] & X[Z = 1] > X[Z = 0] & 0.70 & 0.05 & 0.59 & 0.80\\
 \bottomrule
 
@@ -438,7 +440,7 @@ R> lipids_queries |> plot()
 
 \begin{figure}[H]
 
-{\centering \pandocbounded{\includegraphics[keepaspectratio]{2_paper_files/figure-pdf/queryplot-1.pdf}}
+{\centering \pandocbounded{\includegraphics[keepaspectratio]{Figures/queryplot-1.pdf}}
 
 }
 
@@ -465,14 +467,13 @@ all causal queries that can be posed of the causal model.
 packages}\label{connections-to-existing-packages}
 
 The field of causal inference encompasses a wide range of software tools
-used across various disciplines, including social sciences, natural
-sciences, computer science, and applied mathematics. This section
-focuses on the role and capabilities of \pkg{CausalQueries} within the
-specific area of evaluating causal queries on models represented as
-directed acyclic graphs (DAGs) or structural equation models (SEMs).
+used across social sciences, natural sciences, computer science, and
+applied mathematics. This section focuses on the role and capabilities
+of \pkg{CausalQueries} specifically for evaluating causal queries on
+models represented as directed acyclic graphs (DAGs).
 Table~\ref{tbl-software} provides a summary of relevant software,
-highlighting their connections, strengths, and limitations in comparison
-to \pkg{CausalQueries}.
+highlighting their strengths and limitations in comparison to
+\pkg{CausalQueries}.
 
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1800}}
@@ -703,6 +704,8 @@ However, the broader framework can be adapted for these purposes
 inference are case-level or population-level quantities;
 \pkg{CausalQueries} is not well-suited for estimating sample quantities.
 
+\newpage
+
 \section{Statistical model}\label{sec-theory}
 
 The core conceptual framework used by \pkg{CausalQueries} is that
@@ -746,32 +749,34 @@ outcomes. Adding the final element of the definition then gives us the
 fully specified causal model.
 
 With discrete-valued nodes, it is possible to identify all potential
-responses of a node to its parents, which we call ``nodal types''
-(``response functions'' in \citet{pearl_causality_2009}). If a node
-\(i\) can take on \(k_i\) possible values, then the set of possible
-values that the parents of \(j\) can assume is
-\(m_j :=\prod_{i\in PA_j}k_i\). Consequently, there are \(k_j^{m_j}\)
-different ways that node \(j\) might respond to its parents. For binary
-nodes, this simplifies to \(2^{\left(2^{|PA_j|}\right)}\). Thus, an
-endogenous node with no parents has 2 nodal types; a binary node with
-one binary parent has four types; and a binary node with two parents has
-16 types, and so forth.
+responses of a node to possible values of its parents, which we call the
+set of ``nodal types'' (``response functions'' in
+\citet{pearl_causality_2009}). If a node \(i\) can take on \(k_i\)
+possible values, then the set of possible values that the parents of
+\(j\) can assume is \(m_j :=\prod_{i\in PA_j}k_i\). Consequently, there
+are \(k_j^{m_j}\) different ways that node \(j\) might respond to its
+parents. For binary nodes, this simplifies to
+\(2^{\left(2^{|PA_j|}\right)}\). Thus, an endogenous node with no
+parents has 2 nodal types; a binary node with one binary parent has four
+types; and a binary node with two parents has 16 types, and so forth.
 
 As a practical matter we need to label response types. In
 \pkg{CausalQueries} this is done using subscripts that indicate the
 response given different combinations of parents. A node, \(Y\), with
-one binary parent, \(X\), has a nodal types subscripted with two values
-indicating the two possible values of \(Y\)'s parent (0 or 1):
+one binary parent, \(X\), has nodal types subscripted with two values
+indicating the two possible values of \(Y\)'s parent (\(0\) or \(1\)):
 \((\theta_{00}, \theta_{01}, \theta_{10}, \theta_{11})\), where
-\(\theta_{ab}\) labels nodal type \((Y(X=0) = a,Y(X=1) = b)\). The same
-approach is used for nodes with more (or fewer) nodal types, where the
-\(i\)th digit in the subscript corresponding to the value the node takes
-when the parents take on the \(i\)th combination of possible parent
-values (listed in colexicographic binary order given the specified
-ordering of parents).\footnote{A similar approach may be used for non
-  binary nodes though in this case the index components can take on more
-  values and then length of indices adjust to reflect the set of all
-  possible parent value combinations.}
+\(\theta_{ab}\) denotes a nodal type for which \(Y\) takes the value
+\(a\) under the intervention \(\text{do}(X = 0)\) and the value \(b\)
+under \(\text{do}(X = 1)\). The same approach is used for nodes with
+more (or fewer) nodal types, where the \(i\)th digit in the subscript
+corresponds to the value the node takes when the parents take on the
+\(i\)th combination of possible parent values (listed in colexicographic
+binary order given the specified ordering of parents).\footnote{A
+  similar approach may be used for non binary nodes though in this case
+  the index components can take on more values and then length of
+  indices adjust to reflect the set of all possible parent value
+  combinations.}
 
 The complete set of possible causal reactions of a given unit to all
 possible values of its parents is represented by its collection of nodal
@@ -878,7 +883,7 @@ values for the Lipids model. We see here that we have two types for the
 exogenous node \(Z\), four for \(X\) (representing the strata familiar
 from instrumental variables analysis: never takers, always takers,
 defiers, and compliers) and four for \(Y\). For \(Z\) and \(X\) we have
-parameters corresponding to probability of these nodal types. For
+parameters corresponding to the probability of these nodal types. For
 instance \texttt{Z.0} is the probability that \(Z=0\). \texttt{Z.1} is
 the complementary probability that \(Z=1\). Things are a little more
 complicated for distributions on nodal types for \(Y\) however: because
@@ -935,14 +940,14 @@ w_{000}=\Pr(Z=0, X=0, Y=0) = \lambda^Z_0\lambda^X_{00}(\lambda^{Y|\lambda^X_{00}
 
 The value of the \pkg{CausalQueries} package is that it enables users to
 specify arbitrary models of this form, determine all the implied nodal
-and causal types, and update these models using given priors and data.
-This is achieved by calculating event probabilities based on all
-possible parameter vectors and subsequently the likelihood of the data
-given the model. Additionally, the package allows users to pose
-arbitrary queries on a model to evaluate the values of estimands of
-interest, which are functions of the values or counterfactual values of
-nodes, \emph{conditional} on the values or counterfactual values of
-nodes.
+and causal types, place priors over these models, and update over these
+models using given priors and data. This is achieved by calculating
+event probabilities based on all possible parameter vectors and
+subsequently the likelihood of the data given the model. Additionally,
+the package allows users to pose arbitrary queries on a model to
+evaluate the values of estimands of interest, which are functions of the
+values or counterfactual values of nodes, \emph{conditional} on the
+values or counterfactual values of nodes.
 
 The following sections review the classes and methods used by
 \pkg{CausalQueries} and the key functionalities for making, updating,
@@ -1065,7 +1070,7 @@ R> lipids_model |> plot(x_coord = 1:3, y_coord = 3:1,
 
 \centering{
 
-\includegraphics[width=0.5\linewidth,height=\textheight,keepaspectratio]{2_paper_files/figure-pdf/fig-plots-1.pdf}
+\includegraphics[width=0.5\linewidth,height=\textheight,keepaspectratio]{Figures/fig-plots-1.pdf}
 
 }
 
@@ -1077,7 +1082,7 @@ R> lipids_model |> plot(x_coord = 1:3, y_coord = 3:1,
 
 \centering{
 
-\includegraphics[width=0.5\linewidth,height=\textheight,keepaspectratio]{2_paper_files/figure-pdf/fig-plots-2.pdf}
+\includegraphics[width=0.5\linewidth,height=\textheight,keepaspectratio]{Figures/fig-plots-2.pdf}
 
 }
 
@@ -1259,13 +1264,13 @@ independent parameters required for different types of confounding.
 Model & Degrees of freedom\\
 \midrule
 X → Y ← W & 17\\
-X → Y ← W; X ←→ W & 18\\
-X → Y ← W; X ←→ Y; W ←→ Y & 62\\
-X → Y ← W; X ←→ Y; W ←→ Y; X ←→ W & 63\\
+X → Y ← W; X $\leftrightarrow$ W & 18\\
+X → Y ← W; X $\leftrightarrow$ Y; W $\leftrightarrow$ Y & 62\\
+X → Y ← W; X $\leftrightarrow$ Y; W $\leftrightarrow$ Y; X $\leftrightarrow$ W & 63\\
 X → W → Y ← X & 19\\
-X → W → Y ← X; W ←→ Y & 64\\
-X → W → Y ← X; X ←→ W; W ←→ Y & 67\\
-X → W → Y ← X; X ←→ W; W ←→ Y; X ←→ Y & 127\\
+X → W → Y ← X; W $\leftrightarrow$ Y & 64\\
+X → W → Y ← X; X $\leftrightarrow$ W; W $\leftrightarrow$ Y & 67\\
+X → W → Y ← X; X $\leftrightarrow$ W; W $\leftrightarrow$ Y; X $\leftrightarrow$ Y & 127\\
 \bottomrule
 
 
@@ -1368,18 +1373,20 @@ over these parameters.\footnote{Users can specify beliefs about
 Prior hyperparameters are set to unity by default, corresponding to
 uniform priors. Users can retrieve the model's priors as follows:
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> lipids_model |> inspect("prior_hyperparameters", nodes = "X") 
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
 
 prior_hyperparameters
 Alpha parameter values used for Dirichlet prior distributions:
 
 X.00 X.10 X.01 X.11 
    1    1    1    1 
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 Alternatively users can set Jeffreys priors using \texttt{set\_priors()}
 as follows:
@@ -1392,20 +1399,22 @@ Users can also provide custom priors. The simplest way to specify custom
 priors is to add them as a vector of numbers using
 \texttt{set\_priors()}. For instance:
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> lipids_model |> set_priors(
 +    param_names = c("X.10", "X.01"), alphas = 3:4) |> 
 +    inspect("prior_hyperparameters", nodes = "X")
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
 
 prior_hyperparameters
 Alpha parameter values used for Dirichlet prior distributions:
 
 X.00 X.10 X.01 X.11 
    1    3    4    1 
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 The priors here should be interpreted as indicating
 \(\alpha_X = (1, 3, 4, 1)\), which implies a distribution over
@@ -1417,20 +1426,22 @@ Providing priors as a vector of numbers for larger models can be hard.
 For that reason, \texttt{set\_priors()} allows for more targeted
 modifications of the parameter vector. For instance:
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> lipids_model |> set_priors(
 +    statement = "X[Z = 1] > X[Z = 0]", alphas = 3) |>
 +    inspect("prior_hyperparameters", nodes = "X")
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
 
 prior_hyperparameters
 Alpha parameter values used for Dirichlet prior distributions:
 
 X.00 X.10 X.01 X.11 
    1    1    3    1 
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 While setting highly targeted priors is convenient and flexible, it
 should be done with caution. Assigning priors to specific parameters in
@@ -1481,18 +1492,20 @@ The causal model below has two parameter sets, one for \(X\) and one for
 feature of the parameters is that they must sum to \(1\) within each
 parameter set.
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> make_model("X -> Y") |> inspect("parameters")
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
 
 parameters
 Model parameters with associated probabilities: 
 
  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
 0.50 0.50 0.25 0.25 0.25 0.25 
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 The example below illustrates a change in the value of the parameter
 that corresponds to a positive effect of \(X\) on \(Y\). Here, the nodal
@@ -1500,20 +1513,22 @@ type \texttt{Y.Y01} is set to be \(0.7\), while the other nodal types of
 this parameter set were re-normalized so that the parameters in the set
 still sum up to one.
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> make_model("X -> Y") |> set_parameters(
 +    statement = "Y[X = 1] > Y[X = 0]", parameters = .7) |>
 +    inspect("parameters")
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
 
 parameters
 Model parameters with associated probabilities: 
 
  X.0  X.1 Y.00 Y.10 Y.01 Y.11 
  0.5  0.5  0.1  0.1  0.7  0.1 
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 \subsection{Drawing and manipulating
 data}\label{drawing-and-manipulating-data}
@@ -1529,17 +1544,19 @@ Generating data requires a specification of parameter values. The
 parameter values in the parameters data frame are used by default.
 Otherwise users can provide parameters on the fly.
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> lipids_model |> make_data(n = 4)
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
   Z X Y
 1 0 1 1
 2 1 0 0
 3 1 1 1
 4 1 1 1
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 The resulting data is ordered by data type, as shown in the example
 above. Users can also specify parameters directly or draw parameters
@@ -1572,11 +1589,12 @@ the nodes for which data was collected. The \pkg{CausalQueries} package
 provides function \texttt{collapse\_data()} that allow users to convert
 data to compact format.
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> sample_data |> collapse_data(lipids_model)
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
     event strategy count
 1  Z0X0Y0      ZXY     0
 2  Z1X0Y0      ZXY     0
@@ -1590,7 +1608,8 @@ R> sample_data |> collapse_data(lipids_model)
 10   Z1Y0       ZY     1
 11   Z0Y1       ZY     2
 12   Z1Y1       ZY     2
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 In the same way, it is possible to move from compact to long format
 using \texttt{expand\_data()}.\footnote{Note that \texttt{NA}'s are
@@ -1665,11 +1684,12 @@ sets and taking the product over sets. To illustrate, we can examine the
 parameter mapping matrix for a simple model using the \texttt{inspect()}
 function as follows:
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> make_model("X -> Y") |> inspect("parameter_mapping") 
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
 
 parameter_mapping (Parameter mapping matrix) 
 
@@ -1684,7 +1704,8 @@ Y.00    1    1    0    0
 Y.10    0    1    1    0
 Y.01    1    0    0    1
 Y.11    0    0    1    1
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 The probability of each data type can be determined using the parameter
 mapping matrix by combining a parameter vector with the corresponding
@@ -1765,6 +1786,7 @@ data for \(X\) and \(Y\). If we are aware that data in which
 \(X \neq Y\) has been censored, then when we update, we do not move
 towards a belief that \(X\) causes \(Y\).
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> data <- data.frame(X = rep(0:1, 5), Y = rep(0:1, 5))
 R> list(uncensored = update_model(make_model("X -> Y"), 
@@ -1775,7 +1797,7 @@ R> list(uncensored = update_model(make_model("X -> Y"),
 +    dplyr::select(-using)
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
 
 Causal queries generated by query_model
 
@@ -1783,7 +1805,8 @@ Causal queries generated by query_model
 |:----------|:----------|-----:|-----:|--------:|---------:|
 |uncensored |FALSE      | 0.590| 0.196|    0.145|     0.897|
 |censored   |FALSE      | 0.015| 0.318|   -0.625|     0.641|
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 \subsection{Output}\label{output}
 
@@ -1793,12 +1816,13 @@ data frame within the model list. You can access this posterior
 distribution directly using the \texttt{grab()} function (or use the
 \texttt{inspect()} function for a more detailed output) as shown below:
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> model <- make_model("X -> Y") |> update_model()
 R> posterior <- inspect(model, "posterior_distribution")  
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
 
 posterior_distribution
 Summary statistics of model parameters posterior distributions:
@@ -1813,7 +1837,8 @@ Y.00 0.25 0.20
 Y.10 0.26 0.20
 Y.01 0.25 0.19
 Y.11 0.24 0.19
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 Additionally, a distribution of causal types is stored by default.
 Optionally, the \texttt{stanfit} object and a distribution over event
@@ -1827,12 +1852,13 @@ R> lipids_model <- lipids_model |> update_model(
 The summary of the Stan model can be accessed using \texttt{inspect()}
 function and is saved in the updated model object by default.
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> make_model("X -> Y") |> update_model(keep_type_distribution = FALSE, 
 +    refresh = 0) |> inspect("stan_summary") 
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
 
 stan_summary
 Stan model summary:
@@ -1841,22 +1867,23 @@ Inference for Stan model: simplexes.
 4 chains, each with iter=2000; warmup=1000; thin=1; 
 post-warmup draws per chain=1000, total post-warmup draws=4000.
 
-                   mean se_mean   sd   2.5%   25%   50%   75% 97.5% n_eff Rhat
-X.0                0.49    0.01 0.29   0.02  0.24  0.49  0.75  0.97  2976 1.00
-X.1                0.51    0.01 0.29   0.03  0.25  0.51  0.76  0.98  2976 1.00
-Y.00               0.25    0.01 0.19   0.01  0.09  0.20  0.37  0.71  1419 1.00
-Y.10               0.25    0.00 0.19   0.01  0.09  0.20  0.37  0.71  4026 1.00
-Y.01               0.25    0.00 0.19   0.01  0.09  0.21  0.37  0.71  4142 1.00
-Y.11               0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.71  4265 1.00
-lp__               1.02    0.02 1.00   0.03  0.29  0.71  1.43  3.75  2419 1.00
-log_sum_gammas[2]  1.86    0.05 1.27   0.34  0.99  1.59  2.42  4.99   649 1.01
-lp__              -7.58    0.05 1.72 -11.74 -8.44 -7.17 -6.34 -5.43  1185 1.00
+                   mean se_mean   sd   2.5%   25%   50%   75% 97.5% n_eff...
+X.0                0.49    0.01 0.29   0.02  0.24  0.49  0.75  0.97  2976...
+X.1                0.51    0.01 0.29   0.03  0.25  0.51  0.76  0.98  2976...
+Y.00               0.25    0.01 0.19   0.01  0.09  0.20  0.37  0.71  1419...
+Y.10               0.25    0.00 0.19   0.01  0.09  0.20  0.37  0.71  4026...
+Y.01               0.25    0.00 0.19   0.01  0.09  0.21  0.37  0.71  4142...
+Y.11               0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.71  4265...
+lp__               1.02    0.02 1.00   0.03  0.29  0.71  1.43  3.75  2419...
+log_sum_gammas[2]  1.86    0.05 1.27   0.34  0.99  1.59  2.42  4.99   649...
+lp__              -7.58    0.05 1.72 -11.74 -8.44 -7.17 -6.34 -5.43  1185...
 
-Samples were drawn using NUTS(diag_e) at Tue Aug  5 14:30:11 2025.
+Samples were drawn using NUTS(diag_e) at Mon Aug 25 16:22:40 2025.
 For each parameter, n_eff is a crude measure of effective sample size,
 and Rhat is the potential scale reduction factor on split chains (at 
 convergence, Rhat=1).
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 This summary provides information on the distribution of parameters and
 convergence diagnostics, summarized in the \texttt{Rhat} column. The
@@ -1889,11 +1916,12 @@ R> model <- make_model("X -> M -> Y") |> update_model(
 The print and summary methods returns warnings alerting users to the
 problem thus:
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> model
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
 
 Causal statement: 
 M -> Y; X -> M
@@ -1912,7 +1940,8 @@ Warnings passed from rstan during updating:
 The largest R-hat is 1.53, indicating chains have not mixed
 Bulk Effective Samples Size (ESS) is too low
 Tail Effective Samples Size (ESS) is too low 
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 If users wish to run more advanced diagnostics of performance, they can
 retain and access the ``raw'' Stan output as follows:
@@ -1930,11 +1959,12 @@ for the causal types (\texttt{inspect(model,\ "causal\_types")}) and
 \texttt{event\_probabilities} for the event probabilities
 (\texttt{inspect(model,\ "event\_probabilities")}).
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> model |> inspect("stanfit")
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
 
 stanfit
 Stan model summary:
@@ -1942,30 +1972,31 @@ Inference for Stan model: simplexes.
 4 chains, each with iter=2000; warmup=1000; thin=1; 
 post-warmup draws per chain=1000, total post-warmup draws=4000.
 
-                   mean se_mean   sd   2.5%   25%   50%   75% 97.5% n_eff Rhat
-lambdas[1]         0.50    0.01 0.29   0.03  0.25  0.49  0.74  0.97  3036 1.00
-lambdas[2]         0.50    0.01 0.29   0.03  0.26  0.51  0.75  0.97  3036 1.00
-lambdas[3]         0.25    0.00 0.19   0.01  0.09  0.21  0.37  0.70  2031 1.00
-lambdas[4]         0.25    0.00 0.19   0.01  0.09  0.21  0.37  0.71  4633 1.00
-lambdas[5]         0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.72  4162 1.00
-lambdas[6]         0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.71  4701 1.00
-log_sum_gammas[1]  1.00    0.02 0.96   0.03  0.30  0.72  1.39  3.43  2536 1.00
-log_sum_gammas[2]  1.85    0.03 1.19   0.36  1.00  1.58  2.41  4.93  1159 1.01
-types[1]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.50  2065 1.00
-types[2]           0.13    0.00 0.13   0.00  0.03  0.08  0.18  0.48  2390 1.00
-types[3]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.50  3785 1.00
-types[4]           0.13    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3407 1.00
-types[5]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.48  3507 1.00
-types[6]           0.13    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3619 1.00
-types[7]           0.12    0.00 0.13   0.00  0.03  0.08  0.17  0.49  3841 1.00
-types[8]           0.13    0.00 0.13   0.00  0.03  0.08  0.19  0.49  3863 1.00
-lp__              -7.53    0.04 1.65 -11.75 -8.37 -7.15 -6.32 -5.44  1368 1.00
+                   mean se_mean   sd   2.5%   25%   50%   75% 97.5% n_eff...
+lambdas[1]         0.50    0.01 0.29   0.03  0.25  0.49  0.74  0.97  3036...
+lambdas[2]         0.50    0.01 0.29   0.03  0.26  0.51  0.75  0.97  3036...
+lambdas[3]         0.25    0.00 0.19   0.01  0.09  0.21  0.37  0.70  2031...
+lambdas[4]         0.25    0.00 0.19   0.01  0.09  0.21  0.37  0.71  4633...
+lambdas[5]         0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.72  4162...
+lambdas[6]         0.25    0.00 0.20   0.01  0.09  0.20  0.37  0.71  4701...
+log_sum_gammas[1]  1.00    0.02 0.96   0.03  0.30  0.72  1.39  3.43  2536...
+log_sum_gammas[2]  1.85    0.03 1.19   0.36  1.00  1.58  2.41  4.93  1159...
+types[1]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.50  2065...
+types[2]           0.13    0.00 0.13   0.00  0.03  0.08  0.18  0.48  2390...
+types[3]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.50  3785...
+types[4]           0.13    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3407...
+types[5]           0.12    0.00 0.13   0.00  0.03  0.08  0.18  0.48  3507...
+types[6]           0.13    0.00 0.13   0.00  0.03  0.08  0.18  0.49  3619...
+types[7]           0.12    0.00 0.13   0.00  0.03  0.08  0.17  0.49  3841...
+types[8]           0.13    0.00 0.13   0.00  0.03  0.08  0.19  0.49  3863...
+lp__              -7.53    0.04 1.65 -11.75 -8.37 -7.15 -6.32 -5.44  1368...
 
-Samples were drawn using NUTS(diag_e) at Tue Aug  5 14:30:16 2025.
+Samples were drawn using NUTS(diag_e) at Mon Aug 25 16:22:51 2025.
 For each parameter, n_eff is a crude measure of effective sample size,
 and Rhat is the potential scale reduction factor on split chains (at 
 convergence, Rhat=1).
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 Users can then pass the \texttt{stanfit} object to other diagnostic
 packages such as \pkg{bayesplot}.
@@ -2013,11 +2044,12 @@ The \texttt{realise\_outcomes()} function, when called on this model,
 outputs the realized values for all causal types, with row names
 indicating the corresponding causal types.
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> make_model("X -> Y") |> realise_outcomes()
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
      X Y
 0.00 0 0
 1.00 1 0
@@ -2027,16 +2059,18 @@ R> make_model("X -> Y") |> realise_outcomes()
 1.01 1 1
 0.11 0 1
 1.11 1 1
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 Intervening on \(X\) \citep[see][]{pearl_causality_2009} with
-\(do(X=1)\) yields:
+\(\text{do}(X=1)\) yields:
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> make_model("X -> Y") |> realise_outcomes(dos = list(X = 1))
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
      X Y
 0.00 1 0
 1.00 1 0
@@ -2046,7 +2080,8 @@ R> make_model("X -> Y") |> realise_outcomes(dos = list(X = 1))
 1.01 1 1
 0.11 1 1
 1.11 1 1
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 Similarly, \texttt{realise\_outcomes()} can return the realized values
 on all nodes for each causal type given arbitrary interventions.
@@ -2079,11 +2114,12 @@ units that meet the strict equality condition where \(Y\) equals
 \texttt{get\_query\_types()} function identifies all types that result
 in \(Y=1\) without any interventions.
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> make_model("X -> Y")  |> get_query_types("Y == 1")
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
 
 Causal types satisfying query's condition(s)  
 
@@ -2095,7 +2131,8 @@ X0.Y11  X1.Y11
 
  Number of causal types that meet condition(s) =  4
  Total number of causal types in model =  8
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 The key to forming causal queries is being able to ask about the values
 of variables, given that the values of some other variables are
@@ -2111,11 +2148,12 @@ brackets. Given that \(Y\) equals \(1\) is a condition about potentially
 observed values, it is expressed using the logical operator \texttt{==}.
 The set of causal types that meets this query is quite different:
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> make_model("X -> Y") |> get_query_types("Y[X = 0] == 1")
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
 
 Causal types satisfying query's condition(s)  
 
@@ -2127,7 +2165,8 @@ X0.Y11  X1.Y11
 
  Number of causal types that meet condition(s) =  4
  Total number of causal types in model =  8
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 When a node has multiple parents, it is possible to set the values of
 none, some, or all of the parents. For instance if \(X1\) and \(X2\) are
@@ -2138,12 +2177,13 @@ parents of \(Y\) then \texttt{Y\ ==\ 1},
 \(X1\) is set to \(1\) but \(X2\) is not controlled, and when both
 \(X1\) and \(X2\) are set to \(1\). For instance:
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> make_model("X1 -> Y <- X2")  |> get_query_types(
 +    "X1 == 1 & X2 == 1 & (Y[X1 = 1, X2 = 1] > Y[X1 = 0, X2 = 0])")
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
 
 Causal types satisfying query's condition(s)  
 
@@ -2155,7 +2195,8 @@ X11.X21.Y0011  X11.X21.Y0111
 
  Number of causal types that meet condition(s) =  4
  Total number of causal types in model =  64
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 In this case, the aim is to identify the types for which in fact
 \(X1=1\) and \(X2=1\) and, \emph{in addition}, \(Y=0\) when
@@ -2202,14 +2243,16 @@ taken, which can be a \(1\), \(0\) or \(-1\) depending on the causal
 type. Averaging provides the share of cases with positive effects, less
 the share of cases with negative effects.
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> make_model("X -> Y") |> get_query_types("Y[X = 1] - Y[X = 0]")
 \end{CodeInput}
 
-\begin{verbatim}
+\begin{CodeOutput}
 X0.Y00 X1.Y00 X0.Y10 X1.Y10 X0.Y01 X1.Y01 X0.Y11 X1.Y11 
      0      0     -1     -1      1      1      0      0 
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 \subsubsection{Nested queries}\label{nested-queries}
 
@@ -2248,7 +2291,7 @@ R> model |> grab("posterior_distribution")  |>
 
 \centering{
 
-\includegraphics[width=0.6\linewidth,height=\textheight,keepaspectratio]{2_paper_files/figure-pdf/fig-posterior-dist-1.pdf}
+\includegraphics[width=0.6\linewidth,height=\textheight,keepaspectratio]{Figures/fig-posterior-dist-1.pdf}
 
 }
 
@@ -2299,7 +2342,7 @@ R> lipids_model |> query_model(
 
 \centering{
 
-\pandocbounded{\includegraphics[keepaspectratio]{2_paper_files/figure-pdf/fig-case-level-query-1.pdf}}
+\pandocbounded{\includegraphics[keepaspectratio]{Figures/fig-case-level-query-1.pdf}}
 
 }
 
@@ -2349,7 +2392,7 @@ R> make_model("X -> M -> Y") |> update_model(
 
 \centering{
 
-\pandocbounded{\includegraphics[keepaspectratio]{2_paper_files/figure-pdf/fig-new-case-level-query-1.pdf}}
+\pandocbounded{\includegraphics[keepaspectratio]{Figures/fig-new-case-level-query-1.pdf}}
 
 }
 
@@ -2438,7 +2481,7 @@ query.
 
 \centering{
 
-\pandocbounded{\includegraphics[keepaspectratio]{2_paper_files/figure-pdf/fig-batch-1.pdf}}
+\pandocbounded{\includegraphics[keepaspectratio]{Figures/fig-batch-1.pdf}}
 
 }
 
@@ -2646,7 +2689,7 @@ the Comprehensive \proglang{R} Archive Network (CRAN) at
 \section*{Acknowledgments}\label{acknowledgments}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, opacityback=0, left=2mm, toprule=.15mm, leftrule=.75mm, breakable, colframe=quarto-callout-color-frame, arc=.35mm, rightrule=.15mm, bottomrule=.15mm, colback=white]
+\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, colframe=quarto-callout-color-frame, left=2mm, arc=.35mm, colback=white, toprule=.15mm, breakable, bottomrule=.15mm, rightrule=.15mm, opacityback=0]
 
 We thank Ben Goodrich, who provided generous insights on using
 \texttt{stan} for this project. We thank Alan M Jacobs for key work in
@@ -2669,7 +2712,7 @@ improvements.
 \addcontentsline{toc}{section}{References}
 
 \renewcommand{\bibsection}{}
-\bibliography{supp/cq_jss.bib}
+\bibliography{jss5712.bib}
 
 \newpage{}
 
@@ -2686,6 +2729,7 @@ parallel chains each simultaneously. More generally the number of
 parallel processes at the upper level of the nested parallel structure
 are given by \(\left \lfloor \frac{cores}{chains + 1} \right \rfloor\).
 
+\begin{CodeChunk}
 \begin{CodeInput}
 R> library("future")
 R> library("future.apply")
@@ -2718,7 +2762,7 @@ Then, the likelihoods and priors are provided. At the end, a block for
 generated quantities is used to append a posterior distribution of
 causal types to the model.
 
-\begin{verbatim}
+\begin{CodeOutput}
 S4 class stanmodel 'simplexes' coded as follows:
 functions {
   row_vector col_sums(matrix X) {
@@ -2769,7 +2813,7 @@ transformed parameters {
       sum_gammas[i] = 1;
       lambdas[l_starts[i]] = 1;
     } else {
-      sum_gammas[i] = 1 + sum(gamma[(l_starts[i] - (i - 1)):(l_ends[i] - i)]);
+      sum_gammas[i] = 1 + sum(gamma[(l_starts[i] - (i - 1)):(l_ends[i] - ...
       lambdas[l_starts[i]:l_ends[i]] =
         append_row(1, gamma[(l_starts[i] - (i - 1)):(l_ends[i] - i)]) /
         sum_gammas[i];
@@ -2819,7 +2863,8 @@ generated quantities {
     types = rep_vector(1, n_types);
   }
 } 
-\end{verbatim}
+\end{CodeOutput}
+\end{CodeChunk}
 
 \newpage{}
 
@@ -2832,7 +2877,7 @@ specifications of the hardware system used to produce them. The first
 benchmark considers the effect of model complexity on updating time. The
 second benchmark considers the effect of data size on updating time. We
 run four parallel chains for each model with a relatively large number
-(4000) of iterations each time, all replicated five times. The results
+(4000) of iterations each time, all replicated eight times. The results
 of the benchmarks are presented in Table~\ref{tbl-bench1} and
 Table~\ref{tbl-bench2}.
 
@@ -2851,9 +2896,9 @@ data.
 \toprule
 Model & Number of parameters & Runtime (seconds)\\
 \midrule
-X1 → Y & 6 & 2.64\\
-X1 → Y; X2 → Y & 20 & 5.98\\
-X1 → Y; X2 → Y; X3 → Y & 262 & 111.60\\
+X1 → Y & 6 & 7.70\\
+X1 → Y; X2 → Y & 20 & 7.92\\
+X1 → Y; X2 → Y; X3 → Y & 262 & 52.47\\
 \bottomrule
 
 
@@ -2867,10 +2912,10 @@ X1 → Y; X2 → Y; X3 → Y & 262 & 111.60\\
 \toprule
 Model & Number of observations & Runtime (seconds)\\
 \midrule
-X1 → Y & 10 & 1.52\\
-X1 → Y & 100 & 2.52\\
-X1 → Y & 1000 & 5.06\\
-X1 → Y & 10000 & 12.27\\
+X1 → Y & 10 & 5.82\\
+X1 → Y & 100 & 6.15\\
+X1 → Y & 1000 & 6.38\\
+X1 → Y & 10000 & 8.48\\
 \bottomrule
 
 

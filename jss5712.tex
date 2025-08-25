@@ -182,7 +182,7 @@
 \makeatletter
 \makeatother
 \makeatletter
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[boxrule=0pt, borderline west={3pt}{0pt}{shadecolor}, enhanced, sharp corners, interior hidden, breakable, frame hidden]}{\end{tcolorbox}}\fi
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[boxrule=0pt, borderline west={3pt}{0pt}{shadecolor}, enhanced, sharp corners, frame hidden, interior hidden, breakable]}{\end{tcolorbox}}\fi
 \makeatother
 
 \usepackage{bookmark}
@@ -440,7 +440,7 @@ R> lipids_queries |> plot()
 
 \begin{figure}[H]
 
-{\centering \pandocbounded{\includegraphics[keepaspectratio]{2_paper_files/figure-pdf/queryplot-1.pdf}}
+{\centering \pandocbounded{\includegraphics[keepaspectratio]{Figures/queryplot-1.pdf}}
 
 }
 
@@ -467,14 +467,13 @@ all causal queries that can be posed of the causal model.
 packages}\label{connections-to-existing-packages}
 
 The field of causal inference encompasses a wide range of software tools
-used across various disciplines, including social sciences, natural
-sciences, computer science, and applied mathematics. This section
-focuses on the role and capabilities of \pkg{CausalQueries} within the
-specific area of evaluating causal queries on models represented as
-directed acyclic graphs (DAGs) or structural equation models (SEMs).
+used across social sciences, natural sciences, computer science, and
+applied mathematics. This section focuses on the role and capabilities
+of \pkg{CausalQueries} specifically for evaluating causal queries on
+models represented as directed acyclic graphs (DAGs).
 Table~\ref{tbl-software} provides a summary of relevant software,
-highlighting their connections, strengths, and limitations in comparison
-to \pkg{CausalQueries}.
+highlighting their strengths and limitations in comparison to
+\pkg{CausalQueries}.
 
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1800}}
@@ -1071,7 +1070,7 @@ R> lipids_model |> plot(x_coord = 1:3, y_coord = 3:1,
 
 \centering{
 
-\includegraphics[width=0.5\linewidth,height=\textheight,keepaspectratio]{2_paper_files/figure-pdf/fig-plots-1.pdf}
+\includegraphics[width=0.5\linewidth,height=\textheight,keepaspectratio]{Figures/fig-plots-1.pdf}
 
 }
 
@@ -1083,7 +1082,7 @@ R> lipids_model |> plot(x_coord = 1:3, y_coord = 3:1,
 
 \centering{
 
-\includegraphics[width=0.5\linewidth,height=\textheight,keepaspectratio]{2_paper_files/figure-pdf/fig-plots-2.pdf}
+\includegraphics[width=0.5\linewidth,height=\textheight,keepaspectratio]{Figures/fig-plots-2.pdf}
 
 }
 
@@ -1879,7 +1878,7 @@ lp__               1.02    0.02 1.00   0.03  0.29  0.71  1.43  3.75  2419...
 log_sum_gammas[2]  1.86    0.05 1.27   0.34  0.99  1.59  2.42  4.99   649...
 lp__              -7.58    0.05 1.72 -11.74 -8.44 -7.17 -6.34 -5.43  1185...
 
-Samples were drawn using NUTS(diag_e) at Tue Aug  5 17:52:24 2025.
+Samples were drawn using NUTS(diag_e) at Mon Aug 25 16:22:40 2025.
 For each parameter, n_eff is a crude measure of effective sample size,
 and Rhat is the potential scale reduction factor on split chains (at 
 convergence, Rhat=1).
@@ -1992,7 +1991,7 @@ types[7]           0.12    0.00 0.13   0.00  0.03  0.08  0.17  0.49  3841...
 types[8]           0.13    0.00 0.13   0.00  0.03  0.08  0.19  0.49  3863...
 lp__              -7.53    0.04 1.65 -11.75 -8.37 -7.15 -6.32 -5.44  1368...
 
-Samples were drawn using NUTS(diag_e) at Tue Aug  5 17:52:39 2025.
+Samples were drawn using NUTS(diag_e) at Mon Aug 25 16:22:51 2025.
 For each parameter, n_eff is a crude measure of effective sample size,
 and Rhat is the potential scale reduction factor on split chains (at 
 convergence, Rhat=1).
@@ -2292,7 +2291,7 @@ R> model |> grab("posterior_distribution")  |>
 
 \centering{
 
-\includegraphics[width=0.6\linewidth,height=\textheight,keepaspectratio]{2_paper_files/figure-pdf/fig-posterior-dist-1.pdf}
+\includegraphics[width=0.6\linewidth,height=\textheight,keepaspectratio]{Figures/fig-posterior-dist-1.pdf}
 
 }
 
@@ -2343,7 +2342,7 @@ R> lipids_model |> query_model(
 
 \centering{
 
-\pandocbounded{\includegraphics[keepaspectratio]{2_paper_files/figure-pdf/fig-case-level-query-1.pdf}}
+\pandocbounded{\includegraphics[keepaspectratio]{Figures/fig-case-level-query-1.pdf}}
 
 }
 
@@ -2393,7 +2392,7 @@ R> make_model("X -> M -> Y") |> update_model(
 
 \centering{
 
-\pandocbounded{\includegraphics[keepaspectratio]{2_paper_files/figure-pdf/fig-new-case-level-query-1.pdf}}
+\pandocbounded{\includegraphics[keepaspectratio]{Figures/fig-new-case-level-query-1.pdf}}
 
 }
 
@@ -2482,7 +2481,7 @@ query.
 
 \centering{
 
-\pandocbounded{\includegraphics[keepaspectratio]{2_paper_files/figure-pdf/fig-batch-1.pdf}}
+\pandocbounded{\includegraphics[keepaspectratio]{Figures/fig-batch-1.pdf}}
 
 }
 
@@ -2690,7 +2689,7 @@ the Comprehensive \proglang{R} Archive Network (CRAN) at
 \section*{Acknowledgments}\label{acknowledgments}
 \addcontentsline{toc}{section}{Acknowledgments}
 
-\begin{tcolorbox}[enhanced jigsaw, colback=white, toprule=.15mm, bottomrule=.15mm, left=2mm, arc=.35mm, leftrule=.75mm, breakable, rightrule=.15mm, colframe=quarto-callout-color-frame, opacityback=0]
+\begin{tcolorbox}[enhanced jigsaw, leftrule=.75mm, colframe=quarto-callout-color-frame, left=2mm, arc=.35mm, colback=white, toprule=.15mm, breakable, bottomrule=.15mm, rightrule=.15mm, opacityback=0]
 
 We thank Ben Goodrich, who provided generous insights on using
 \texttt{stan} for this project. We thank Alan M Jacobs for key work in
@@ -2713,7 +2712,7 @@ improvements.
 \addcontentsline{toc}{section}{References}
 
 \renewcommand{\bibsection}{}
-\bibliography{supp/cq_jss.bib}
+\bibliography{jss5712.bib}
 
 \newpage{}
 
@@ -2897,9 +2896,9 @@ data.
 \toprule
 Model & Number of parameters & Runtime (seconds)\\
 \midrule
-X1 → Y & 6 & 6.08\\
-X1 → Y; X2 → Y & 20 & 7.71\\
-X1 → Y; X2 → Y; X3 → Y & 262 & 63.41\\
+X1 → Y & 6 & 7.70\\
+X1 → Y; X2 → Y & 20 & 7.92\\
+X1 → Y; X2 → Y; X3 → Y & 262 & 52.47\\
 \bottomrule
 
 
@@ -2913,10 +2912,10 @@ X1 → Y; X2 → Y; X3 → Y & 262 & 63.41\\
 \toprule
 Model & Number of observations & Runtime (seconds)\\
 \midrule
-X1 → Y & 10 & 4.79\\
-X1 → Y & 100 & 5.30\\
-X1 → Y & 1000 & 5.68\\
-X1 → Y & 10000 & 7.88\\
+X1 → Y & 10 & 5.82\\
+X1 → Y & 100 & 6.15\\
+X1 → Y & 1000 & 6.38\\
+X1 → Y & 10000 & 8.48\\
 \bottomrule
 
 

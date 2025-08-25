@@ -37,13 +37,13 @@ author:
 format:
   jss-pdf:
     keep-tex: true
-    include-in-header: supp/in-header.tex
+    include-in-header: in-header.tex
     tbl-cap-location: bottom
     knitr: 
       opts_chunk:
         prompt: true
         comment: ""
-bibliography: supp/cq_jss.bib
+bibliography: jss5712.bib
 fontsize: 11pt
 execute: 
   eval: true
@@ -301,7 +301,7 @@ As we describe below, the same basic procedure of making, updating, and querying
 
 ## Connections to existing packages
 
-The field of causal inference encompasses a wide range of software tools used across various disciplines, including social sciences, natural sciences, computer science, and applied mathematics. This section focuses on the role and capabilities of [CausalQueries]{.pkg} within the specific area of evaluating causal queries on models represented as directed acyclic graphs (DAGs) or structural equation models (SEMs).  @tbl-software provides a summary of relevant software, highlighting their connections, strengths, and limitations in comparison to [CausalQueries]{.pkg}.
+The field of causal inference encompasses a wide range of software tools used across social sciences, natural sciences, computer science, and applied mathematics. This section focuses on the role and capabilities of [CausalQueries]{.pkg} specifically for evaluating causal queries on models represented as directed acyclic graphs (DAGs).  @tbl-software provides a summary of relevant software, highlighting their strengths and limitations in comparison to [CausalQueries]{.pkg}.
 
 :::{#tbl-software tbl-colwidths="\[19,20,10,18,38\]"}
 +--------------------+--------------------------+---------------------+--------------+---------------------------------------------------------------------+

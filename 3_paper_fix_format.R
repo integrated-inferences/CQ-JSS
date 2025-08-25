@@ -22,6 +22,11 @@ process_code_blocks <- function(file_path, out_path = file_path, max_width = 76)
   # Write intermediate result to lines for further processing
   lines <- unlist(strsplit(content, "\n"))
 
+  # rename Figure folder
+  for (i in seq_along(lines)) {
+    lines[i] <- gsub("2_paper_files/figure-pdf", "Figures", lines[i])
+  }
+  
   # Step 2: Wrap CodeInput + CodeOutput pairs with CodeChunk
   begin_positions <- c()
   end_positions <- c()
@@ -89,5 +94,6 @@ fix_code_file <- function(file_path) {
 }
 
 # Implement
-process_code_blocks("2_paper.tex", "CQ_JSS.tex")
-fix_code_file("code.R")
+process_code_blocks("2_paper.tex", "jss5712.tex")
+fix_code_file("jss5712.R")
+
